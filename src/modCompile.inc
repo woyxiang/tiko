@@ -19,7 +19,7 @@
 ''   command line data to pass to the applicable 32 or 64 version of the FBC
 ''   compiler. Compile time errors are parsed through analyis of the log file
 ''   and presented to the user via the Compiler Results listview and the Compiler
-''   Lof File text box.
+''   Log File text box.
 ''
 ''
 
@@ -33,7 +33,7 @@ Dim Shared gCompile As COMPILE_TYPE
 ''
 '' Main module that handles the entire compile process
 ''
-function code_Compile( ByVal wID As Long ) As BOOLEAN
+function code_Compile( ByVal wID As Long ) As boolean
 
    Dim pDoc As clsDocument Ptr
    
@@ -218,15 +218,15 @@ function code_Compile( ByVal wID As Long ) As BOOLEAN
       select case directives(i).DirectiveFlag 
          case IDM_CONSOLE
             n = instr(gCompile.CompileFlags, " -S GUI ")
-            if n THEN gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 8)
+            if n then gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 8)
             gCompile.CompileFlags = gCompile.CompileFlags + " -s console "
          case IDM_GUI
             n = instr(gCompile.CompileFlags, " -S CONSOLE ")
-            if n THEN gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 12)
+            if n then gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 12)
             gCompile.CompileFlags = gCompile.CompileFlags + " -s gui "
          case IDM_RESOURCE
             gCompile.ResourceFile = directives(i).DirectiveText
-      END select
+      end select
    next
 
 

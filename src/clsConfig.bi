@@ -69,16 +69,16 @@ end type
 
 
 type clsConfig
-   Private:
-      _ConfigFilename            as CWSTR 
-      _FBKeywordsFilename        as CWSTR 
-      _WinApiKeywordsFilename    as CWSTR 
-      _FBKeywordsDefaultFilename as CWSTR 
-      _FBCodetipsFilename        as CWSTR
-      _WinAPICodetipsFilename    as CWSTR 
-      _DateFileTime              as FILETIME
-      
    public:
+      ConfigFilename            as CWSTR 
+      FBKeywordsFilename        as CWSTR 
+      WinApiKeywordsFilename    as CWSTR 
+      FBKeywordsDefaultFilename as CWSTR 
+      FBCodetipsFilename        as CWSTR
+      WinAPICodetipsFilename    as CWSTR 
+      
+      DateFileTime              as FILETIME
+      
       SettingsVersion       as CWSTR
       Tools(any)            as TYPE_TOOLS
       ToolsTemp(any)        as TYPE_TOOLS  
@@ -119,13 +119,13 @@ type clsConfig
       MultipleInstances     as long = true
       CompileAutosave       as long = true
       UnicodeEncoding       as long = false
-      TabSize               as CWSTR = "3"
+      TabSize               as CWSTR = "4"
       LocalizationFile      as CWSTR = "english.lang"
       EditorFontname        as CWSTR = "Consolas"
       EditorFontCharSet     as CWSTR = "Default"
       EditorFontsize        as CWSTR = "11"
       FontExtraSpace        as CWSTR = "2"
-      ThemeFilename         as CWSTR = "default_dark.theme"
+      ThemeShortFilename    as CWSTR = "default_dark.theme"
       KeywordCase           as long = 3  ' "Original Case"
       StartupLeft           as long = 0
       StartupTop            as long = 0

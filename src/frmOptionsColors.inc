@@ -345,7 +345,7 @@ Function frmOptionsColors_Show( ByVal hWndParent As HWnd ) as LRESULT
             idx = SendMessage( hListBox, LB_ADDSTRING, 0, cast(LPARAM, @wszDisplayName) )
             redim preserve gThemeFilenames(idx) as CWSTR
             gThemeFilenames(idx) = WFD.cFileName
-            if ucase(gConfig.ThemeFilename) = ucase(WFD.cFileName ) then
+            if ucase(gConfig.ThemeShortFilename) = ucase(WFD.cFileName ) then
                idxMatch = idx
             end if
          end if   

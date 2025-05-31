@@ -30,34 +30,35 @@
 ''  CONSTRUCTOR
 ''
 constructor clsConfig
-   _ConfigFilename            = AfxGetExePathName & "settings\settings.ini" 
-   _FBKeywordsFilename        = AfxGetExePathName & "settings\freebasic_keywords.txt" 
-   _WinApiKeywordsFilename    = AfxGetExePathName & "settings\winapi_keywords.txt" 
-   _FBKeywordsDefaultFilename = AfxGetExePathName & "settings\freebasic_keywords_default.txt" 
-   _FBCodetipsFilename        = AfxGetExePathName & "settings\codetips.ini" 
-   _WinAPICodetipsFilename    = AfxGetExePathName & "settings\codetips_winapi.ini" 
+   dim as CWSTR exe_path = AfxGetExePathName 
+   ConfigFilename            = exe_path & "settings\settings.ini" 
+   FBKeywordsFilename        = exe_path & "settings\keywords\freebasic_keywords.txt" 
+   WinApiKeywordsFilename    = exe_path & "settings\keywords\winapi_keywords.txt" 
+   FBKeywordsDefaultFilename = exe_path & "settings\keywords\freebasic_keywords_default.txt" 
+   FBCodetipsFilename        = exe_path & "settings\keywords\codetips.ini" 
+   WinAPICodetipsFilename    = exe_path & "settings\keywords\codetips_winapi.ini" 
 end constructor
 
 ''
 ''
 function clsConfig.LoadKeywords() as long
-   if AfxFileExists(_FBKeywordsFilename) = false then 
+   if AfxFileExists(this.FBKeywordsFilename) = false then 
       ' The FB keywords file does not exist. Try copying the "default" keywords over
       ' to the main file that the user can modify.
-      if AfxFileExists(_FBKeywordsDefaultFilename) then 
-         if AfxCopyFile( _FBKeywordsDefaultFilename.sptr, _FBKeywordsFilename.sptr, true ) = false then
+      if AfxFileExists(this.FBKeywordsDefaultFilename) then 
+         if AfxCopyFile( this.FBKeywordsDefaultFilename.sptr, this.FBKeywordsFilename.sptr, true ) = false then
             exit function
          end if
       end if
    end if
-   if AfxFileExists(_FBKeywordsFilename) = false then exit function
+   if AfxFileExists(this.FBKeywordsFilename) = false then exit function
 
    dim pStream as CTextStream
-   if pStream.Open(_FBKeywordsFilename) <> S_OK then exit function
+   if pStream.Open(this.FBKeywordsFilename) <> S_OK then exit function
    this.FBKeywords = pStream.ReadAll
    pStream.Close
 
-   if pStream.Open(_WinApiKeywordsFilename) <> S_OK then exit function
+   if pStream.Open(this.WinApiKeywordsFilename) <> S_OK then exit function
    this.WinApiKeywords = pStream.ReadAll
    pStream.Close
    function = 0
@@ -67,10 +68,10 @@ end function
 ''
 function clsConfig.SaveKeywords() as long
    dim pStream as CTextStream
-   if pStream.Create(_FBKeywordsFilename) <> S_OK then exit function
+   if pStream.Create(this.FBKeywordsFilename) <> S_OK then exit function
    pStream.WriteLine this.FBKeywords
    pStream.Close
-   if pStream.Create(_WinApiKeywordsFilename) <> S_OK then exit function
+   if pStream.Create(this.WinApiKeywordsFilename) <> S_OK then exit function
    pStream.WriteLine this.WinApiKeywords
    pStream.Close
    function = 0
@@ -91,7 +92,7 @@ function clsConfig.LoadCodetipsFB() as boolean
    parser.nFileType = DB2_FILETYPE_FB
    
    dim pStream as CTextStream
-   if pStream.Open(_FBCodetipsFilename) <> S_OK then return true  ' error
+   if pStream.Open(this.FBCodetipsFilename) <> S_OK then return true  ' error
    
    do until pStream.EOS
       wst = pStream.ReadLine
@@ -196,7 +197,7 @@ end function
 ''
 function clsConfig.LoadCodetipsWinAPI() as boolean
    gdb2.dbDeleteByFileType( DB2_FILETYPE_WINAPI )
-   function = this.LoadCodetipsGeneric(_WinAPICodetipsFilename, DB2_FILETYPE_WINAPI)
+   function = this.LoadCodetipsGeneric(this.WinAPICodetipsFilename, DB2_FILETYPE_WINAPI)
 end function
 
 
@@ -311,7 +312,7 @@ function clsConfig.SaveConfigFile() as long
    this.CompilerBuild = frmBuildConfig_GetSelectedBuildGUID()
 
    dim pStream as CTextStream   '(utf16)
-   if pStream.Create(_ConfigFilename, true, true) <> S_OK then return true   ' error
+   if pStream.Create(this.ConfigFilename, true, true) <> S_OK then return true   ' error
    
    pStream.WriteLine "' SETTINGS FILE"
    pStream.WriteLine ""
@@ -353,7 +354,7 @@ function clsConfig.SaveConfigFile() as long
    pStream.WriteLine "EditorFontsize="        & this.EditorFontsize       
    pStream.WriteLine "EditorFontCharSet="     & this.EditorFontCharSet    
    pStream.WriteLine "FontExtraSpace="        & this.FontExtraSpace
-   pStream.WriteLine "Theme="                 & this.ThemeFilename
+   pStream.WriteLine "Theme="                 & this.ThemeShortFilename
    pStream.WriteLine ""
    pStream.WriteLine "[Startup]" 
    pStream.WriteLine "StartupLeft="           & this.StartupLeft          
@@ -480,14 +481,14 @@ function clsConfig.WriteMRU() as long
    
    ' Delete the section name
    dim as CWSTR wszSectionName = "MRU"
-   WritePrivateProfileString( wszSectionName, null, null, _ConfigFilename )
+   WritePrivateProfileString( wszSectionName, null, null, this.ConfigFilename )
    
    ' Write the new values.
    for i as long = 0 To 9
       this.MRU(i) = ProcessToCurdriveApp(this.MRU(i))
       wszKeyName = "MRU_" & right("00" & str(i), 2)
       wszValue   = this.MRU(i) 
-      WritePrivateProfileString(wszSectionName, wszKeyName, wszValue, _ConfigFilename)
+      WritePrivateProfileString(wszSectionName, wszKeyName, wszValue, this.ConfigFilename)
    next         
     
    function = 0
@@ -503,14 +504,14 @@ function clsConfig.WriteMRUProjects() as long
    
    ' Delete the section name
    dim as CWSTR wszSectionName = "MRUPROJECTS"
-   WritePrivateProfileString( wszSectionName, null, null, _ConfigFilename )
+   WritePrivateProfileString( wszSectionName, null, null, this.ConfigFilename )
    
    ' Write the new values.
    for i as long = 0 To 9
       this.MRUProject(i) = ProcessToCurdriveApp(this.MRUProject(i))
       wszKeyName = "MRUPROJECT_" & right("00" & str(i), 2) 
       wszValue   = this.MRUProject(i) 
-      WritePrivateProfileString( wszSectionName, wszKeyName, wszValue, _ConfigFilename )
+      WritePrivateProfileString( wszSectionName, wszKeyName, wszValue, this.ConfigFilename )
    next         
     
    function = 0
@@ -563,11 +564,11 @@ function clsConfig.LoadConfigFile() as long
    ' structure contains references to existing hNodeExplorer nodes.
    erase this.Builds
    
-   if AfxFileExists(_ConfigFilename) = 0 then
+   if AfxFileExists(this.ConfigFilename) = 0 then
       bNewConfigFile = true
    else
       dim pStream as CTextStream   '(utf16)
-      if pStream.OpenUnicode(_ConfigFilename) <> S_OK then return true   ' error
+      if pStream.OpenUnicode(this.ConfigFilename) <> S_OK then return true   ' error
 
       gApp.NonProjectNotes = ""
       
@@ -698,7 +699,7 @@ function clsConfig.LoadConfigFile() as long
             case "EditorFontsize":         this.EditorFontsize        = wData
             case "EditorFontCharSet":      this.EditorFontCharSet     = wData
             case "FontExtraSpace":         this.FontExtraSpace        = wData
-            case "Theme":                  this.ThemeFilename         = wData
+            case "Theme":                  this.ThemeShortFilename    = wData
             case "KeywordCase":            this.KeywordCase           = nData
             case "StartupLeft":            this.StartupLeft           = nData
             case "StartupTop":             this.StartupTop            = nData
@@ -813,36 +814,36 @@ function clsConfig.LoadConfigFile() as long
 
       this.Builds(6).id = AfxGuidText(AfxGuid())
       this.Builds(6).wszDescription = "Win64 GUI (Release)"
-      this.Builds(6).wszOptions = "-s gui"
+      this.Builds(6).wszOptions = "-s gui -gen gas64"
       this.Builds(6).Is32bit = 0
       this.Builds(6).Is64bit = 1
       
       this.Builds(7).id = AfxGuidText(AfxGuid())
       this.Builds(7).wszDescription = "Win64 GUI (Debug)"
-      this.Builds(7).wszOptions = "-g -exx -s gui"
+      this.Builds(7).wszOptions = "-g -exx -s gui -gen gcc"
       this.Builds(7).Is32bit = 0
       this.Builds(7).Is64bit = 1
       
       this.Builds(8).id = AfxGuidText(AfxGuid())
       this.Builds(8).wszDescription = "Win64 Console (Release)"
-      this.Builds(8).wszOptions = "-s console"
+      this.Builds(8).wszOptions = "-s console -gen gas64"
       this.Builds(8).Is32bit = 0
       this.Builds(8).Is64bit = 1
       
       this.Builds(9).id = AfxGuidText(AfxGuid())
       this.Builds(9).wszDescription = "Win64 Console (Debug)"
-      this.Builds(9).wszOptions = "-g -exx -s console"
+      this.Builds(9).wszOptions = "-g -exx -s console -gen gcc"
       this.Builds(9).Is32bit = 0
       this.Builds(9).Is64bit = 1
 
       this.Builds(10).id = AfxGuidText(AfxGuid())
       this.Builds(10).wszDescription = "Win64 Windows DLL"
-      this.Builds(10).wszOptions = "-s gui -dll -export"
+      this.Builds(10).wszOptions = "-s gui -dll -export -gen gas64"
       this.Builds(10).Is32bit = 0
       this.Builds(10).Is64bit = 1
 
       this.Builds(11).id = AfxGuidText(AfxGuid())
-      this.Builds(11).wszDescription = "Win64 Static Library"
+      this.Builds(11).wszDescription = "Win64 Static Library -gen gas64"
       this.Builds(11).wszOptions = "-lib"
       this.Builds(11).Is32bit = 0
       this.Builds(11).Is64bit = 1
@@ -873,7 +874,7 @@ function clsConfig.LoadConfigFile() as long
 
    ' Save the last write time so that it can be checked in the message loop
    ' in order to detect external changes to it.
-   _DateFileTime = AfxGetFileLastWriteTime( _ConfigFilename )
+   this.DateFileTime = AfxGetFileLastWriteTime( this.ConfigFilename )
 
    function = 0
 end function
@@ -1408,8 +1409,8 @@ function clsConfig.ReloadConfigFileTest() as boolean
    dim as FILETIME ft
    
    ' Compare the disk file date time to the value currently stored in static variable.
-   ft = AfxGetFileLastWriteTime(_ConfigFilename)
-   if AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(_DateFileTime) then
+   ft = AfxGetFileLastWriteTime(this.ConfigFilename)
+   if AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(this.DateFileTime) then
       gConfig.LoadConfigFile()  ' this function also updates the _DateFileTime value
       ' Apply the newly saved options to all open Scintilla windows
       dim pDoc as clsDocument ptr = gApp.pDocList

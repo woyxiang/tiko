@@ -238,7 +238,7 @@ end function
 ''
 function LoadThemeFile() as boolean
 
-   dim as CWSTR wszFilename = AfxGetExePathName & "settings\themes\" & gConfig.ThemeFilename
+   dim as CWSTR wszFilename = AfxGetExePathName & "settings\themes\" & gConfig.ThemeShortFilename
    if AfxFileExists(wszFilename) = 0 then
       ' default to the visual studio dark theme
       wszFilename = AfxGetExePathName & "settings\themes\default_dark.theme"
@@ -249,13 +249,13 @@ function LoadThemeFile() as boolean
          ' Attempt to copy the file for next time
          dim as CWSTR wszThemeDirFilename = AfxGetExePathName & "settings\themes\default_dark.theme"
          if AfxCopyFile( wszFilename, wszThemeDirFilename ) then
-            gConfig.ThemeFilename = "default_dark.theme"
+            gConfig.ThemeShortFilename = "default_dark.theme"
          end if   
       end if
    end if
    
    dim as long nvalue = false
-   if instr(gConfig.ThemeFilename, "_dark") then nvalue = true
+   if instr(gConfig.ThemeShortFilename, "_dark") then nvalue = true
    ' Attempt to apply the standard Windows dark theme to the non-client areas of the main form.
    DwmSetWindowAttribute(HWND_FRMMAIN, DWMWA_USE_IMMERSIVE_DARK_MODE, @nvalue, sizeof(nvalue))
 

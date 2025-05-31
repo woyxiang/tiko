@@ -92,7 +92,7 @@ private function frmOptions_SaveEditorOptions() as long
    Dim idx As Long 
    idx = ListBox_GetCurSel( GetDlgItem(HWnd, IDC_FRMOPTIONSCOLORS_LSTTHEMES) )
    if idx >= lbound(gThemeFilenames) and idx <= ubound(gThemeFilenames) then
-      gConfig.ThemeFilename = gThemeFilenames(idx)
+      gConfig.ThemeShortFilename = gThemeFilenames(idx)
    end if   
    idx = ComboBox_GetCurSel( GetDlgItem(HWnd, IDC_FRMOPTIONSCOLORS_COMBOFONTNAME) )
    gConfig.EditorFontname = AfxGetComboBoxText( GetDlgItem(HWnd, IDC_FRMOPTIONSCOLORS_COMBOFONTNAME), idx )

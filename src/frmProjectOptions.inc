@@ -23,8 +23,8 @@ function frmProjectOptions_CreateResourceManifest() as Long
    dim as CWSTR wszProjectPath      = AfxStrPathname("PATH", gApp.ProjectFilename)
    dim as CWSTR wszManifest         = wszProjectPath + "manifest.xml"
    dim as CWSTR wszResource         = wszProjectPath + "resource.rc"
-   dim as CWSTR wszManifestTemplate = AfxGetExePathName + "settings\default_manifest.xml"
-   dim as CWSTR wszResourceTemplate = AfxGetExePathName + "settings\default_resource.rc" 
+   dim as CWSTR wszManifestTemplate = AfxGetExePathName + "settings\backup_manifest.xml"
+   dim as CWSTR wszResourceTemplate = AfxGetExePathName + "settings\backup_resource.rc" 
    
    dim as CWSTR wszFilesMissing
    

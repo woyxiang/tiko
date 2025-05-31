@@ -317,8 +317,8 @@ private function frmBuildConfig_ProcessListboxClick( byval hwnd as HWND, _
    
    ' Get the action text for this listbox item. If it exists in the Options
    ' textbox then remove it
-   dim as CWSTR wszText = " " & AfxGetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)) & " "
-   dim as CWSTR wszAction = " " & AfxStrExtract(gBuildOptions(nCurSel), "(", ")") & " "
+   dim as CWSTR wszText = AfxGetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)) & " "
+   dim as CWSTR wszAction = AfxStrExtract(gBuildOptions(nCurSel), "(", ")") & " "
    ' If the action exists, remove it. If it does not exist then add it.
    if instr(wszText, wszAction) then
       wszText = trim(AfxStrRemove(wszText, wszAction))

@@ -4,6 +4,9 @@ Programmer's Code Editor for the FreeBASIC Compiler
 
 Code is written using the FreeBASIC language and uses the Scintilla editing library (in DLL form).
 
+This editor is a leaner 64-bit only version of the WinFBE Editor. Is is code editor only without a visual designer.
+
+
 
 tiko editor - Programmer's Code Editor for the FreeBASIC Compiler
 Copyright (C) 2025 Paul Squires, PlanetSquires Software
