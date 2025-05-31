@@ -205,7 +205,7 @@ function code_Compile( ByVal wID As Long ) As boolean
 
    Else
       ' No active project
-      gCompile.CompileFlags = gCompile.CompileFlags + " " + gConfig.CompilerSwitches   
+      gCompile.CompileFlags = gCompile.CompileFlags + " " + gConfig.CompilerSwitches + " " + gCompile.CompileIncludes  
    End If
 
 
