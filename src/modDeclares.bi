@@ -132,7 +132,7 @@ enum
    IDM_CLOSEPANEL
       
    IDM_MRUCLEAR, IDM_MRUPROJECTCLEAR
-   IDM_CONSOLE, IDM_GUI, IDM_RESOURCE   ' used for compiler directives in code
+   IDM_CONSOLE, IDM_GUI, IDM_RESOURCE, IDM_LINKMODULES   ' used for compiler directives in code
    IDM_32BIT, IDM_64BIT   ' mainly used for identifying compiler associated with a project
 end enum
 

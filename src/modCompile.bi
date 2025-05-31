@@ -28,6 +28,7 @@ type COMPILE_TYPE
    ObjFolder          as wstring * MAX_PATH   ' *.o for all modules (set depending on 32/64 bit) (full path)
    ObjFolderShort     as wstring * MAX_PATH   ' ".\" & APPEXTENSION & "\"
    ObjID              as wstring * MAX_PATH   ' "32" or "64" appended to object name
+   LinkModules        as CWSTR                ' From code embedded #LINKMODULES directive
    CompileFlags       as wstring * 2048
    CompileIncludes    as wstring * 2048       ' Additional user defined include paths
    wszFullCommandLine as CWSTR                ' Command line sent to the FB compiler

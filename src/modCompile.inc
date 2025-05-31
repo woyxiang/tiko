@@ -55,6 +55,8 @@ function code_Compile( ByVal wID As Long ) As boolean
    gCompile.wszFullCommandLine = ""
    gCompile.wszFullLogFile = ""
    gCompile.wszOutputMsg = ""
+   gCompile.ResourceFile = ""
+   gCompile.LinkModules = ""
    gCompile.bInvalidImagePath = false
    
    
@@ -140,7 +142,13 @@ function code_Compile( ByVal wID As Long ) As boolean
       return 0
    end if
    
- 
+    ' Run any precompile tools
+   for y as long = LBound(gConfig.Tools) To UBound(gConfig.Tools)
+      if gConfig.Tools(y).Action = USERTOOL_ACTION_PRECOMPILE then
+         frmUserTools_ExecuteUserTool(y)
+      end if   
+   next
+
    ' If this is a QuickRun then we need to copy the current source code to a temporary bas file
    ' and compile that bas file instead. The resulting bas file will be deleted after the compiling
    ' has completed and exe will be deleted when the exe is terminated. 
@@ -226,6 +234,8 @@ function code_Compile( ByVal wID As Long ) As boolean
             gCompile.CompileFlags = gCompile.CompileFlags + " -s gui "
          case IDM_RESOURCE
             gCompile.ResourceFile = directives(i).DirectiveText
+         case IDM_LINKMODULES
+            gCompile.LinkModules = directives(i).DirectiveText
       end select
    next
 
@@ -261,19 +271,6 @@ function code_Compile( ByVal wID As Long ) As boolean
    pDoc = gTTabCtl.GetActiveDocumentPtr()
    if pDoc THEN SciExec( pDoc->hWindow(0), SCI_SETCURSOR, SC_CURSORWAIT, 0 )
 
-
-   ' Do another Save All because a call to GenerateFormCode may have created
-   ' Event code that previously did not exist.
-   if wID <> IDM_QUICKRUN then
-      OnCommand_FileSaveAll(HWND_FRMMAIN)
-   end if
-
-   ' Run any precompile tools
-   for y as long = LBound(gConfig.Tools) To UBound(gConfig.Tools)
-      if gConfig.Tools(y).Action = USERTOOL_ACTION_PRECOMPILE then
-         frmUserTools_ExecuteUserTool(y)
-      end if   
-   next
 
    ' Change to the output code directory
    ChDir gCompile.MainFolder
@@ -354,9 +351,14 @@ function code_Compile( ByVal wID As Long ) As boolean
    wszParams = "-m " + wDQ + gCompile.MainFilename + wDQ 
 
 
+   if len(gCompile.LinkModules) then
+      wszParams = wszParams + " " + gCompile.LinkModules
+   end if
+
    if len(gCompile.ResourceFile) then  
       wszParams = wszParams + " " + wDQ + gCompile.ResourceFile + wDQ
-   end if   
+   end if  
+   
    
    ' Ensure verbose compiler message output
    wszParams = wszParams + " -v " + gCompile.CompileFlags 

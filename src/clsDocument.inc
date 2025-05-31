@@ -1744,10 +1744,11 @@ end function
 ''
 function clsDocument.CompileDirectives( Directives() as COMPILE_DIRECTIVES ) as long
    ' Search the source code for any user embedded compiler directives.
-   dim ub     as long    
-   dim i      as long    
-   dim nLines as long    
-   dim st     as string
+   dim ub       as long    
+   dim i        as long    
+   dim nLines   as long    
+   dim st       as string
+   dim st_ucase as string
    
    dim sText as string  ' this will be an UTF-8 encoded string
    
@@ -1760,29 +1761,36 @@ function clsDocument.CompileDirectives( Directives() as COMPILE_DIRECTIVES ) as 
    for i = 0 to nLines - 1
       st = ltrim(this.GetLine(i))
          
-      if left(st, 1) <> "'" then continue for
+      if left(st, 1) <> "'" then continue for  ' must start with a comment character
       st = ltrim(mid(st, 2))
 
-      if len(st) < 11 then continue for
-      st = ucase(st)
+      if len(st) < 10 then continue for
+      st_ucase = ucase(st)
       
       ub = ubound(Directives)
       
       ' '#CONSOLE ON|OFF
-      if left(st, 11) = "#CONSOLE ON" then
+      if left(st_ucase, 11) = "#CONSOLE ON" then
          redim preserve Directives(ub+1)
          Directives(ub+1).DirectiveFlag = IDM_CONSOLE
-      elseif left(st, 12) = "#CONSOLE OFF" then   
+      elseif left(st_ucase, 12) = "#CONSOLE OFF" then   
          redim preserve Directives(ub+1)
          Directives(ub+1).DirectiveFlag = IDM_GUI
       end if
 
       ' '#RESOURCE "filename.rc"
-      if left(st, 10) = "#RESOURCE " then
+      if left(st_ucase, 10) = "#RESOURCE " then
          redim preserve Directives(ub+1)
          Directives(ub+1).DirectiveFlag = IDM_RESOURCE
          st = mid(st, 11)
          Directives(ub+1).DirectiveText = AfxStrExtract(st, chr(34), chr(34))
+      end if
+      
+      ' '#LINKMODULES "module1.bas" "module2.bas"
+      if left(st_ucase, 12) = "#LINKMODULES" then
+         redim preserve Directives(ub+1)
+         Directives(ub+1).DirectiveFlag = IDM_LINKMODULES
+         Directives(ub+1).DirectiveText = mid(st, 13)
       end if
          
    next
