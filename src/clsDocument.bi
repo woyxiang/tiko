@@ -72,48 +72,48 @@ type clsDocument
    private:
       ' 2 Scintilla direct pointers to accommodate split editing
       m_pSci(1)             as any ptr      
-      m_hWndActiveScintilla as hwnd
-      m_UserModified        as boolean  ' occurs when user manually changes state not captured by Scintilla changes
+      m_hWndActiveScintilla as HWND
+      m_UserModified        as boolean               ' user manually changes state outside of Scintilla changes
       
    public:
-      pDocNext          as clsDocument_ ptr = 0  ' pointer to next document in linked list 
-      IsNewFlag         as boolean
-      LoadingFromFile   as boolean
+      pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
+      IsNewFlag             as boolean
+      LoadingFromFile       as boolean
       
-      docData           as PROJECT_FILELOAD_DATA    ' loaded from project files
+      docData               as PROJECT_FILELOAD_DATA    ' loaded from project files
       
       ' 2 Scintilla controls to accommodate split editing
       ' hWindow(0) is our MAIN control (bottom)
       ' hWindow(1) is our split control (top)
-      hWindow(1)        as HWnd   ' Scintilla split edit windows 
+      hWindow(1)            as HWND   ' Scintilla split edit windows 
       
       ' Code document related
-      ProjectFiletype   as CWSTR = FILETYPE_UNDEFINED
-      DiskFilename      as wstring * MAX_PATH
-      AutoSaveFilename  as wstring * MAX_PATH    '#filename#
-      AutoSaveRequired  as boolean
-      DateFileTime      as FILETIME  
-      bBookmarkExpanded as boolean = true     ' Bookmarks list expand/collapse state
-      bFunctionsExpanded as boolean = true    ' Functions list expand/collapse state
-      bHasFunctions     as boolean = false    ' FunctionList to determine if click will display the File
-      FileEncoding      as long = FILE_ENCODING_ANSI       
-      bNeedsParsing     as boolean     ' Document requires to be parsed due to changes.
-      DeletedButKeep    as boolean     ' file no longer exists but keep open anyway
-      DocumentBuild     as string      ' specific build configuration to use for this document
-      sMatchWord        as string      ' for the incremental autocomplete search
-      AutoCompletetype  as long        ' AUTOC_DIMAS, AUTOC_TYPE
-      AutoCStartPos     as long
-      AutoCTriggerStartPos as long
-      lastCaretPos      as long        ' used for checking in SCN_UPDATEUI
-      lastXOffsetPos    as long        ' used for checking in SCN_UPDATEUI (horizontal offset)
-      LastCharTyped     as long        ' most recent entered character. Used to test for BACKSPACE resetting the autocomplete popup.
+      ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
+      DiskFilename          as wstring * MAX_PATH
+      AutoSaveFilename      as wstring * MAX_PATH    '#filename#
+      AutoSaveRequired      as boolean
+      DateFileTime          as FILETIME  
+      bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
+      bFunctionsExpanded    as boolean = true     ' Functions list expand/collapse state
+      bHasFunctions         as boolean = false    ' FunctionList to determine if click will display the File
+      FileEncoding          as long = FILE_ENCODING_ANSI       
+      bNeedsParsing         as boolean            ' Document requires to be parsed due to changes.
+      DeletedButKeep        as boolean            ' file no longer exists but keep open anyway
+      DocumentBuild         as string             ' specific build configuration to use for this document
+      sMatchWord            as string             ' for the incremental autocomplete search
+      AutoCompletetype      as long               ' AUTOC_DIMAS, AUTOC_TYPE
+      AutoCStartPos         as long
+      AutoCTriggerStartPos  as long
+      lastCaretPos          as long               ' used for checking in SCN_UPDATEUI
+      lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
+      LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
 
       ' Following used for split edit views
-      rcSplitButton     as RECT        ' Split gripper vertical for Scintilla window
-      SplitY            as long        ' Y coordinate of vertical splitter
-      bEditorIsSplit    as boolean
-      bSizing           as boolean
-      ptPrev            as POINT
+      rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window
+      SplitY                as long               ' Y coordinate of vertical splitter
+      bEditorIsSplit        as boolean
+      bSizing               as boolean
+      ptPrev                as POINT
       
       static NextFileNum as long
       

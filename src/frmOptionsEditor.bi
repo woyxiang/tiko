@@ -30,6 +30,6 @@
 #Define IDC_FRMOPTIONSEDITOR_LBLRIGHTEDGE           1014
 #Define IDC_FRMOPTIONSEDITOR_CHKPOSITIONMIDDLE      1015
 
-declare Function frmOptionsEditor_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsEditor_Show( byval hWndParent as HWND ) as LRESULT
 
 

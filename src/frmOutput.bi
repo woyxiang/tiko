@@ -26,9 +26,9 @@
 
 type OUTPUT_TABS
    wszText as CWSTR
-   rcTab as RECT
-   rcText as RECT     ' diff rect b/c line drawn under Text for CurSel
-   isHot as boolean
+   rcTab   as RECT
+   rcText  as RECT     ' diff rect b/c line drawn under Text for CurSel
+   isHot   as boolean
 end type
 
 dim shared gOutputTabs(4) as OUTPUT_TABS
@@ -38,7 +38,7 @@ dim shared gOutputCloseRect as RECT
 declare function frmOutput_ShowNotes() as long 
 declare function frmOutput_UpdateToDoListview() as long 
 declare function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as long 
-declare Function frmOutput_ShowHideOutputControls( ByVal HWnd As HWnd ) As LRESULT
-declare Function frmOutput_PositionWindows As LRESULT
-declare Function frmOutput_Show( ByVal hWndParent As HWnd ) As LRESULT
+declare function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) As LRESULT
+declare function frmOutput_PositionWindows() as LRESULT
+declare function frmOutput_Show( byval hWndParent as HWND ) as LRESULT
 

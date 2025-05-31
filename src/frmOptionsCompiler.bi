@@ -25,4 +25,4 @@
 #Define IDC_FRMOPTIONSCOMPILER_LBLINCLUDES            1010
 #Define IDC_FRMOPTIONSCOMPILER_TXTINCLUDES            1011
 
-declare Function frmOptionsCompiler_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsCompiler_Show( byval hWndParent as HWND ) as LRESULT

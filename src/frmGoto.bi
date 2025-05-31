@@ -21,4 +21,4 @@
 #Define IDC_FRMGOTO_LBLLASTVALUE                    1004
 #Define IDC_FRMGOTO_LBLCURRENTVALUE                 1005
 
-declare Function frmGoto_Show( ByVal hWndParent As HWnd ) As LRESULT
+declare function frmGoto_Show( byval hWndParent as HWND ) as LRESULT

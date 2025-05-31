@@ -15,5 +15,5 @@
 
 #Define IDC_FRMOPTIONSKEYWORDS_TXTKEYWORDS          1000
 
-declare function frmOptionsKeywords_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsKeywords_Show( byval hWndParent as HWND ) as LRESULT
 

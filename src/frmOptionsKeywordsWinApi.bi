@@ -15,5 +15,5 @@
 
 #Define IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS     1001
 
-declare function frmOptionsKeywordsWinApi_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsKeywordsWinApi_Show( byval hWndParent as HWND ) as LRESULT
 

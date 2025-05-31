@@ -26,7 +26,7 @@
 #Define IDC_FRMOPTIONSLOCAL_LBLTRANSLATE            1011
 #Define IDC_FRMOPTIONSLOCAL_TXTTRANSLATE            1012
 
-declare function frmOptionsLocal_LocalEditCheck() as Long
-declare Function frmOptionsLocal_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsLocal_LocalEditCheck() as long
+declare Function frmOptionsLocal_Show( byval hWndParent as HWND ) as LRESULT
 
 

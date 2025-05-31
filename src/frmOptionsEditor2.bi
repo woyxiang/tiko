@@ -21,6 +21,6 @@
 #Define IDC_FRMOPTIONSEDITOR2_CHKBRACEHIGHLIGHT      1005
 #Define IDC_FRMOPTIONSEDITOR2_CHKOCCURRENCEHIGHLIGHT 1006
 
-declare Function frmOptionsEditor2_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsEditor2_Show( byval hWndParent as HWND ) as LRESULT
 
 

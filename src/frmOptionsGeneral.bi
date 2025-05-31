@@ -24,4 +24,4 @@
 #Define IDC_FRMOPTIONSGENERAL_CHKUPDATES            1007
 #Define IDC_FRMOPTIONSGENERAL_CHKPROJECTCACHE       1008
 
-declare Function frmOptionsGeneral_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsGeneral_Show( byval hWndParent as HWND ) as LRESULT

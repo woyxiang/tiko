@@ -52,10 +52,10 @@ const USERTOOL_ACTION_EDITORSTARTUP = 3
 
 common shared as HACCEL ghAccelUserTools
 
-declare Function frmUserTools_ExecuteUserTool( ByVal nToolNum As Long ) As Long            
-declare Function frmUserTools_CreateAcceleratorTable() As Long
-declare Function frmUserTools_Show( ByVal hWndParent As HWnd ) as LRESULT
-declare Function updateUserToolsMenuItems() as long
+declare function frmUserTools_ExecuteUserTool( byval nToolNum as long ) as long            
+declare function frmUserTools_CreateAcceleratorTable() as long
+declare function frmUserTools_Show( byval hWndParent As HWND ) as LRESULT
+declare function updateUserToolsMenuItems() as long
 declare function createToolsMenuShortcut( byval nCtrlID as long ) as CWSTR
 
 

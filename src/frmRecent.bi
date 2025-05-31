@@ -19,7 +19,7 @@
 #Define IDC_FRMRECENT_BTNOPENPROJECT                1003
 #Define IDC_FRMRECENT_TREEVIEW                      1004
 
-declare Function frmRecent_LoadTreeview() As LRESULT
-declare Function frmRecent_PositionWindows As LRESULT
-declare Function frmRecent_Show( ByVal hWndParent As HWnd ) As LRESULT
+declare function frmRecent_LoadTreeview() as LRESULT
+declare function frmRecent_PositionWindows as LRESULT
+declare function frmRecent_Show( byval hWndParent as HWND ) as LRESULT
 

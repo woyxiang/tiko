@@ -86,5 +86,5 @@ type ctxParser
    declare function ParseTYPE( byval action as PARSEACTION ) as boolean
    declare function ParseENUM( byval action as PARSEACTION ) as boolean
    declare function ParseTODO( byval action as PARSEACTION ) as boolean
-   declare function ReadQuoted( byval escapedonce as boolean = FALSE ) as boolean
+   declare function ReadQuoted( byval escapedonce as boolean = false ) as boolean
 end type

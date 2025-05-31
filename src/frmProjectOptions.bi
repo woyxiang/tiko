@@ -24,4 +24,4 @@
 #Define IDC_FRMPROJECTOPTIONS_TXTOPTIONS64          1008
 #Define IDC_FRMPROJECTOPTIONS_CHKMANIFEST           1009
 
-declare Function frmProjectOptions_Show( ByVal hWndParent As HWnd, byval IsNewProject as boolean ) As LRESULT
+declare function frmProjectOptions_Show( byval hWndParent as HWND, byval IsNewProject as boolean ) as LRESULT

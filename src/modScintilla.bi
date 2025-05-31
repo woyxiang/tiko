@@ -90,14 +90,14 @@ type GetNameSpaceFn as function() as const zstring ptr
 ' library with LoadLibrary (the attach process automatically register the classes) and free
 ' it with FreeLibrary (the detach process unregisters the classes).
 ' ========================================================================================
-Type Scintilla_DirectFunction As _
-      Function CDECL(   ByVal As Any Ptr, _
-                        ByVal As UINT, _
-                        ByVal As WPARAM, _
-                        ByVal As LPARAM  ) As LRESULT
+type Scintilla_DirectFunction as _
+      function CDECL(   byval as any ptr, _
+                        byval as UINT, _
+                        byval as WPARAM, _
+                        byval as LPARAM  ) as LRESULT
 
-Dim Shared SciMsg As Scintilla_DirectFunction
-'Dim pSci As Any Ptr 
+dim shared SciMsg as Scintilla_DirectFunction
+'Dim pSci as Any Ptr 
 '
 'SciMsg = Cast( Scintilla_DirectFunction, SendMessage( HWnd, SCI_GETDIRECTFUNCTION, 0, 0 ) )
 'pSci = SendMessage( HWnd, SCI_GETDIRECTPOINTER, 0, 0 ) 
@@ -479,8 +479,8 @@ Dim Shared SciMsg As Scintilla_DirectFunction
 #Define SCI_GETTEXTLENGTH                               2183
 #Define SCI_GETDIRECTFUNCTION                           2184
 #Define SCI_GETDIRECTPOINTER                            2185
-#Define SCI_SETOVERTYPE                                 2186
-#Define SCI_GETOVERTYPE                                 2187
+#Define SCI_SETOVERtype                                 2186
+#Define SCI_GETOVERtype                                 2187
 #Define SCI_SETCARETWIDTH                               2188
 #Define SCI_GETCARETWIDTH                               2189
 #Define SCI_SETTARGETSTART                              2190
@@ -635,7 +635,7 @@ Dim Shared SciMsg As Scintilla_DirectFunction
 #Define SCI_PAGEUPEXTEND                                2321
 #Define SCI_PAGEDOWN                                    2322
 #Define SCI_PAGEDOWNEXTEND                              2323
-#Define SCI_EDITTOGGLEOVERTYPE                          2324
+#Define SCI_EDITTOGGLEOVERtype                          2324
 #Define SCI_CANCEL                                      2325
 #Define SCI_DELETEBACK                                  2326
 #Define SCI_TAB                                         2327
@@ -984,7 +984,7 @@ Dim Shared SciMsg As Scintilla_DirectFunction
 #Define SC_TYPE_BOOLEAN                                 0
 #Define SC_TYPE_INTEGER                                 1
 #Define SC_TYPE_STRING                                  2
-#Define SCI_PROPERTYTYPE                                4015
+#Define SCI_PROPERTYtype                                4015
 #Define SCI_DESCRIBEPROPERTY                            4016
 #Define SCI_DESCRIBEKEYWORDSETS                         4017
 #Define SC_MOD_INSERTTEXT                               &H1
@@ -1103,44 +1103,44 @@ type sptr_t as integer
 
 
 ' // Size = 8 bytes
-Type Sci_CharacterRange Field = 4
-   cpMin As Long   ' long cpMin
-   cpMax As Long   ' long cpMax
-End Type
+type Sci_CharacterRange field = 4
+   cpMin as long   ' long cpMin
+   cpMax as long   ' long cpMax
+end type
 
 ' // Size = 12 bytes
-Type Sci_TextRange Field = 4
-   chrg      As Sci_CharacterRange   ' struct Sci_CharacterRange chrg
-   lpstrText As ZString Ptr          ' char *lpstrText
-End Type
+type Sci_TextRange field = 4
+   chrg      as Sci_CharacterRange   ' struct Sci_CharacterRange chrg
+   lpstrText as zstring ptr          ' char *lpstrText
+end type
 
 ' // Size = 20 bytes
-Type Sci_TextToFind Field = 4
-   chrg      As Sci_CharacterRange   ' struct Sci_CharacterRange chrg
-   lpstrText As ZString Ptr          ' char *lpstrText
-   chrgText  As Sci_CharacterRange   ' struct Sci_CharacterRange chrgText
-End Type
+type Sci_TextToFind field = 4
+   chrg      as Sci_CharacterRange   ' struct Sci_CharacterRange chrg
+   lpstrText as zstring ptr          ' char *lpstrText
+   chrgText  as Sci_CharacterRange   ' struct Sci_CharacterRange chrgText
+end type
 
 
 ' // Size = 16 bytes
-Type Sci_Rectangle
-   Left   As Long   ' int
-   top    As Long   ' int
-   Right  As Long   ' int
-   bottom As Long   ' int
-End Type
+type Sci_Rectangle
+   Left   as long   ' int
+   top    as long   ' int
+   Right  as long   ' int
+   bottom as long   ' int
+end type
 
 '' This structure is used in printing and requires some of the graphics types
 '' from Platform.h.  Not needed by most client code.
 
 ' // Size = 48 bytes
-Type Sci_RangeToFormat Field = 4
-   hdc       As HDC                  ' Sci_SurfaceID hdc
-   hdcTarget As HDC                  ' Sci_SurfaceID hdcTarget
-   rc        As Sci_Rectangle        ' struct Sci_Rectangle rc
-   rcPage    As Sci_Rectangle        ' struct Sci_Rectangle rcPage
-   chrg      As Sci_CharacterRange   ' struct Sci_CharacterRange chrg
-End Type
+type Sci_RangeToFormat field = 4
+   hdc       as HDC                  ' Sci_SurfaceID hdc
+   hdcTarget as HDC                  ' Sci_SurfaceID hdcTarget
+   rc        as Sci_Rectangle        ' struct Sci_Rectangle rc
+   rcPage    as Sci_Rectangle        ' struct Sci_Rectangle rcPage
+   chrg      as Sci_CharacterRange   ' struct Sci_CharacterRange chrg
+end type
 
          
 type Sci_Position as integer
@@ -1158,7 +1158,7 @@ type SCNotification
 	position as Sci_Position
 	ch as long
 	modifiers as long
-	modificationType as long
+	modificationtype as long
 	lptext as const zstring ptr
 	length as Sci_Position
 	linesAdded as Sci_Position
@@ -1169,7 +1169,7 @@ type SCNotification
 	foldLevelNow as long
 	foldLevelPrev as long
 	margin as long
-	listType as long
+	listtype as long
 	x as long
 	y as long
 	token as long

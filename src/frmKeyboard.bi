@@ -14,34 +14,35 @@
 #pragma once
 
 
-#DEFINE IDC_FRMKEYBOARD_LIST1           1000
-#DEFINE IDC_FRMKEYBOARD_CMDMODIFY       1001
-#DEFINE IDC_FRMKEYBOARD_CMDCLEAR        1002
-#DEFINE IDC_FRMKEYBOARD_LBLCONFLICT     1003
+#DEFINE IDC_FRMKEYBOARD_LIST1                1000
+#DEFINE IDC_FRMKEYBOARD_CMDMODIFY            1001
+#DEFINE IDC_FRMKEYBOARD_CMDCLEAR             1002
+#DEFINE IDC_FRMKEYBOARD_LBLCONFLICT          1003
+                                             
+#define IDC_FRMKEYBOARDEDIT_CHKCTRL          1100
+#define IDC_FRMKEYBOARDEDIT_CHKALT           1101
+#define IDC_FRMKEYBOARDEDIT_CHKSHIFT         1102
+#define IDC_FRMKEYBOARDEDIT_CHKDISABLE       1103
+#define IDC_FRMKEYBOARDEDIT_LABEL1           1104
+#define IDC_FRMKEYBOARDEDIT_LABEL2           1105
+#define IDC_FRMKEYBOARDEDIT_LABEL3           1106
+#define IDC_FRMKEYBOARDEDIT_COMBOACCEL       1107
+#define IDC_FRMKEYBOARDEDIT_CHKDISABLED      1108
 
-#define IDC_FRMKEYBOARDEDIT_CHKCTRL     1100
-#define IDC_FRMKEYBOARDEDIT_CHKALT      1101
-#define IDC_FRMKEYBOARDEDIT_CHKSHIFT    1102
-#define IDC_FRMKEYBOARDEDIT_CHKDISABLE  1103
-#define IDC_FRMKEYBOARDEDIT_LABEL1      1104
-#define IDC_FRMKEYBOARDEDIT_LABEL2      1105
-#define IDC_FRMKEYBOARDEDIT_LABEL3      1106
-#define IDC_FRMKEYBOARDEDIT_COMBOACCEL  1107
-#define IDC_FRMKEYBOARDEDIT_CHKDISABLED 1108
-
-TYPE KEYBINDINGS_TYPE
-   idAction as long         ' IDM_* message
-   wszMsgString as CWSTR    ' "IDM_SAVE", "IDM_SAVEAS", etc 
-   wszCategory as CWSTR
-   wszDescription as CWSTR
-   wszDefaultKeys as CWSTR
-   wszUserKeys as CWSTR
+type KEYBINDINGS_TYPE
+   idAction         as long         ' IDM_* message
+   wszMsgString     as CWSTR        ' "IDM_SAVE", "IDM_SAVEAS", etc 
+   wszCategory      as CWSTR
+   wszDescription   as CWSTR
+   wszDefaultKeys   as CWSTR
+   wszUserKeys      as CWSTR
    bDefaultDisabled as boolean = false
 end type
+
 dim shared gKeys(any) as KEYBINDINGS_TYPE
 dim shared gKeysEdit as KEYBINDINGS_TYPE
 
-declare Function frmKeyboard_Show( ByVal hWndParent As HWnd ) As LRESULT
+declare function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
 declare function frmKeyboard_SaveKeyBindings( byval wszFilename as CWSTR ) as long
 declare function frmKeyBoard_AddKeyBinding( _
             byval wszCategory as CWSTR, _

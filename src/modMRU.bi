@@ -13,12 +13,12 @@
 
 #pragma once
 
-declare Function updateMRUFilesItems() as long
-declare Function updateMRUProjectFilesItems() as long
-declare Function OpenMRUFile( ByVal HWnd As HWnd, ByVal wID As Long ) As Long
-declare Function ClearMRUlist( ByVal wID As Long ) As Long
-declare Function UpdateMRUList( Byref wzFilename As WString ) As Long
-declare Function OpenMRUProjectFile( ByVal HWnd As HWnd, ByVal wID As Long) As Long
-declare Function UpdateMRUProjectList( Byval wszFilename As CWSTR ) As Long
+declare function updateMRUFilesItems() as long
+declare function updateMRUProjectFilesItems() as long
+declare function OpenMRUFile( byval hwnd as HWND, byval wID as Long ) as long
+declare function ClearMRUlist( byval wID as long ) as long
+declare function UpdateMRUList( byref wzFilename as wstring ) as long
+declare function OpenMRUProjectFile( byval hwnd as HWND, byval wID as long) as long
+declare function UpdateMRUProjectList( byval wszFilename as CWSTR ) as long
 
 

@@ -22,4 +22,5 @@ enum
    AUTOCOMPLETE_TYPE
 end enum   
                  
-declare function DereferenceLine( byval pDoc as clsDocument ptr, byval sTrigger as String, byval nPosition as long ) as DB2_DATA ptr
+declare function DereferenceLine( byval pDoc as clsDocument ptr, _
+         byval sTrigger as string, byval nPosition as long ) as DB2_DATA ptr

@@ -21,5 +21,5 @@
 
 dim shared OptionsDialogLastOpened as long 
 
-declare Function frmOptions_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptions_Show( byval hWndParent as HWND ) as LRESULT
 

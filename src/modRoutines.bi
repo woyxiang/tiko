@@ -15,14 +15,14 @@
 
 ' Size = 32 bytes
 TYPE HH_AKLINK 
-   cbStruct     AS LONG         ' int       cbStruct;     // sizeof this structure
-   fReserved    AS BOOLEAN      ' BOOL      fReserved;    // must be FALSE (really!)
-   pszKeywords  AS WSTRING PTR  ' LPCTSTR   pszKeywords;  // semi-colon separated keywords
-   pszUrl       AS WSTRING PTR  ' LPCTSTR   pszUrl;       // URL to jump to if no keywords found (may be NULL)
-   pszMsgText   AS WSTRING PTR  ' LPCTSTR   pszMsgText;   // Message text to display in MessageBox if pszUrl is NULL and no keyword match
-   pszMsgTitle  AS WSTRING PTR  ' LPCTSTR   pszMsgTitle;  // Message text to display in MessageBox if pszUrl is NULL and no keyword match
-   pszWindow    AS WSTRING PTR  ' LPCTSTR   pszWindow;    // Window to display URL in
-   fIndexOnFail AS BOOLEAN      ' BOOL      fIndexOnFail; // Displays index if keyword lookup fails.
+   cbStruct     as long         ' int       cbStruct;     // sizeof this structure
+   fReserved    as boolean      ' BOOL      fReserved;    // must be FALSE (really!)
+   pszKeywords  as wstring ptr  ' LPCTSTR   pszKeywords;  // semi-colon separated keywords
+   pszUrl       as wstring ptr  ' LPCTSTR   pszUrl;       // URL to jump to if no keywords found (may be NULL)
+   pszMsgText   as wstring ptr  ' LPCTSTR   pszMsgText;   // Message text to display in MessageBox if pszUrl is NULL and no keyword match
+   pszMsgTitle  as wstring ptr  ' LPCTSTR   pszMsgTitle;  // Message text to display in MessageBox if pszUrl is NULL and no keyword match
+   pszWindow    as wstring ptr  ' LPCTSTR   pszWindow;    // Window to display URL in
+   fIndexOnFail as boolean      ' BOOL      fIndexOnFail; // Displays index if keyword lookup fails.
 END TYPE
 
 #Define HH_DISPLAY_TOPIC   0000 
@@ -30,48 +30,48 @@ END TYPE
 #Define HH_KEYWORD_LOOKUP  0013
 #Define HH_HELP_CONTEXT    0015
 
-Dim Shared As Any Ptr gpHelpLib
+dim shared as any ptr gpHelpLib
 
-declare Function ShowContextHelp( byval id as long ) As Long
+declare function ShowContextHelp( byval id as long ) as long
 declare function isMouseOverRECT( byval hWin as HWND, byval rc as RECT ) as boolean
 declare function isMouseOverWindow( byval hChild as HWND ) as boolean
-declare function GetTextWidthPixels( byval hWin as HWND, byref wszText as WString ) as Long
+declare function GetTextWidthPixels( byval hWin as HWND, byref wszText as wstring ) as long
 declare function JulianDateNow() as long
 declare function DisableAllModeless() as long
 declare function EnableAllModeless() as long
-declare FUNCTION GetTemporaryFilename( byref wszFolder as wstring, BYREF wszExtension AS wSTRING) AS string
-declare FUNCTION ComboBox_ReplaceString (BYVAL hComboBox AS HWND, BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR, BYVAL pNewData AS LONG_PTR = 0) AS LONG
-declare Function GetFontCharSetID(ByREF wzCharsetName As CWSTR ) As Long
+declare function GetTemporaryFilename( byref wszFolder as wstring, byref wszExtension as wstring) as string
+declare function ComboBox_ReplaceString (byval hComboBox as HWND, byval index as long, byval pwszNewText as wstring ptr, byval pNewData as long_PTR = 0) as long
+declare function GetFontCharSetID(byref wzCharsetName as CWSTR ) as long
 declare function RemoveDuplicateSpaces( byref sText as const string) as string
 declare function ConvertCase( byval sText as string) as string
-declare FUNCTION Utf8ToAscii(byref strUtf8 AS STRING) AS STRING
-declare FUNCTION AnsiToUtf8(BYREF sAnsi AS STRING) AS STRING
-declare FUNCTION Utf8ToUnicode(BYREF ansiStr AS CONST STRING) AS STRING
-declare FUNCTION UnicodeToUtf8(byval wzUnicode as CWSTR) AS STRING
+declare function Utf8ToAscii(byref strUtf8 as string) as string
+declare function AnsiToUtf8(byref sAnsi as string) as string
+declare function Utf8ToUnicode(byref ansiStr as const string) as string
+declare function UnicodeToUtf8(byval wzUnicode as CWSTR) as string
 declare function GetStringToArray( byref txtBuffer as string, txtArray() as string ) as long
 declare function GetFileToString( byref wszFilename as const wstring, byref txtBuffer as string, byval pDoc as clsDocument ptr ) as boolean
-declare function ConvertTextBuffer( byval pDoc as clsDocument ptr, byval FileEncoding as long ) as Long
-declare function IsCurrentLineIncludeFilename() as Boolean
-declare function OpenSelectedDocument( byref wszFilename as wstring, byref wszFunctionName as WSTRING = "", byval nLineNumber as long = -1 ) as clsDocument ptr
-declare Function ProcessToCurdriveProject( Byval wzFilename As CWSTR ) As CWSTR
-declare Function ProcessFromCurdriveProject( Byval wzFilename As CWSTR ) As CWSTR
-declare Function ProcessToCurdriveApp( Byval wzFilename As CWSTR ) As CWSTR
-declare Function ProcessFromCurdriveApp( Byval wzFilename As CWSTR ) As CWSTR
-declare Function AfxIFileOpenDialogW( ByVal hwndOwner As HWnd, ByVal idButton As Long) As WString Ptr
-declare Function AfxIFileOpenDialogMultiple( ByVal hwndOwner As HWnd, ByVal idButton As Long) As IShellItemArray Ptr
-Declare Function AfxIFileSaveDialog( ByVal hwndOwner As HWnd, ByVal pwszFileName As WString Ptr, ByVal pwszDefExt As WString Ptr, ByVal id As Long = 0, ByVal sigdnName As SIGDN = SIGDN_FILESYSPATH ) As WString Ptr
-declare Function FF_Toolbar_EnableButton (ByVal hToolBar As HWnd, ByVal idButton As Long) As BOOLEAN
-declare Function FF_Toolbar_DisableButton (ByVal hToolBar As HWnd, ByVal idButton As Long) As BOOLEAN
-Declare Function FF_ListView_InsertItem( ByVal hWndControl As HWnd, ByVal iRow As Long, ByVal iColumn As Long, ByVal pwszText As WString Ptr, ByVal lParam As LPARAM = 0 ) As BOOLEAN
-Declare Function FF_ListView_GetItemText( ByVal hWndControl As HWnd, ByVal iRow As Long, ByVal iColumn As Long, ByVal pwszText As WString Ptr, ByVal nTextMax As Long ) As BOOLEAN
-Declare Function FF_ListView_SetItemText( ByVal hWndControl As HWnd, ByVal iRow As Long, ByVal iColumn As Long, ByVal pwszText As WString Ptr, ByVal nTextMax As Long ) As Long
-Declare Function FF_ListView_GetlParam( ByVal hWndControl As HWnd, ByVal iRow As Long ) As LPARAM
-Declare Function FF_ListView_SetlParam( ByVal hWndControl As HWnd, ByVal iRow As Long, ByVal ilParam As LPARAM ) As long
-Declare Function LoadLocalizationFile( Byref wszFileName As CWSTR, byval IsEnglish as boolean = false ) As BOOLEAN
-Declare Function GetProcessImageName( ByVal pe32w As PROCESSENTRY32W Ptr, ByVal pwszExeName As WString Ptr ) As Long
-Declare Function IsProcessRunning( ByVal pwszExeFileName As WString Ptr ) As BOOLEAN
-Declare Function GetRunExecutableFilename() as CWSTR
-Declare Function LoadPNGfromRes(BYVAL hInstance AS HINSTANCE, BYREF wszImageName AS WSTRING) as any ptr
+declare function ConvertTextBuffer( byval pDoc as clsDocument ptr, byval FileEncoding as long ) as long
+declare function IsCurrentLineIncludeFilename() as boolean
+declare function OpenSelectedDocument( byref wszFilename as wstring, byref wszFunctionName as wstring = "", byval nLineNumber as long = -1 ) as clsDocument ptr
+declare function ProcessToCurdriveProject( byval wzFilename as CWSTR ) as CWSTR
+declare function ProcessFromCurdriveProject( byval wzFilename as CWSTR ) as CWSTR
+declare function ProcessToCurdriveApp( byval wzFilename as CWSTR ) as CWSTR
+declare function ProcessFromCurdriveApp( byval wzFilename as CWSTR ) as CWSTR
+declare function AfxIFileOpenDialogW( byval hwndOwner as HWND, byval idButton as long) as wstring Ptr
+declare function AfxIFileOpenDialogMultiple( byval hwndOwner as HWND, byval idButton as long) as IShellItemArray ptr
+Declare function AfxIFileSaveDialog( byval hwndOwner as HWND, byval pwszFileName as wstring Ptr, byval pwszDefExt as wstring Ptr, byval id as long = 0, byval sigdnName as SIGDN = SIGDN_FILESYSPATH ) as wstring Ptr
+declare function FF_Toolbar_EnableButton (byval hToolBar as HWND, byval idButton as long) as boolean
+declare function FF_Toolbar_DisableButton (byval hToolBar as HWND, byval idButton as long) as boolean
+Declare function FF_ListView_InsertItem( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval lParam as LPARAM = 0 ) as boolean
+Declare function FF_ListView_GetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as boolean
+Declare function FF_ListView_SetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as long
+Declare function FF_ListView_GetlParam( byval hWndControl as HWND, byval iRow as long ) as LPARAM
+Declare function FF_ListView_SetlParam( byval hWndControl as HWND, byval iRow as long, byval ilParam as LPARAM ) as long
+Declare function LoadLocalizationFile( byref wszFileName as CWSTR, byval IsEnglish as boolean = false ) as boolean
+Declare function GetProcessImageName( byval pe32w as PROCESSENTRY32W ptr, byval pwszExeName as wstring ptr ) as long
+Declare function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
+Declare function GetRunExecutableFilename() as CWSTR
+Declare function LoadPNGfromRes(byval hInstance as HINSTANCE, byref wszImageName as wstring) as any ptr
 declare function GetListBoxEmptyClientArea( byval hListBox as HWND, byval nLineHeight as long ) as RECT
                                             
 

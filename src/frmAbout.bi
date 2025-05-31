@@ -19,4 +19,4 @@
 #Define IDC_FRMABOUT_IMAGE1                         1003
 #Define IDC_FRMABOUT_LBLJOSE                        1004
 
-declare Function frmAbout_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmAbout_Show( byval hWndParent as hwnd ) as LRESULT

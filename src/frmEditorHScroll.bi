@@ -15,7 +15,8 @@
 type EDITOR_HSCROLL_TYPE
    lineLength as long
    thumbWidth as long
-   rc as RECT
+   rc         as RECT
 end type
+
 dim shared gEditorHScroll(1) as EDITOR_HSCROLL_TYPE
 

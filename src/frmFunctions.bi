@@ -18,8 +18,8 @@
 
 type FUNCTION_NODE_TYPE
    wszFunctionName as CWSTR
-   wszPrototype as CWSTR      ' the sub/function parameters
-   nLineNumber as long
+   wszPrototype    as CWSTR      ' the sub/function parameters
+   nLineNumber     as long
 end type
 
 enum FunctionsDisplayState
@@ -29,11 +29,11 @@ end enum
 
 dim shared gFunctionsDisplay as FunctionsDisplayState = FunctionsDisplayState.ViewAsTree
 
-declare function frmFunctions_Show( byval hWndParent as HWnd ) as LRESULT
-declare function frmFunctions_ReparseFiles() as Long
+declare function frmFunctions_Show( byval hWndParent as HWND ) as LRESULT
+declare function frmFunctions_ReparseFiles() as long
 declare function frmFunctions_SelectItemData( byval pDoc as clsDocument ptr ) as boolean
 declare function LoadFunctionsFiles() as long
 declare function frmFunctions_ViewAsTree() as long
 declare function frmFunctions_ViewAsList() as long
-declare function QuickSortpDocs( pDocs() As clsDocument ptr, lo as long, hi as long ) as long
+declare function QuickSortpDocs( pDocs() as clsDocument ptr, lo as long, hi as long ) as long
 

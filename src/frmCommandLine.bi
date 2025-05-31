@@ -16,5 +16,6 @@
 #Define IDC_FRMCOMMANDLINE_LABEL1                   1000
 #Define IDC_FRMCOMMANDLINE_TEXTBOX1                 1001
 
-declare Function frmCommandLine_Show( ByVal hWndParent As HWnd ) as LRESULT
-' this is a new line of text
+declare function frmCommandLine_Show( byval hWndParent as HWND ) as LRESULT
+
+

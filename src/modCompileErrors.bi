@@ -13,18 +13,18 @@
 
 #pragma once
 
-declare Function SetDocumentErrorPosition( ByVal hLV As HWnd, Byval wID as long ) As Long
+declare function SetDocumentErrorPosition( byval hLV as HWnd, byval wID as long ) as long
 declare function SetLogFileTextbox() as long
 declare function ParseLogForError( _
             byref wsLogSt as CWSTR, _
-            byval bAllowSuccessMessage as Boolean, _
-            Byval wID as long, _
-            byval fCompile64 as Boolean, _
-            byval fCompilingObjFiles as Boolean _
-            ) as Boolean
-declare function ResetScintillaCursors() as Long
-declare Function RunEXE( ByRef wszFileExe As CWSTR, ByRef wszParam As CWSTR ) As Long
+            byval bAllowSuccessMessage as boolean, _
+            byval wID as long, _
+            byval fCompile64 as boolean, _
+            byval fCompilingObjFiles as boolean _
+            ) as boolean
+declare function ResetScintillaCursors() as long
+declare function RunEXE( byref wszFileExe as CWSTR, byref wszParam as CWSTR ) as long
 declare function SetCompileStatusBarMessage(byref wszText as wstring, byval hIconCompile as long) as LRESULT
-declare function RedirConsoleToFile(byref wszExe AS wstring, byref wszCmdLine AS wstring, byref sConsoleText AS string ) as long
+declare function RedirConsoleToFile(byref wszExe as wstring, byref wszCmdLine as wstring, byref sConsoleText as string ) as long
 declare function CreateTempResourceFile() as boolean
 

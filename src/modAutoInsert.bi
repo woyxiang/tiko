@@ -31,5 +31,5 @@ enum
    BLOCK_STATEMENT_DESTRUCTOR
 end enum
 
-declare function AttemptAutoInsert() as Long
+declare function AttemptAutoInsert() as long
 

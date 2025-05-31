@@ -23,4 +23,4 @@
 #Define IDC_FRMOPTIONSCOLORS_LBLEXTRASPACE          1015
 #Define IDC_FRMOPTIONSCOLORS_TXTEXTRASPACE          1016
 
-declare Function frmOptionsColors_Show( ByVal hWndParent As HWnd ) as LRESULT
+declare function frmOptionsColors_Show( byval hWndParent as HWND ) as LRESULT

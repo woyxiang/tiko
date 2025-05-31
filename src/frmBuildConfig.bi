@@ -32,6 +32,6 @@
 
 declare function frmBuildConfig_getActiveBuildIndex() as long
 declare function frmBuildConfig_GetSelectedBuildDescription() as CWSTR
-declare function frmBuildConfig_GetSelectedBuildGUID() as String
-declare Function frmBuildConfig_Show( ByVal hWndParent As HWnd ) As LRESULT
+declare function frmBuildConfig_GetSelectedBuildGUID() as string
+declare function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
 

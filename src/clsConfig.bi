@@ -79,70 +79,70 @@ type clsConfig
       
       DateFileTime              as FILETIME
       
-      SettingsVersion       as CWSTR
-      Tools(any)            as TYPE_TOOLS
-      ToolsTemp(any)        as TYPE_TOOLS  
-      Builds(any)           as TYPE_BUILDS  
-      BuildsTemp(any)       as TYPE_BUILDS  
-      Cat(any)              as TYPE_CATEGORIES
-      CatTemp(any)          as TYPE_CATEGORIES
-      FBKeywords            as string
-      WinApiKeywords        as string
-      bKeywordsDirty        as boolean = true       ' not saved to file
-      AskExit               as long = false         ' use long so true/False string not written to file
-      AutoSaveFiles         as long = true
-      AutoSaveInterval      as long = 10            ' seconds between autosave checks
-      idAutoSaveTimer       as long = 999           ' id of Autosave timer
-      RestoreSession        as long = false
-      wszLastActiveSession  as CWSTR
-      CloseFuncList         as long = true
-      ShowPanel             as long = true
-      ShowPanelWidth        as long = 250
-      SyntaxHighlighting    as long = true
-      Codetips              as long = true
-      AutoComplete          as long = true
-      CharacterAutoComplete as long = false
-      RightEdge             as long = false
-      RightEdgePosition     as CWSTR = "80"
-      LeftMargin            as long = true
-      FoldMargin            as long = false
-      AutoIndentation       as long = true
-      ForNextVariable       as long = false
-      ConfineCaret          as long = true
-      LineNumbering         as long = true
-      HighlightCurrentLine  as long = true
-      IndentGuides          as long = false
-      PositionMiddle        as long = false         ' position found text to middle of screen
-      BraceHighlight        as long = false
-      OccurrenceHighlight   as long = false
-      TabIndentSpaces       as long = true
-      MultipleInstances     as long = true
-      CompileAutosave       as long = true
-      UnicodeEncoding       as long = false
-      TabSize               as CWSTR = "4"
-      LocalizationFile      as CWSTR = "english.lang"
-      EditorFontname        as CWSTR = "Consolas"
-      EditorFontCharSet     as CWSTR = "Default"
-      EditorFontsize        as CWSTR = "11"
-      FontExtraSpace        as CWSTR = "2"
-      ThemeShortFilename    as CWSTR = "default_dark.theme"
-      KeywordCase           as long = 3  ' "Original Case"
-      StartupLeft           as long = 0
-      StartupTop            as long = 0
-      StartupRight          as long = 0
-      StartupBottom         as long = 0
-      StartupMaximized      as long = false
-      FBWINCompiler32       as CWSTR
-      FBWINCompiler64       as CWSTR
-      CompilerBuild         as CWSTR     ' Build GUID
-      CompilerSwitches      as CWSTR
-      CompilerIncludes      as CWSTR
-      CompilerHelpfile      as CWSTR
-      RunViaCommandWindow   as long = false
-      DisableCompileBeep    as long = false
-      MRU(9)                as CWSTR
-      MRUProject(9)         as CWSTR
-      
+      SettingsVersion           as CWSTR
+      Tools(any)                as TYPE_TOOLS
+      ToolsTemp(any)            as TYPE_TOOLS  
+      Builds(any)               as TYPE_BUILDS  
+      BuildsTemp(any)           as TYPE_BUILDS  
+      Cat(any)                  as TYPE_CATEGORIES
+      CatTemp(any)              as TYPE_CATEGORIES
+      FBKeywords                as string
+      WinApiKeywords            as string
+      bKeywordsDirty            as boolean = true       ' not saved to file
+      AskExit                   as long = false         ' use long so true/False string not written to file
+      AutoSaveFiles             as long = true
+      AutoSaveInterval          as long = 10            ' seconds between autosave checks
+      idAutoSaveTimer           as long = 999           ' id of Autosave timer
+      RestoreSession            as long = false
+      wszLastActiveSession      as CWSTR
+      CloseFuncList             as long = true
+      ShowPanel                 as long = true
+      ShowPanelWidth            as long = 250
+      SyntaxHighlighting        as long = true
+      Codetips                  as long = true
+      AutoComplete              as long = true
+      CharacterAutoComplete     as long = false
+      RightEdge                 as long = false
+      RightEdgePosition         as CWSTR = "80"
+      LeftMargin                as long = true
+      FoldMargin                as long = false
+      AutoIndentation           as long = true
+      ForNextVariable           as long = false
+      ConfineCaret              as long = true
+      LineNumbering             as long = true
+      HighlightCurrentLine      as long = true
+      IndentGuides              as long = false
+      PositionMiddle            as long = false         ' position found text to middle of screen
+      BraceHighlight            as long = false
+      OccurrenceHighlight       as long = false
+      TabIndentSpaces           as long = true
+      MultipleInstances         as long = true
+      CompileAutosave           as long = true
+      UnicodeEncoding           as long = false
+      TabSize                   as CWSTR = "4"
+      LocalizationFile          as CWSTR = "english.lang"
+      EditorFontname            as CWSTR = "Consolas"
+      EditorFontCharSet         as CWSTR = "Default"
+      EditorFontsize            as CWSTR = "11"
+      FontExtraSpace            as CWSTR = "2"
+      ThemeShortFilename        as CWSTR = "default_dark.theme"
+      KeywordCase               as long = 3  ' "Original Case"
+      StartupLeft               as long = 0
+      StartupTop                as long = 0
+      StartupRight              as long = 0
+      StartupBottom             as long = 0
+      StartupMaximized          as long = false
+      FBWINCompiler32           as CWSTR
+      FBWINCompiler64           as CWSTR
+      CompilerBuild             as CWSTR     ' Build GUID
+      CompilerSwitches          as CWSTR
+      CompilerIncludes          as CWSTR
+      CompilerHelpfile          as CWSTR
+      RunViaCommandWindow       as long = false
+      DisableCompileBeep        as long = false
+      MRU(9)                    as CWSTR
+      MRUProject(9)             as CWSTR
+                                
       declare constructor()
       declare function SetCategoryDefaults() as long
       declare function LoadKeywords() as long

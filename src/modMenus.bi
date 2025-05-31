@@ -13,14 +13,14 @@
 
 #pragma once
 
-declare Function frmMain_BuildAcceleratorTable( ByVal pWindow As CWindow Ptr ) As long
-declare Function frmMain_ChangeTopMenuStates() As Long
-declare Function CreateStatusBarFileTypeContextMenu() As HMENU
-declare Function CreateStatusBarFileEncodingContextMenu() As HMENU
-declare function CreateTopTabCtlContextMenu( ByVal idx As Long ) As HMENU
-declare Function CreateExplorerContextMenu( ByVal pDoc As clsDocument Ptr ) As HMENU
-declare Function CreateScintillaContextMenu() As HMENU
-declare Function CreateStatusBarSpacesContextMenu() As HMENU
-declare Function CreateStatusBarLineEndingsContextMenu() As HMENU
+declare function frmMain_BuildAcceleratorTable( byval pWindow as CWindow ptr ) as long
+declare function frmMain_ChangeTopMenuStates() as long
+declare function CreateStatusBarFileTypeContextMenu() as HMENU
+declare function CreateStatusBarFileEncodingContextMenu() as HMENU
+declare function CreateTopTabCtlContextMenu( byval idx as long ) as HMENU
+declare function CreateExplorerContextMenu( byval pDoc as clsDocument ptr ) as HMENU
+declare function CreateScintillaContextMenu() as HMENU
+declare function CreateStatusBarSpacesContextMenu() as HMENU
+declare function CreateStatusBarLineEndingsContextMenu() as HMENU
 declare function getTopMenuPtr( byval nID as long ) as TOPMENU_TYPE ptr
 

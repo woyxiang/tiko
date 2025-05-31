@@ -15,5 +15,5 @@
 
 #define IDC_FRMBOOKMARKS_LISTBOX       1000
 
-declare function frmBookmarks_Show( byval hWndParent as HWnd ) as LRESULT
+declare function frmBookmarks_Show( byval hWndParent as HWND ) as LRESULT
 declare function LoadBookmarksFiles() as long
