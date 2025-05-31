@@ -297,15 +297,6 @@ Function AddProjectFileTypesToMenu( _
    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 2), L(181,"Header file") 
    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 3), L(205,"Module file") 
    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 4), L(204,"Normal file") 
-   AppendMenu hPopUpMenu, MF_SEPARATOR, 0, ""
-   hPopUpSubMenu = CreatePopupMenu
-      AppendMenu hPopUpMenu, MF_POPUP Or MF_ENABLED, Cast(UINT_PTR, hPopUpSubMenu), L(439,"User Defined Categories")
-      for i as long = lbound(gConfig.Cat) to ubound(gConfig.Cat)
-         ' User defined categories will have an GUID id. Starts with an {
-         if left(gConfig.Cat(i).idFileType, 1) = "{" then
-            AppendMenu hPopUpSubMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_SETCATEGORY + i, gConfig.Cat(i).wszDescription
-         end if
-      next
   
    Dim nFileType As Long
    Select Case pDoc->ProjectFileType
@@ -314,14 +305,10 @@ Function AddProjectFileTypesToMenu( _
       Case FILETYPE_HEADER:   nFileType = messages(idx + 2)
       Case FILETYPE_MODULE:   nFileType = messages(idx + 3)
       Case FILETYPE_NORMAL:   nFileType = messages(idx + 4)
-      case else
-         ' The file is part of a User Defined Category so set a message
-         ' value that will not result in a checkmark in the code below.
-         nFileType = IDM_SETCATEGORY   
    End Select
 
-   ' Some of our available chocies are affected by the fact that multiple selections
-   ' in the explorer listbox may exist. In that case, we a default FileType selection
+   ' Some of our available choices are affected by the fact that multiple selections
+   ' in the explorer listbox may exist. In that case, we do a default FileType selection
    ' only when the selection count is 1
    dim as long nSelCount = SendMessage( HWND_FRMEXPLORER_LISTBOX, LB_GETSELCOUNT, 0, 0 )
    dim as long bAllowCheckMark = true
