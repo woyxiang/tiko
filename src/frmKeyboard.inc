@@ -256,12 +256,12 @@ end function
 ' ========================================================================================
 ' Converts a VK_OEM key to propery virtual key because of different keyboard layouts
 ' ========================================================================================
-function frmKeyboard_OEMtoVirtKey( byval ch as WCHAR ) as short
+function frmKeyboard_OEMtoVirtKey( byval ch as ubyte ) as long
    ' declare function VkKeyScanExW(byval ch as WCHAR, byval dwhkl as HKL) as SHORT
    dim as HKL layout = GetKeyboardLayout(0)  '// Current layout
    dim as short result = VkKeyScanEx(ch, layout)
-   dim as byte vkCode = lobyte(result)   
-   dim as byte shiftState = hibyte(result)
+   dim as ubyte vkCode = lobyte(result)   
+   dim as ubyte shiftState = hibyte(result)
    return vkCode
 end function
 
@@ -317,15 +317,34 @@ function frmKeyboard_AccelKeyToValue( byval wszString as CWSTR ) as long
       case ",", "COMMA": return VK_OEM_COMMA           
       case "-", "MINUS": return VK_OEM_MINUS          
       case ".", "PERIOD": return VK_OEM_PERIOD
-      case ";", ":", "SEMICOLON", "COLON": return VK_OEM_1
-      case "/", "FORWARDSLASH"
-         frmKeyboard_OEMtoVirtKey
-         , "?", , "QUESTIONMARK": return VK_OEM_2
-      case "`", "~", "BACKTICK", "TILDE": return VK_OEM_3
-      case "[", "{", "OPENSQUAREBRACKET", "OPENCURLYBRACE": return VK_OEM_4
-      case "\", "|", "BACKSLASH", "PIPE": return VK_OEM_5
-      case "]", "}", "CLOSESQUAREBRACKET", "CLOSECURLYBRACE": return VK_OEM_6
-      case "'", chr(34), "SINGLEQUOTE", "DOUBLEQUOTE": return VK_OEM_7
+      case ";", "SEMICOLON"       ' VK_OEM_1
+         return frmKeyboard_OEMtoVirtKey(asc(";"))
+      case ":", "COLON"           ' VK_OEM_1
+         return frmKeyboard_OEMtoVirtKey(asc(":"))
+      case "/", "FORWARDSLASH"    ' VK_OEM_2
+         return frmKeyboard_OEMtoVirtKey(asc("/"))
+      case "?", "QUESTIONMARK"    ' VK_OEM_2
+         return frmKeyboard_OEMtoVirtKey(asc("?"))
+      case "`", "BACKTICK"        ' VK_OEM_3
+         return frmKeyboard_OEMtoVirtKey(asc("`"))
+      case "~", "TILDE"           ' VK_OEM_3
+         return frmKeyboard_OEMtoVirtKey(asc("~"))
+      case "[", "OPENSQUAREBRACKET" ' VK_OEM_4
+         return frmKeyboard_OEMtoVirtKey(asc("["))
+      case "{", "OPENCURLYBRACE"    ' VK_OEM_4
+         return frmKeyboard_OEMtoVirtKey(asc("{"))
+      case "\", "BACKSLASH"         ' VK_OEM_5
+         return frmKeyboard_OEMtoVirtKey(asc("\"))
+      case "|", "PIPE"              ' VK_OEM_5
+         return frmKeyboard_OEMtoVirtKey(asc("|"))
+      case "]", "CLOSESQUAREBRACKET"  ' VK_OEM_6
+         return frmKeyboard_OEMtoVirtKey(asc("]"))
+      case "}", "CLOSECURLYBRACE"     ' VK_OEM_6
+         return frmKeyboard_OEMtoVirtKey(asc("}"))
+      case "'", "SINGLEQUOTE"         ' VK_OEM_7
+         return frmKeyboard_OEMtoVirtKey(asc("'"))
+      case chr(34), "DOUBLEQUOTE"     ' VK_OEM_7
+         return frmKeyboard_OEMtoVirtKey(34)
       case "0" to "9": return asc(wszString)   
       case "A" to "Z": return asc(wszString)
    end select

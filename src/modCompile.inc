@@ -238,9 +238,7 @@ function code_Compile( ByVal wID As Long ) As boolean
             gCompile.LinkModules = gCompile.LinkModules & " " & directives(i).DirectiveText
       end select
    next
-print "before CompileDirectives: "; gCompile.LinkModules
    gCompile.LinkModules = AddPathsToLinkModules(gCompile.LinkModules)
-print "after AddPathsToLinkModules: "; gCompile.LinkModules
 
 
    ' Need to determine the output filename in order to search for any existing
