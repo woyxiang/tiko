@@ -54,8 +54,10 @@ function frmPanel_PositionWindows() as LRESULT
    ' painting before the lists are loaded. Allow a 2 pixel right border between listbox and
    ' form edge in order to allow for panel resizing. 
    dim as long nLeft = 0
+   if gConfig.ExplorerPositionRight then nLeft = pWindow->ScaleX(3)  ' allow for grab
+   
    dim as long nTop = rc.top  + pWindow->ScaleY(46)
-   dim as long nWidth = rc.right  - rc.Left - pWindow->ScaleX(2)
+   dim as long nWidth = rc.right  - rc.Left - pWindow->ScaleX(3)   
    dim as long nHeight = gPanelButton(0).rc.top - rc.top - nTop
 
    SetWindowPos( HWND_FRMEXPLORER, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER or SWP_HIDEWINDOW )
@@ -310,11 +312,19 @@ function frmPanel_WndProc( _
          isPrevHotButton1 = isHotButton1
       end if
 
+
+
       ' PANELS LEFT/RIGHT SPLITTER
       dim as POINT pt
       dim as Rect rc
       GetWindowRect HWND_FRMPANEL, @rc
-      rc.Left = rc.Right - pWindow->ScaleX(3)
+
+      if gConfig.ExplorerPositionRight then
+         rc.left = rc.left - pWindow->ScaleX(3)
+      else
+         rc.Left = rc.Right - pWindow->ScaleX(3)
+      end if
+
       GetCursorPos(@pt)
       if PtInRect( @rc, pt ) then
          if WindowFromPoint(pt) = HWND_FRMPANEL then
@@ -324,11 +334,12 @@ function frmPanel_WndProc( _
 
       if gApp.bDragActive then
          if gApp.hWndPanel = HWND_FRMPANEL then
-            ' Get the current rect of the frmExplorer and compare right side to the current cursor position
+            ' Get the current rect of the panel and compare right side to the current cursor position
             ' and then move the right side to equal the cursor position.
-            dim as long nDiff = pt.x - rc.Right
+            dim as long nDiff = pt.x - rc.right
+            if gConfig.ExplorerPositionRight then nDiff = pt.x - rc.left
             GetClientRect HWND_FRMPANEL, @rc
-            dim as long nWidth = (rc.Right - rc.Left + nDiff)
+            dim as long nWidth = (rc.right - rc.left + nDiff)
             ' make sure width does not go below a specific size otherwise the user will not
             ' be able to grab the panel edge to resize
             nWidth = max( nWidth, pWindow->ScaleX(80) )
@@ -338,6 +349,7 @@ function frmPanel_WndProc( _
             AfxDoEvents   ' allow screen to repaint
          end if
       end if
+         
       
    case WM_LBUTTONDOWN
       dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
@@ -346,10 +358,15 @@ function frmPanel_WndProc( _
       ' PANELS LEFT/RIGHT SPLITTER
       dim as Rect rc
       dim as Point pt 
-
       gApp.bDragActive = false 
       GetWindowRect HWND_FRMPANEL, @rc
-      rc.Left = rc.Right - pWindow->ScaleX(3)
+
+      if gConfig.ExplorerPositionRight then
+         rc.left = rc.left - pWindow->ScaleX(3)
+      else
+         rc.Left = rc.Right - pWindow->ScaleX(3)
+      end if
+
       GetCursorPos(@pt)
       if PtInRect( @rc, pt ) then
          if WindowFromPoint(pt) = HWND_FRMPANEL then
@@ -359,7 +376,8 @@ function frmPanel_WndProc( _
             SetCapture( HWND_FRMPANEL )
          end if
       end if
-
+      
+      
    case WM_LBUTTONUP
       if gApp.bDragActive then
          gApp.bDragActive = false 
