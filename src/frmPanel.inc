@@ -337,7 +337,7 @@ function frmPanel_WndProc( _
             ' Get the current rect of the panel and compare right side to the current cursor position
             ' and then move the right side to equal the cursor position.
             dim as long nDiff = pt.x - rc.right
-            if gConfig.ExplorerPositionRight then nDiff = pt.x - rc.left
+            if gConfig.ExplorerPositionRight then nDiff = rc.left - pt.x
             GetClientRect HWND_FRMPANEL, @rc
             dim as long nWidth = (rc.right - rc.left + nDiff)
             ' make sure width does not go below a specific size otherwise the user will not
