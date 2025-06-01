@@ -133,9 +133,13 @@ Function frmMain_OnCommand( _
       Case IDM_OPTIONSDIALOG:      frmOptions_Show( HWnd )
       case IDM_BUILDCONFIG:        frmBuildConfig_Show( HWND ) 
       Case IDM_MRUCLEAR:           ClearMRUlist( id )
+      Case IDM_MRUSESSIONCLEAR:    ClearMRUlist( id )
 
       Case IDM_MRUBASE To (IDM_MRUBASE + 10)
          OpenMRUFile( HWnd, id )
+
+      Case IDM_MRUSESSIONBASE To (IDM_MRUSESSIONBASE + 10)
+           OpenMRUSessionFile( HWnd, id )
 
       Case IDM_USERTOOLSBASE To (IDM_USERTOOLSBASE + UBound(gConfig.Tools))
          frmUserTools_ExecuteUserTool( id - IDM_USERTOOLSBASE )

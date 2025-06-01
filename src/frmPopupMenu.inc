@@ -622,6 +622,8 @@ function frmPopupMenu_Show( _
          ' update the list of filenames with the most current data
          ' the width of the MRU menu depends on the width of the actual filenames
          nMenuWidth = max( 262, updateMRUFilesItems() )         
+      case IDM_MRUSESSION
+         nMenuWidth = max( 262, updateMRUSessionFilesItems() )
       case IDM_MRUPROJECT
          nMenuWidth = max( 262, updateMRUProjectFilesItems() )
    end select

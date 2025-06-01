@@ -23,7 +23,9 @@
 #include once "frmBuildConfig.bi"
 #include once "frmMain.bi"
 #include once "modParser.bi"
+#include once "modMRU.bi"
 #include once "frmTopTabs.bi"
+#include once "frmOutput.bi"
 #include once "frmMainOnCommand.bi"
                
 ''
@@ -457,6 +459,13 @@ function clsConfig.SaveConfigFile() as long
       this.MRUProject(i) = ProcessToCurdriveApp(this.MRUProject(i))
       pStream.WriteLine "MRUPROJECT_" & right("00" & str(i), 2) & "=" & this.MRUProject(i) 
    next         
+
+   pStream.WriteLine ""
+   pStream.WriteLine "[MRUSESSIONS]"  
+   for i as long = 0 To 9
+      this.MRUSession(i) = ProcessToCurdriveApp(this.MRUSession(i))
+      pStream.WriteLine "MRUSESSION_" & right("00" & str(i), 2) & "=" & this.MRUSession(i) 
+   next         
    
    dim hCtl as hwnd = GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES)
    dim wszText as CWSTR = wstr("NOTES-START") + vbcrlf + _
@@ -511,6 +520,29 @@ function clsConfig.WriteMRUProjects() as long
       this.MRUProject(i) = ProcessToCurdriveApp(this.MRUProject(i))
       wszKeyName = "MRUPROJECT_" & right("00" & str(i), 2) 
       wszValue   = this.MRUProject(i) 
+      WritePrivateProfileString( wszSectionName, wszKeyName, wszValue, this.ConfigFilename )
+   next         
+    
+   function = 0
+end function
+
+
+' Save the MRU Sessions to the configuration file. Only write the MRU items
+' the ini file rather than overwriting the whole file. This enables
+' the editor to work better with external tools that manually modify the
+' settings.ini file.
+function clsConfig.WriteMRUSessions() as long 
+   dim as CWSTR wszKeyName, wszValue
+   
+   ' Delete the section name
+   dim as CWSTR wszSectionName = "MRUSESSIONS"
+   WritePrivateProfileString( wszSectionName, null, null, this.ConfigFilename )
+   
+   ' Write the new values.
+   for i as long = 0 To 9
+      this.MRUSession(i) = ProcessToCurdriveApp(this.MRUSession(i))
+      wszKeyName = "MRUSESSION_" & right("00" & str(i), 2) 
+      wszValue   = this.MRUSession(i) 
       WritePrivateProfileString( wszSectionName, wszKeyName, wszValue, this.ConfigFilename )
    next         
     
@@ -659,6 +691,14 @@ function clsConfig.LoadConfigFile() as long
             i = val(right(wKey,2))
             if (i >= 0) And (i <= 9) then 
                this.MRUProject(i) = ProcessFromCurdriveApp(wData)
+               continue do
+            end If
+         end If
+
+         if left(wKey, 11) = "MRUSESSION_" then  ' is this an MRU Session entry
+            i = val(right(wKey,2))
+            if (i >= 0) And (i <= 9) then 
+               this.MRUSession(i) = ProcessFromCurdriveApp(wData)
                continue do
             end If
          end If
@@ -936,6 +976,18 @@ function clsConfig.SaveSessionFile( byref wszSessionFile as wstring ) as boolean
 end function
 
 
+
+' ========================================================================================
+' Close a  previously loaded session file
+' ========================================================================================
+function clsConfig.CloseSessionFile( byref wszSessionFile as wstring ) as boolean    
+   if gConfig.SaveSessionFile( wszSessionFile) = false then exit function
+   if OnCommand_FileClose(HWND_FRMMAIN, EFC_CLOSEALL) = false then exit function
+   gApp.IsSessionActive = false
+   function = true  ' successful close
+end function
+
+
 ' ========================================================================================
 ' Load previously saved session file from a diskfile
 ' ========================================================================================
@@ -950,6 +1002,18 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
        end if
        return false
    end if    
+
+   ' if a project is open then close any files that may be open in the editor. No need to
+   ' do this if a new project is being created/opened because that function has already
+   ' performed this operation. Doing so again will cause the Recent Files/Projects panel
+   ' to flash on the screen.
+   if gApp.IsProjectActive then 
+      if OnCommand_ProjectClose(HWND_FRMMAIN) = false then exit function
+   else   
+      if OnCommand_FileClose(HWND_FRMMAIN, EFC_CLOSEALL) = false then exit function
+   end if
+   ' Clear any previous info from the Output windows
+   frmOutput_ResetAllControls()
 
    dim pDoc as clsDocument ptr
    dim as CWSTR wst, wKey, wData, wszFilename, wszProjectName
@@ -968,6 +1032,9 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
    dim pStream as CTextStream  ' (utf16)
    if AfxFileExists(wszSessionFile) = 0 then exit function
    if pStream.OpenUnicode( wszSessionFile ) <> S_OK then return false
+
+   gApp.SessionFilename = wszSessionFile
+   gApp.SessionName = AfxStrPathname( "NAMEX", gApp.SessionFilename )
 
    dim as HCURSOR hCurSave = GetCursor()
    SetCursor( LoadCursor(0, IDC_WAIT) )
@@ -1069,6 +1136,8 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
    frmMain_SetStatusbar
    SetCursor( hCurSave )
 
+   gApp.IsSessionActive = true
+
    this.wszLastActiveSession = wszSessionFile
    
    frmMain_PositionWindows
@@ -1078,7 +1147,9 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
    if pDoc then 
       if pDoc->bEditorIsSplit then AfxRedrawWindow( HWND_FRMMAIN )
    end if
-   
+
+   UpdateMRUSessionList(wszSessionFile)
+
    function = true   ' successful open
 end function
 

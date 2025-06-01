@@ -142,6 +142,7 @@ type clsConfig
       DisableCompileBeep        as long = false
       MRU(9)                    as CWSTR
       MRUProject(9)             as CWSTR
+      MRUSession(9)             as CWSTR
                                 
       declare constructor()
       declare function SetCategoryDefaults() as long
@@ -149,8 +150,10 @@ type clsConfig
       declare function SaveKeywords() as long
       declare function WriteMRU() as long
       declare function WriteMRUProjects() as long
+      declare function WriteMRUSessions() as long
       declare function SaveConfigFile() as long
       declare function LoadConfigFile() as long
+      declare function CloseSessionFile( byref wszSessionFile as wstring ) as boolean    
       declare function SaveSessionFile( byref wszSessionFile as wstring ) as boolean    
       declare function LoadSessionFile( byref wszSessionFile as wstring ) as boolean    
       declare function ProjectSaveToFile() as boolean    

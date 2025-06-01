@@ -89,6 +89,45 @@ end function
 
 ''
 ''
+public Function updateMRUSessionFilesItems() as long
+   ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
+   ' the gTopMenu array rather than erase it because existing menus depend on the 
+   ' array index that aready eist.
+   clearMRUFilesItems( IDM_MRUSESSION )
+   
+   dim wszText as WSTRING * 256
+   dim as boolean hasMRUfiles = false
+   dim as long txtWidth = 0
+   dim as long nMenuWidth = 0
+   dim as long padding = AfxScaleX(12)
+
+   For i As Long = 0 To 9
+      ' If the file no longer exists then remove it from the MRU list
+      gConfig.MRUSESSION(i) = ProcessFromCurdriveApp( gConfig.MRUSESSION(i) )
+      If AfxFileExists( gConfig.MRUSESSION(i) ) = 0 Then
+         gConfig.MRUSESSION(i) = ""
+      Else
+         hasMRUfiles = true
+         setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONBASE + i, 0, false, false )
+         wszText = gConfig.MRUSESSION(i)
+         txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
+         if txtWidth > nMenuWidth then nMenuWidth = txtWidth
+      End If
+   Next
+   
+   if hasMRUfiles = false then
+      setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONFILES, 0, false, false )  ' (empty)
+   else
+      setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONFILES, 0, false, true ) 
+      setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONCLEAR, 0, false, false )
+   end if   
+   
+   function = nMenuWidth + padding
+end function
+
+
+''
+''
 public Function updateMRUProjectFilesItems() as long
    ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
    ' the gTopMenu array rather than erase it because existing menus depend on the 
@@ -173,6 +212,10 @@ public Function ClearMRUlist( ByVal wID As Long ) As Long
          For i as long = 0 To 9
             gConfig.MRU(i) = ""
          Next
+      Case IDM_MRUSESSIONCLEAR
+         For i as long = 0 To 9
+            gConfig.MRUSESSION(i) = ""
+         Next
       Case IDM_MRUPROJECTCLEAR
          For i as long = 0 To 9
             gConfig.MRUPROJECT(i) = ""
@@ -221,6 +264,56 @@ public Function UpdateMRUList( Byref wzFilename As WString ) As Long
    Function = 0
 End Function  
 
+
+
+''  SESSIONS  ''
+
+''
+''
+public Function OpenMRUSessionFile( ByVal HWnd As HWnd, _
+                                    ByVal wID As Long _
+                                    ) As Long
+   Dim wzFile As WString * MAX_PATH
+   wzFile = gConfig.MRUSESSION(wID - IDM_MRUSESSIONBASE)
+   gConfig.LoadSessionFile( wzFile )
+   Function = 0
+End Function
+
+   
+''
+''
+public Function UpdateMRUSessionList( Byval wszFilename As CWSTR ) As Long
+
+   Dim idxExistsAt As Long = -1   ' index of where filename already exists 
+   Dim i           As Long
+   
+   ' Search the 10 MRU items to see if the filename already exists and
+   ' also for an available entry to put the filename in.
+   For i = 0 To 9
+      gConfig.MRUSession(i) = ProcessFromCurdriveApp(gConfig.MRUSession(i))
+      If Ucase(gConfig.MRUSession(i)) = Ucase(wszFilename) Then
+         idxExistsAt = i:  Exit For
+      End If   
+   Next
+   
+   ' If does not already exist then we simply need to move all entries
+   ' down and add at the beginning of the list. The original 10th entry
+   ' will now drop off the list.
+   If idxExistsAt = -1 Then idxExistsAt = 9
+
+   For i = idxExistsAt To 1 Step -1
+      gConfig.MRUSession(i) = gConfig.MRUSession(i-1)
+   Next
+   gConfig.MRUSession(0) = wszFilename 
+
+   ' Save the MRU to the configuration file. Only write the MRU items
+   ' the ini file rather than overwriting the whole file. This enables
+   ' the editor to work better with external tools that manually modify the
+   ' settings.ini file.
+   gConfig.WriteMRUSessions
+
+   Function = 0
+End Function  
 
 
 ''  PROJECTS  ''

@@ -42,6 +42,10 @@ type clsApp
       
       hWndAutoCListBox           as hwnd              ' handle of popup autocomplete ListBox window
             
+      IsSessionActive            as boolean
+      SessionName                as CWSTR
+      SessionFilename            as CWSTR
+      
       IsProjectActive            as boolean
       ProjectBuild               as string            ' default build configuration for the project (GUID)
       ProjectName                as CWSTR

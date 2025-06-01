@@ -51,8 +51,9 @@ function frmMain_FileTopMenuStates() as long
    ' Items that will always be enabled.
    EnableTopMenuItem( IDM_FILENEW, true )
    EnableTopMenuItem( IDM_FILEOPEN, true )
-   EnableTopMenuItem( IDM_LOADSESSION, true )
    EnableTopMenuItem( IDM_MRU, true )
+   EnableTopMenuItem( IDM_LOADSESSION, true )
+   EnableTopMenuItem( IDM_MRUSESSION, true )
    EnableTopMenuItem( IDM_KEYBOARDSHORTCUTS, true )
    EnableTopMenuItem( IDM_USERTOOLS, true )
    EnableTopMenuItem( IDM_USERTOOLSDIALOG, true )
@@ -69,6 +70,10 @@ function frmMain_FileTopMenuStates() as long
       Next
    end if
 
+   if gApp.IsProjectActive then 
+      EnableTopMenuItem( IDM_SAVESESSION, false )
+   end if
+         
    function = 0
 end function
 

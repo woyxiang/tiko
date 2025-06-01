@@ -132,8 +132,12 @@ function frmMain_SetStatusbar() as long
 
    ' MAIN WINDOW CAPTION 
    wszText = iif( gApp.GetDocumentCount, APPNAMESHORT, APPNAME )
-   if (gApp.IsProjectActive = true) or (gApp.IsProjectLoading = true) then 
+   if (gApp.IsProjectActive = true) orelse (gApp.IsProjectLoading = true) then 
       wszText = wszText & " - [" & gApp.ProjectName & "]"
+   else
+      if gApp.IsSessionActive = true then 
+         wszText = wszText & " - [" & gApp.SessionName & "]"
+      end if
    end if
    if pDoc then 
       wszText = wszText & " - [" & pDoc->DiskFilename & "]"
@@ -990,6 +994,8 @@ function frmMain_OpenProjectSafely( _
    if gApp.IsNewProjectFlag = false then
       if gApp.IsProjectActive then 
          if OnCommand_ProjectClose(hwnd) = false then exit function
+      elseif gApp.IsSessionActive then
+         if gConfig.CloseSessionFile( gApp.SessionFilename) = false then exit function
       else   
          if OnCommand_FileClose(HWnd, EFC_CLOSEALL) = false then exit function
       end if
@@ -1405,6 +1411,11 @@ function frmMain_OnClose( byval HWnd as HWnd ) as LRESULT
    ' if a project(s) is already open then save/close it.
    if gApp.IsProjectActive then 
       if OnCommand_ProjectClose(HWnd) = 0 then return 0
+   end if
+
+   ' if a session is already open then save/close it.
+   if gApp.IsSessionActive then 
+      if gConfig.SaveSessionFile(gApp.SessionFilename) = 0 then return 0
    end if
    
    ' Close any open files asking to save any that are dirty 

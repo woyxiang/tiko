@@ -41,4 +41,5 @@ declare function frmOutput_UpdateSearchListview( byref wszResultFile as wstring 
 declare function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) As LRESULT
 declare function frmOutput_PositionWindows() as LRESULT
 declare function frmOutput_Show( byval hWndParent as HWND ) as LRESULT
+declare function frmOutput_ResetAllControls() as long 
 

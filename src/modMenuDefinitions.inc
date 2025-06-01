@@ -54,7 +54,8 @@ Function getMenuText( byval idMenu as long ) As CWSTR
       case IDM_FILENEW: wszText = L(3,"New")
       case IDM_FILEOPEN: wszText = L(4,"Open") & "..." 
       case IDM_MRU: return L(10,"Open Recent")
-      case IDM_MRUBASE to IDM_MRUBASE + 9: return gConfig.MRU( idMenu - IDM_MRUBASE )
+      case IDM_MRUBASE to IDM_MRUBASE + 9
+         return gConfig.MRU( idMenu - IDM_MRUBASE )
       case IDM_MRUCLEAR: return L(225, "Clear this list")   
       case IDM_MRUFILES: return L(11,"(Empty)")
       case IDM_FILECLOSE: wszText = L(5,"Close") 
@@ -66,6 +67,11 @@ Function getMenuText( byval idMenu as long ) As CWSTR
       case IDM_AUTOSAVE: wszText = L(427,"Auto Save") 
       case IDM_SAVESESSION: wszText = L(425,"Save Session") & "..."
       case IDM_LOADSESSION: wszText = L(426,"Load Session") & "..."
+      case IDM_MRUSESSION: wszText = L(218,"Recent Sessions")
+      case IDM_MRUSESSIONBASE to IDM_MRUSESSIONBASE + 9
+         return gConfig.MRUSESSION( idMenu - IDM_MRUSESSIONBASE )
+      case IDM_MRUSESSIONCLEAR: return L(225, "Clear this list")   
+      case IDM_MRUSESSIONFILES: return L(11,"(Empty)")
       case IDM_KEYBOARDSHORTCUTS: wszText = L(220,"Keyboard Shortcuts") & "..."
       case IDM_USERTOOLS: return L(289,"User Tools")
       case IDM_USERTOOLSDIALOG: wszText = L(289,"User Tools") & "..."
@@ -237,6 +243,10 @@ function buildTopMenuDefinitions() as long
    setTopMenuItem( IDC_MENUBAR_FILE, 0, 0, false, true )
    setTopMenuItem( IDC_MENUBAR_FILE, IDM_LOADSESSION, 0, false, false )
    setTopMenuItem( IDC_MENUBAR_FILE, IDM_SAVESESSION, 0, false, false )
+   setTopMenuItem( IDC_MENUBAR_FILE, IDM_MRUSESSION, IDM_MRUSESSIONFILES, false, false )
+   
+   updateMRUSessionFilesItems()
+
    setTopMenuItem( IDC_MENUBAR_FILE, 0, 0, false, true )
    setTopMenuItem( IDC_MENUBAR_FILE, IDM_KEYBOARDSHORTCUTS, 0, false, false )
    setTopMenuItem( IDC_MENUBAR_FILE, IDM_USERTOOLS, IDM_USERTOOLSLIST, false, false )
