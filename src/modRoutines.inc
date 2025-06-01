@@ -16,6 +16,7 @@
 #include once "frmOptionsCompiler.bi"
 #include once "frmOptionsLocal.bi"
 #include once "frmProjectOptions.bi"
+#include once "frmUserTools.bi"
 #include once "frmMain.bi"
 
 
@@ -874,6 +875,23 @@ Function AfxIFileOpenDialogW( _
          hr = pofd->lpVtbl->SetTitle(pofd, L(103,"Open Localization File"))
   
          dim as CWSTR wszDefaultFolder = AfxGetExePathName & wstr("settings\languages\") 
+         Dim pFolder As IShellItem Ptr
+         SHCreateItemFromParsingName (wszDefaultFolder, Null, @IID_IShellItem, @pFolder)
+         If pFolder Then
+            hr = pofd->lpVtbl->SetFolder(pofd, pFolder)
+            If SUCCEEDED(hr) Then
+               pFolder->lpVtbl->Release(pFolder)
+            end if      
+         End If
+
+      case IDC_FRMUSERTOOLS_CMDBROWSEEXE
+         rgFileTypes(1).pszName = @L(79,"All files")
+         rgFileTypes(1).pszSpec = @WSTR("*.*")
+         pofd->lpVtbl->SetFileTypes(pofd, 1, @rgFileTypes(1))
+         ' Set the title of the dialog
+         hr = pofd->lpVtbl->SetTitle(pofd, L(4,"Open File"))
+  
+         dim as CWSTR wszDefaultFolder = AfxGetExePathName & wstr("settings\tools\") 
          Dim pFolder As IShellItem Ptr
          SHCreateItemFromParsingName (wszDefaultFolder, Null, @IID_IShellItem, @pFolder)
          If pFolder Then
