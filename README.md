@@ -1,6 +1,6 @@
 # tiko editor
 
-Programmer's Code Editor for the FreeBASIC Compiler
+## Programmer's Code Editor for the FreeBASIC Compiler
 
 
 This editor is a leaner 64-bit only version of my WinFBE Editor project. 
@@ -9,8 +9,7 @@ tiko is simply a code editor without all the bloat of an embedded visual designe
 This repository contains the code for the tiko editor itself. Check the releases https://github.com/PaulSquires/tiko/releases section for downloads of the editor itself or the editor bundled with the complete FreeBasic Compiler (tiko_suite).
 
 
-
-Requirements:
+**Requirements:**
 - Windows Vista or later operating system. Windows XP is not supported because many newer API's are used in the source code.
 - FreeBASIC Compiler http://www.freebasic.net/
 
@@ -18,13 +17,13 @@ Requirements:
 
 
 
+![tiko editor dark mode](/screenshots/tiko_dark.png)
+
+![tiko editor light mode](/screenshots/tiko_light.png)
+
+
 tiko editor - Programmer's Code Editor for the FreeBASIC Compiler
 Copyright (C) 2016-2025 Paul Squires, PlanetSquires Software
 
 The tiko editor is licensed under the GNU GPLv3 or later.
-
-
-![tiko editor dark mode](/screenshots/tiko_dark.png)
-
-![tiko editor light mode](/screenshots/tiko_light.png)
 
