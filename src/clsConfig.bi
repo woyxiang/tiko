@@ -67,7 +67,6 @@ type CODETIP_META_DATA
    filler(1024) as ubyte          ' extra space for possible future expansion
 end type
 
-
 type clsConfig
    public:
       ConfigFilename            as CWSTR 
@@ -86,6 +85,7 @@ type clsConfig
       BuildsTemp(any)           as TYPE_BUILDS  
       Cat(any)                  as TYPE_CATEGORIES
       CatTemp(any)              as TYPE_CATEGORIES
+      ExplorerPositionRight     as long = true
       FBKeywords                as string
       WinApiKeywords            as string
       bKeywordsDirty            as boolean = true       ' not saved to file

@@ -824,6 +824,7 @@ function frmMain_PositionWindows() as LRESULT
    
    ' Set the Panel pane into place if applicable
    if IsWindowVisible(HWND_FRMPANEL) then
+      if gConfig.ExplorerPositionRight then nLeft = rc.right - nWidthPanel
       SetWindowPos( HWND_FRMPANEL, 0, _
                     nLeft, nTop, _
                     nWidthPanel, _
@@ -831,6 +832,7 @@ function frmMain_PositionWindows() as LRESULT
                     SWP_NOZORDER or SWP_SHOWWINDOW ) 
       frmPanel_PositionWindows
       nLeft = nWidthPanel
+      if gConfig.ExplorerPositionRight then nLeft = rc.left
    Else
       nWidthPanel = 0
    end if
@@ -875,6 +877,7 @@ function frmMain_PositionWindows() as LRESULT
       rcDoc.left = nLeft
       rcDoc.top = nTop + nHeightTabControl 
       rcDoc.right = rc.Right
+      if gConfig.ExplorerPositionRight then rcDoc.right = rc.right - nWidthPanel
       rcDoc.bottom = rc.bottom - nHeightStatusBar - nHeightOutput
       
       dim as long lStyle = SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or _

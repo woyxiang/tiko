@@ -357,6 +357,7 @@ function clsConfig.SaveConfigFile() as long
    pStream.WriteLine "EditorFontCharSet="     & this.EditorFontCharSet    
    pStream.WriteLine "FontExtraSpace="        & this.FontExtraSpace
    pStream.WriteLine "Theme="                 & this.ThemeShortFilename
+   pStream.WriteLine "ExplorerPositionRight=" & this.ExplorerPositionRight
    pStream.WriteLine ""
    pStream.WriteLine "[Startup]" 
    pStream.WriteLine "StartupLeft="           & this.StartupLeft          
@@ -740,6 +741,7 @@ function clsConfig.LoadConfigFile() as long
             case "EditorFontCharSet":      this.EditorFontCharSet     = wData
             case "FontExtraSpace":         this.FontExtraSpace        = wData
             case "Theme":                  this.ThemeShortFilename    = wData
+            case "ExplorerPositionRight":  this.ExplorerPositionRight = nData
             case "KeywordCase":            this.KeywordCase           = nData
             case "StartupLeft":            this.StartupLeft           = nData
             case "StartupTop":             this.StartupTop            = nData

@@ -35,7 +35,7 @@
 using Afx
 
 
-#define APPNAME        wstr("tiko - FreeBASIC Editor")
+#define APPNAME        wstr("tiko editor")
 #define APPNAMESHORT   wstr("tiko")
 #define APPCLASSNAME   wstr("tiko_editor_class")
 #define APPVERSION     wstr("1.0.0") 

@@ -68,6 +68,7 @@ declare function OnCommand_ViewZoom( byval id as long, byval pDoc as clsDocument
 declare function OnCommand_ViewToDo() as LRESULT
 declare function OnCommand_ViewNotes() as LRESULT
 declare function OnCommand_ViewRestoreMain() as LRESULT
+declare function OnCommand_ViewExplorerPosition() as LRESULT
 
 declare function OnCommand_ProjectSave( byval HWnd as HWnd, byval bSaveAs as BOOLEAN = False ) as LRESULT
 declare function OnCommand_ProjectClose( byval hwnd as HWND ) as LRESULT

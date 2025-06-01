@@ -204,7 +204,8 @@ Function frmMain_OnCommand( _
       case IDM_VIEWTODO:           OnCommand_ViewToDo():
       case IDM_VIEWNOTES:          OnCommand_ViewNotes():
       Case IDM_RESTOREMAIN:        OnCommand_ViewRestoreMain():
-         
+      Case IDM_EXPLORERPOSITION:   OnCommand_ViewExplorerPosition()
+            
       Case IDM_FOLDTOGGLE, IDM_FOLDBELOW, IDM_FOLDALL, IDM_UNFOLDALL
          OnCommand_ViewFold( id, pDoc )
 

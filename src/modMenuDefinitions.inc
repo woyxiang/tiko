@@ -130,6 +130,13 @@ Function getMenuText( byval idMenu as long ) As CWSTR
       case IDM_VIEWTODO: wszText = L(263,"TODO")
       case IDM_VIEWNOTES: wszText = L(264,"Notes")
       case IDM_RESTOREMAIN: wszText = L(61,"Restore Main Window Size")
+      case IDM_EXPLORERPOSITION
+         wszText = L(87,"Move Explorer Window")
+         if gConfig.ExplorerPositionRight then
+            wszText = wszText & " " & L(88, "Left")
+         else   
+            wszText = wszText & " " & L(89, "Right")
+         end if
 
       case IDM_PROJECTNEW: wszText = L(180,"New Project")
       case IDM_PROJECTOPEN: wszText = L(182,"Open Project") & "..." 
@@ -303,6 +310,8 @@ function buildTopMenuDefinitions() as long
    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_VIEWOUTPUT, 0, false, false )
    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_FUNCTIONLIST, 0, false, false )
    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_BOOKMARKSLIST, 0, false, false )
+   setTopMenuItem( IDC_MENUBAR_VIEW, 0, 0, false, true )
+   setTopMenuItem( IDC_MENUBAR_VIEW, IDM_EXPLORERPOSITION, 0, false, false )
    setTopMenuItem( IDC_MENUBAR_VIEW, 0, 0, false, true )
    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_ZOOMIN, 0, false, false )
    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_ZOOMOUT, 0, false, false )

@@ -93,6 +93,15 @@ function OnCommand_ViewRestoreMain() as LRESULT
    MoveWindow( HWND_FRMMAIN, 0, 0, rc.Right - rc.Left, rc.Bottom - rc.Top, CTRUE )
    function = 0
 end function
+
+' ========================================================================================
+' Move Explorer Window Left or Right
+' ========================================================================================
+function OnCommand_ViewExplorerPosition() as LRESULT
+   gConfig.ExplorerPositionRight = not gConfig.ExplorerPositionRight 
+   frmMain_PositionWindows()
+   function = 0
+end function
                
 ' ========================================================================================
 ' View Todo, Notes
