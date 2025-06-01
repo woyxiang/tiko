@@ -653,6 +653,20 @@ function frmPopupMenu_Show( _
 
    nMenuHeight = nTop + nHeight + nTop
    
+   if nPopupType = ID_SUBPOPUP then
+      ' Attempt to adjust the positioning of the popup should it extend past the bottom 
+      ' of the visible display dimensions of the desktop.
+      dim as long desktop_height = AfxGetWorkAreaHeight()
+      dim as rect rcPopupMenu = AfxGetWindowRect(hPopupMenu)
+      dim as long popupmenu_height = pWindow->ScaleY(nMenuHeight)
+      if rcPopupMenu.top + popupmenu_height > desktop_height then
+         rcPopupMenu.top = desktop_height - popupmenu_height
+         AfxSetWindowLocation(hPopupMenu, rcPopupMenu.left, rcPopupMenu.top)
+         nMenuTop = pWindow->UnScaleY(rcPopupMenu.top)
+      end if
+   end if      
+   
+   
    ' create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
    pWindow = New CWindow
    pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
