@@ -235,9 +235,12 @@ function code_Compile( ByVal wID As Long ) As boolean
          case IDM_RESOURCE
             gCompile.ResourceFile = directives(i).DirectiveText
          case IDM_LINKMODULES
-            gCompile.LinkModules = directives(i).DirectiveText
+            gCompile.LinkModules = gCompile.LinkModules & " " & directives(i).DirectiveText
       end select
    next
+print "before CompileDirectives: "; gCompile.LinkModules
+   gCompile.LinkModules = AddPathsToLinkModules(gCompile.LinkModules)
+print "after AddPathsToLinkModules: "; gCompile.LinkModules
 
 
    ' Need to determine the output filename in order to search for any existing
@@ -453,4 +456,65 @@ function code_Compile( ByVal wID As Long ) As boolean
    Function = True   ' successful
 End Function
 
+
+''
+''
+''
+function AddPathsToLinkModules( byval modules as CWSTR ) as CWSTR
+   ' SEARCH ORDER
+   ' (1) Current folder
+   ' (2) User defined Include paths
+   ' (3) \inc folder for the selected compiler toolchain
+
+   dim as CWSTR wszResult  ' the final fully path qualified list of space separated module filenames
+   dim as CWSTR wszTemp
+   
+   dim as CWSTR wszCurrentFolder = AfxStrPathname("PATH", gCompile.MainFilename)
+   dim as CWSTR wszCompilerIncFolder = AfxStrPathname("PATH", gCompile.CompilerPath) & "inc\"
+   
+   dim as CWSTR wszLinkModules = AfxStrShrink(gCompile.LinkModules)  
+   
+   dim as long nummodules = AfxStrParseCount(wszLinkModules, " ")
+   for i as long = 1 to nummodules
+      dim as CWSTR modulename = trim(AfxStrParse(wszLinkModules, i, " "))
+      ' Remove any enclosing double quotes from the filename
+      modulename = AfxStrRemove(modulename, chr(34))
+
+      if len(modulename) = 0 then continue for
+
+      ' (1) Current folder
+      wszTemp = wszCurrentFolder & modulename
+      if AfxFileExists(wszTemp) then
+         wszResult = wszResult & chr(34) & wszTemp & chr(34) & " "
+         continue for
+      end if
+   
+      ' (2) User defined Include paths
+      ' Iterate the optional semi colon separated list of compiler include paths
+      gCompile.CompileIncludes = ""
+      dim as CWSTR includePath
+      dim as long numpaths = AfxStrParseCount(gConfig.CompilerIncludes, ";")
+      for i as long = 1 to numpaths
+         includePath = rtrim(AfxStrParse(gConfig.CompilerIncludes, i, ";"))
+         ' Remove any enclosing double quotes from the includepath
+         includePath = AfxStrRemove(includePath, chr(34)) & "\"   ' ensure trailing backslash
+         if len(includePath) then 
+            wszTemp = includePath & modulename
+            if AfxFileExists(wszTemp) then
+               wszResult = wszResult & chr(34) & wszTemp & chr(34) & " "
+               continue for: continue for
+            end if
+         end if
+      next
+   
+      ' (3) \inc folder for the selected compiler toolchain
+      wszTemp = wszCompilerIncFolder & modulename
+      if AfxFileExists(wszTemp) then
+         wszResult = wszResult & chr(34) & wszTemp & chr(34) & " "
+         continue for
+      end if
+   next
+   
+   function = trim(wszResult)
+end function
 

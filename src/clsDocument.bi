@@ -34,7 +34,7 @@
 ' for the '#CONSOLE ON|OFF directive but others can be added as needed.
 type COMPILE_DIRECTIVES
    DirectiveFlag as long              ' IDM_GUI, IDM_CONSOLE, IDM_RESOURCE
-   DirectiveText as string            ' reource filename
+   DirectiveText as CWSTR             ' resource filename, link modules
 end type
 
 ' Forward references

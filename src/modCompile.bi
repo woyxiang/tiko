@@ -43,6 +43,7 @@ type COMPILE_TYPE
 end type
 
 declare function code_Compile( byval wID as long ) as boolean
+declare function AddPathsToLinkModules( byval modules as CWSTR ) as CWSTR
 
 
 

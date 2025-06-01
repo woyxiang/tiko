@@ -252,6 +252,20 @@ function frmKeyboard_VirtKeyToValue( byval wszString as CWSTR ) as long
    function = 0
 end function
 
+
+' ========================================================================================
+' Converts a VK_OEM key to propery virtual key because of different keyboard layouts
+' ========================================================================================
+function frmKeyboard_OEMtoVirtKey( byval ch as WCHAR ) as short
+   ' declare function VkKeyScanExW(byval ch as WCHAR, byval dwhkl as HKL) as SHORT
+   dim as HKL layout = GetKeyboardLayout(0)  '// Current layout
+   dim as short result = VkKeyScanEx(ch, layout)
+   dim as byte vkCode = lobyte(result)   
+   dim as byte shiftState = hibyte(result)
+   return vkCode
+end function
+
+
 ' ========================================================================================
 ' Convert an accelerator key string (F1, TAB, "A", etc..) to virtual key value
 ' ========================================================================================
@@ -304,7 +318,9 @@ function frmKeyboard_AccelKeyToValue( byval wszString as CWSTR ) as long
       case "-", "MINUS": return VK_OEM_MINUS          
       case ".", "PERIOD": return VK_OEM_PERIOD
       case ";", ":", "SEMICOLON", "COLON": return VK_OEM_1
-      case "/", "?", "FORWARDSLASH", "QUESTIONMARK": return VK_OEM_2
+      case "/", "FORWARDSLASH"
+         frmKeyboard_OEMtoVirtKey
+         , "?", , "QUESTIONMARK": return VK_OEM_2
       case "`", "~", "BACKTICK", "TILDE": return VK_OEM_3
       case "[", "{", "OPENSQUAREBRACKET", "OPENCURLYBRACE": return VK_OEM_4
       case "\", "|", "BACKSLASH", "PIPE": return VK_OEM_5
