@@ -24,5 +24,7 @@ Copyright (C) 2016-2025 Paul Squires, PlanetSquires Software
 The tiko editor is licensed under the GNU GPLv3 or later.
 
 
+![tiko editor dark mode](/screenshots/tiko_dark.png)
 
+![tiko editor light mode](/screenshots/tiko_light.png)
 
