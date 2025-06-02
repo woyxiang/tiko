@@ -18,46 +18,46 @@
 type clsDocument_ as clsDocument
 
 type TOPTABS_TYPE
-   pDoc    as clsDocument_ ptr
-   wszText as CWSTR
-   rcTab   as RECT          ' client coordinates 
-   rcIcon  as RECT          ' client coordinates 
-   rcText  as RECT          ' client coordinates 
-   rcClose as RECT          ' client coordinates 
-   isHot   as boolean
+    pDoc    as clsDocument_ ptr
+    wszText as CWSTR
+    rcTab   as RECT          ' client coordinates 
+    rcIcon  as RECT          ' client coordinates 
+    rcText  as RECT          ' client coordinates 
+    rcClose as RECT          ' client coordinates 
+    isHot   as boolean
 end type
 
 
 type clsTopTabCtl
-   private:
-      
-   public:
-      hWindow          as HWND
-      ClientRightEdge  as long        ' the right edge (client right - action Panel)
-      CurSel           as long = -1
-      FirstDisplayTab  as long = 0   
-      rcActionPanel    as RECT
-      rcActionButton   as RECT
-      rcPrevTabs       as RECT
-      rcNextTabs       as RECT
-      rcSplitEditor    as RECT
-      tabs(any)        as TOPTABS_TYPE
-      
-      declare function IsSafeIndex( byval idx as long ) as boolean
-      declare function GetItemCount() as long
-      declare function RemoveElement( byval idx as long ) as long
-      declare function AddTab( byval pDoc as clsDocument Ptr ) as long
-      declare function GetTabIndexFromFilename( byref wszName as wstring ) as long
-      declare function GetTabIndexByDocumentPtr( byval pDocIn as clsDocument ptr ) as long
-      declare function SetTabIndexByDocumentPtr( byval pDocIn as clsDocument ptr ) as long
-      declare function SetFocusTab( byval idx as long ) as long
-      declare function GetActiveDocumentPtr() as clsDocument ptr
-      declare function GetDocumentPtr( byval idx as long ) as clsDocument ptr
-      declare function DisplayScintilla( byval idx as long, byval bShow as boolean ) as long
-      declare function SetTabText( byval idx as long ) as long
-      declare function NextTab() as long
-      declare function PrevTab() as long
-      declare function CloseTab( byval idx as long = -1 ) as long
-      
+    private:
+        
+    public:
+        hWindow          as HWND
+        ClientRightEdge  as long        ' the right edge (client right - action Panel)
+        CurSel           as long = -1
+        FirstDisplayTab  as long = 0   
+        rcActionPanel    as RECT
+        rcActionButton   as RECT
+        rcPrevTabs       as RECT
+        rcNextTabs       as RECT
+        rcSplitEditor    as RECT
+        tabs(any)        as TOPTABS_TYPE
+        
+        declare function IsSafeIndex( byval idx as long ) as boolean
+        declare function GetItemCount() as long
+        declare function RemoveElement( byval idx as long ) as long
+        declare function AddTab( byval pDoc as clsDocument Ptr ) as long
+        declare function GetTabIndexFromFilename( byref wszName as wstring ) as long
+        declare function GetTabIndexByDocumentPtr( byval pDocIn as clsDocument ptr ) as long
+        declare function SetTabIndexByDocumentPtr( byval pDocIn as clsDocument ptr ) as long
+        declare function SetFocusTab( byval idx as long ) as long
+        declare function GetActiveDocumentPtr() as clsDocument ptr
+        declare function GetDocumentPtr( byval idx as long ) as clsDocument ptr
+        declare function DisplayScintilla( byval idx as long, byval bShow as boolean ) as long
+        declare function SetTabText( byval idx as long ) as long
+        declare function NextTab() as long
+        declare function PrevTab() as long
+        declare function CloseTab( byval idx as long = -1 ) as long
+        
 End Type
 

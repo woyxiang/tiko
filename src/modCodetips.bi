@@ -17,10 +17,10 @@
 ' because the autocomplete popup list is rebuilt every time a new
 ' character is entered.
 enum
-   AUTOCOMPLETE_NONE   = 0
-   AUTOCOMPLETE_DIM_AS 
-   AUTOCOMPLETE_TYPE
+    AUTOCOMPLETE_NONE   = 0
+    AUTOCOMPLETE_DIM_AS 
+    AUTOCOMPLETE_TYPE
 end enum   
-                 
+                    
 declare function DereferenceLine( byval pDoc as clsDocument ptr, _
-         byval sTrigger as string, byval nPosition as long ) as DB2_DATA ptr
+            byval sTrigger as string, byval nPosition as long ) as DB2_DATA ptr

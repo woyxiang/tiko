@@ -19,20 +19,20 @@
 ' ========================================================================================
 function OnCommand_CompileCommon( byval id as long ) as LRESULT
 
-   select case id
-      Case IDM_BUILDEXECUTE, IDM_COMPILE, IDM_REBUILDALL, IDM_QUICKRUN
-         code_Compile( id )
-      
-      Case IDM_RUNEXE
-         RunExe( _
-             GetRunExecutableFilename, _
-             iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
-             )
-      
-      Case IDM_COMMANDLINE
-         frmCommandLine_Show( HWND_FRMMAIN )
-   end select
-   
-   function = 0
+    select case id
+        Case IDM_BUILDEXECUTE, IDM_COMPILE, IDM_REBUILDALL, IDM_QUICKRUN
+            code_Compile( id )
+        
+        Case IDM_RUNEXE
+            RunExe( _
+                GetRunExecutableFilename, _
+                iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
+                )
+        
+        Case IDM_COMMANDLINE
+            frmCommandLine_Show( HWND_FRMMAIN )
+    end select
+    
+    function = 0
 end function
 

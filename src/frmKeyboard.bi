@@ -18,7 +18,7 @@
 #DEFINE IDC_FRMKEYBOARD_CMDMODIFY            1001
 #DEFINE IDC_FRMKEYBOARD_CMDCLEAR             1002
 #DEFINE IDC_FRMKEYBOARD_LBLCONFLICT          1003
-                                             
+                                                
 #define IDC_FRMKEYBOARDEDIT_CHKCTRL          1100
 #define IDC_FRMKEYBOARDEDIT_CHKALT           1101
 #define IDC_FRMKEYBOARDEDIT_CHKSHIFT         1102
@@ -30,13 +30,13 @@
 #define IDC_FRMKEYBOARDEDIT_CHKDISABLED      1108
 
 type KEYBINDINGS_TYPE
-   idAction         as long         ' IDM_* message
-   wszMsgString     as CWSTR        ' "IDM_SAVE", "IDM_SAVEAS", etc 
-   wszCategory      as CWSTR
-   wszDescription   as CWSTR
-   wszDefaultKeys   as CWSTR
-   wszUserKeys      as CWSTR
-   bDefaultDisabled as boolean = false
+    idAction         as long         ' IDM_* message
+    wszMsgString     as CWSTR        ' "IDM_SAVE", "IDM_SAVEAS", etc 
+    wszCategory      as CWSTR
+    wszDescription   as CWSTR
+    wszDefaultKeys   as CWSTR
+    wszUserKeys      as CWSTR
+    bDefaultDisabled as boolean = false
 end type
 
 dim shared gKeys(any) as KEYBINDINGS_TYPE

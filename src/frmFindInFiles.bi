@@ -32,5 +32,5 @@
 #Define IDC_FRMFINDINFILES_CHKCURRENTDOC            1016
 #Define IDC_FRMFINDINFILES_CHKALLOPENDOCS           1017
 #Define IDC_FRMFINDINFILES_CHKPROJECT               1018
- 
+    
 declare function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT

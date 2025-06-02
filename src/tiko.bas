@@ -121,12 +121,12 @@ dim shared gTTabCtl as clsTopTabCtl
 ' Check if running under Linux Wine
 ' ========================================================================================
 function isWineActive() as boolean
-   dim hLib as HMODULE = LoadLibraryW("NtDll.dll")
-   if hLib = null then exit function
-   dim pwine as function() as long
-   pwine = cast(any ptr, GetProcAddress(hLib, "wine_get_version"))
-   function = iif( pwine, true, false )
-   FreeLibrary hLib
+    dim hLib as HMODULE = LoadLibraryW("NtDll.dll")
+    if hLib = null then exit function
+    dim pwine as function() as long
+    pwine = cast(any ptr, GetProcAddress(hLib, "wine_get_version"))
+    function = iif( pwine, true, false )
+    FreeLibrary hLib
 end function
 ' ========================================================================================
 
@@ -141,83 +141,83 @@ function WinMain( _
             byval nCmdShow      as long _
             ) as long
 
-   gApp.isWineActive = isWineActive()
+    gApp.isWineActive = isWineActive()
 
-   ' Load configuration files 
-   gConfig.LoadConfigFile()
-   gConfig.LoadKeywords()
+    ' Load configuration files 
+    gConfig.LoadConfigFile()
+    gConfig.LoadKeywords()
 
-  
-   ' Attempt to load the english localization file. This is necessary because
-   ' any non-english localization file will have missing entries filled by the
-   ' english version.
-   dim as CWSTR wszLocalizationFile
-   wszLocalizationFile = AfxGetExePathName + wstr("settings\languages\english.lang")
-   if LoadLocalizationFile(wszLocalizationFile, true) = false Then
-      MessageBox( 0, _
-                  "English Localization file could not be loaded. Aborting application." + vbcrlf + _
-                  wszLocalizationFile, _
-                  "Error", _
-                  MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
-      return 1
-   end if
-   
-   
-   ' Load the selected localization file
-   wszLocalizationFile = AfxGetExePathName + "settings\languages\" + gConfig.LocalizationFile
-   if LoadLocalizationFile(wszLocalizationFile, false) = false then
-      MessageBox( 0, _
-                  "Localization file could not be loaded. Aborting application." + vbcrlf + _
-                  wszLocalizationFile, _
-                  "Error", _
-                  MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
-      Return 1
-   end if
+    
+    ' Attempt to load the english localization file. This is necessary because
+    ' any non-english localization file will have missing entries filled by the
+    ' english version.
+    dim as CWSTR wszLocalizationFile
+    wszLocalizationFile = AfxGetExePathName + wstr("settings\languages\english.lang")
+    if LoadLocalizationFile(wszLocalizationFile, true) = false Then
+        MessageBox( 0, _
+                    "English Localization file could not be loaded. Aborting application." + vbcrlf + _
+                    wszLocalizationFile, _
+                    "Error", _
+                    MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
+        return 1
+    end if
+    
+    
+    ' Load the selected localization file
+    wszLocalizationFile = AfxGetExePathName + "settings\languages\" + gConfig.LocalizationFile
+    if LoadLocalizationFile(wszLocalizationFile, false) = false then
+        MessageBox( 0, _
+                    "Localization file could not be loaded. Aborting application." + vbcrlf + _
+                    wszLocalizationFile, _
+                    "Error", _
+                    MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
+        Return 1
+    end if
 
-   ' Load default Explorer Categories should none exist. Need to do it here
-   ' rather than from within Config because the localization file must be 
-   ' loaded first.
-   gConfig.SetCategoryDefaults()
+    ' Load default Explorer Categories should none exist. Need to do it here
+    ' rather than from within Config because the localization file must be 
+    ' loaded first.
+    gConfig.SetCategoryDefaults()
 
-   ' Check for previous instance 
-   if gConfig.MultipleInstances = false Then
-      dim as HWND hWindow = FindWindow(APPCLASSNAME, 0)
-      if hWindow then
-         SetForegroundWindow(hWindow)
-         frmMain_ProcessCommandLine(hWindow)
-         return true
-      end if
-   end if
-   
+    ' Check for previous instance 
+    if gConfig.MultipleInstances = false Then
+        dim as HWND hWindow = FindWindow(APPCLASSNAME, 0)
+        if hWindow then
+            SetForegroundWindow(hWindow)
+            frmMain_ProcessCommandLine(hWindow)
+            return true
+        end if
+    end if
+    
 
-   ' Initialize the COM library
-   CoInitialize(null)
-
-
-   ' Load the Scintilla code editing dll
-   dim as any ptr pLibLexilla = dylibload("Lexilla64.dll")
-   dim as any ptr pLibScintilla = dylibload("Scintilla64.dll")
-   gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
-
-   ' Load the HTML help library for displaying FreeBASIC help *.chm file
-   gpHelpLib = dylibload( "hhctrl.ocx" )
-
-   ' Load codetip files 
-   if gConfig.Codetips then gConfig.LoadCodetips
+    ' Initialize the COM library
+    CoInitialize(null)
 
 
-   ' Show the main form
-   function = frmMain_Show( 0 )
+    ' Load the Scintilla code editing dll
+    dim as any ptr pLibLexilla = dylibload("Lexilla64.dll")
+    dim as any ptr pLibScintilla = dylibload("Scintilla64.dll")
+    gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
+
+    ' Load the HTML help library for displaying FreeBASIC help *.chm file
+    gpHelpLib = dylibload( "hhctrl.ocx" )
+
+    ' Load codetip files 
+    if gConfig.Codetips then gConfig.LoadCodetips
 
 
-   ' Free the Scintilla, CaptureConsole and HTML help libraries
-   dylibfree(pLibLexilla)
-   dylibfree(pLibScintilla)
-   dylibfree(gpHelpLib)
-   
+    ' Show the main form
+    function = frmMain_Show( 0 )
 
-   ' Uninitialize the COM library
-   CoUninitialize
+
+    ' Free the Scintilla, CaptureConsole and HTML help libraries
+    dylibfree(pLibLexilla)
+    dylibfree(pLibScintilla)
+    dylibfree(gpHelpLib)
+    
+
+    ' Uninitialize the COM library
+    CoUninitialize
 
 end function
 

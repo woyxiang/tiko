@@ -15,14 +15,14 @@
 
 ' Size = 32 bytes
 TYPE HH_AKLINK 
-   cbStruct     as long         ' int       cbStruct;     // sizeof this structure
-   fReserved    as boolean      ' BOOL      fReserved;    // must be FALSE (really!)
-   pszKeywords  as wstring ptr  ' LPCTSTR   pszKeywords;  // semi-colon separated keywords
-   pszUrl       as wstring ptr  ' LPCTSTR   pszUrl;       // URL to jump to if no keywords found (may be NULL)
-   pszMsgText   as wstring ptr  ' LPCTSTR   pszMsgText;   // Message text to display in MessageBox if pszUrl is NULL and no keyword match
-   pszMsgTitle  as wstring ptr  ' LPCTSTR   pszMsgTitle;  // Message text to display in MessageBox if pszUrl is NULL and no keyword match
-   pszWindow    as wstring ptr  ' LPCTSTR   pszWindow;    // Window to display URL in
-   fIndexOnFail as boolean      ' BOOL      fIndexOnFail; // Displays index if keyword lookup fails.
+    cbStruct     as long         ' int       cbStruct;     // sizeof this structure
+    fReserved    as boolean      ' BOOL      fReserved;    // must be FALSE (really!)
+    pszKeywords  as wstring ptr  ' LPCTSTR   pszKeywords;  // semi-colon separated keywords
+    pszUrl       as wstring ptr  ' LPCTSTR   pszUrl;       // URL to jump to if no keywords found (may be NULL)
+    pszMsgText   as wstring ptr  ' LPCTSTR   pszMsgText;   // Message text to display in MessageBox if pszUrl is NULL and no keyword match
+    pszMsgTitle  as wstring ptr  ' LPCTSTR   pszMsgTitle;  // Message text to display in MessageBox if pszUrl is NULL and no keyword match
+    pszWindow    as wstring ptr  ' LPCTSTR   pszWindow;    // Window to display URL in
+    fIndexOnFail as boolean      ' BOOL      fIndexOnFail; // Displays index if keyword lookup fails.
 END TYPE
 
 #Define HH_DISPLAY_TOPIC   0000 

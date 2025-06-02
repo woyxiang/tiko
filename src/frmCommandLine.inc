@@ -18,17 +18,17 @@
 ' Process WM_CREATE message for window/dialog: frmCommandLine
 ' ========================================================================================
 private Function frmCommandLine_OnCreate( ByVal HWnd As HWnd, _
-                                          ByVal lpCreateStructPtr As LPCREATESTRUCT _
-                                          ) As BOOLEAN
+                                            ByVal lpCreateStructPtr As LPCREATESTRUCT _
+                                            ) As BOOLEAN
 
-   ' This is a modal popup window so disable the parent window
-   DisableAllModeless()
+    ' This is a modal popup window so disable the parent window
+    DisableAllModeless()
 
-   '  Message cracker macro expects a True to be returned for a successful
-   '  OnCreate handler even though returning -1 from a standard WM_CREATE
-   '  call would stop creating the window. This is just one of those Windows
-   '  inconsistencies.
-   Return True
+    '  Message cracker macro expects a True to be returned for a successful
+    '  OnCreate handler even though returning -1 from a standard WM_CREATE
+    '  call would stop creating the window. This is just one of those Windows
+    '  inconsistencies.
+    Return True
 End Function
 
 
@@ -36,34 +36,34 @@ End Function
 ' Process WM_COMMAND message for window/dialog: frmCommandLine
 ' ========================================================================================
 private Function frmCommandLine_OnCommand( ByVal HWnd As HWnd, _
-                                           ByVal id As Long, _
-                                           ByVal hwndCtl As HWnd, _
-                                           ByVal codeNotify As UINT _
-                                           ) As LRESULT
+                                            ByVal id As Long, _
+                                            ByVal hwndCtl As HWnd, _
+                                            ByVal codeNotify As UINT _
+                                            ) As LRESULT
 
-   Select Case id
-      Case IDOK
-         If codeNotify = BN_CLICKED Then
+    Select Case id
+        Case IDOK
+            If codeNotify = BN_CLICKED Then
             ' A commandline parameter is not saved for non-project files. These are
             ' set at the time when the user opens the file. For project related files the
             ' command line is saved to the project file.
             if gApp.IsProjectActive then
-               gApp.ProjectCommandLine = AfxGetWindowText( GetDlgItem(HWnd, IDC_FRMCOMMANDLINE_TEXTBOX1) )
+                gApp.ProjectCommandLine = AfxGetWindowText( GetDlgItem(HWnd, IDC_FRMCOMMANDLINE_TEXTBOX1) )
             else
-               gApp.wszCommandLine = AfxGetWindowText( GetDlgItem(HWnd, IDC_FRMCOMMANDLINE_TEXTBOX1) )
+                gApp.wszCommandLine = AfxGetWindowText( GetDlgItem(HWnd, IDC_FRMCOMMANDLINE_TEXTBOX1) )
             end if
             SendMessage( HWnd, WM_CLOSE, 0, 0 )
             Exit Function
-         End If
-         
-      Case IDCANCEL
-         If codeNotify = BN_CLICKED Then
+            End If
+            
+        Case IDCANCEL
+            If codeNotify = BN_CLICKED Then
             SendMessage( HWnd, WM_CLOSE, 0, 0 )
             Exit Function
-         End If
-   End Select
+            End If
+    End Select
 
-   Function = 0
+    Function = 0
 End Function
 
 
@@ -71,10 +71,10 @@ End Function
 ' Process WM_CLOSE message for window/dialog: frmCommandLine
 ' ========================================================================================
 private Function frmCommandLine_OnClose( byval HWnd As HWnd ) As LRESULT
-   ' Enables parent window keeping parent's zorder
-   EnableAllModeless()
-   DestroyWindow HWnd
-   Function = 0
+    ' Enables parent window keeping parent's zorder
+    EnableAllModeless()
+    DestroyWindow HWnd
+    Function = 0
 End Function
 
 
@@ -82,8 +82,8 @@ End Function
 ' Process WM_DESTROY message for window/dialog: frmCommandLine
 ' ========================================================================================
 private Function frmCommandLine_OnDestroy( byval HWnd As HWnd ) As LRESULT
-   PostQuitMessage(0)
-   Function = 0
+    PostQuitMessage(0)
+    Function = 0
 End Function
 
 
@@ -91,19 +91,19 @@ End Function
 ' frmCommandLine Window procedure
 ' ========================================================================================
 private Function frmCommandLine_WndProc( ByVal HWnd   As HWnd, _
-                                         ByVal uMsg   As UINT, _
-                                         ByVal wParam As WPARAM, _
-                                         ByVal lParam As LPARAM _
-                                         ) As LRESULT
+                                            ByVal uMsg   As UINT, _
+                                            ByVal wParam As WPARAM, _
+                                            ByVal lParam As LPARAM _
+                                            ) As LRESULT
 
-   Select Case uMsg
-      HANDLE_MSG (HWnd, WM_CREATE,   frmCommandLine_OnCreate)
-      HANDLE_MSG (HWnd, WM_CLOSE,    frmCommandLine_OnClose)
-      HANDLE_MSG (HWnd, WM_DESTROY,  frmCommandLine_OnDestroy)
-      HANDLE_MSG (HWnd, WM_COMMAND,  frmCommandLine_OnCommand)
-   End Select
+    Select Case uMsg
+        HANDLE_MSG (HWnd, WM_CREATE,   frmCommandLine_OnCreate)
+        HANDLE_MSG (HWnd, WM_CLOSE,    frmCommandLine_OnClose)
+        HANDLE_MSG (HWnd, WM_DESTROY,  frmCommandLine_OnDestroy)
+        HANDLE_MSG (HWnd, WM_COMMAND,  frmCommandLine_OnCommand)
+    End Select
 
-   Function = DefWindowProcW(HWnd, uMsg, wParam, lParam)
+    Function = DefWindowProcW(HWnd, uMsg, wParam, lParam)
 
 End Function
 
@@ -113,44 +113,44 @@ End Function
 ' ========================================================================================
 public Function frmCommandLine_Show( ByVal hWndParent As HWnd ) as LRESULT
 
-   '  Create the main window and child controls
-   Dim pWindow As CWindow Ptr = New CWindow
-   pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
+    '  Create the main window and child controls
+    Dim pWindow As CWindow Ptr = New CWindow
+    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
-   pWindow->Create( hWndParent, L(178,"Command Line"), @frmCommandLine_WndProc, 0, 0, 0, 0, _
+    pWindow->Create( hWndParent, L(178,"Command Line"), @frmCommandLine_WndProc, 0, 0, 0, 0, _
         WS_POPUP Or WS_CAPTION Or WS_SYSMENU Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
         WS_EX_DLGMODALFRAME Or WS_EX_CONTROLPARENT Or WS_EX_LEFT)
-   pWindow->SetClientSize(420, 100)
-   pWindow->Center(pWindow->hWindow, hWndParent)
-      
-   pWindow->AddControl("LABEL", , IDC_FRMCOMMANDLINE_LABEL1, L(179,"Enter command line arguments:"), 10, 10, 400, 20, _
+    pWindow->SetClientSize(420, 100)
+    pWindow->Center(pWindow->hWindow, hWndParent)
+        
+    pWindow->AddControl("LABEL", , IDC_FRMCOMMANDLINE_LABEL1, L(179,"Enter command line arguments:"), 10, 10, 400, 20, _
         WS_CHILD Or WS_VISIBLE Or SS_LEFT, WS_EX_LEFT Or WS_EX_LTRREADING)
 
-   Dim As HWnd hTextBox = _
-   pWindow->AddControl("TEXTBOX", , IDC_FRMCOMMANDLINE_TEXTBOX1, "", 10, 33, 400, 20, _
+    Dim As HWnd hTextBox = _
+    pWindow->AddControl("TEXTBOX", , IDC_FRMCOMMANDLINE_TEXTBOX1, "", 10, 33, 400, 20, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
 
-   pWindow->AddControl("BUTTON", , IDOK, L(0,"&OK"), 252, 63, 74, 28, _
+    pWindow->AddControl("BUTTON", , IDOK, L(0,"&OK"), 252, 63, 74, 28, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_DEFPUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
         WS_EX_LEFT Or WS_EX_LTRREADING)
-   
-   pWindow->AddControl("BUTTON", , IDCANCEL, L(1,"&Cancel"), 336, 63, 74, 28, _
+    
+    pWindow->AddControl("BUTTON", , IDCANCEL, L(1,"&Cancel"), 336, 63, 74, 28, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
         WS_EX_LEFT Or WS_EX_LTRREADING)
 
-   if gApp.IsProjectActive then
-      AfxSetWindowText( hTextBox, gApp.ProjectCommandLine )
-   else   
-      AfxSetWindowText( hTextBox, gApp.wszCommandLine )
-   end if
-   
-   SetFocus hTextBox
-   
-   ' Process Windows messages
-   Function = pWindow->DoEvents(SW_SHOW)
-   
-   ' Delete the frmCommandLine CWindow class manually allocated memory 
-   Delete pWindow
+    if gApp.IsProjectActive then
+        AfxSetWindowText( hTextBox, gApp.ProjectCommandLine )
+    else   
+        AfxSetWindowText( hTextBox, gApp.wszCommandLine )
+    end if
+    
+    SetFocus hTextBox
+    
+    ' Process Windows messages
+    Function = pWindow->DoEvents(SW_SHOW)
+    
+    ' Delete the frmCommandLine CWindow class manually allocated memory 
+    Delete pWindow
 
 End Function

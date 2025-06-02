@@ -24,8 +24,8 @@ private Function frmOptionsGeneral_WndProc( ByVal HWnd   As HWnd, _
                                             ByVal lParam As LPARAM _
                                             ) As LRESULT
 
-   ' for messages that we don't deal with
-   Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    ' for messages that we don't deal with
+    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
 
 End Function
 
@@ -35,38 +35,38 @@ End Function
 ' ========================================================================================
 public Function frmOptionsGeneral_Show( ByVal hWndParent As HWnd ) as LRESULT
 
-   '  Create the main window and child controls
-   Dim pWindow As CWindow Ptr = New CWindow
-   pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
+    '  Create the main window and child controls
+    Dim pWindow As CWindow Ptr = New CWindow
+    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-   HWND_FRMOPTIONSGENERAL = pWindow->Create( hWndParent, "", @frmOptionsGeneral_WndProc, 0, 0, 0, 0, _
+    HWND_FRMOPTIONSGENERAL = pWindow->Create( hWndParent, "", @frmOptionsGeneral_WndProc, 0, 0, 0, 0, _
         WS_CHILD Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
-   ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
-   
-   pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES, L(119,"Allow multiple instances"), 0, 0, 400, 20, _
+    ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
+    
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES, L(119,"Allow multiple instances"), 0, 0, 400, 20, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
         WS_EX_LEFT Or WS_EX_LTRREADING)
-   pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE, L(121,"Autosave files before compiling"), 0, 21, 235, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE, L(121,"Autosave files before compiling"), 0, 21, 235, 20, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
         WS_EX_LEFT Or WS_EX_LTRREADING)
-   pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKASKEXIT, L(274,"Ask before exiting the editor"), 0, 42, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKASKEXIT, L(274,"Ask before exiting the editor"), 0, 42, 400, 20, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
         WS_EX_LEFT Or WS_EX_LTRREADING)
-   pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION, L(423,"Restore previous session/project files on startup"), 0, 63, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION, L(423,"Restore previous session/project files on startup"), 0, 63, 400, 20, _
         WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
         WS_EX_LEFT Or WS_EX_LTRREADING)
 
-   Dim As Long idx = 0
-   Dim As HWnd HWnd = HWND_FRMOPTIONSGENERAL
-   
-   Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES),  gConfig.MultipleInstances)
-   Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE),    gConfig.CompileAutoSave)
-   Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT),            gConfig.AskExit)
-   Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION),     gConfig.RestoreSession)
+    Dim As Long idx = 0
+    Dim As HWnd HWnd = HWND_FRMOPTIONSGENERAL
+    
+    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES),  gConfig.MultipleInstances)
+    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE),    gConfig.CompileAutoSave)
+    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT),            gConfig.AskExit)
+    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION),     gConfig.RestoreSession)
 
-   Function = 0
-   
+    Function = 0
+    
 End Function
 
 

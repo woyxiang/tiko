@@ -18,28 +18,28 @@
 ''  Handle information related to the currnet compile process 
 ''
 type COMPILE_TYPE
-   MainFilename       as wstring * MAX_PATH   ' main source file (full path and file.ext)
-   MainName           as wstring * MAX_PATH   ' main source file (Name only, no extension)
-   MainFolder         as wstring * MAX_PATH   ' main source folder 
-   ResourceFile       as wstring * MAX_PATH   ' full path and file.ext to resource file (if applicable) 
-   TempResourceFile   as wstring * MAX_PATH   ' full path and file.ext to temporary resource file (if applicable) 
-   OutputFilename     as wstring * MAX_PATH   ' resulting exe/dll/lib name 
-   CompilerPath       as wstring * MAX_PATH   ' full path and file.ext to fbc.exe
-   ObjFolder          as wstring * MAX_PATH   ' *.o for all modules (set depending on 32/64 bit) (full path)
-   ObjFolderShort     as wstring * MAX_PATH   ' ".\" & APPEXTENSION & "\"
-   ObjID              as wstring * MAX_PATH   ' "32" or "64" appended to object name
-   LinkModules        as CWSTR                ' From code embedded #LINKMODULES directive
-   CompileFlags       as wstring * 2048
-   CompileIncludes    as wstring * 2048       ' Additional user defined include paths
-   wszFullCommandLine as CWSTR                ' Command line sent to the FB compiler
-   wszFullLogFile     as CWSTR                ' Full log file returned from the FB compiler
-   wszOutputMsg       as CWSTR                ' Additional info during compile process (time/filesize)
-   RunAfterCompile    as boolean
-   SystemTime         aS SYSTEMTIME           ' System time when compile finished
-   StartTime          as double
-   EndTime            as double
-   CompileID          as long                 ' Type of compile (wID). Needed in case frmOutput listview later clicked on.
-   bInvalidImagePath  as boolean              ' One or more images have invalid path will result in failed resource compile
+    MainFilename       as wstring * MAX_PATH   ' main source file (full path and file.ext)
+    MainName           as wstring * MAX_PATH   ' main source file (Name only, no extension)
+    MainFolder         as wstring * MAX_PATH   ' main source folder 
+    ResourceFile       as wstring * MAX_PATH   ' full path and file.ext to resource file (if applicable) 
+    TempResourceFile   as wstring * MAX_PATH   ' full path and file.ext to temporary resource file (if applicable) 
+    OutputFilename     as wstring * MAX_PATH   ' resulting exe/dll/lib name 
+    CompilerPath       as wstring * MAX_PATH   ' full path and file.ext to fbc.exe
+    ObjFolder          as wstring * MAX_PATH   ' *.o for all modules (set depending on 32/64 bit) (full path)
+    ObjFolderShort     as wstring * MAX_PATH   ' ".\" & APPEXTENSION & "\"
+    ObjID              as wstring * MAX_PATH   ' "32" or "64" appended to object name
+    LinkModules        as CWSTR                ' From code embedded #LINKMODULES directive
+    CompileFlags       as wstring * 2048
+    CompileIncludes    as wstring * 2048       ' Additional user defined include paths
+    wszFullCommandLine as CWSTR                ' Command line sent to the FB compiler
+    wszFullLogFile     as CWSTR                ' Full log file returned from the FB compiler
+    wszOutputMsg       as CWSTR                ' Additional info during compile process (time/filesize)
+    RunAfterCompile    as boolean
+    SystemTime         aS SYSTEMTIME           ' System time when compile finished
+    StartTime          as double
+    EndTime            as double
+    CompileID          as long                 ' Type of compile (wID). Needed in case frmOutput listview later clicked on.
+    bInvalidImagePath  as boolean              ' One or more images have invalid path will result in failed resource compile
 end type
 
 declare function code_Compile( byval wID as long ) as boolean

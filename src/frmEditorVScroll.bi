@@ -13,11 +13,11 @@
 
 
 type EDITOR_VSCROLL_TYPE
-   numLines     as long 
-   linesPerPage as long
-   thumbHeight  as long
-   thumbRatio   as single
-   rc           as RECT
+    numLines     as long 
+    linesPerPage as long
+    thumbHeight  as long
+    thumbRatio   as single
+    rc           as RECT
 end type
 
 dim shared gEditorVScroll(1) as EDITOR_VSCROLL_TYPE

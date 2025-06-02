@@ -25,10 +25,10 @@
 
 
 type OUTPUT_TABS
-   wszText as CWSTR
-   rcTab   as RECT
-   rcText  as RECT     ' diff rect b/c line drawn under Text for CurSel
-   isHot   as boolean
+    wszText as CWSTR
+    rcTab   as RECT
+    rcText  as RECT     ' diff rect b/c line drawn under Text for CurSel
+    isHot   as boolean
 end type
 
 dim shared gOutputTabs(4) as OUTPUT_TABS

@@ -17,14 +17,14 @@
 #define IDC_FRMFUNCTIONS_LISTBOX   1000
 
 type FUNCTION_NODE_TYPE
-   wszFunctionName as CWSTR
-   wszPrototype    as CWSTR      ' the sub/function parameters
-   nLineNumber     as long
+    wszFunctionName as CWSTR
+    wszPrototype    as CWSTR      ' the sub/function parameters
+    nLineNumber     as long
 end type
 
 enum FunctionsDisplayState
-   ViewAsTree = 0
-   ViewAsList 
+    ViewAsTree = 0
+    ViewAsList 
 end enum
 
 dim shared gFunctionsDisplay as FunctionsDisplayState = FunctionsDisplayState.ViewAsTree
