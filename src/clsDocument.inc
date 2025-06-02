@@ -93,7 +93,7 @@ end function
 ''
 ''
 function clsDocument.GetActiveScintillaPtr() as any ptr
-    dim as hwnd hEdit = this.hWndActiveScintilla
+    dim as HWND hEdit = this.hWndActiveScintilla
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
         if this.hWindow(i) = hEdit then return m_pSci(i)
     next
@@ -102,23 +102,23 @@ function clsDocument.GetActiveScintillaPtr() as any ptr
 end function
 
 
-property clsDocument.hWndActiveScintilla() as hwnd
+property clsDocument.hWndActiveScintilla() as HWND
     if m_hWndActiveScintilla = 0 then m_hWndActiveScintilla = this.hWindow(0)
     property = m_hWndActiveScintilla
 end property
 
-property clsDocument.hWndActiveScintilla(byval hWindow as hwnd)
+property clsDocument.hWndActiveScintilla(byval hWindow as HWND)
     m_hWndActiveScintilla = hWindow
 end property
 
 ''
 ''
 function clsDocument.CreateCodeWindow( _
-            byval hWndParent as HWnd, _
+            byval hWndParent as HWND, _
             byval IsNewFile  as boolean, _     
             byval IsTemplate as boolean = false, _
             byref wszFile    as wstring = "" _
-            ) as HWnd   
+            ) as HWND   
 
     ' Creates a Scintilla editing window (initially not visible). Optionally, load a diskfile
     ' into the window and apply properties to it.
@@ -180,11 +180,9 @@ function clsDocument.CreateCodeWindow( _
         ' of files using Dir() then there will be problems.
 
         if AfxFileExists(wszFile) then     
-            dim as string st, sText
+            dim as string st
             dim as long idx
             
-            if IsTemplate then
-            else
             ' Set a flag that we are loading code from a file. This is important because if the file
             ' contains visual designer code then we only want to apply control properties after all of 
             ' the file is read, otherwise it would get applied immediately after each call to CreateToolboxControl.
@@ -221,7 +219,6 @@ function clsDocument.CreateCodeWindow( _
             ' Only add file to MRU list if it is not part of an active Project.
             if gApp.IsProjectActive = false then 
                 UpdateMRUList(wszFile)
-            end if
             end if
         end if   
     end if
@@ -366,40 +363,40 @@ function clsDocument.SaveFile( _
         dim as string st
         select case this.FileEncoding
             case FILE_ENCODING_ANSI
-            if sciCodePage = 0 then    
-                pStream.Write psz, len(*psz)     ' no conversion necessary
-            else
-                ' need to convert
-                st = Utf8ToAscii(*psz)
-                pStream.Write strptr(st), len(st) 
-            end if    
+                if sciCodePage = 0 then    
+                    pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                    ' need to convert
+                    st = Utf8ToAscii(*psz)
+                    pStream.Write strptr(st), len(st) 
+                end if    
 
             case FILE_ENCODING_UTF8_BOM
-            ' Output the BOM first
-            st = chr(&HEF, &HBB, &HBF)
-            pStream.Write strptr(st), len(st)
-            if sciCodePage = SC_CP_UTF8 then    
-                ' no conversion necessary
-                pStream.Write psz, len(*psz)     ' no conversion necessary
-            else
-                ' need to convert
-                st = AnsiToUtf8(*psz)
+                ' Output the BOM first
+                st = chr(&HEF, &HBB, &HBF)
                 pStream.Write strptr(st), len(st)
-            end if    
+                if sciCodePage = SC_CP_UTF8 then    
+                    ' no conversion necessary
+                    pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                    ' need to convert
+                    st = AnsiToUtf8(*psz)
+                    pStream.Write strptr(st), len(st)
+                end if    
 
             case FILE_ENCODING_UTF16_BOM
-            ' Output the BOM first
-            st = chr(&HFF, &HFE)
-            pStream.Write strptr(st), len(st)
-            if sciCodePage = SC_CP_UTF8 then    
-                ' convert utf8 to utf16
-                wst.Utf8 = *psz  ' convert the utf *psz from Utf8
-                pStream.Write wst.m_pBuffer, wst.m_BufferLen
-            else
-                ' need to convert ansi to unicode
-                dim as CWSTR wst = Wstr(*psz)
-                pStream.Write wst.m_pBuffer, wst.m_BufferLen
-            end if    
+                ' Output the BOM first
+                st = chr(&HFF, &HFE)
+                pStream.Write strptr(st), len(st)
+                if sciCodePage = SC_CP_UTF8 then    
+                    ' convert utf8 to utf16
+                    wst.Utf8 = *psz  ' convert the utf *psz from Utf8
+                    pStream.Write wst.m_pBuffer, wst.m_BufferLen
+                else
+                    ' need to convert ansi to unicode
+                    dim as CWSTR wst = Wstr(*psz)
+                    pStream.Write wst.m_pBuffer, wst.m_BufferLen
+                end if    
             
         end SELECT
     end if
@@ -474,7 +471,7 @@ function clsDocument.ChangeSelectionCase( byval fcase as long) as long
     if fcase = 1 then
         strText = ucase(strText)
     elseif fcase = 2 then
-        strText = LCase(strText)
+        strText = lcase(strText)
     elseif fcase = 3 then
         ' Always uppercase the first character regardless
         strText = LCase(strText)

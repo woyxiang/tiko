@@ -49,7 +49,7 @@ function clsConfig.LoadKeywords() as long
         ' to the main file that the user can modify.
         if AfxFileExists(this.FBKeywordsDefaultFilename) then 
             if AfxCopyFile( this.FBKeywordsDefaultFilename.sptr, this.FBKeywordsFilename.sptr, true ) = false then
-            exit function
+                exit function
             end if
         end if
     end if
@@ -406,10 +406,10 @@ function clsConfig.SaveConfigFile() as long
     for i as long = lbound(this.Cat) to ubound(this.Cat)
         if left(this.Cat(i).wszDescription, 2) <> "%%" then
             if trim(this.Cat(i).wszDescription) <> "" then
-            pStream.Write "CATEGORY_" & right("00" & str(nNext), 2) & "="
-            pStream.Write this.Cat(i).idFileType & "|-|"
-            pStream.WriteLine this.Cat(i).wszDescription
-            nNext = nNext + 1
+                pStream.Write "CATEGORY_" & right("00" & str(nNext), 2) & "="
+                pStream.Write this.Cat(i).idFileType & "|-|"
+                pStream.WriteLine this.Cat(i).wszDescription
+                nNext = nNext + 1
             end if
         end if   
     next
@@ -612,16 +612,16 @@ function clsConfig.LoadConfigFile() as long
             if left(wst, 1) = "[" then continue do
             
             if left(wst, 11) = "NOTES-START" then  
-            bReadingNote = true
-            continue do
+                bReadingNote = true
+                continue do
             end if   
             if left(wst, 9) = "NOTES-END" then  
-            bReadingNote = false
-            continue do
+                bReadingNote = false
+                continue do
             end if
             if bReadingNote then
-            gApp.NonProjectNotes = gApp.NonProjectNotes + wst + vbcrlf
-            continue do
+                gApp.NonProjectNotes = gApp.NonProjectNotes + wst + vbcrlf
+                continue do
             end IF
 
             i = instr(wst, "=")
@@ -791,21 +791,21 @@ function clsConfig.LoadConfigFile() as long
         wszTools(1) = "GUID Generator|-|.\settings\tools\GUIDgen32.exe|-||-|2|-||-|1|-|0|-|0|-|0|-|0|-|0|-|1|-|0"
         for i = lbound(wszTools) to ubound(wszTools)
             if i > ubound(this.Tools) then
-            redim preserve this.Tools(i)
-            wData = wszTools(i)
-            this.Tools(i).wszDescription   = AfxStrParse(wData, 1, "|-|")
-            this.Tools(i).wszCommand       = ProcessFromCurdriveApp( AfxStrParse(wData, 2, "|-|") ) 
-            this.Tools(i).wszParameters    = AfxStrParse(wData, 3, "|-|")
-            this.Tools(i).wszKey           = AfxStrParse(wData, 4, "|-|")
-            this.Tools(i).wszWorkingFolder = ProcessFromCurdriveApp( AfxStrParse(wData, 5, "|-|") ) 
-            this.Tools(i).IsCtrl           = val(AfxStrParse(wData, 6, "|-|"))
-            this.Tools(i).IsAlt            = val(AfxStrParse(wData, 7, "|-|"))
-            this.Tools(i).IsShift          = val(AfxStrParse(wData, 8, "|-|"))
-            this.Tools(i).IsPromptRun      = val(AfxStrParse(wData, 9, "|-|"))
-            this.Tools(i).IsMinimized      = val(AfxStrParse(wData, 10, "|-|"))
-            this.Tools(i).IsWaitFinish     = val(AfxStrParse(wData, 11, "|-|"))
-            this.Tools(i).IsDisplayMenu    = val(AfxStrParse(wData, 12, "|-|"))
-            this.Tools(i).Action           = val(AfxStrParse(wData, 13, "|-|"))
+                redim preserve this.Tools(i)
+                wData = wszTools(i)
+                this.Tools(i).wszDescription   = AfxStrParse(wData, 1, "|-|")
+                this.Tools(i).wszCommand       = ProcessFromCurdriveApp( AfxStrParse(wData, 2, "|-|") ) 
+                this.Tools(i).wszParameters    = AfxStrParse(wData, 3, "|-|")
+                this.Tools(i).wszKey           = AfxStrParse(wData, 4, "|-|")
+                this.Tools(i).wszWorkingFolder = ProcessFromCurdriveApp( AfxStrParse(wData, 5, "|-|") ) 
+                this.Tools(i).IsCtrl           = val(AfxStrParse(wData, 6, "|-|"))
+                this.Tools(i).IsAlt            = val(AfxStrParse(wData, 7, "|-|"))
+                this.Tools(i).IsShift          = val(AfxStrParse(wData, 8, "|-|"))
+                this.Tools(i).IsPromptRun      = val(AfxStrParse(wData, 9, "|-|"))
+                this.Tools(i).IsMinimized      = val(AfxStrParse(wData, 10, "|-|"))
+                this.Tools(i).IsWaitFinish     = val(AfxStrParse(wData, 11, "|-|"))
+                this.Tools(i).IsDisplayMenu    = val(AfxStrParse(wData, 12, "|-|"))
+                this.Tools(i).Action           = val(AfxStrParse(wData, 13, "|-|"))
             end If
         next
     end if
@@ -953,18 +953,18 @@ function clsConfig.SaveSessionFile( byref wszSessionFile as wstring ) as boolean
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
         wszText = ProcessToCurdriveApp(pDoc->DiskFilename)
-        pStream.WriteLine "File=" & wszText
-        pStream.WriteLine "FileType=" & pDoc->ProjectFileType
-        pStream.WriteLine "TabIndex=" & -1     ' use -1 rather than true
-        pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
-        pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
-        pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-        pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
-        pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-        pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-        pStream.WriteLine "SplitPosition=" & pDoc->SplitY
-        pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
-        pStream.WriteLine "FileEnd=[-]" 
+            pStream.WriteLine "File=" & wszText
+            pStream.WriteLine "FileType=" & pDoc->ProjectFileType
+            pStream.WriteLine "TabIndex=" & -1     ' use -1 rather than true
+            pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
+            pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
+            pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
+            pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
+            pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
+            pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
+            pStream.WriteLine "SplitPosition=" & pDoc->SplitY
+            pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
+            pStream.WriteLine "FileEnd=[-]" 
         end if
     next
             
@@ -1187,7 +1187,7 @@ function clsConfig.ProjectSaveToFile() as boolean
             wszText = pDoc->DiskFilename
             cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)
             if len(cwzRelative) then
-            if AfxPathIsRelative(cwzRelative) then wszText = cwzRelative
+                if AfxPathIsRelative(cwzRelative) then wszText = cwzRelative
             end if   
             wszText = ProcessToCurdriveProject(wszText)
             pStream.WriteLine "File=" & wszText
@@ -1212,22 +1212,22 @@ function clsConfig.ProjectSaveToFile() as boolean
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
             if gTTabCtl.GetTabIndexByDocumentPtr(pDoc) = -1 then
-            wszText = pDoc->DiskFilename
-            cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)
-            if AfxPathIsRelative(cwzRelative) then wszText = cwzRelative
-            wszText = ProcessToCurdriveProject(wszText)
-            pStream.WriteLine "File=" & wszText
-            pStream.WriteLine "FileType=" & pDoc->ProjectFileType
-            pStream.WriteLine "TabIndex=" & 0    
-            pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
-            pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
-            pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-            pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-            pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "SplitPosition=" & pDoc->SplitY
-            pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
-            pStream.WriteLine "FileEnd=[-]"
+                wszText = pDoc->DiskFilename
+                cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)
+                if AfxPathIsRelative(cwzRelative) then wszText = cwzRelative
+                wszText = ProcessToCurdriveProject(wszText)
+                pStream.WriteLine "File=" & wszText
+                pStream.WriteLine "FileType=" & pDoc->ProjectFileType
+                pStream.WriteLine "TabIndex=" & 0    
+                pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
+                pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
+                pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
+                pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
+                pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
+                pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
+                pStream.WriteLine "SplitPosition=" & pDoc->SplitY
+                pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
+                pStream.WriteLine "FileEnd=[-]"
             end If
         end if
         pDoc = pDoc->pDocnext

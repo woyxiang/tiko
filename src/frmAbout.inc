@@ -16,10 +16,10 @@
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmAbout
 ' ========================================================================================
-Function frmAbout_OnCreate( _
-            ByVal HWnd As HWnd, _
-            ByVal lpCreateStructPtr As LPCREATESTRUCT _
-            ) As BOOLEAN
+function frmAbout_OnCreate( _
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -28,95 +28,94 @@ Function frmAbout_OnCreate( _
     '  OnCreate handler even though returning -1 from a standard WM_CREATE
     '  call would stop creating the window. This is just one of those Windows
     '  inconsistencies.
-    Return True
-End Function
+    return true
+end function
 
 
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmAbout
 ' ========================================================================================
-Function frmAbout_OnClose( byval HWnd As HWnd) As LRESULT
+function frmAbout_OnClose( byval hwnd as HWND) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
-    DestroyWindow HWnd
-    Function = 0
-End Function
+    DestroyWindow hwnd
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmAbout
 ' ========================================================================================
-Function frmAbout_OnDestroy( byval HWnd As HWnd) As LRESULT
-    Dim As HFONT hFont = AfxGetWindowFont(GetDlgItem(HWnd, IDC_FRMABOUT_LBLAPPNAME))
+function frmAbout_OnDestroy( byval hwnd as HWND) as LRESULT
+    Dim As HFONT hFont = AfxGetWindowFont(GetDlgItem(hwnd, IDC_FRMABOUT_LBLAPPNAME))
     DeleteFont(hFont)
     PostQuitMessage(0)
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmAbout Window procedure
 ' ========================================================================================
-Function frmAbout_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmAbout_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_CREATE,  frmAbout_OnCreate)
-        HANDLE_MSG (HWnd, WM_CLOSE,   frmAbout_OnClose)
-        HANDLE_MSG (HWnd, WM_DESTROY, frmAbout_OnDestroy)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_CREATE,  frmAbout_OnCreate)
+        HANDLE_MSG (hwnd, WM_CLOSE,   frmAbout_OnClose)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmAbout_OnDestroy)
+    end select
 
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
-
-End Function
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
+end function
 
 
 ' ========================================================================================
 ' frmAbout_Show
 ' ========================================================================================
-Function frmAbout_Show( ByVal hWndParent As HWnd ) as LRESULT
+function frmAbout_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
 
     pWindow->Create( hWndParent, L(74,"About"), @frmAbout_WndProc, 0, 0, 0, 0, _
-        WS_POPUP Or WS_CAPTION Or WS_SYSMENU Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_DLGMODALFRAME Or WS_EX_CONTROLPARENT Or WS_EX_LEFT )
+        WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->SetClientSize(580, 280)
     pWindow->Center(pWindow->hWindow, hWndParent)
         
     ' Add an image control                                                         
-    DIM pImageCtx AS CImageCtx = CImageCtx(pWindow, IDC_FRMABOUT_IMAGE1, , 60, 50, 100, 100)
+    dim pImageCtx as CImageCtx = CImageCtx(pWindow, IDC_FRMABOUT_IMAGE1, , 60, 50, 100, 100)
     pImageCtx.LoadImageFromResource( pWindow->InstanceHandle, "IMAGE_MAINICON" )
 
-    Dim As HWnd hLabel = _
+    dim as HWND hLabel = _
         pWindow->AddControl("LABEL", , IDC_FRMABOUT_LBLAPPNAME, APPNAME, 200, 40, 400, 30, _
-            WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_CENTERIMAGE Or SS_NOTIFY, WS_EX_LEFT Or WS_EX_LTRREADING)
+            WS_CHILD or WS_VISIBLE or SS_LEFT or SS_CENTERIMAGE or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
     Dim As HFONT hFont = pWindow->CreateFont("", 12, FW_BOLD)
     AfxSetWindowFont hLabel, hFont, True
 
     pWindow->AddControl("LABEL", , IDC_FRMABOUT_LBLAPPVERSION, "Version " & APPVERSION & APPBITS, 200, 71, 200, 20, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
 
     pWindow->AddControl("LABEL", , IDC_FRMABOUT_LBLAPPCOPYRIGHT, APPCOPYRIGHT, 200, 115, 370, 20, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
 
     pWindow->AddControl("LABEL", , IDC_FRMABOUT_LBLJOSE, "Special thanks to: José Roca (WinFBX Framework)", _
-        200, 131, 300, 20, WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, WS_EX_LEFT Or WS_EX_LTRREADING)
+        200, 131, 300, 20, WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
 
     ' Process Windows messages
-    Function = pWindow->DoEvents(SW_SHOW)
+    function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmAbout CWindow class manually allocated memory 
-    Delete pWindow
+    delete pWindow
 
-End Function
+end function
 
 

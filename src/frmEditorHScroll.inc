@@ -22,69 +22,41 @@
 ' frmEditorHScroll Window procedure
 ' ========================================================================================
 function frmEditorHScroll_WndProc( _
-            ByVal HWnd   as HWnd, _
-            ByVal uMsg   as UINT, _
-            ByVal wParam as WPARAM, _
-            ByVal lParam as LPARAM _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
             ) as LRESULT
 
-    static as POINT prev_pt   ' screen pt.y cursor position
+    static as point prev_pt   ' screen pt.y cursor position
     static as long prev_xOffset
-    dim as long idxWindow = iif( HWnd = HWND_FRMEDITOR_HSCROLLBAR(0), 0, 1 )
+    dim as long idxWindow = iif( hwnd = HWND_FRMEDITOR_HSCROLLBAR(0), 0, 1 )
 
-    Select Case uMsg
+    select case uMsg
         case WM_DESTROY
-            if HWnd = HWND_FRMEDITOR_HSCROLLBAR(0) then HWND_FRMEDITOR_HSCROLLBAR(0) = 0
-            if HWnd = HWND_FRMEDITOR_HSCROLLBAR(1) then HWND_FRMEDITOR_HSCROLLBAR(1) = 0
+            if hwnd = HWND_FRMEDITOR_HSCROLLBAR(0) then HWND_FRMEDITOR_HSCROLLBAR(0) = 0
+            if hwnd = HWND_FRMEDITOR_HSCROLLBAR(1) then HWND_FRMEDITOR_HSCROLLBAR(1) = 0
                 
         case WM_LBUTTONDOWN
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
-            gApp.SuppressNotify = true   ' prevent SCN_UPDATEUI
-            dim as long delta = 0
-            dim as POINT pt: GetCursorPos( @pt )
-            dim as RECT rc = gEditorHScroll(idxWindow).rc ' covert copy to screen coordinates
-            MapWindowPoints( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), HWND_DESKTOP, cast(POINT ptr, @rc), 2)
-            if PtInRect( @rc, pt ) then
-                prev_pt = pt
-                gApp.bDragActive = true
-                SetCapture( HWnd )
-            elseif pt.x < rc.left then
-                delta = -(rc.left - pt.x)
-            elseif pt.x > rc.right then
-                delta = pt.x - rc.right
-            end if
-            
-            ' The client area was clicked
-            if delta <> 0 then
-                dim as RECT rc: GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
-                dim as long xOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
-                gEditorHScroll(idxWindow).rc = rc
-                gEditorHScroll(idxWindow).rc.left = xOffset
-                gEditorHScroll(idxWindow).rc.right = xOffset + ((rc.right / gEditorHScroll(idxWindow).lineLength) * rc.right)
-
-                if gEditorHScroll(idxWindow).rc.right + delta < rc.right then
-                    xOffset = xOffset + delta
-                    xOffset = max( 0, xOffset )
-                    if xOffset <> prev_xOffset then
-                        SendMessage( pDoc->hWindow(idxWindow), SCI_SETXOFFSET, xOffset, 0) 
-                        prev_xOffset = xOffset
-                        AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(idxWindow) )
-                    end if   
+                gApp.SuppressNotify = true   ' prevent SCN_UPDATEUI
+                dim as long delta = 0
+                dim as point pt: GetCursorPos( @pt )
+                dim as RECT rc = gEditorHScroll(idxWindow).rc ' covert copy to screen coordinates
+                MapWindowPoints( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), HWND_DESKTOP, cast(point ptr, @rc), 2)
+                if PtInRect( @rc, pt ) then
+                    prev_pt = pt
+                    gApp.bDragActive = true
+                    SetCapture( hwnd )
+                elseif pt.x < rc.left then
+                    delta = -(rc.left - pt.x)
+                elseif pt.x > rc.right then
+                    delta = pt.x - rc.right
                 end if
-            end if
-            end if
-            
-        case WM_MOUSEMOVE
-            if gApp.bDragActive then
-            dim as POINT pt: GetCursorPos( @pt )
-            if pt.x <> prev_pt.x then 
-                dim as long delta = pt.x - prev_pt.x 
-
-                prev_pt = pt
                 
-                dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-                if pDoc then
+                ' The client area was clicked
+                if delta <> 0 then
                     dim as RECT rc: GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
                     dim as long xOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
                     gEditorHScroll(idxWindow).rc = rc
@@ -95,14 +67,42 @@ function frmEditorHScroll_WndProc( _
                         xOffset = xOffset + delta
                         xOffset = max( 0, xOffset )
                         if xOffset <> prev_xOffset then
-                        SendMessage( pDoc->hWindow(idxWindow), SCI_SETXOFFSET, xOffset, 0) 
-                        prev_xOffset = xOffset
-                        AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(idxWindow) )
+                            SendMessage( pDoc->hWindow(idxWindow), SCI_SETXOFFSET, xOffset, 0) 
+                            prev_xOffset = xOffset
+                            AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(idxWindow) )
                         end if   
                     end if
                 end if
             end if
-        end if
+            
+        case WM_MOUSEMOVE
+            if gApp.bDragActive then
+                dim as POINT pt: GetCursorPos( @pt )
+                if pt.x <> prev_pt.x then 
+                    dim as long delta = pt.x - prev_pt.x 
+
+                    prev_pt = pt
+                    
+                    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+                    if pDoc then
+                        dim as RECT rc: GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
+                        dim as long xOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
+                        gEditorHScroll(idxWindow).rc = rc
+                        gEditorHScroll(idxWindow).rc.left = xOffset
+                        gEditorHScroll(idxWindow).rc.right = xOffset + ((rc.right / gEditorHScroll(idxWindow).lineLength) * rc.right)
+
+                        if gEditorHScroll(idxWindow).rc.right + delta < rc.right then
+                            xOffset = xOffset + delta
+                            xOffset = max( 0, xOffset )
+                            if xOffset <> prev_xOffset then
+                            SendMessage( pDoc->hWindow(idxWindow), SCI_SETXOFFSET, xOffset, 0) 
+                            prev_xOffset = xOffset
+                            AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(idxWindow) )
+                            end if   
+                        end if
+                    end if
+                end if
+            end if
             
         case WM_LBUTTONUP   
             gApp.SuppressNotify = false   ' allow SCN_UPDATEUI
@@ -115,29 +115,29 @@ function frmEditorHScroll_WndProc( _
             return true
 
         case WM_PAINT
-            Dim As PAINTSTRUCT ps
-            Dim As HDC hDc
-            hDC = BeginPaint( hWnd, @ps )
+            dim as PAINTSTRUCT ps
+            dim as HDC hDc
+            hDC = BeginPaint( hwnd, @ps )
             SaveDC( hDC )
             FillRect( hDC, @ps.rcPaint, ghEditor.hBackBrushScrollBar )
             
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
-            dim as RECT rc: GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
-            dim as long GetXOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
-            gEditorHScroll(idxWindow).rc = rc
-            gEditorHScroll(idxWindow).rc.left = GetXOffset
-            gEditorHScroll(idxWindow).rc.right = GetXOffset + ((rc.right / gEditorHScroll(idxWindow).lineLength) * rc.right)
-            FillRect( hDC, @gEditorHScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
+                dim as RECT rc: GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
+                dim as long GetXOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
+                gEditorHScroll(idxWindow).rc = rc
+                gEditorHScroll(idxWindow).rc.left = GetXOffset
+                gEditorHScroll(idxWindow).rc.right = GetXOffset + ((rc.right / gEditorHScroll(idxWindow).lineLength) * rc.right)
+                FillRect( hDC, @gEditorHScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
             end if
             
-            EndPaint( hWnd, @ps )
+            EndPaint( hwnd, @ps )
             RestoreDC( hDC, -1 )
 
     end Select
 
     ' for messages that we don't deal with
-    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
 end function
 
@@ -145,7 +145,7 @@ end function
 ' ========================================================================================
 ' frmEditorHScroll_Show
 ' ========================================================================================
-function frmEditorHScroll_Show( ByVal hWndParent as HWnd ) as LRESULT
+function frmEditorHScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr
@@ -176,7 +176,7 @@ function frmEditorHScroll_NeedScrollBar( _
     if pWindow = 0 Then exit function
 
     dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(idxWindow) )
-    MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(POINT ptr, @rc), 2 )
+    MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
     
     ' We have to use PositionFromPoint calculations because the LinesOnScreen message does
     ' not take into account extra ascent and descent values.
@@ -190,6 +190,7 @@ function frmEditorHScroll_NeedScrollBar( _
 
     dim as long GetXOffset, GetLineEndPosition, endPos
     dim as boolean needHSB = false
+    
     for i as long = GetFirstVisibleLine to GetLastVisibleLine
         dim as long GetXOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
         GetLineEndPosition = SciExec( pDoc->hWindow(idxWindow), SCI_GETLINEENDPOSITION, i, 0 )
@@ -203,6 +204,7 @@ function frmEditorHScroll_NeedScrollBar( _
         end if
         if needHSB then exit for
     next
+    
     function = iif( needHSB, SW_SHOWNA, SW_HIDE )
 end function
 

@@ -53,8 +53,8 @@ function clsApp.RemoveDocument( byval pDoc as clsDocument ptr ) as long
     else
         do until pDocSearch = 0
             if pDocSearch->pDocNext = pDoc then
-            pDocSearch->pDocNext = pDoc->pDocNext
-            exit do
+                pDocSearch->pDocNext = pDoc->pDocNext
+                exit do
             end if
             pDocSearch = pDocSearch->pDocNext
         loop
@@ -284,7 +284,7 @@ function clsApp.ProjectSetFileType( _
         pDocSearch = this.pDocList
         do until pDocSearch = 0
             if pDocSearch->ProjectFileType = FILETYPE_MAIN then 
-            pDocSearch->ProjectFileType = FILETYPE_NORMAL
+                pDocSearch->ProjectFileType = FILETYPE_NORMAL
             end if
             pDocSearch = pDocSearch->pDocNext
         loop
@@ -293,7 +293,7 @@ function clsApp.ProjectSetFileType( _
         pDocSearch = this.pDocList
         do until pDocSearch = 0
             if pDocSearch->ProjectFileType = FILETYPE_RESOURCE then 
-            pDocSearch->ProjectFileType = FILETYPE_NORMAL
+                pDocSearch->ProjectFileType = FILETYPE_NORMAL
             end if
             pDocSearch = pDocSearch->pDocNext
         loop
@@ -377,9 +377,9 @@ function clsApp.CheckQuickRunEXE() as long
     for i as long = lbound(m_arrQuickRun) to ubound(m_arrQuickRun)
         if len(m_arrQuickRun(i)) then
             if AfxFileExists(m_arrQuickRun(i)) then 
-            AfxDeleteFile(m_arrQuickRun(i))
+                AfxDeleteFile(m_arrQuickRun(i))
             else
-            m_arrQuickRun(i) = ""
+                m_arrQuickRun(i) = ""
             end if   
         end if
     NEXT

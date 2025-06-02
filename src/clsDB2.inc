@@ -86,45 +86,45 @@ function clsDB2.dbAdd( _
         if parser->pDoc then .fileName = parser->pDoc->DiskFilename
         .nFileType    = parser->nFileType
         
-        select CASE id
+        select case id
             case DB2_STANDARDDATATYPE
-            .ElementName  = parser->varName
-            .VariableType = parser->varType
-            if .ElementName = "" then exit function
+                .ElementName  = parser->varName
+                .VariableType = parser->varType
+                if .ElementName = "" then exit function
             
             case DB2_TYPE    ' this handles ENUM also
-            ' If the type has already been added skip adding it again. 
-            if this.dbFindTYPE( parser->typeName) then return 0
-            .nLineStart    = parser->objectStartLine
-            .nLineEnd      = parser->objectEndLine
-            .ElementName   = parser->typeName
-            .VariableType  = parser->typeAlias  ' same as typeName unless it was an ALIAS (always search using this name)
-            .TypeExtends   = parser->TypeExtends
-            if .ElementName = "" then exit function
+                ' If the type has already been added skip adding it again. 
+                if this.dbFindTYPE( parser->typeName) then return 0
+                .nLineStart    = parser->objectStartLine
+                .nLineEnd      = parser->objectEndLine
+                .ElementName   = parser->typeName
+                .VariableType  = parser->typeAlias  ' same as typeName unless it was an ALIAS (always search using this name)
+                .TypeExtends   = parser->TypeExtends
+                if .ElementName = "" then exit function
 
             case DB2_TODO
-            .ElementName  = ""
-            .ElementData  = parser->fullLine
-            .nLineStart   = parser->objectStartLine + 1  ' display in listview
-            .nLineEnd     = parser->objectEndLine + 1  ' display in listview
+                .ElementName  = ""
+                .ElementData  = parser->fullLine
+                .nLineStart   = parser->objectStartLine + 1  ' display in listview
+                .nLineEnd     = parser->objectEndLine + 1  ' display in listview
     
             case DB2_FUNCTION
-            .nLineStart   = parser->objectStartLine
-            .nLineEnd     = parser->objectEndLine
-            .ElementName  = parser->functionName
-            .ParentName   = parser->typeName          
-            .CallTip      = parser->functionParams    ' Calltip
-            .GetSet       = parser->GetSet
-            if .ElementName = "" then exit function
+                .nLineStart   = parser->objectStartLine
+                .nLineEnd     = parser->objectEndLine
+                .ElementName  = parser->functionName
+                .ParentName   = parser->typeName          
+                .CallTip      = parser->functionParams    ' Calltip
+                .GetSet       = parser->GetSet
+                if .ElementName = "" then exit function
         
             case DB2_VARIABLE
-            .nLineStart     = parser->objectStartLine
-            .nLineEnd       = parser->objectEndLine
-            .ParentName     = parser->functionName
-            .ElementName    = parser->varName
-            .VariableType   = parser->varType
-            .VariableScope  = parser->varScope
-            if .ElementName = "" then exit function
+                .nLineStart     = parser->objectStartLine
+                .nLineEnd       = parser->objectEndLine
+                .ParentName     = parser->functionName
+                .ElementName    = parser->varName
+                .VariableType   = parser->varType
+                .VariableScope  = parser->varScope
+                if .ElementName = "" then exit function
 
         end select
 
@@ -191,7 +191,7 @@ function clsDB2.dbRewind() as integer
     ' Set index pointer to immediately before first array index 
     m_index = lbound(m_arrData) - 1
     function = 0
-END FUNCTION
+end function
 
 ''
 ''
@@ -208,7 +208,7 @@ function clsDB2.dbGetnext() as DB2_DATA ptr
         end if
     loop
     function = @m_arrData(m_index)
-END FUNCTION
+end function
 
 
 ''
