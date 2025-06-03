@@ -234,9 +234,31 @@ function frmMain_ProcessCommandLine( byval HWnd as HWnd ) as long
         
         if AfxFileExists(wszArg) then
             NumCommandLineFiles =+ 1
-            DataToSend.lpData  = @wszArg
-            DataToSend.cbdata  = (len(wszArg)*2) + 1
-            SendMessage(hwnd, WM_COPYDATA, len(DataToSend), cast(lParam, @DataToSend))
+            dim wszExt as wstring * MAX_PATH
+
+            ' We have a valid filename so determine what type it is.
+            wszExt = AfxStrPathname( "EXTN", wszArg )
+            wszExt = lcase(wszExt)
+            
+            select case wszExt
+            case APPEXTENSION    ' project file
+                ' Pass the info to our generic project open function to handle everything.
+                frmMain_OpenProjectSafely(HWND_FRMMAIN, wszArg) 
+
+            case ".session"      ' session file
+                gConfig.LoadSessionFile(wszArg)
+                
+            case else   ' .bas, .bi, .rc, etc...
+                dim pDoc as clsDocument ptr
+                pDoc = frmMain_OpenFileSafely( HWND, _
+                                        false, _    ' bIsNewFile
+                                        false, _    ' bIsTemplate
+                                        true,  _    ' bShowInTab
+                                        false, _    ' bIsInclude
+                                        wszArg, _   ' pwszName
+                                        0 )         ' pDocIn
+                if pDoc then UpdateMRUList(pDoc->DiskFilename) 
+            end select    
         end if
         
         i += 1
@@ -1661,33 +1683,33 @@ function frmMain_WndProc( _
             frmMain_SetFocusToCurrentCodeWindow
 
         case WM_COPYDATA      ' used during processing of commandline
-            dim pDataToGet as COPYDATASTRUCT ptr
-            dim pwszArg as wstring ptr 
-            dim wszExt as wstring * MAX_PATH
+'            dim pDataToGet as COPYDATASTRUCT ptr
+'            dim pwszArg as wstring ptr 
+'            dim wszExt as wstring * MAX_PATH
 
-            pDataToGet = cast(COPYDATASTRUCT ptr, lParam)
-            pwszArg = pDataToGet->lpData
+'            pDataToGet = cast(COPYDATASTRUCT ptr, lParam)
+'            pwszArg = pDataToGet->lpData
 
-            ' We have a valid filename so determine what type it is.
-            wszExt = AfxStrPathname( "EXTN", *pwszArg )
-            wszExt = lcase(wszExt)
+'            ' We have a valid filename so determine what type it is.
+'            wszExt = AfxStrPathname( "EXTN", *pwszArg )
+'            wszExt = lcase(wszExt)
             
-            select case wszExt
-            case APPEXTENSION    ' project file
-                ' Pass the info to our generic project open function to handle everything.
-                frmMain_OpenProjectSafely(HWND_FRMMAIN, *pwszArg) 
+'            select case wszExt
+'            case APPEXTENSION    ' project file
+'                ' Pass the info to our generic project open function to handle everything.
+'                frmMain_OpenProjectSafely(HWND_FRMMAIN, *pwszArg) 
                 
-            case else   ' .bas, .bi, .rc, etc...
-                dim pDoc as clsDocument ptr
-                pDoc = frmMain_OpenFileSafely( HWND, _
-                                        false, _    ' bIsNewFile
-                                        false, _    ' bIsTemplate
-                                        true,  _    ' bShowInTab
-                                        false, _    ' bIsInclude
-                                        *pwszArg, _  ' pwszName
-                                        0 )         ' pDocIn
-                if pDoc then UpdateMRUList(pDoc->DiskFilename) 
-            end select    
+'            case else   ' .bas, .bi, .rc, etc...
+'                dim pDoc as clsDocument ptr
+'                pDoc = frmMain_OpenFileSafely( HWND, _
+'                                        false, _    ' bIsNewFile
+'                                        false, _    ' bIsTemplate
+'                                        true,  _    ' bShowInTab
+'                                        false, _    ' bIsInclude
+'                                        *pwszArg, _  ' pwszName
+'                                        0 )         ' pDocIn
+'                if pDoc then UpdateMRUList(pDoc->DiskFilename) 
+'            end select    
             
 
         ''  CUSTOM MESSAGES

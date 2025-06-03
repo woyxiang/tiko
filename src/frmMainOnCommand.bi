@@ -36,6 +36,7 @@ declare function OnCommand_FileAutoSaveGenerateFilename( byval wszFilename as CW
 declare function OnCommand_FileAutoSaveFileCheck( byval wszFilename as CWSTR ) as CWSTR
 declare function OnCommand_FileLoadSession( byval hwnd as HWND ) as LRESULT
 declare function OnCommand_FileSaveSession( byval hwnd as HWND ) as LRESULT
+declare function OnCommand_FileCloseSession( byval hwnd as HWND ) as LRESULT
 
 declare function OnCommand_EditRedo( byval hEdit as HWND ) as LRESULT
 declare function OnCommand_EditUndo( byval hEdit as HWND ) as LRESULT

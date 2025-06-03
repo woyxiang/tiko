@@ -984,6 +984,7 @@ function clsConfig.CloseSessionFile( byref wszSessionFile as wstring ) as boolea
     if gConfig.SaveSessionFile( wszSessionFile) = false then exit function
     if OnCommand_FileClose(HWND_FRMMAIN, EFC_CLOSEALL) = false then exit function
     gApp.IsSessionActive = false
+    gApp.SessionFilename = ""
     function = true  ' successful close
 end function
 

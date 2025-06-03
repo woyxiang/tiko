@@ -67,6 +67,7 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_AUTOSAVE: wszText = L(427,"Auto Save") 
         case IDM_SAVESESSION: wszText = L(425,"Save Session") & "..."
         case IDM_LOADSESSION: wszText = L(426,"Load Session") & "..."
+        case IDM_CLOSESESSION: wszText = L(436,"Close Session")
         case IDM_MRUSESSION: wszText = L(218,"Recent Sessions")
         case IDM_MRUSESSIONBASE to IDM_MRUSESSIONBASE + 9
             return gConfig.MRUSESSION( idMenu - IDM_MRUSESSIONBASE )
@@ -250,6 +251,7 @@ function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_FILE, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_LOADSESSION, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_SAVESESSION, 0, false, false )
+    setTopMenuItem( IDC_MENUBAR_FILE, IDM_CLOSESESSION, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_MRUSESSION, IDM_MRUSESSIONFILES, false, false )
     
     updateMRUSessionFilesItems()

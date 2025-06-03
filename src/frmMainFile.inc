@@ -536,4 +536,13 @@ function OnCommand_FileSaveSession( byval hwnd as HWND ) as LRESULT
     end if
     function = 0
 end function
+
+
+' ========================================================================================
+' Close a session
+' ========================================================================================
+function OnCommand_FileCloseSession( byval hwnd as HWND ) as LRESULT
+    gConfig.CloseSessionFile(gApp.SessionFilename)
+    function = 0
+end function
         

@@ -48,7 +48,7 @@ function frmMain_OnCommand( _
     ' Kill any currently displayed topmenu whenever a popup dialog is about to be activated
     select case id
         case IDM_FILEOPEN, IDM_FILESAVEAS, _
-            IDM_SAVESESSION, IDM_LOADSESSION, _
+            IDM_SAVESESSION, IDM_LOADSESSION,  _
             IDM_KEYBOARDSHORTCUTS, IDM_USERTOOLSDIALOG, IDM_OPTIONSDIALOG, IDM_BUILDCONFIG, _
             IDM_FIND, IDM_FINDINFILES, IDM_PROJECTOPEN, IDM_PROJECTSAVEAS, _
             IDM_PROJECTOPTIONS, IDM_COMMANDLINE, IDM_ABOUT
@@ -124,6 +124,10 @@ function frmMain_OnCommand( _
         case IDM_AUTOSAVE:           OnCommand_FileAutoSave( hwnd )
         case IDM_LOADSESSION:        OnCommand_FileLoadSession( hwnd )   
         case IDM_SAVESESSION:        OnCommand_FileSaveSession( hwnd )   
+        case IDM_CLOSESESSION
+            gConfig.wszLastActiveSession = ""
+            gConfig.SaveConfigFile()
+            OnCommand_FileCloseSession( hwnd )   
         case IDM_FILECLOSEALL:       OnCommand_FileClose( hwnd, EFC_CLOSEALL )
         case IDM_FILECLOSEALLOTHERS: OnCommand_FileClose( hwnd, EFC_CLOSEALLOTHERS )
         case IDM_CLOSEALLFORWARD:    OnCommand_FileClose( hwnd, EFC_CLOSEALLFORWARD )

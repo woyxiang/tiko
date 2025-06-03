@@ -65,9 +65,13 @@ function frmMain_FileTopMenuStates() as long
     CheckMarkTopMenuItem( IDM_AUTOSAVE, iif( gConfig.AutoSaveFiles, true, false ))
 
     if gTTabCtl.GetItemCount() then
-        for idMenu as long = IDM_FILECLOSE to IDM_SAVESESSION
+        for idMenu as long = IDM_FILECLOSE to IDM_MRUSESSION
             EnableTopMenuItem( idMenu, true )
         next
+    end if
+
+    if gApp.IsSessionActive = false then 
+        EnableTopMenuItem( IDM_CLOSESESSION, false )
     end if
 
     if gApp.IsProjectActive then 
