@@ -28,25 +28,25 @@
 #include once "frmUserTools.bi"
 #include once "frmOutput.bi"
 
-Dim Shared gCompile As COMPILE_TYPE
+dim shared gCompile as COMPILE_TYPE
 
 ''
 '' Main module that handles the entire compile process
 ''
-function code_Compile( ByVal wID As Long ) As boolean
+function code_Compile( byval wID as long ) as boolean
 
-    Dim pDoc As clsDocument Ptr
+    dim pDoc as clsDocument ptr
     
-    Dim wszTemp      As WString * MAX_PATH 
-    Dim wszFileExe   As WString * MAX_PATH
+    dim wszTemp      as wstring * MAX_PATH 
+    dim wszFileExe   as wstring * MAX_PATH
     dim wszCompile   as CWSTR
     dim wszCommand   as CWSTR 
     dim wszParams    as CWSTR
     dim sConsoleText as string 
     
-    Dim As CWSTR wExeCmd, wDQ, wsLogSt, wst
+    dim as CWSTR wExeCmd, wDQ, wsLogSt, wst
             
-    Dim As BOOLEAN fCompile32, fCompile64
+    dim as boolean fCompile32, fCompile64
     
     dim as long idxBuild, f, i, n, nCount
     
@@ -66,21 +66,21 @@ function code_Compile( ByVal wID As Long ) As boolean
 
     ' Can only continue to compile if the primary source code file
     ' is not dirty and needs to be saved.
-    if wID <> IDM_QUICKRUN THEN
-        If gConfig.CompileAutosave Then
-            ' If there any "New" files that have not been edited yet causing them to show 
+    if wID <> IDM_QUICKRUN then
+        if gConfig.CompileAutosave then
+            ' if there any "New" files that have not been edited yet causing them to show 
             ' as dirty then we will mark them now so that the FileSaveAll command will
             ' ask to save it (otherwise a compile error will show).
             dim pDoc as clsDocument ptr = gApp.pDocList
             do until pDoc = 0
-            if pDoc->IsNewFlag then pDoc->UserModified = true
-            pDoc = pDoc->pDocNext
+                if pDoc->IsNewFlag then pDoc->UserModified = true
+                pDoc = pDoc->pDocNext
             loop
-            If OnCommand_FileSaveAll(HWND_FRMMAIN) Then 
-            SetCompileStatusBarMessage( "", 0 )
-            Return True  ' user cancelled save
+            if OnCommand_FileSaveAll(HWND_FRMMAIN) then 
+                SetCompileStatusBarMessage( "", 0 )
+                return true  ' user cancelled save
             end if   
-        End If
+        end if
     end if
     
     ' Get the array index for the current selected build (project or document)
@@ -91,65 +91,65 @@ function code_Compile( ByVal wID As Long ) As boolean
     gConfig.FBWINCompiler32 = ProcessFromCurdriveApp(gConfig.FBWINCompiler32)
     gConfig.FBWINCompiler64 = ProcessFromCurdriveApp(gConfig.FBWINCompiler64)
     if gConfig.Builds(idxBuild).Is32bit then
-        fCompile32 = True: fCompile64 = False
+        fCompile32 = true: fCompile64 = false
         gCompile.CompilerPath = gConfig.FBWINcompiler32
     end if
     if gConfig.Builds(idxBuild).Is64bit then
         gCompile.CompilerPath = gConfig.FBWINcompiler64
-        fCompile32 = False: fCompile64 = True
-    End if
+        fCompile32 = false: fCompile64 = true
+    end if
 
     ' Convert relative path to absolute path if needed.
     if AfxPathIsRelative(gCompile.CompilerPath) then
         gCompile.CompilerPath = AfxPathCombine(AfxGetExePathName, gCompile.CompilerPath)
-    END IF
+    end if
 
 
     ' Check to see if the compiler exists
-    If AfxFileExists(gCompile.CompilerPath) = 0 Then 
+    if AfxFileExists(gCompile.CompilerPath) = 0 then 
         wszTemp = L(202,"Invalid defined compiler path.")
         wszTemp = wszTemp & vbcrlf & "Path: " & gCompile.CompilerPath
         SetCompileStatusBarMessage( "", 0 )
         MessageBox( HWND_FRMMAIN, wszTemp, L(201,"Error"), _
                         MB_OK Or MB_ICONINFORMATION Or MB_DEFBUTTON1 )
-        Function = False: Exit Function
-    End If
+        function = false: exit function
+    end if
     
     
     ' Set some compile flags depending on the type of compile requested.
     gCompile.CompileID = wID
-    Select Case wID
-        Case IDM_BUILDEXECUTE: gCompile.RunAfterCompile = True
-        Case IDM_QUICKRUN:     gCompile.RunAfterCompile = True
-        Case IDM_COMPILE:      gCompile.RunAfterCompile = False
-    End Select
+    select case wID
+        case IDM_BUILDEXECUTE: gCompile.RunAfterCompile = true
+        case IDM_QUICKRUN:     gCompile.RunAfterCompile = true
+        case IDM_COMPILE:      gCompile.RunAfterCompile = false
+    End select
     
     
-    Dim pDocMain As clsDocument Ptr 
-    If gApp.IsProjectActive Then
+    dim pDocMain as clsDocument ptr 
+    if gApp.IsProjectActive then
         pDocMain = gApp.GetMainDocumentPtr()
-        If pDocMain = 0 Then
+        if pDocMain = 0 then
             SetCompileStatusBarMessage( "", 0 )
             MessageBox( HWND_FRMMAIN, L(208,"No Main file specified for the project."), L(201,"Error"), _
                             MB_OK Or MB_ICONINFORMATION Or MB_DEFBUTTON1 )
-            Function = False: Exit Function
-        End If
-    Else
+            function = false: exit function
+        end if
+    else
         pDocMain = gTTabCtl.GetActiveDocumentPtr()
-    End If
-    If pDocMain = 0 Then 
+    end if
+    if pDocMain = 0 then 
         SetCompileStatusBarMessage( "", 0 )
         return 0
     end if
     
     ' Run any precompile tools
-    for y as long = LBound(gConfig.Tools) To UBound(gConfig.Tools)
+    for y as long = lbound(gConfig.Tools) to ubound(gConfig.Tools)
         if gConfig.Tools(y).Action = USERTOOL_ACTION_PRECOMPILE then
             frmUserTools_ExecuteUserTool(y)
         end if   
     next
 
-    ' If this is a QuickRun then we need to copy the current source code to a temporary bas file
+    ' if this is a QuickRun then we need to copy the current source code to a temporary bas file
     ' and compile that bas file instead. The resulting bas file will be deleted after the compiling
     ' has completed and exe will be deleted when the exe is terminated. 
     dim as CWSTR wszTempMainFilename
@@ -192,29 +192,29 @@ function code_Compile( ByVal wID As Long ) As boolean
         end if
     next
 
-    If gApp.IsProjectActive Then
-        Dim pDocResource As clsDocument Ptr = gApp.GetResourceDocumentPtr()
+    if gApp.IsProjectActive then
+        dim pDocResource as clsDocument ptr = gApp.GetResourceDocumentPtr()
         if pDocResource then gCompile.ResourceFile = pDocResource->DiskFilename
 
         gCompile.ObjFolder = gCompile.MainFolder & APPEXTENSION & "\"
         gCompile.ObjFolderShort = ".\" & APPEXTENSION & "\"
 
-        If fCompile32 Then 
+        if fCompile32 then 
             gCompile.ObjID = "32.o"
             gCompile.CompileFlags = gCompile.CompileFlags + " " + gApp.ProjectOther32 +" " + gCompile.CompileIncludes          
-        End If
-        If fCompile64 Then 
+        end if
+        if fCompile64 then 
             gCompile.ObjID = "64.o"
             gCompile.CompileFlags = gCompile.CompileFlags + " " + gApp.ProjectOther64 + " " + gCompile.CompileIncludes          
-        End If   
+        end if   
         
         ' Make sure the folders exist
         SHCreateDirectory( 0, gCompile.ObjFolder )
 
-    Else
+    else
         ' No active project
         gCompile.CompileFlags = gCompile.CompileFlags + " " + gConfig.CompilerSwitches + " " + gCompile.CompileIncludes  
-    End If
+    end if
 
 
     ' Search main source code for any user embedded compile directives. These will override
@@ -225,17 +225,17 @@ function code_Compile( ByVal wID As Long ) As boolean
     for i as long = lbound(directives) to ubound(directives)
         select case directives(i).DirectiveFlag 
             case IDM_CONSOLE
-            n = instr(gCompile.CompileFlags, " -S GUI ")
-            if n then gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 8)
-            gCompile.CompileFlags = gCompile.CompileFlags + " -s console "
+                n = instr(gCompile.CompileFlags, " -S GUI ")
+                if n then gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 8)
+                gCompile.CompileFlags = gCompile.CompileFlags + " -s console "
             case IDM_GUI
-            n = instr(gCompile.CompileFlags, " -S CONSOLE ")
-            if n then gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 12)
-            gCompile.CompileFlags = gCompile.CompileFlags + " -s gui "
+                n = instr(gCompile.CompileFlags, " -S CONSOLE ")
+                if n then gCompile.CompileFlags = AfxStrDelete(gCompile.CompileFlags, n, 12)
+                gCompile.CompileFlags = gCompile.CompileFlags + " -s gui "
             case IDM_RESOURCE
-            gCompile.ResourceFile = directives(i).DirectiveText
-            case IDM_LINKMODULES
-            gCompile.LinkModules = gCompile.LinkModules & " " & directives(i).DirectiveText
+                gCompile.ResourceFile = directives(i).DirectiveText
+                case IDM_LINKMODULES
+                gCompile.LinkModules = gCompile.LinkModules & " " & directives(i).DirectiveText
         end select
     next
     gCompile.LinkModules = AddPathsToLinkModules(gCompile.LinkModules)
@@ -244,25 +244,25 @@ function code_Compile( ByVal wID As Long ) As boolean
     ' Need to determine the output filename in order to search for any existing
     ' running process.
     gCompile.OutputFilename = gCompile.MainFolder & gCompile.MainName & ".exe"
-    If Instr(" " & Ucase(gCompile.CompileFlags), " -DLL") Then
+    if instr(" " & ucase(gCompile.CompileFlags), " -DLL") then
         gCompile.OutputFilename = gCompile.MainFolder & gCompile.MainName & ".dll"
-    End If
-    If Instr(" " & Ucase(gCompile.CompileFlags), " -DYLIB") Then
+    end if
+    if instr(" " & ucase(gCompile.CompileFlags), " -DYLIB") then
         gCompile.OutputFilename = gCompile.MainFolder & gCompile.MainName & ".dll"
-    End If
-    If Instr(" " & Ucase(gCompile.CompileFlags), " -LIB") Then
+    end if
+    if instr(" " & ucase(gCompile.CompileFlags), " -LIB") then
         gCompile.OutputFilename = gCompile.MainFolder & "lib" & gCompile.MainName & ".a"
-    End If
+    end if
 
 
     ' Need to test if the resulting application to be compiled is actually running
     ' in memory. This would cause the compile to fail.
-    If IsProcessRunning(@gCompile.OutputFilename) Then
+    if IsProcessRunning(@gCompile.OutputFilename) then
         SetCompileStatusBarMessage( "", 0 )
         MessageBox( HWND_FRMMAIN, L(200,"Program running") & "...", L(201,"Error"), _
                         MB_OK Or MB_ICONINFORMATION Or MB_DEFBUTTON1 )
-        Function = False: Exit Function
-    End If
+        function = false: exit function
+    end if
         
 
     gApp.IsCompiling = true    
@@ -270,18 +270,18 @@ function code_Compile( ByVal wID As Long ) As boolean
     dim as HCURSOR hCurSave = GetCursor()
     SetCursor( LoadCursor(0, IDC_WAIT) )
     pDoc = gTTabCtl.GetActiveDocumentPtr()
-    if pDoc THEN SciExec( pDoc->hWindow(0), SCI_SETCURSOR, SC_CURSORWAIT, 0 )
+    if pDoc then SciExec( pDoc->hWindow(0), SCI_SETCURSOR, SC_CURSORWAIT, 0 )
 
 
     ' Change to the output code directory
-    ChDir gCompile.MainFolder
+    chdir gCompile.MainFolder
     
-    gCompile.StartTime = Timer
+    gCompile.StartTime = timer
     
 
-    ' If this is a project then we need to compile all of the modules first
+    ' if this is a project then we need to compile all of the modules first
     ' in order to create the necessary *.o object files
-    If gApp.IsProjectActive Then
+    if gApp.IsProjectActive then
         gCompile.CompileFlags = " " & gCompile.CompileFlags & " "
         dim as string g_flag = iif(instr(gCompile.CompileFlags, " -g "), " -g -nostrip ", "")
         dim as string e_flag = iif(instr(gCompile.CompileFlags, " -e "), " -e ", "")
@@ -291,54 +291,54 @@ function code_Compile( ByVal wID As Long ) As boolean
         dim as long nFileCount   ' used to calculate when to fire an AfxDoEvents
         pDoc = gApp.pDocList
         do until pDoc = 0
-            If pDoc->ProjectFileType = FILETYPE_MODULE Then
-            ' Get the base name of the file for constructing the object filename
-            wszTemp = AfxStrPathname("NAME", pDoc->DiskFilename)
-            wszTemp = gCompile.ObjFolderShort & wszTemp & gCompile.ObjID
-            
-            ' Compare the source code file datetime to the object. If the source code
-            ' date time is greater then we need to recompile it, otherwise we will simply
-            ' link to the existing object file.
-            Dim As FILETIME ft1 = AfxGetFileLastWriteTime(pDoc->DiskFilename) ' source file
-            Dim As FILETIME ft2 = AfxGetFileLastWriteTime(wszTemp)  ' object file
-
-            If (AfxFileTimeToVariantTime(ft1) > AfxFileTimeToVariantTime(ft2)) or _
-                (wID = IDM_REBUILDALL)  Then
-
-                nFileCount = nFileCount + 1
-                if (nFileCount mod 5) = 0 then AfxDoEvents
+            if pDoc->ProjectFileType = FILETYPE_MODULE then
+                ' Get the base name of the file for constructing the object filename
+                wszTemp = AfxStrPathname("NAME", pDoc->DiskFilename)
+                wszTemp = gCompile.ObjFolderShort & wszTemp & gCompile.ObjID
                 
-                wst = L(203, "Compiling") + "... " + AfxStrPathname("NAMEX", pDoc->DiskFilename) 
-                SetCompileStatusBarMessage( wst, 0 )
-    
-                wszCommand = gCompile.CompilerPath
-                wszParams = g_flag & e_flag & ex_flag & exx_flag &  _
-                            gCompile.CompileIncludes + " " + _
-                            " -c -b " + wDQ + pDoc->DiskFilename + wDQ + _
-                            " -v -o " + wDQ + wszTemp + wDQ 
-                RedirConsoleToFile( wszCommand, wszParams, sConsoleText )
-                gCompile.wszFullCommandLine = wszCommand & " " & wszParams
-                gCompile.wszFullLogFile = sConsoleText
+                ' Compare the source code file datetime to the object. if the source code
+                ' date time is greater then we need to recompile it, otherwise we will simply
+                ' link to the existing object file.
+                dim as FILETIME ft1 = AfxGetFileLastWriteTime(pDoc->DiskFilename) ' source file
+                dim as FILETIME ft2 = AfxGetFileLastWriteTime(wszTemp)  ' object file
 
-                ' Need to check to see if any errors occurred while compiling this
-                ' object file. If yes, then stop processing object files and display
-                ' the error.
-                if ParseLogForError(sConsoleText, false, wID, fCompile64, true) then   ' error detected
-                    gApp.IsCompiling = false
-                    SetCursor( hCurSave )
-                    ResetScintillaCursors()
-                    return true
+                if (AfxFileTimeToVariantTime(ft1) > AfxFileTimeToVariantTime(ft2)) orelse _
+                    (wID = IDM_REBUILDALL)  then
+
+                    nFileCount = nFileCount + 1
+                    if (nFileCount mod 5) = 0 then AfxDoEvents
+                    
+                    wst = L(203, "Compiling") + "... " + AfxStrPathname("NAMEX", pDoc->DiskFilename) 
+                    SetCompileStatusBarMessage( wst, 0 )
+        
+                    wszCommand = gCompile.CompilerPath
+                    wszParams = g_flag & e_flag & ex_flag & exx_flag &  _
+                                gCompile.CompileIncludes + " " + _
+                                " -c -b " + wDQ + pDoc->DiskFilename + wDQ + _
+                                " -v -o " + wDQ + wszTemp + wDQ 
+                    RedirConsoleToFile( wszCommand, wszParams, sConsoleText )
+                    gCompile.wszFullCommandLine = wszCommand & " " & wszParams
+                    gCompile.wszFullLogFile = sConsoleText
+
+                    ' Need to check to see if any errors occurred while compiling this
+                    ' object file. if yes, then stop processing object files and display
+                    ' the error.
+                    if ParseLogForError(sConsoleText, false, wID, fCompile64, true) then   ' error detected
+                        gApp.IsCompiling = false
+                        SetCursor( hCurSave )
+                        ResetScintillaCursors()
+                        return true
+                    end if
+                    sConsoleText = ""
                 end if
-                sConsoleText = ""
-            End If
             
-            End If
+            end if
             pDoc = pDoc->pDocNext
         loop
-    End If
+    end if
 
     
-    ' Compile the Main file. If this is a project then we also need to link
+    ' Compile the Main file. if this is a project then we also need to link
     ' in all of the *.o object files.
     ' Per fxm post https://www.freebasic.net/forum/viewtopic.php?f=8&p=266126#p266126
     ' and https://www.freebasic.net/forum/viewtopic.php?f=3&t=28723&p=274431#p274431
@@ -372,17 +372,17 @@ function code_Compile( ByVal wID As Long ) As boolean
         ' filename for gCompile.OutputFilename based on the man file being linked.
     end if
     
-    If gApp.IsProjectActive Then
+    if gApp.IsProjectActive then
         pDoc = gApp.pDocList
         do until pDoc = 0
-            If pDoc->ProjectFileType = FILETYPE_MODULE Then
-            ' Get the base name of the file for constructing the object filename
-            wszTemp = AfxStrPathname("NAME", pDoc->DiskFilename)
-            wszParams = wszParams + " " + gCompile.ObjFolderShort + wszTemp + gCompile.ObjID
-            End If
+            if pDoc->ProjectFileType = FILETYPE_MODULE then
+                ' Get the base name of the file for constructing the object filename
+                wszTemp = AfxStrPathname("NAME", pDoc->DiskFilename)
+                wszParams = wszParams + " " + gCompile.ObjFolderShort + wszTemp + gCompile.ObjID
+            end if
             pDoc = pDoc->pDocNext
         loop
-    End If
+    end if
 
     ' Attempt to delete any existing output file so it will not exist
     ' should the compile fail.
@@ -409,12 +409,12 @@ function code_Compile( ByVal wID As Long ) As boolean
     SetCursor( hCurSave )
     ResetScintillaCursors()
     
-    gCompile.EndTime = Timer
+    gCompile.EndTime = timer
     gCompile.SystemTime = AfxSystemSystemTime 
 
-    ' If this was a QuickRun then delete the temporary code file that was created.
+    ' if this was a QuickRun then delete the temporary code file that was created.
     ' Both the temporary disk file and (if applicable) the VD MAIN CODEGEN file.
-    if wID = IDM_QUICKRUN THEN 
+    if wID = IDM_QUICKRUN then 
         AfxDeleteFile( gCompile.MainFilename )
         AfxDeleteFile( wszTempMainFilename )
     end if    
@@ -428,31 +428,31 @@ function code_Compile( ByVal wID As Long ) As boolean
         ' Make sure gApp.IsCompiling = false before returning
     else
         ' Run any postcompile tools
-        for y as long = LBound(gConfig.Tools) To UBound(gConfig.Tools)
+        for y as long = lbound(gConfig.Tools) to ubound(gConfig.Tools)
             if gConfig.Tools(y).Action = USERTOOL_ACTION_POSTCOMPILE then
             frmUserTools_ExecuteUserTool(y)
             end if   
         next
         
-        If gCompile.RunAfterCompile Then 
-            ' If gCompile.OutputFilename is a relative filename then convert it to full filename.
+        if gCompile.RunAfterCompile then 
+            ' if gCompile.OutputFilename is a relative filename then convert it to full filename.
             gCompile.OutputFilename = AfxStrReplace( gCompile.OutputFilename, "/", "\" )
             if AfxPathIsRelative( gCompile.OutputFilename ) then 
-            gCompile.OutputFilename = AfxPathCombine( gCompile.MainFolder, gCompile.OutputFilename )
+                gCompile.OutputFilename = AfxPathCombine( gCompile.MainFolder, gCompile.OutputFilename )
             end if
 
             RunEXE( _
-            gCompile.OutputFilename,    _
-            iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
+                gCompile.OutputFilename,    _
+                iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
             )
-        End If
+        end if
     
     end if
     
     gApp.IsCompiling = false
 
-    Function = True   ' successful
-End Function
+    function = true   ' successful
+End function
 
 
 ''

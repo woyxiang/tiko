@@ -73,12 +73,12 @@ function frmPanelVScroll_UpdateUI() as LRESULT
     blend.SourceConstantAlpha = 200  '255
     blend.AlphaFormat = AC_SRC_ALPHA
 
-    dim as POINT ptPos
+    dim as point ptPos
     dim as RECT rc = AfxGetWindowRect( HWND_FRMPANEL_VSCROLLBAR )
     ptPos.x = rc.left
     ptPos.y = rc.top
     dim as SIZE sizeWnd = (nWidth, nHeight)
-    dim as POINT ptSrc = (0, 0)
+    dim as point ptSrc = (0, 0)
 
     UpdateLayeredWindow ( _
             HWND_FRMPANEL_VSCROLLBAR, _  ' A handle to a layered window
@@ -88,7 +88,7 @@ function frmPanelVScroll_UpdateUI() as LRESULT
             hDC, _          ' Handle to DC of layered window from CreateCompatibleDC
             @ptSrc, _       ' The location of the layer in the device context
             0, _            ' COLORREF color key to be used when composing the layered window
-            @blend, _       ' Pointer to BLENDfunction structure
+            @blend, _       ' pointer to BLENDfunction structure
             ULW_ALPHA )     ' Use pblend as the blend function
 
     SelectObject( hDC, hBmpOld )
@@ -138,80 +138,80 @@ end function
 ' frmPanelVScroll Window procedure
 ' ========================================================================================
 function frmPanelVScroll_WndProc( _
-            byval HWnd   as HWnd, _
+            byval hwnd   as HWND, _
             byval uMsg   as UINT, _
             byval wParam as WPARAM, _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static as POINT prev_pt   ' screen pt.y cursor position
+    static as point prev_pt   ' screen pt.y cursor position
 
     select case uMsg
         case WM_LBUTTONDOWN
-            dim as POINT pt: GetCursorPos( @pt )
+            dim as point pt: GetCursorPos( @pt )
             frmPanelVScroll_calcVThumbRect()   ' in client coordinates
             dim as RECT rc = gPanelVScroll.rc ' covert copy to screen coordinates
-            MapWindowPoints( HWND_FRMPANEL_VSCROLLBAR, HWND_DESKTOP, cast(POINT ptr, @rc), 2)
+            MapWindowpoints( HWND_FRMPANEL_VSCROLLBAR, HWND_DESKTOP, cast(point ptr, @rc), 2)
             if PtInRect( @rc, pt ) then
-            prev_pt = pt
-            gApp.bDragActive = true
-            SetCapture( HWnd )
+                prev_pt = pt
+                gApp.bDragActive = true
+                SetCapture( HWnd )
             else
-            ' we have clicked on a PageUp or PageDn
-            dim as long nTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
-            if pt.y < rc.top then
-                nTopIndex = max( nTopIndex - gPanelVScroll.itemsPerPage, 0 )
-                SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-                frmPanelVScroll_calcVThumbRect()   ' in client coordinates
-                if gApp.isWineActive then
-                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-                else
-                    frmPanelVScroll_UpdateUI()
-                end if   
-                AfxRedrawWindow( gPanelVScroll.hListBox )
-            elseif pt.y > rc.bottom then
-                dim as long nMaxTopIndex = gPanelVScroll.numItems - gPanelVScroll.itemsPerPage
-                nTopIndex = min( nTopIndex + gPanelVScroll.itemsPerPage, nMaxTopIndex )
-                SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-                frmPanelVScroll_calcVThumbRect()   ' in client coordinates
-                if gApp.isWineActive then
-                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-                else
-                    frmPanelVScroll_UpdateUI()
-                end if   
-                AfxRedrawWindow( gPanelVScroll.hListBox )
-            end if
+                ' we have clicked on a PageUp or PageDn
+                dim as long nTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
+                if pt.y < rc.top then
+                    nTopIndex = max( nTopIndex - gPanelVScroll.itemsPerPage, 0 )
+                    SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmPanelVScroll_calcVThumbRect()   ' in client coordinates
+                    if gApp.isWineActive then
+                        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+                    else
+                        frmPanelVScroll_UpdateUI()
+                    end if   
+                    AfxRedrawWindow( gPanelVScroll.hListBox )
+                elseif pt.y > rc.bottom then
+                    dim as long nMaxTopIndex = gPanelVScroll.numItems - gPanelVScroll.itemsPerPage
+                    nTopIndex = min( nTopIndex + gPanelVScroll.itemsPerPage, nMaxTopIndex )
+                    SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmPanelVScroll_calcVThumbRect()   ' in client coordinates
+                    if gApp.isWineActive then
+                        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+                    else
+                        frmPanelVScroll_UpdateUI()
+                    end if   
+                    AfxRedrawWindow( gPanelVScroll.hListBox )
+                end if
             end if
             
         case WM_MOUSEMOVE
             if gApp.bDragActive then
-            dim as POINT pt: GetCursorPos( @pt )
-            if pt.y <> prev_pt.y then 
-                dim as long delta = pt.y - prev_pt.y 
-                ' convert to client coordinates for ease of use
-                dim as RECT rc: GetClientRect( HWND_FRMPANEL_VSCROLLBAR, @rc )
+                dim as point pt: GetCursorPos( @pt )
+                if pt.y <> prev_pt.y then 
+                    dim as long delta = pt.y - prev_pt.y 
+                    ' convert to client coordinates for ease of use
+                    dim as RECT rc: GetClientRect( HWND_FRMPANEL_VSCROLLBAR, @rc )
 
-                gPanelVScroll.rc.top = max(0, gPanelVScroll.rc.top + delta)
-                gPanelVScroll.rc.top = min(gPanelVScroll.rc.top, rc.bottom-gPanelVScroll.thumbHeight)
-                gPanelVScroll.rc.bottom = gPanelVScroll.rc.top + gPanelVScroll.thumbHeight
+                    gPanelVScroll.rc.top = max(0, gPanelVScroll.rc.top + delta)
+                    gPanelVScroll.rc.top = min(gPanelVScroll.rc.top, rc.bottom-gPanelVScroll.thumbHeight)
+                    gPanelVScroll.rc.bottom = gPanelVScroll.rc.top + gPanelVScroll.thumbHeight
 
-                prev_pt = pt
-                
-                dim as long nPrevTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
-                dim as long nLastIndex = (gPanelVScroll.rc.bottom / rc.bottom) * gPanelVScroll.numItems
-                dim as long nTopIndex = nLastIndex - gPanelVScroll.itemsPerPage
-                if nTopIndex <> nPrevTopIndex then
-                    SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-                    AfxRedrawWindow( gPanelVScroll.hListBox )
-                end if   
+                    prev_pt = pt
+                    
+                    dim as long nPrevTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
+                    dim as long nLastIndex = (gPanelVScroll.rc.bottom / rc.bottom) * gPanelVScroll.numItems
+                    dim as long nTopIndex = nLastIndex - gPanelVScroll.itemsPerPage
+                    if nTopIndex <> nPrevTopIndex then
+                        SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                        AfxRedrawWindow( gPanelVScroll.hListBox )
+                    end if   
 
-                if gApp.isWineActive then
-                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-                else
-                    frmPanelVScroll_UpdateUI()
-                end if   
+                    if gApp.isWineActive then
+                        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+                    else
+                        frmPanelVScroll_UpdateUI()
+                    end if   
+                end if
             end if
-        end if
             
         case WM_LBUTTONUP   
             gApp.bDragActive = false
@@ -222,18 +222,18 @@ function frmPanelVScroll_WndProc( _
         
         case WM_ERASEBKGND
             if gApp.isWineActive then
-            return true
+                return true
             end if
             
         case WM_PAINT
             if gApp.isWineActive then
-            Dim As PAINTSTRUCT ps
-            Dim As HDC hDC
-            hDC = BeginPaint( hWnd, @ps )
-            FillRect( hDC, @ps.rcPaint, ghPanel.hBackBrushScrollBar )
-            FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
-            EndPaint hWnd, @ps
-            exit function
+                Dim As PAINTSTRUCT ps
+                Dim As HDC hDC
+                hDC = BeginPaint( hWnd, @ps )
+                FillRect( hDC, @ps.rcPaint, ghPanel.hBackBrushScrollBar )
+                FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
+                EndPaint hWnd, @ps
+                exit function
             end if      
 
     end select

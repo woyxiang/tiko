@@ -18,171 +18,171 @@
 ' ========================================================================================
 ' Load the Recent Files/Projects Treeview
 ' ========================================================================================
-public Function frmRecent_LoadTreeview() As LRESULT
+public function frmRecent_LoadTreeview() as LRESULT
 
-    Dim As CWSTR wzStr 
-    dim As HTREEITEM hNode, hFirstNode
-    Dim As BOOLEAN fEmpty = True 
+    dim as CWSTR wzStr 
+    dim as HTREEITEM hNode, hFirstNode
+    dim as boolean fEmpty = true 
 
-    Dim As HWnd hTree = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_TREEVIEW) 
+    dim as HWND hTree = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_TREEVIEW) 
 
     Treeview_DeleteAllItems(hTree) 
 
     ''  RECENT FILES
-    wzStr = UCase(L(10, "Recent Files")) 
+    wzStr = ucase(L(10, "Recent Files")) 
     hNode = TreeView_AppendItem( hTree, TVI_ROOT, wzStr )
     hFirstNode = hNode
     gApp.hRecentFilesRootNode = hNode
-    Treeview_SetBold( hTree, hNode, TRUE) 
-    For i As Long = 0 To 9 
-        ' If the file no longer exists then remove it from the MRU list 
+    Treeview_SetBold( hTree, hNode, true) 
+    for i as long = 0 to 9 
+        ' if the file no longer exists then remove it from the MRU list 
         gConfig.MRU(i) = ProcessFromCurdriveApp(gConfig.MRU(i)) 
-        If AfxFileExists(gConfig.MRU(i)) Then 
+        if AfxFileExists(gConfig.MRU(i)) then 
             TreeView_AppendItem( hTree, hNode, gConfig.MRU(i) )
-            fEmpty = False 
-        End If 
-    Next 
-    If fEmpty Then 
+            fEmpty = false 
+        end if 
+    next 
+    if fEmpty then 
         wzStr = @L(11,"(Empty)") 
         TreeView_AppendItem( hTree, hNode, wzStr, 0 ) 
-    End If 
+    end if 
     Treeview_Expand(hTree, hNode, TVE_EXPAND)  
 
 
     ''  RECENT PROJECTS
-    wzStr = UCase(L(219, "Recent Projects")) 
+    wzStr = ucase(L(219, "Recent Projects")) 
     hNode = TreeView_AppendItem( hTree, TVI_ROOT, wzStr ) 
     gApp.hRecentProjectsRootNode = hNode
-    Treeview_SetBold( hTree, hNode, TRUE) 
-    For i As Long = 0 To 9 
-        ' If the file no longer exists then remove it from the MRU list 
+    Treeview_SetBold( hTree, hNode, true) 
+    for i as long = 0 To 9 
+        ' if the file no longer exists then remove it from the MRU list 
         gConfig.MRUPROJECT(i) = ProcessFromCurdriveApp(gConfig.MRUPROJECT(i)) 
-        If AfxFileExists(gConfig.MRUPROJECT(i)) Then 
+        if AfxFileExists(gConfig.MRUPROJECT(i)) then 
             TreeView_AppendItem( hTree, hNode, gConfig.MRUPROJECT(i) )
-            fEmpty = False 
-        End If 
-    Next 
-    If fEmpty Then 
+            fEmpty = false 
+        end if 
+    next 
+    if fEmpty then 
         wzStr = @L(11,"(Empty)") 
         TreeView_AppendItem( hTree, hNode, wzStr )
-    End If 
+    end if 
     Treeview_Expand(hTree, hNode, TVE_EXPAND)  
     
     ' Set the view to the first line
     TreeView_EnsureVisible(hTree, hFirstNode)
     
-    Function = 0
+    function = 0
         
-End Function
+end function
 
 
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
-public Function frmRecent_PositionWindows() As LRESULT
+public function frmRecent_PositionWindows() as LRESULT
     
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMRECENT)
-    If pWindow = 0 Then Exit Function
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMRECENT)
+    if pWindow = 0 then exit function
     
     ' Get the entire client area
-    Dim As Rect rc
+    dim as Rect rc
     GetClientRect(HWND_FRMRECENT, @rc)
 
-    Dim As HWnd hBtn
-    Dim As Long nLeft, nTop, nWidth, nHeight
+    dim as HWND hBtn
+    dim as long nLeft, nTop, nWidth, nHeight
     
     nTop = pWindow->ScaleY(12)
     hBtn = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_BTNNEWFILE)
     SetWindowPos( hBtn, 0, pWindow->ScaleX(28), nTop, _
                         rc.right-pWindow->ScaleX(56), pWindow->ScaleY(28),  _
-                        SWP_SHOWWINDOW Or SWP_NOZORDER )
+                        SWP_SHOWWINDOW or SWP_NOZORDER )
     AfxRedrawWindow(hBtn)
 
     nTop = nTop + pWindow->ScaleY(40)
     hBtn = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_BTNOPENFILE)
     SetWindowPos( hBtn, 0, pWindow->ScaleX(28), nTop, _
                         rc.right-pWindow->ScaleX(56), pWindow->ScaleY(28),  _
-                        SWP_SHOWWINDOW Or SWP_NOZORDER )
+                        SWP_SHOWWINDOW or SWP_NOZORDER )
     AfxRedrawWindow(hBtn)
     
     nTop = nTop + pWindow->ScaleY(40)
     hBtn = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_BTNNEWPROJECT)
     SetWindowPos( hBtn, 0, pWindow->ScaleX(28), nTop, _
                         rc.right-pWindow->ScaleX(56), pWindow->ScaleY(28),  _
-                        SWP_SHOWWINDOW Or SWP_NOZORDER )
+                        SWP_SHOWWINDOW or SWP_NOZORDER )
     AfxRedrawWindow(hBtn)
 
     nTop = nTop + pWindow->ScaleY(40)
     hBtn = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_BTNOPENPROJECT)
     SetWindowPos( hBtn, 0, pWindow->ScaleX(28), nTop, _
                         rc.right-pWindow->ScaleX(56), pWindow->ScaleY(28),  _
-                        SWP_SHOWWINDOW Or SWP_NOZORDER )
+                        SWP_SHOWWINDOW or SWP_NOZORDER )
     AfxRedrawWindow(hBtn)
 
     nTop = nTop + pWindow->ScaleY(48)
     hBtn = GetDlgItem(HWND_FRMRECENT, IDC_FRMRECENT_TREEVIEW)
     SetWindowPos( hBtn, 0, pWindow->ScaleX(4), nTop, _
                     rc.Right-rc.Left-pWindow->ScaleX(8), rc.bottom - nTop, _
-                    SWP_SHOWWINDOW Or SWP_NOZORDER )
+                    SWP_SHOWWINDOW or SWP_NOZORDER )
 
-    Function = 0
-End Function
+    function = 0
+end function
     
 
 ' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmMain
 ' ========================================================================================
-private Function frmRecent_OnSize( ByVal HWnd As HWnd, _
-                                    ByVal state As UINT, _
-                                    ByVal cx As Long, _
-                                    ByVal cy As Long _
-                                    ) As LRESULT
-    If state <> SIZE_MINIMIZED Then
+private function frmRecent_OnSize( byval hwnd as HWND, _
+                                    byval state as UINT, _
+                                    byval cx as long, _
+                                    byval cy as long _
+                                    ) as LRESULT
+    if state <> SIZE_MINIMIZED then
         ' Position all of the child windows
         frmRecent_PositionWindows
-    End If
-    Function = 0
-End Function
+    end if
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmRecent
 ' ========================================================================================
-private Function frmRecent_OnCommand( ByVal HWnd As HWnd, _
-                                        ByVal id As Long, _
-                                        ByVal hwndCtl As HWnd, _
-                                        ByVal codeNotify As UINT _
-                                        ) As LRESULT
-    Select Case id
-        Case IDC_FRMRECENT_BTNNEWFILE
-            If codeNotify = BN_CLICKED Then
-            OnCommand_FileNew(HWND_FRMMAIN) 
-            End If
-        Case IDC_FRMRECENT_BTNOPENFILE
-            If codeNotify = BN_CLICKED Then
-            OnCommand_FileOpen(HWND_FRMMAIN) 
-            End If
-        Case IDC_FRMRECENT_BTNNEWPROJECT
-            If codeNotify = BN_CLICKED Then
-            OnCommand_ProjectNew(HWND_FRMMAIN) 
-            End If
-        Case IDC_FRMRECENT_BTNOPENPROJECT
-            If codeNotify = BN_CLICKED Then
-            OnCommand_ProjectOpen(HWND_FRMMAIN) 
-            End If
-    End Select
+private function frmRecent_OnCommand( byval hwnd as HWND, _
+                                        byval id as long, _
+                                        byval hwndCtl as HWND, _
+                                        byval codeNotify as UINT _
+                                        ) as LRESULT
+    Select case id
+        case IDC_FRMRECENT_BTNNEWFILE
+            if codeNotify = BN_CLICKED then
+                OnCommand_FileNew(HWND_FRMMAIN) 
+            end if
+        case IDC_FRMRECENT_BTNOPENFILE
+            if codeNotify = BN_CLICKED then
+                OnCommand_FileOpen(HWND_FRMMAIN) 
+            end if
+        case IDC_FRMRECENT_BTNNEWPROJECT
+            if codeNotify = BN_CLICKED then
+                OnCommand_ProjectNew(HWND_FRMMAIN) 
+            end if
+        case IDC_FRMRECENT_BTNOPENPROJECT
+            if codeNotify = BN_CLICKED then
+                OnCommand_ProjectOpen(HWND_FRMMAIN) 
+            end if
+    end Select
         
-    Function = 0
-End Function
+    function = 0
+end function
 
         
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmRecent
 ' ========================================================================================
-private Function frmRecent_OnDestroy( byval HWnd As HWnd ) As LRESULT
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(hWnd)
+private function frmRecent_OnDestroy( byval hwnd as HWND ) as LRESULT
+    dim pWindow as CWindow Ptr = AfxCWindowPtr(hwnd)
 
-    DIM pButton AS CXpButton ptr 
+    dim pButton as CXpButton ptr 
     pButton = AfxCXpButtonPtr(hwnd, IDC_FRMRECENT_BTNNEWFILE)
     if pButton then delete pButton
     pButton = AfxCXpButtonPtr(hwnd, IDC_FRMRECENT_BTNOPENFILE)
@@ -192,121 +192,121 @@ private Function frmRecent_OnDestroy( byval HWnd As HWnd ) As LRESULT
     pButton = AfxCXpButtonPtr(hwnd, IDC_FRMRECENT_BTNOPENPROJECT)
     if pButton then delete pButton
     
-    Dim As HFONT hFont
-    Dim As HWnd hTree
-    hTree = GetDlgItem( hWnd, IDC_FRMRECENT_TREEVIEW)
+    dim as HFONT hFont
+    dim as hwnd hTree
+    hTree = GetDlgItem( hwnd, IDC_FRMRECENT_TREEVIEW)
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Processes messages for the subclassed frmRecent Treeview controls.
 ' ========================================================================================
-private Function frmRecent_Tree_SubclassProc ( _
-                    ByVal HWnd   As HWnd, _                 ' // Control window handle
-                    ByVal uMsg   As UINT, _                 ' // Type of message
-                    ByVal wParam As WPARAM, _               ' // First message parameter
-                    ByVal lParam As LPARAM, _               ' // Second message parameter
-                    ByVal uIdSubclass As UINT_PTR, _        ' // The subclass ID
-                    ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
-                    ) As LRESULT
+private function frmRecent_Tree_SubclassProc ( _
+                    byval hwnd   as HWND, _                 ' // Control window handle
+                    byval uMsg   as UINT, _                 ' // Type of message
+                    byval wParam as WPARAM, _               ' // First message parameter
+                    byval lParam as LPARAM, _               ' // Second message parameter
+                    byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+                    byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+                    ) as LRESULT
 
     ' Convert our ENTER key presses into LBUTTONDBLCLK to process them similarly
-    If (uMsg = WM_KEYUP) And (Loword(wParam) = VK_RETURN) Then uMsg = WM_LBUTTONDBLCLK
+    if (uMsg = WM_KEYUP) andalso (loword(wParam) = VK_RETURN) then uMsg = WM_LBUTTONDBLCLK
         
-    Select Case uMsg
+    select case uMsg
 
-        Case WM_GETDLGCODE
+        case WM_GETDLGCODE
             ' All keyboard input
-            Function = DLGC_WANTALLKEYS
-            Exit Function
+            function = DLGC_WANTALLKEYS
+            Exit function
 
-        Case WM_LBUTTONDBLCLK
-            dim as hwnd hTree = hWnd
-            dim As HTREEITEM hItem = Treeview_GetSelection(hTree)
-            If hItem Then   
-            ' Get the text for the line that was double clicked on.
-            Dim As CWSTR wzStr = String(MAX_PATH, 0)
-            TreeView_GetItemText( hTree, hItem, wzStr, MAX_PATH )
-            If AfxFileExists(wzStr) Then
-                If Treeview_GetParent(hTree, hItem) = gApp.hRecentProjectsRootNode then 
-                    frmMain_OpenProjectSafely(HWND_FRMMAIN, wzStr) 
-                Elseif Treeview_GetParent(hTree, hItem) = gApp.hRecentFilesRootNode then 
-                    frmMain_OpenFileSafely(HWND_FRMMAIN, _
-                                            False, _    ' bIsNewFile
-                                            False, _    ' bIsTemplate
-                                            true, _     ' bShowInTab
-                                            false, _    ' bIsInclude
-                                            wzStr, _  ' pwszName
-                                            0 )  ' pDocIn
-                End If
-            End If
-            frmMain_PositionWindows
-            SetFocusScintilla
-            End If   
-            Exit Function
+        case WM_LBUTTONDBLCLK
+            dim as HWND hTree = hwnd
+            dim as HTREEITEM hItem = Treeview_GetSelection(hTree)
+            if hItem then   
+                ' Get the text for the line that was double clicked on.
+                dim as CWSTR wzStr = String(MAX_PATH, 0)
+                TreeView_GetItemText( hTree, hItem, wzStr, MAX_PATH )
+                if AfxFileExists(wzStr) then
+                    if Treeview_GetParent(hTree, hItem) = gApp.hRecentProjectsRootNode then 
+                        frmMain_OpenProjectSafely(HWND_FRMMAIN, wzStr) 
+                    Elseif Treeview_GetParent(hTree, hItem) = gApp.hRecentFilesRootNode then 
+                        frmMain_OpenFileSafely(HWND_FRMMAIN, _
+                                                false, _    ' bIsNewFile
+                                                false, _    ' bIsTemplate
+                                                true, _     ' bShowInTab
+                                                false, _    ' bIsInclude
+                                                wzStr, _  ' pwszName
+                                                0 )  ' pDocIn
+                    end if
+                end if
+                frmMain_PositionWindows
+                SetFocusScintilla
+                return 0
+            end if   
             
-        Case WM_KEYUP
-            Select Case Loword(wParam)
-            Case VK_RETURN  ' already processed in WM_LBUTTONDBLCLK 
-            End Select
-            Exit Function
+        case WM_KEYUP
+            select case loword(wParam)
+            case VK_RETURN  ' already processed in WM_LBUTTONDBLCLK 
+            end Select
+            return 0
 
-        Case WM_CHAR   ' prevent the annoying beep!
-            If wParam = VK_RETURN Then Return 0
+        case WM_CHAR   ' prevent the annoying beep!
+            if wParam = VK_RETURN then return 0
 
-        Case WM_DESTROY
+        case WM_DESTROY
             ' REQUIRED: Remove control subclassing
-            RemoveWindowSubclass HWnd, @frmRecent_Tree_SubclassProc, uIdSubclass
+            RemoveWindowSubclass hwnd, @frmRecent_Tree_SubclassProc, uIdSubclass
 
-    End Select
+    end Select
 
     ' Default processing of Windows messages
-    Function = DefSubclassProc(HWnd, uMsg, wParam, lParam)
+    function = DefSubclassProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmRecent Window procedure
 ' ========================================================================================
-private Function frmRecent_WndProc( ByVal HWnd   As HWnd, _
-                                    ByVal uMsg   As UINT, _
-                                    ByVal wParam As WPARAM, _
-                                    ByVal lParam As LPARAM _
-                                    ) As LRESULT
+private function frmRecent_WndProc( byval hwnd   as HWND, _
+                                    byval uMsg   as UINT, _
+                                    byval wParam as WPARAM, _
+                                    byval lParam as LPARAM _
+                                    ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE,    frmRecent_OnSize)
-        HANDLE_MSG (HWnd, WM_COMMAND, frmRecent_OnCommand)
-        HANDLE_MSG (HWnd, WM_DESTROY, frmRecent_OnDestroy)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_SIZE,    frmRecent_OnSize)
+        HANDLE_MSG (hwnd, WM_COMMAND, frmRecent_OnCommand)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmRecent_OnDestroy)
+    end Select
 
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmRecent_Show
 ' ========================================================================================
-public Function frmRecent_Show( ByVal hWndParent As HWnd ) As LRESULT
+public function frmRecent_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-    HWND_FRMRECENT = pWindow->Create( hWndParent, "Recent Window", @frmRecent_WndProc, 0, 0, 250, 0, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMRECENT = pWindow->Create( hwndParent, "Recent Window", @frmRecent_WndProc, 0, 0, 250, 0, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
     pWindow->SetFont( "Segoe UI Semibold", 9)
     pWindow->Brush = GetSysColorBrush(COLOR_BTNFACE)
 
-    DIM pButton AS CXpButton ptr 
+    dim pButton as CXpButton ptr 
     pButton = new CXpButton(pWindow, IDC_FRMRECENT_BTNNEWFILE, L(411, "New File"), 0, 0, 0, 0)
     pButton->SetFont(pWindow->CreateFont( "Segoe UI Semibold", 10))
     pButton->DisableTheming
@@ -335,25 +335,25 @@ public Function frmRecent_Show( ByVal hWndParent As HWnd ) As LRESULT
     pButton->SetButtonBkColor(BGR(9,71,113))
     pButton->SetButtonBkColorHot(BGR(63,63,70))
 
-    Dim As HWnd hTree = _
+    dim as HWND hTree = _
         pWindow->AddControl("TREEVIEW", , IDC_FRMRECENT_TREEVIEW, "", 0, 0, 0, 0, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or _
-        TVS_SHOWSELALWAYS Or TVS_FULLROWSELECT Or TVS_TRACKSELECT, _   
-        WS_EX_LEFT Or WS_EX_RIGHTSCROLLBAR, , _
-        Cast(SUBCLASSPROC, @frmRecent_Tree_SubclassProc), IDC_FRMRECENT_TREEVIEW, Cast(DWORD_PTR, @pWindow))
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or _
+        TVS_SHOWSELALWAYS or TVS_FULLROWSELECT or TVS_TRACKSELECT, _   
+        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
+        cast(SUBCLASSPROC, @frmRecent_Tree_SubclassProc), IDC_FRMRECENT_TREEVIEW, cast(DWORD_PTR, @pWindow))
 
-    Dim As HFONT hFont = pWindow->CreateFont("Segoe UI", 9) 
-    SendMessage( hTree, WM_SETFONT, Cast(WPARAM, hFont), CTRUE )
+    dim as HFONT hFont = pWindow->CreateFont("Segoe UI", 9) 
+    SendMessage( hTree, WM_SETFONT, cast(WPARAM, hFont), Ctrue )
     SendMessage( hTree, TVM_SETITEMHEIGHT, pWindow->ScaleY(24), 0 )
     SendMessage( hTree, TVM_SETEXTENDEDSTYLE, TVS_EX_DOUBLEBUFFER, TVS_EX_DOUBLEBUFFER)   
-    SendMessage( hTree, TVM_SETBKCOLOR, 0, Cast(LPARAM, GetSysColor(COLOR_BTNFACE)) )
+    SendMessage( hTree, TVM_SETBKCOLOR, 0, cast(LPARAM, GetSysColor(COLOR_BTNFACE)) )
 
     frmRecent_LoadTreeview
     frmRecent_PositionWindows
 
-    Function = 0
+    function = 0
     
-End Function
+end function
 
 
 

@@ -19,16 +19,16 @@
 ' Enumerate the names of all the fonts. Note the difference between how to enumerate them
 ' (%TMPF_FIXED_PITCH has the bit cleared).
 ' %TMPF_FIXED_PITCH for fixed pitch fonts (like in PB edit)
-' %TMPF_TRUETYPE OR %TMPF_VECTOR for True type and vector fonts
+' %TMPF_trueTYPE or %TMPF_VECTOR for true type and vector fonts
 ' %TMPF_DEVICE for device fonts (like printer fonts)
 ' Exclude what you don't want to include in list.
 ' ========================================================================================
-Function frmOptionsColors_EnumFontName( _
-            byref lf As LOGFONTW, _
-            byref tm As TEXTMETRIC, _
-            ByVal FontType As Long, _
-            HWnd As HWnd _
-            ) As Long
+function frmOptionsColors_EnumFontName( _
+            byref lf as LOGFONTW, _
+            byref tm as TEXTMETRIC, _
+            byval FontType as long, _
+            hwnd as HWND _
+            ) as long
 
     static wszPrevText as CWSTR
     if gApp.isWineActive then
@@ -38,193 +38,193 @@ Function frmOptionsColors_EnumFontName( _
         wszPrevText = lf.lfFaceName
     end if
     
-    If (FontType And TRUETYPE_FONTTYPE) Then                      ' // True type fonts
-        ComboBox_AddString( HWnd, @lf.lfFaceName )
-    ElseIf (FontType And TMPF_FIXED_PITCH) = 0 Then               ' <- check if bit is cleared!
-        ComboBox_AddString( HWnd, @lf.lfFaceName )                        ' // fixed pitch fonts
-    ElseIf (FontType And TMPF_VECTOR) Then
-        ComboBox_AddString( HWnd, @lf.lfFaceName )                        ' // vector fonts
-    ElseIf (FontType And TMPF_DEVICE) Then
-        ComboBox_AddString( HWnd, @lf.lfFaceName )                        ' // device fonts
-    Else
-        ComboBox_AddString( HWnd, @lf.lfFaceName )                        ' // system, others
-    End If
+    if (FontType and trueTYPE_FONTTYPE) then                      ' // true type fonts
+        ComboBox_AddString( hwnd, @lf.lfFaceName )
+    elseif (FontType and TMPF_FIXED_PITCH) = 0 then               ' <- check if bit is cleared!
+        ComboBox_AddString( hwnd, @lf.lfFaceName )                        ' // fixed pitch fonts
+    elseif (FontType and TMPF_VECTOR) then
+        ComboBox_AddString( hwnd, @lf.lfFaceName )                        ' // vector fonts
+    elseif (FontType and TMPF_DEVICE) then
+        ComboBox_AddString( hwnd, @lf.lfFaceName )                        ' // device fonts
+    else
+        ComboBox_AddString( hwnd, @lf.lfFaceName )                        ' // system, others
+    end if
 
-    Function = True
+    function = true
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' Fill combobox with list of valid font names
 ' ========================================================================================
-function frmOptionsColors_FillFontCombo( ByVal HWnd As HWnd ) as long
-    Dim hDC As HDC = GetDC(0)
-    SendMessage( HWnd, CB_RESETCONTENT, 0, 0)
-    EnumFontFamilies hDC, ByVal 0, Cast(FONTENUMPROCW, @frmOptionsColors_EnumFontName), Cast(LPARAM, HWnd)
+function frmOptionsColors_FillFontCombo( byval hwnd as HWND ) as long
+    dim hDC as HDC = GetDC(0)
+    SendMessage( hwnd, CB_RESETCONTENT, 0, 0)
+    EnumFontFamilies hDC, byval 0, cast(FONTENUMPROCW, @frmOptionsColors_EnumFontName), cast(LPARAM, HWND)
     ReleaseDC 0, hDC
     function = 0
-End function
+end function
 
 
 ' ========================================================================================
 ' WM_DRAWITEM procedure
 ' ========================================================================================
-Function frmOptionsColors_DrawFontCombo( _
-            ByVal HWnd As HWnd, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As Long
+function frmOptionsColors_DrawFontCombo( _
+            byval hwnd as HWND, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as long
 
-    Dim hFont As HFONT
-    Dim lpdis As DRAWITEMSTRUCT Ptr
-    Dim wText As WString * MAX_PATH
-    Dim wPrevText As WString * MAX_PATH
+    dim hFont as HFONT
+    dim lpdis as DRAWITEMSTRUCT ptr
+    dim wText as wstring * MAX_PATH
+    dim wPrevText as wstring * MAX_PATH
 
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMMAIN)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
     
-    lpdis = Cast(DRAWITEMSTRUCT Ptr, lParam)
-    If lpdis->itemID = &HFFFFFFFF Then Exit Function   ' empty list, take a break..
+    lpdis = cast(DRAWITEMSTRUCT ptr, lParam)
+    if lpdis->itemID = &HFFFFFFFF then exit function   ' empty list, take a break..
 
-    Select Case lpdis->itemAction
-        Case ODA_DRAWENTIRE, ODA_SELECT
-            ' If not selected or if in edit part of the combobox
-            If (lpdis->itemState And ODS_SELECTED) = 0 Or _
-                (lpdis->itemState And ODS_COMBOBOXEDIT) Then
-            SetBkColor lpdis->hDC, GetSysColor(COLOR_WINDOW)
-            SetTextColor lpdis->hDC, GetSysColor(COLOR_WINDOWTEXT)
-            FillRect lpdis->hDC, @lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW)
-            Else
-            ' Select text background
-            SetBkColor lpdis->hDC, GetSysColor(COLOR_HIGHLIGHT)
-            SetTextColor lpdis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT)
-            FillRect lpdis->hDC, @lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT)
-            End If
+    select case lpdis->itemAction
+        case ODA_DRAWENTIRE, ODA_select
+            ' if not selected or if in edit part of the combobox
+            if (lpdis->itemState and ODS_selectED) = 0 or _
+                (lpdis->itemState and ODS_COMBOBOXEDIT) then
+                SetBkColor lpdis->hDC, GetSysColor(COLOR_WINDOW)
+                SetTextColor lpdis->hDC, GetSysColor(COLOR_WINDOWTEXT)
+                FillRect lpdis->hDC, @lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW)
+            else
+                ' select text background
+                SetBkColor lpdis->hDC, GetSysColor(COLOR_HIGHLIGHT)
+                SetTextColor lpdis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT)
+                FillRect lpdis->hDC, @lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT)
+            end if
 
             ' Get item's text (fontname), create font and draw text
             wText = AfxGetComboBoxText(HWnd, lpdis->itemID)
-            If Len(wText) Then
-            if gApp.isWineActive then
-                SelectObject(lpdis->hDC, pWindow->Font)
-            else
-                hFont = pWindow->CreateFont( wText, 10 ) 
-                If hFont Then hFont = SelectObject(lpdis->hDC, hFont)
+            if len(wText) then
+                if gApp.isWineActive then
+                    selectObject(lpdis->hDC, pWindow->Font)
+                else
+                    hFont = pWindow->CreateFont( wText, 10 ) 
+                    if hFont then hFont = selectObject(lpdis->hDC, hFont)
+                end if
             end if
-            End If
-            DrawTextW lpdis->hDC, @wText, Len(wText), @lpdis->rcItem, DT_SINGLELINE Or DT_LEFT Or DT_VCENTER
-            If hFont Then DeleteObject SelectObject(lpdis->hDC, hFont)
+            DrawTextW lpdis->hDC, @wText, len(wText), @lpdis->rcItem, DT_SINGLELINE or DT_LEFT or DT_VCENTER
+            if hFont then DeleteObject selectObject(lpdis->hDC, hFont)
 
             ' Focus rect around selected item
-            If (lpdis->itemState And ODS_SELECTED) Then
-            DrawFocusRect lpdis->hDC, @lpdis->rcItem
-            End If
-            Function = True
+            if (lpdis->itemState and ODS_selectED) then
+                DrawFocusRect lpdis->hDC, @lpdis->rcItem
+            end if
+            function = true
 
-    End Select
+    end select
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' Fill combobox with list of valid font sizes
 ' ========================================================================================
 function frmOptionsColors_FillFontSizeCombo( _
-            ByVal hCb As HWnd, _
-            ByVal strFontName As WString Ptr _
+            byval hCb as HWnd, _
+            byval strFontName as wstring ptr _
             ) as long
 
-    Select Case Ucase(*strFontName)
-        Case "FIXEDSYS"
+    select case ucase(*strFontName)
+        case "FIXEDSYS"
             ComboBox_ResetContent(hCb)
-            ComboBox_AddString( hCb, @WStr("9"))
-        Case "TERMINAL"
+            ComboBox_AddString( hCb, @wstr("9"))
+        case "TERMINAL"
             ComboBox_ResetContent(hCb)
-            ComboBox_AddString( hCb, @WStr("5" ))
-            ComboBox_AddString( hCb, @WStr("6" ))
-            ComboBox_AddString( hCb, @WStr("12"))
-            ComboBox_AddString( hCb, @WStr("14"))
-        Case Else                        
+            ComboBox_AddString( hCb, @wstr("5" ))
+            ComboBox_AddString( hCb, @wstr("6" ))
+            ComboBox_AddString( hCb, @wstr("12"))
+            ComboBox_AddString( hCb, @wstr("14"))
+        case Else                        
             ComboBox_ResetContent(hCb)
-            ComboBox_AddString( hCb, @WStr("8" ))
-            ComboBox_AddString( hCb, @WStr("9" ))
-            ComboBox_AddString( hCb, @WStr("10"))
-            ComboBox_AddString( hCb, @WStr("11"))
-            ComboBox_AddString( hCb, @WStr("12"))
-            ComboBox_AddString( hCb, @WStr("14"))
-            ComboBox_AddString( hCb, @WStr("16"))
-            ComboBox_AddString( hCb, @WStr("18"))
-            ComboBox_AddString( hCb, @WStr("20"))
-            ComboBox_AddString( hCb, @WStr("22"))
-            ComboBox_AddString( hCb, @WStr("24"))
-            ComboBox_AddString( hCb, @WStr("26"))
-            ComboBox_AddString( hCb, @WStr("28"))
-            ComboBox_AddString( hCb, @WStr("32"))
-            ComboBox_AddString( hCb, @WStr("36"))
-    End Select
+            ComboBox_AddString( hCb, @wstr("8" ))
+            ComboBox_AddString( hCb, @wstr("9" ))
+            ComboBox_AddString( hCb, @wstr("10"))
+            ComboBox_AddString( hCb, @wstr("11"))
+            ComboBox_AddString( hCb, @wstr("12"))
+            ComboBox_AddString( hCb, @wstr("14"))
+            ComboBox_AddString( hCb, @wstr("16"))
+            ComboBox_AddString( hCb, @wstr("18"))
+            ComboBox_AddString( hCb, @wstr("20"))
+            ComboBox_AddString( hCb, @wstr("22"))
+            ComboBox_AddString( hCb, @wstr("24"))
+            ComboBox_AddString( hCb, @wstr("26"))
+            ComboBox_AddString( hCb, @wstr("28"))
+            ComboBox_AddString( hCb, @wstr("32"))
+            ComboBox_AddString( hCb, @wstr("36"))
+    end select
 
     function = 0
-End function
+end function
 
 
 ' ========================================================================================
 ' Fill combobox with list of valid character sets
 ' ========================================================================================
-function frmOptionsColors_FillFontCharSets( ByVal hCtl As HWnd ) as long
-    ComboBox_AddString( hCtl, @WStr("Default") )
-    ComboBox_AddString( hCtl, @WStr("Ansi") )
-    ComboBox_AddString( hCtl, @WStr("Arabic") )
-    ComboBox_AddString( hCtl, @WStr("Baltic") )
-    ComboBox_AddString( hCtl, @WStr("Chinese Big 5") )
-    ComboBox_AddString( hCtl, @WStr("East Europe") )
-    ComboBox_AddString( hCtl, @WStr("GB 2312") )
-    ComboBox_AddString( hCtl, @WStr("Greek") )
-    ComboBox_AddString( hCtl, @WStr("Hangul") )
-    ComboBox_AddString( hCtl, @WStr("Hebrew") )
-    ComboBox_AddString( hCtl, @WStr("Johab") )
-    ComboBox_AddString( hCtl, @WStr("Mac") )
-    ComboBox_AddString( hCtl, @WStr("OEM") )
-    ComboBox_AddString( hCtl, @WStr("Russian") )
-    ComboBox_AddString( hCtl, @WStr("Shiftjis") )
-    ComboBox_AddString( hCtl, @WStr("Symbol") )
-    ComboBox_AddString( hCtl, @WStr("Thai") )
-    ComboBox_AddString( hCtl, @WStr("Turkish") )
-    ComboBox_AddString( hCtl, @WStr("Vietnamese") )
+function frmOptionsColors_FillFontCharSets( byval hCtl as HWND ) as long
+    ComboBox_AddString( hCtl, @wstr("Default") )
+    ComboBox_AddString( hCtl, @wstr("Ansi") )
+    ComboBox_AddString( hCtl, @wstr("Arabic") )
+    ComboBox_AddString( hCtl, @wstr("Baltic") )
+    ComboBox_AddString( hCtl, @wstr("Chinese Big 5") )
+    ComboBox_AddString( hCtl, @wstr("East Europe") )
+    ComboBox_AddString( hCtl, @wstr("GB 2312") )
+    ComboBox_AddString( hCtl, @wstr("Greek") )
+    ComboBox_AddString( hCtl, @wstr("Hangul") )
+    ComboBox_AddString( hCtl, @wstr("Hebrew") )
+    ComboBox_AddString( hCtl, @wstr("Johab") )
+    ComboBox_AddString( hCtl, @wstr("Mac") )
+    ComboBox_AddString( hCtl, @wstr("OEM") )
+    ComboBox_AddString( hCtl, @wstr("Russian") )
+    ComboBox_AddString( hCtl, @wstr("Shiftjis") )
+    ComboBox_AddString( hCtl, @wstr("Symbol") )
+    ComboBox_AddString( hCtl, @wstr("Thai") )
+    ComboBox_AddString( hCtl, @wstr("Turkish") )
+    ComboBox_AddString( hCtl, @wstr("Vietnamese") )
     
     function = 0
-End function
+end function
 
 
 ' ========================================================================================
 ' frmOptionsColors Window procedure
 ' ========================================================================================
-Function frmOptionsColors_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmOptionsColors_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
+    select case uMsg
         
-        Case WM_MEASUREITEM
-            If wParam = IDC_FRMOPTIONSCOLORS_COMBOFONTNAME Then
-            Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWnd)
-            Dim pMeasureItem As MEASUREITEMSTRUCT Ptr = Cast(MEASUREITEMSTRUCT Ptr, lParam)
-            pMeasureItem->itemHeight = pWindow->ScaleY(pMeasureItem->itemHeight)
-            Return True
-            End If
+        case WM_MEASUREITEM
+            if wParam = IDC_FRMOPTIONSCOLORS_COMBOFONTNAME then
+                dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+                dim pMeasureItem as MEASUREITEMSTRUCT ptr = cast(MEASUREITEMSTRUCT ptr, lParam)
+                pMeasureItem->itemHeight = pWindow->ScaleY(pMeasureItem->itemHeight)
+                return true
+            end if
 
-        Case WM_DRAWITEM  ' must pass this one on to ownerdrawn combo
-            If (wParam = IDC_FRMOPTIONSCOLORS_COMBOFONTNAME) Then 
-            frmOptionsColors_DrawFontCombo( GetDlgItem(HWnd, IDC_FRMOPTIONSCOLORS_COMBOFONTNAME), wParam, lParam )
-            Return True 
-            End If
+        case WM_DRAWITEM  ' must pass this one on to ownerdrawn combo
+            if (wParam = IDC_FRMOPTIONSCOLORS_COMBOFONTNAME) then 
+                frmOptionsColors_DrawFontCombo( GetDlgItem(hwnd, IDC_FRMOPTIONSCOLORS_COMBOFONTNAME), wParam, lParam )
+                return true 
+            end if
 
-    End Select
+    end select
 
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
@@ -234,16 +234,16 @@ function GetThemeDescription( byval wszFilename as CWSTR ) as string
     ' default to the theme description being the filename
     function = AfxGetFileName(wszFilename)
 
-    dim pStream AS CTextStream   
+    dim pStream as CTextStream   
     if pStream.Open(wszFilename) <> S_OK then exit function  'error
 
     dim as CWSTR wst, keyValue, keyData
         
-    Do Until pStream.EOS
+    do until pStream.EOS
         wst = pStream.ReadLine
 
         wst = trim(AfxStrExtract( 1, wst, "#"))     ' remove comments
-        If Len(wst) = 0 Then Continue Do
+        if len(wst) = 0 then continue Do
 
         keyValue = trim(AfxStrParse(wst, 1, ":"))
         keyData = trim(AfxStrParse(wst, 2, ":"))
@@ -264,70 +264,70 @@ end function
 ' ========================================================================================
 ' frmOptionsColors_Show
 ' ========================================================================================
-Function frmOptionsColors_Show( ByVal hWndParent As HWnd ) as LRESULT
+function frmOptionsColors_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMOPTIONSCOLORS = pWindow->Create( hWndParent, "", @frmOptionsColors_WndProc, 0, 0, 0, 0, _
-        WS_CHILD Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
 
     pWindow->AddControl("LABEL", , IDC_FRMOPTIONSCOLORS_LBLTHEMES, _
         L(422,"Themes") & ":", 0, 2, 375, 15, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     dim as HWND hListBox = _
     pWindow->AddControl("LISTBOX", , IDC_FRMOPTIONSCOLORS_LSTTHEMES, "", 0, 20, 386, 220, _
-        WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or LBS_NOTIFY Or LBS_NOINTEGRALHEIGHT, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or LBS_NOTIFY or LBS_NOINTEGRALHEIGHT, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     
     pWindow->AddControl("GROUPBOX",, IDC_FRMOPTIONSCOLORS_FRMFONT, L(136,"Font (applies to all styles)"), 0, 266, 385, 80, _
-        WS_CHILD Or WS_VISIBLE Or BS_TEXT Or BS_LEFT Or BS_NOTIFY Or BS_GROUPBOX, _
-        WS_EX_TRANSPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING)
-    Dim As HWnd hComboFontname = _
+        WS_CHILD or WS_VISIBLE or BS_TEXT or BS_LEFT or BS_NOTIFY or BS_GROUPBOX, _
+        WS_EX_TRANSPARENT or WS_EX_LEFT or WS_EX_LTRREADING)
+    dim as HWND hComboFontname = _
         pWindow->AddControl("COMBOBOX", , IDC_FRMOPTIONSCOLORS_COMBOFONTNAME, "", 11, 286, 310, 23, _
-            WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or CBS_DROPDOWNLIST Or CBS_OWNERDRAWFIXED Or CBS_HASSTRINGS Or CBS_SORT, _
-            WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
-    Dim As HWnd hComboFontSize = _
+            WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST or CBS_OWNERDRAWFIXED or CBS_HASSTRINGS or CBS_SORT, _
+            WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    dim as HWND hComboFontSize = _
         pWindow->AddControl("COMBOBOX", , IDC_FRMOPTIONSCOLORS_COMBOFONTSIZE, "", 330, 286, 40, 23, _
-            WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or CBS_DROPDOWNLIST, _
-            WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+            WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
+            WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
-    Dim As HWnd hComboFontCharSet = _
+    dim as HWND hComboFontCharSet = _
         pWindow->AddControl("COMBOBOX", , IDC_FRMOPTIONSCOLORS_COMBOFONTCHARSET, "", 11, 318, 150, 23, _
-            WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or CBS_DROPDOWNLIST, _
-            WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+            WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
+            WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->AddControl("LABEL",, IDC_FRMOPTIONSCOLORS_LBLEXTRASPACE, L(421,"Extra line spacing") & ":", 170, 320, 140, 18, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_RIGHT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSCOLORS_TXTEXTRASPACE, "0", 330, 318, 40, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     AfxSetWindowText( GetDlgItem( HWND_FRMOPTIONSCOLORS, IDC_FRMOPTIONSCOLORS_TXTEXTRASPACE), gConfig.FontExtraSpace)
 
     frmOptionsColors_FillFontCombo( hComboFontName )
     frmOptionsColors_FillFontSizeCombo( hComboFontSize, gConfig.EditorFontname )
     frmOptionsColors_FillFontCharSets( hComboFontCharSet )
     
-    Dim idx As Long
-    idx = SendMessage( hComboFontName, CB_FINDSTRING, 0, Cast(LPARAM, *gConfig.EditorFontname))
+    dim idx as long
+    idx = SendMessage( hComboFontName, CB_FINDSTRING, 0, cast(LPARAM, *gConfig.EditorFontname))
     ComboBox_SetCurSel( hComboFontName, idx )
-    idx = SendMessage( hComboFontSize, CB_FINDSTRING, 0, Cast(LPARAM, *gConfig.EditorFontSize))
+    idx = SendMessage( hComboFontSize, CB_FINDSTRING, 0, cast(LPARAM, *gConfig.EditorFontSize))
     ComboBox_SetCurSel( hComboFontSize, idx )
-    idx = SendMessage( hComboFontCharSet, CB_FINDSTRING, 0, Cast(LPARAM, *gConfig.EditorFontCharSet))
+    idx = SendMessage( hComboFontCharSet, CB_FINDSTRING, 0, cast(LPARAM, *gConfig.EditorFontCharSet))
     ComboBox_SetCurSel( hComboFontCharSet, idx )
     
     ' Load the Themes listbox
-    DIM hSearch as HANDLE
-    dim WFD AS WIN32_FIND_DATAW
-    DIM wszPath AS WSTRING * MAX_PATH
-    dim wszCurPath AS WSTRING * MAX_PATH
-    dim wszFullPath AS WSTRING * (MAX_PATH * 2)
-    dim wszDisplayName AS WSTRING * (MAX_PATH * 2)
+    dim hSearch as HANDLE
+    dim WFD as WIN32_FIND_DATAW
+    dim wszPath as wstring * MAX_PATH
+    dim wszCurPath as wstring * MAX_PATH
+    dim wszFullPath as wstring * (MAX_PATH * 2)
+    dim wszDisplayName as wstring * (MAX_PATH * 2)
     dim as long idxMatch = -1
     
     wszPath = AfxGetExePathName + "settings\themes\"
@@ -337,22 +337,22 @@ Function frmOptionsColors_Show( ByVal hWndParent As HWnd ) as LRESULT
 
     idx = 0
     hSearch = FindFirstFile( wszCurPath, @WFD )
-    IF hSearch <> INVALID_HANDLE_VALUE THEN
-        DO
+    if hSearch <> INVALID_HANDLE_VALUE then
+        do
             if (WFD.cFileName <> ".") andalso (WFD.cFileName <> "..") then
-            wszFullPath = wszPath & WFD.cFileName
-            wszDisplayName = GetThemeDescription(wszFullPath)
-            idx = SendMessage( hListBox, LB_ADDSTRING, 0, cast(LPARAM, @wszDisplayName) )
-            redim preserve gThemeFilenames(idx) as CWSTR
-            gThemeFilenames(idx) = WFD.cFileName
-            if ucase(gConfig.ThemeShortFilename) = ucase(WFD.cFileName ) then
-                idxMatch = idx
-            end if
+                wszFullPath = wszPath & WFD.cFileName
+                wszDisplayName = GetThemeDescription(wszFullPath)
+                idx = SendMessage( hListBox, LB_ADDSTRING, 0, cast(LPARAM, @wszDisplayName) )
+                redim preserve gThemeFilenames(idx) as CWSTR
+                gThemeFilenames(idx) = WFD.cFileName
+                if ucase(gConfig.ThemeShortFilename) = ucase(WFD.cFileName ) then
+                    idxMatch = idx
+                end if
             end if   
-        LOOP WHILE FindNextFile( hSearch, @WFD )
+        loop while FindNextFile( hSearch, @WFD )
         FindClose( hSearch )
-    END IF
+    end if
     SendMessage( hListBox, LB_SETCURSEL, idxMatch, 0 )
 
-    Function = 0
-End Function
+    function = 0
+end function

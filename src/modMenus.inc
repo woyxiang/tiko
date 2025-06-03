@@ -44,9 +44,9 @@ end function
 function frmMain_FileTopMenuStates() as long
     
     ' Start off by disabling everything in order to make things easier. 
-    For idMenu as long = IDM_FILE_START To IDM_FILE_END
+    for idMenu as long = IDM_FILE_START to IDM_FILE_END
         EnableTopMenuItem( idMenu, false )
-    Next
+    next
 
     ' Items that will always be enabled.
     EnableTopMenuItem( IDM_FILENEW, true )
@@ -60,14 +60,14 @@ function frmMain_FileTopMenuStates() as long
     EnableTopMenuItem( IDM_OPTIONS, true )
     EnableTopMenuItem( IDM_OPTIONSDIALOG, true )
     EnableTopMenuItem( IDM_BUILDCONFIG, true )
-    EnableTopMenuItem( IDM_EXIT, true )
+    EnableTopMenuItem( IDM_exit, true )
     EnableTopMenuItem( IDM_AUTOSAVE, true )
     CheckMarkTopMenuItem( IDM_AUTOSAVE, iif( gConfig.AutoSaveFiles, true, false ))
 
-    If gTTabCtl.GetItemCount() Then
-        For idMenu as long = IDM_FILECLOSE To IDM_SAVESESSION
+    if gTTabCtl.GetItemCount() then
+        for idMenu as long = IDM_FILECLOSE to IDM_SAVESESSION
             EnableTopMenuItem( idMenu, true )
-        Next
+        next
     end if
 
     if gApp.IsProjectActive then 
@@ -84,30 +84,30 @@ end function
 function frmMain_EditTopMenuStates() as long
     
     ' Start off by disabling everything in order to make things easier. 
-    For idMenu as long = IDM_EDIT_START To IDM_EDIT_END
+    for idMenu as long = IDM_EDIT_START to IDM_EDIT_END
         EnableTopMenuItem( idMenu, false )
-    Next
+    next
 
-    ' If any documents exist in the editor then enable FindInFiles
+    ' if any documents exist in the editor then enable FindInFiles
     if gApp.GetDocumentCount then EnableTopMenuItem( IDM_FINDINFILES, true )
         
     ' Enable or disable specific edit menu items (based on the currently active document)
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc = 0 Then exit function
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc = 0 then exit function
 
     ' A code editing window is active
-    If len(pDoc->GetSelText) Then
+    if len(pDoc->GetSelText) then
         EnableTopMenuItem( IDM_CUT, true )
         EnableTopMenuItem( IDM_COPY, true )
-    End If
+    end if
     
     dim as HWND hEdit = pDoc->hWndActiveScintilla 
     if SendMessage( hEdit, SCI_CANUNDO, 0, 0) then EnableTopMenuItem( IDM_UNDO, true )
     if SendMessage( hEdit, SCI_CANREDO, 0, 0) then EnableTopMenuItem( IDM_REDO, true )
-    If SendMessage( hEdit, SCI_CANPASTE, 0, 0) then EnableTopMenuItem( IDM_PASTE, true )
-    For idMenu as long = IDM_DELETELINE To IDM_SELECTALL
+    if SendMessage( hEdit, SCI_CANPASTE, 0, 0) then EnableTopMenuItem( IDM_PASTE, true )
+    for idMenu as long = IDM_DELETELINE to IDM_selectALL
         EnableTopMenuItem( idMenu, true )
-    Next 
+    next 
 
     function = 0
 end function
@@ -119,26 +119,26 @@ end function
 function frmMain_SearchTopMenuStates() as long
     
     ' Start off by disabling everything in order to make things easier. 
-    For idMenu as long = IDM_SEARCH_START To IDM_SEARCH_END
+    for idMenu as long = IDM_SEARCH_START to IDM_SEARCH_END
         EnableTopMenuItem( idMenu, false )
-    Next
+    next
 
     ' Enable or disable specific edit menu items (based on the currently active document)
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc = 0 Then exit function
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc = 0 then exit function
     
-    For idMenu as long = IDM_DEFINITION To IDM_GOTOPREVFUNCTION
+    for idMenu as long = IDM_DEFINITION to IDM_GOTOPREVfunction
         EnableTopMenuItem( idMenu, true )
-    Next
+    next
 
     if gApp.GetMainDocumentPtr then EnableTopMenuItem( IDM_GOTOMAINFILE, true )
     if gApp.GetResourceDocumentPtr then EnableTopMenuItem( IDM_GOTORESOURCEFILE, true )
     if gApp.GetHeaderDocumentPtr(pDoc) then EnableTopMenuItem( IDM_GOTOHEADERFILE, true )
     if gApp.GetSourceDocumentPtr(pDoc) then EnableTopMenuItem( IDM_GOTOSOURCEFILE, true )
 
-    For idMenu as long = IDM_BOOKMARKTOGGLE To IDM_GOTO
+    for idMenu as long = IDM_BOOKMARKTOGGLE to IDM_GOTO
         EnableTopMenuItem( idMenu, true )
-    Next
+    next
 
     function = 0
 end function
@@ -150,9 +150,9 @@ end function
 function frmMain_ViewTopMenuStates() as long
     
     ' Start off by disabling everything in order to make things easier. 
-    For idMenu as long = IDM_VIEW_START To IDM_VIEW_END
+    for idMenu as long = IDM_VIEW_START to IDM_VIEW_END
         EnableTopMenuItem( idMenu, false )
-    Next
+    next
 
     EnableTopMenuItem( IDM_VIEWEXPLORER, true )
     EnableTopMenuItem( IDM_VIEWOUTPUT, true )
@@ -161,19 +161,19 @@ function frmMain_ViewTopMenuStates() as long
 
     CheckMarkTopMenuItem( IDM_VIEWEXPLORER, iif( IsWindowVisible(HWND_FRMEXPLORER), true, false ))
     CheckMarkTopMenuItem( IDM_VIEWOUTPUT, iif( IsWindowVisible(HWND_FRMOUTPUT), true, false ))
-    CheckMarkTopMenuItem( IDM_FUNCTIONLIST, iif( IsWindowVisible(HWND_FRMFUNCTIONS), true, false ))
+    CheckMarkTopMenuItem( IDM_functionLIST, iif( IsWindowVisible(HWND_FRMfunctionS), true, false ))
     CheckMarkTopMenuItem( IDM_BOOKMARKSLIST, iif( IsWindowVisible(HWND_FRMBOOKMARKS), true, false ))
 
     ' Enable or disable specific edit menu items (based on the currently active document)
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc = 0 Then exit function
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc = 0 then exit function
     
-    EnableTopMenuItem( IDM_FUNCTIONLIST, true )
+    EnableTopMenuItem( IDM_functionLIST, true )
     EnableTopMenuItem( IDM_BOOKMARKSLIST, true )
 
-    For idMenu as long = IDM_ZOOMIN To IDM_RESTOREMAIN
+    for idMenu as long = IDM_ZOOMIN to IDM_RESTOREMAIN
         EnableTopMenuItem( idMenu, true )
-    Next
+    next
 
     function = 0
 end function
@@ -185,16 +185,16 @@ end function
 function frmMain_ProjectTopMenuStates() as long
     
     ' Start off by disabling everything in order to make things easier. 
-    For idMenu as long = IDM_PROJECT_START To IDM_PROJECT_END
+    for idMenu as long = IDM_PROJECT_START to IDM_PROJECT_END
         EnableTopMenuItem( idMenu, false )
-    Next
+    next
 
     EnableTopMenuItem( IDM_PROJECTNEW, true )
     EnableTopMenuItem( IDM_PROJECTOPEN, true )
     EnableTopMenuItem( IDM_MRUPROJECT, true )
 
     ' Check if a Project is open and active
-    Dim As Long fEnabled = Iif( gApp.IsProjectActive, true, false )
+    dim as long fEnabled = Iif( gApp.IsProjectActive, true, false )
     EnableTopMenuItem( IDM_PROJECTCLOSE, fEnabled )
     EnableTopMenuItem( IDM_PROJECTSAVEAS, fEnabled )
     EnableTopMenuItem( IDM_PROJECTSAVE, fEnabled )
@@ -211,9 +211,9 @@ end function
 function frmMain_CompileTopMenuStates() as long
     
     ' Start off by disabling everything in order to make things easier. 
-    For idMenu as long = IDM_COMPILE_START To IDM_COMPILE_END
+    for idMenu as long = IDM_COMPILE_START to IDM_COMPILE_END
         EnableTopMenuItem( idMenu, false )
-    Next
+    next
 
     dim as boolean fEnabled = iif( gApp.IsProjectActive orelse cbool(gTTabCtl.GetItemCount), true, false )
     EnableTopMenuItem( IDM_BUILDEXECUTE, fEnabled )
@@ -222,13 +222,13 @@ function frmMain_CompileTopMenuStates() as long
     EnableTopMenuItem( IDM_COMMANDLINE, fEnabled )
 
     ' QuickRun should be enabled for non-Projects
-    If gApp.IsProjectActive = false then 
+    if gApp.IsProjectActive = false then 
         if gTTabCtl.GetItemCount then EnableTopMenuItem( IDM_QUICKRUN, true )
     end if
     
     ' Determine if an executable exists based on the current active file or project
     dim as CWSTR wszRunFile = GetRunExecutableFilename()
-    If AfxFileExists(wszRunFile) Then EnableTopMenuItem( IDM_RUNEXE, true )
+    if AfxFileExists(wszRunFile) then EnableTopMenuItem( IDM_RUNEXE, true )
     
     function = 0
 end function
@@ -240,9 +240,9 @@ end function
 function frmMain_HelpTopMenuStates() as long
     
     ' All Help menu items are always enabled
-    For idMenu as long = IDM_HELP_START To IDM_HELP_END
+    for idMenu as long = IDM_HELP_START to IDM_HELP_END
         EnableTopMenuItem( idMenu, true )
-    Next
+    next
 
     function = 0
 end function
@@ -251,7 +251,7 @@ end function
 ' ========================================================================================
 ' Enable/Disable top menu items depending on application state
 ' ========================================================================================
-Function frmMain_ChangeTopMenuStates() As Long
+function frmMain_ChangeTopMenuStates() as long
     
     select case GetDlgCtrlID( ghWndActiveMenuBarButton )
         case IDC_MENUBAR_FILE:     frmMain_FileTopMenuStates()
@@ -263,20 +263,20 @@ Function frmMain_ChangeTopMenuStates() As Long
         case IDC_MENUBAR_HELP:     frmMain_HelpTopMenuStates()
     end select
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ''
 ''
-Function AddProjectFileTypesToMenu( _
-            ByVal hPopUpMenu As HMENU, _
-            ByVal pDoc As clsDocument Ptr, _
-            byval fSeparator as BOOLEAN, _
-            byval fExplorerTreeview as BOOLEAN _
-            ) As Long
+function AddProjectFileTypesToMenu( _
+            byval hPopUpMenu as HMENU, _
+            byval pDoc as clsDocument ptr, _
+            byval fSeparator as boolean, _
+            byval fExplorerTreeview as boolean _
+            ) as long
 
-    Dim As HMENU hPopUpSubMenu
+    dim as HMENU hPopUpSubMenu
 
     if fSeparator then AppendMenu( hPopUpMenu, MF_SEPARATOR, 0, "" )
 
@@ -294,24 +294,24 @@ Function AddProjectFileTypesToMenu( _
         IDM_SETCATEGORY _
         }
 
-    ' If we need to use the Explorer Treeview version of the messages then we
+    ' if we need to use the Explorer Treeview version of the messages then we
     ' simply just increment our array starting index.
     dim as long idx = iif( fExplorerTreeview, 5, 0 )
 
-    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 0), L(206,"Main file") 
-    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 1), L(209,"Resource file") 
-    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 2), L(181,"Header file") 
-    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 3), L(205,"Module file") 
-    AppendMenu hPopUpMenu, MF_ENABLED Or MFT_RADIOCHECK, messages(idx + 4), L(204,"Normal file") 
+    AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, messages(idx + 0), L(206,"Main file") 
+    AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, messages(idx + 1), L(209,"Resource file") 
+    AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, messages(idx + 2), L(181,"Header file") 
+    AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, messages(idx + 3), L(205,"Module file") 
+    AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, messages(idx + 4), L(204,"Normal file") 
     
-    Dim nFileType As Long
-    Select Case pDoc->ProjectFileType
-        Case FILETYPE_MAIN:     nFileType = messages(idx + 0)
-        Case FILETYPE_RESOURCE: nFileType = messages(idx + 1)
-        Case FILETYPE_HEADER:   nFileType = messages(idx + 2)
-        Case FILETYPE_MODULE:   nFileType = messages(idx + 3)
-        Case FILETYPE_NORMAL:   nFileType = messages(idx + 4)
-    End Select
+    dim nFileType as long
+    select case pDoc->ProjectFileType
+        case FILETYPE_MAIN:     nFileType = messages(idx + 0)
+        case FILETYPE_RESOURCE: nFileType = messages(idx + 1)
+        case FILETYPE_HEADER:   nFileType = messages(idx + 2)
+        case FILETYPE_MODULE:   nFileType = messages(idx + 3)
+        case FILETYPE_NORMAL:   nFileType = messages(idx + 4)
+    end select
 
     ' Some of our available choices are affected by the fact that multiple selections
     ' in the explorer listbox may exist. In that case, we do a default FileType selection
@@ -323,57 +323,57 @@ Function AddProjectFileTypesToMenu( _
         CheckMenuRadioItem( hPopupMenu, messages(idx + 0), messages(idx + 4), nFileType, MF_BYCOMMAND )
     end if
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ''
 ''
-Function CreateStatusBarFileTypeContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc Then
-        If gApp.IsProjectActive Then
+function CreateStatusBarFileTypeContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
+        if gApp.IsProjectActive then
             hPopUpMenu = CreatePopupMenu
             AddProjectFileTypesToMenu( hPopUpMenu, pDoc, false, false ) 
-        End If
-    End If
-    Function = hPopupMenu
-End Function
+        end if
+    end if
+    function = hPopupMenu
+end function
 
 
 ''
 ''
-Function CreateStatusBarFileEncodingContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateStatusBarFileEncodingContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc Then
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
         hPopUpMenu = CreatePopupMenu
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_ANSI, "ANSI"
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_UTF8BOM, "UTF-8 (BOM)"
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_UTF16BOM, "UTF-16 (BOM)"
 
-        Dim nEncoding As Long
-        Select Case pDoc->FileEncoding
-            Case FILE_ENCODING_ANSI:      nEncoding = IDM_ANSI
-            Case FILE_ENCODING_UTF8_BOM:  nEncoding = IDM_UTF8BOM
-            Case FILE_ENCODING_UTF16_BOM: nEncoding = IDM_UTF16BOM
-        End Select
+        dim nEncoding as long
+        select case pDoc->FileEncoding
+            case FILE_ENCODING_ANSI:      nEncoding = IDM_ANSI
+            case FILE_ENCODING_UTF8_BOM:  nEncoding = IDM_UTF8BOM
+            case FILE_ENCODING_UTF16_BOM: nEncoding = IDM_UTF16BOM
+        end select
         CheckMenuRadioItem( hPopupMenu, IDM_ANSI, IDM_UTF16BOM, nEncoding, MF_BYCOMMAND )
-    End If
+    end if
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 
 ''
 ''
-Function CreateStatusBarSpacesContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateStatusBarSpacesContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc Then
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
         hPopUpMenu = CreatePopupMenu
         for i as long = 0 to 8
             dim as long idMenu = IDM_SPACES + i
@@ -382,37 +382,37 @@ Function CreateStatusBarSpacesContextMenu() As HMENU
             AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, idMenu, wszCaption
         next
         CheckMenuRadioItem( hPopupMenu, IDM_SPACES, IDM_SPACES+8, IDM_SPACES+gConfig.TabSize, MF_BYCOMMAND )
-    End If
+    end if
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 
 
 ''
 ''
-Function CreateStatusBarLineEndingsContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateStatusBarLineEndingsContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc Then
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
         hPopUpMenu = CreatePopupMenu
         AppendMenu hPopUpMenu, MF_ENABLED, IDM_EOLTOCRLF, L(36,"Convert to CRLF")
         AppendMenu hPopUpMenu, MF_ENABLED, IDM_EOLTOCR, L(37,"Convert to CR")
         AppendMenu hPopUpMenu, MF_ENABLED, IDM_EOLTOLF, L(38,"Convert to LF")
-    End If
+    end if
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 ''
 ''
-Function CreateTopTabCtlContextMenu( ByVal idx As Long ) As HMENU
-    Dim hPopUpMenu As HMENU
-    Dim hPopUpSubMenu As HMENU
-    Dim wszText As WString * MAX_PATH
-    Dim As Long CuriTab = gTTabCtl.CurSel
-    Dim As Long MaxiTab = gTTabCtl.GetItemCount - 1
+function CreateTopTabCtlContextMenu( byval idx as long ) as HMENU
+    dim hPopUpMenu as HMENU
+    dim hPopUpSubMenu as HMENU
+    dim wszText as wstring * MAX_PATH
+    dim as long CuriTab = gTTabCtl.CurSel
+    dim as long MaxiTab = gTTabCtl.GetItemCount - 1
 
     hPopUpMenu = CreatePopupMenu
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILECLOSE,  L(5,"Close") 
@@ -425,46 +425,46 @@ Function CreateTopTabCtlContextMenu( ByVal idx As Long ) As HMENU
     AppendMenu hPopUpMenu, iif(CuriTab > 0, MF_ENABLED,MF_DISABLED), IDM_CLOSEALLBACKWARD, L(355,"Close Tabs on the Left")
     AppendMenu hPopUpMenu, iif(MaxiTab > CuriTab, MF_ENABLED,MF_DISABLED), IDM_CLOSEALLFORWARD, L(356,"Close Tabs on the Right") 
 
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetDocumentPtr(idx)
-    If pDoc Then
-        If gApp.IsProjectActive = True Then
+    dim pDoc as clsDocument ptr = gTTabCtl.GetDocumentPtr(idx)
+    if pDoc then
+        if gApp.IsProjectActive = true then
             AppendMenu hPopUpMenu, MF_SEPARATOR, 0, ""
             wszText = L(190, "Remove from project")
             AppendMenu hPopUpMenu, MF_ENABLED, IDM_REMOVEFILEFROMPROJECT, wszText
             AddProjectFileTypesToMenu(hPopUpMenu, pDoc, true, false)
-        End If
-    End If
+        end if
+    end if
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 
 ''
 ''
-Function CreateScintillaContextMenu() As HMENU
+function CreateScintillaContextMenu() as HMENU
 
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
-    If pDoc = 0 Then Exit Function
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc = 0 then exit function
 
-    Dim hPopupMenu    As HMENU
-    Dim hPopupSubMenu As HMENU
-    Dim pt            As Point
+    dim hPopupMenu    as HMENU
+    dim hPopupSubMenu as HMENU
+    dim pt            as point
     
-    dim as hwnd hEdit = pDoc->hWndActiveScintilla
+    dim as HWND hEdit = pDoc->hWndActiveScintilla
 
     ' Ensure that the window under the cursor is actually a Scintilla window
     ' and not another window like a tab in the top tabcontrol.
     GetCursorPos(@pt)
     ScreenToClient(HWND_FRMMAIN, @pt)
 
-    If RealChildWindowFromPoint(HWND_FRMMAIN, pt) <> hEdit Then Exit Function
+    if RealChildWindowFrompoint(HWND_FRMMAIN, pt) <> hEdit then exit function
     
     hPopupMenu = CreatePopupMenu
 
-    ' Determine if the text under the cursor is an #Include file. If yes, then add a
+    ' Determine if the text under the cursor is an #Include file. if yes, then add a
     ' menu option to allow to open it.
     if IsCurrentLineIncludeFilename() then
-        AppendMenu hPopupMenu, MF_ENABLED, IDM_OPENINCLUDE, L(75,"Open") + Chr(32, 34) + gApp.IncludeFilename + Chr(34)
+        AppendMenu hPopupMenu, MF_ENABLED, IDM_OPENINCLUDE, L(75,"Open") + chr(32, 34) + gApp.IncludeFilename + chr(34)
         AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
     end if
     
@@ -481,26 +481,26 @@ Function CreateScintillaContextMenu() As HMENU
     AppendMenu hPopupMenu, MF_ENABLED, IDM_COMMENTBLOCK, L(25,"Block Comment") 
     AppendMenu hPopupMenu, MF_ENABLED, IDM_UNCOMMENTBLOCK, L(26,"Block Uncomment")
     AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
-    AppendMenu hPopupMenu, MF_ENABLED, IDM_SELECTALL, L(40,"Select All")
+    AppendMenu hPopupMenu, MF_ENABLED, IDM_selectALL, L(40,"select All")
     
-    If (gApp.IsProjectActive = True) Then
+    if (gApp.IsProjectActive = true) then
         AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
         AppendMenu hPopupMenu, MF_ENABLED, IDM_REMOVEFILEFROMPROJECT, L(190,"Remove from project")
         AddProjectFileTypesToMenu(hPopUpMenu, pDoc, true, false)
-    End If
+    end if
     
-    Function = hPopupMenu
+    function = hPopupMenu
 
-End Function
+end function
 
 
 
 ''
 ''
-Function CreateExplorerContextMenu(ByVal pDoc As clsDocument Ptr ) As HMENU
+function CreateExplorerContextMenu(byval pDoc as clsDocument ptr ) as HMENU
     
-    Dim wszText As WString * MAX_PATH
-    Dim hPopUpMenu As HMENU = CreatePopupMenu()
+    dim wszText as wstring * MAX_PATH
+    dim hPopUpMenu as HMENU = CreatePopupMenu()
 
     ' Some of our available chocies are affected by the fact that multiple selections
     ' in the explorer listbox may exist. In that case, we allow options like "Close"
@@ -508,18 +508,18 @@ Function CreateExplorerContextMenu(ByVal pDoc As clsDocument Ptr ) As HMENU
     dim as long nSelCount = SendMessage( HWND_FRMEXPLORER_LISTBOX, LB_GETSELCOUNT, 0, 0 )
 
     ' if pDoc is zero then most likely we have right clicked on a Project or FILES root node
-    if pDoc THEN
-        If gApp.IsProjectActive Then
+    if pDoc then
+        if gApp.IsProjectActive then
             AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILEOPEN_EXPLORERLISTBOX,   L(75,"Open") 
             AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
             if (gTTabCtl.GetTabIndexByDocumentPtr( pDoc ) <> -1) orelse (nSelCount > 0) then
-            AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILECLOSE_EXPLORERLISTBOX,  L(5,"Close") 
-            AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILECLOSE_EXPLORERLISTBOX,  L(5,"Close") 
+                AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
             end if
             if nSelCount = 1 then
-            AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE_EXPLORERLISTBOX,   L(7,"Save") 
-            AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS_EXPLORERLISTBOX, L(8,"Save As") 
-            AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE_EXPLORERLISTBOX,   L(7,"Save") 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS_EXPLORERLISTBOX, L(8,"Save As") 
+                AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
             end if
             wszText = L(190,"Remove from project") 
             AppendMenu( hPopUpMenu, MF_ENABLED, IDM_REMOVEFILEFROMPROJECT_EXPLORERLISTBOX, wszText )
@@ -527,21 +527,21 @@ Function CreateExplorerContextMenu(ByVal pDoc As clsDocument Ptr ) As HMENU
         Else
             AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILECLOSE_EXPLORERLISTBOX,  L(5,"Close") 
             if nSelCount = 1 then
-            AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
-            AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE_EXPLORERLISTBOX,   L(7,"Save") 
-            AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS_EXPLORERLISTBOX, L(8,"Save As") 
+                AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE_EXPLORERLISTBOX,   L(7,"Save") 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS_EXPLORERLISTBOX, L(8,"Save As") 
             end if
-        End If
-    END IF
+        end if
+    end if
 
-    Function = hPopupMenu
+    function = hPopupMenu
     
-End Function
+end function
 
 ''
 ''
-Function CreateExplorerActionButtonContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateExplorerActionButtonContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     
     hPopUpMenu = CreatePopupMenu
@@ -550,31 +550,31 @@ Function CreateExplorerActionButtonContextMenu() As HMENU
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_CLOSEPANEL, L(161,"Close") 
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 ''
 ''
-Function CreateFunctionsActionButtonContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreatefunctionsActionButtonContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     
     hPopUpMenu = CreatePopupMenu
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_EXPANDALL, L(441,"Expand All") 
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_COLLAPSEALL, L(442,"Collapse All") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_EXPANDALL, L(441,"Expand All") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_COLLAPSEALL, L(442,"Collapse All") 
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_VIEWASTREE, L(445,"View as Tree") 
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_VIEWASLIST, L(446,"View as List") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_VIEWASTREE, L(445,"View as Tree") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_VIEWASLIST, L(446,"View as List") 
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_CLOSEPANEL, L(161,"Close") 
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 ''
 ''
-Function CreateBookmarksActionButtonContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateBookmarksActionButtonContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     
     hPopUpMenu = CreatePopupMenu
@@ -585,37 +585,37 @@ Function CreateBookmarksActionButtonContextMenu() As HMENU
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_CLOSEPANEL, L(161,"Close") 
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 ''
 ''
-Function CreateBookmarksHeaderNodeContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateBookmarksHeaderNodeContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     
     hPopUpMenu = CreatePopupMenu
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_CLEARALLBOOKMARKNODE, L(53,"Clear Bookmarks") 
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 ''
 ''
-Function CreateBookmarksBookmarkNodeContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateBookmarksBookmarkNodeContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     
     hPopUpMenu = CreatePopupMenu
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_REMOVEBOOKMARKNODE, L(444,"Remove Bookmark") 
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 
 ''
 ''
-Function CreateTopTabsActionButtonContextMenu() As HMENU
-    Dim hPopUpMenu As HMENU
+function CreateTopTabsActionButtonContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     ' List all of the Top Tab open tabs in the popup menu. Simply use the array
     ' index as the ID because the calling program will use this ID to set the
@@ -629,6 +629,6 @@ Function CreateTopTabsActionButtonContextMenu() As HMENU
     ' Check the item that is the currently active tab (1 based)
     CheckMenuRadioItem( hPopupMenu, 1, gTTabCtl.GetItemCount, gTTabCtl.CurSel+1, MF_BYCOMMAND )
 
-    Function = hPopupMenu
-End Function
+    function = hPopupMenu
+end function
 

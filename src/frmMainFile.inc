@@ -17,58 +17,58 @@
 ' ========================================================================================
 ' Create a new editing window
 ' ========================================================================================
-Function OnCommand_FileNew( ByVal HWnd As HWnd ) As clsDocument ptr
-    function = frmMain_OpenFileSafely(HWnd, _
-                                        True,  _   ' bIsNewFile
-                                        False, _   ' bIsTemplate
-                                        True,  _   ' bShowInTab
+function OnCommand_FileNew( byval hwnd as HWND ) as clsDocument ptr
+    function = frmMain_OpenFileSafely(hwnd, _
+                                        true,  _   ' bIsNewFile
+                                        false, _   ' bIsTemplate
+                                        true,  _   ' bShowInTab
                                         false, _   ' bIsInclude
                                         "", _      ' wszName
                                         0 )        ' pDocIn
-End Function
+end function
 
 
 ' ========================================================================================
 ' Open one or more files for editing
 ' ========================================================================================
-Function OnCommand_FileOpen( _
-            ByVal HWnd As HWnd, _
-            byval bShowInTab as Boolean = true _
-            ) As LRESULT
+function OnCommand_FileOpen( _
+            byval hwnd as HWND, _
+            byval bShowInTab as boolean = true _
+            ) as LRESULT
 
     dim pDoc as clsDocument ptr
     dim pDocIn as clsDocument ptr
     
     ' Display the Open File Dialog
-    Dim pItems As IShellItemArray Ptr = AfxIFileOpenDialogMultiple(HWnd, IDM_FILEOPEN)
-    If pItems = Null Then Exit Function
-    Dim dwItemCount As Long, i As Long, pItem As IShellItem Ptr, pwszName As WString Ptr
+    dim pItems as IShellItemArray ptr = AfxIFileOpenDialogMultiple(hwnd, IDM_FILEOPEN)
+    if pItems = null then exit function
+    dim dwItemCount as long, i as long, pItem as IShellItem ptr, pwszName as wstring ptr
     pItems->lpVtbl->GetCount(pItems, @dwItemCount)
     
     ' Variable length array to hold sequence of TabCtrl tabs to open. We save the sequence
     ' here and open them only after all over documents have been loaded. This will look
     ' visually more appealing for those files that will display in the top Tab Control.
-    Dim pDocTabs(dwItemCount - 1) As clsDocument Ptr
+    dim pDocTabs(dwItemCount - 1) as clsDocument ptr
 
     SetCursor( LoadCursor(0, IDC_WAIT) )
     pDoc = gTTabCtl.GetActiveDocumentPtr()
-    if pDoc THEN SciExec( pDoc->hWindow(0), SCI_SETCURSOR, SC_CURSORWAIT, 0 )
+    if pDoc then SciExec( pDoc->hWindow(0), SCI_SETCURSOR, SC_CURSORWAIT, 0 )
 
     ' Prevent the constant updating of the app caption bar with filename
     gApp.IsFileLoading = true  
     gApp.FileLoadingCount = 0
     
-    For i = 0 To dwItemCount - 1
+    for i = 0 To dwItemCount - 1
         pItems->lpVtbl->GetItemAt(pItems, i, @pItem)
-        If pItem Then
+        if pItem then
             pItem->lpVtbl->GetDisplayName(pItem, SIGDN_FILESYSPATH, @pwszName)
-            If pwszName Then 
+            if pwszName then 
             ' Save the folder where this file was opened from into the gApp.wszLastOpenFolder
             ' variable so that subsequent uses of the File Open dialog will default to 
             ' this folder.
             gApp.wszLastOpenFolder = AfxStrPathName( "PATH", *pwszName )
 
-            ' Test to see if the file is already loaded in the editor. If it is, then
+            ' Test to see if the file is already loaded in the editor. if it is, then
             ' bypass loading it again thereby creating multiple ghost instances.
             pDoc = gApp.GetDocumentPtrByFilename(*pwszName) 
             if pDoc then
@@ -95,12 +95,12 @@ Function OnCommand_FileOpen( _
             
             if bShowInTab then pDocTabs(i) = pDoc
             CoTaskMemFree(pwszName)
-            pwszName = Null
-            End If
+            pwszName = null
+            end if
             pItem->lpVtbl->Release(pItem)
-            pItem = Null
-        End If
-    Next
+            pItem = null
+        end if
+    next
     pItems->lpVtbl->Release(pItems)
     
     LoadExplorerFiles()
@@ -108,11 +108,11 @@ Function OnCommand_FileOpen( _
     
     ' Display all of the tabs
     dim as long iTab = -1
-    For i = LBound(pDocTabs) To UBound(pDocTabs)
+    for i = lbound(pDocTabs) to ubound(pDocTabs)
         if pDocTabs(i) = 0 then continue for
         iTab = gTTabCtl.GetTabIndexByDocumentPtr(pDocTabs(i))
         if iTab = -1 then iTab = gTTabCtl.AddTab(pDocTabs(i))  ' Add the new document to the top tabcontrol
-    Next   
+    next   
     if iTab > -1 then gTTabCtl.SetFocusTab(iTab)
 
     gApp.IsFileLoading = false
@@ -123,9 +123,9 @@ Function OnCommand_FileOpen( _
     ' Update the MRU list. Do this after the tabs are loaded because IsProjectLoading
     ' will prevent the list from updating.
     if gApp.IsProjectActive = false then
-        For i = LBound(pDocTabs) To UBound(pDocTabs)
+        for i = lbound(pDocTabs) to ubound(pDocTabs)
             if pDocTabs(i) then UpdateMRUList(pDocTabs(i)->DiskFilename) 
-        Next     
+        next     
     end if
     
     SetCursor( LoadCursor(0, IDC_ARROW) )
@@ -133,24 +133,24 @@ Function OnCommand_FileOpen( _
     frmMain_PositionWindows
     frmMain_SetFocusToCurrentCodeWindow
     
-    Function = 0
+    function = 0
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' Save the incoming pDoc file to disk
 ' ========================================================================================
 function OnCommand_FileSave( _
-            ByVal HWnd As HWnd, _
+            byval hwnd as HWND, _
             byval pDoc as clsDocument ptr, _
-            ByVal bSaveAs As boolean, _
-            ByVal bSaveAll As boolean _
-            ) As LRESULT
+            byval bSaveAs as boolean, _
+            byval bSaveAll as boolean _
+            ) as LRESULT
 
     if gApp.GetDocumentCount = 0 then exit function
     
-    Dim as long i, iStart, iEnd
+    dim as long i, iStart, iEnd
     
     if bSaveAll then
         ' Save All
@@ -162,7 +162,7 @@ function OnCommand_FileSave( _
         iEnd = iStart
     end if 
 
-    For i = iStart to iEnd
+    for i = iStart to iEnd
         ' Get the document pointer and then save file to disk
         if gTTabCtl.IsSafeIndex(i) then
             pDoc = gTTabCtl.tabs(i).pDoc
@@ -171,13 +171,13 @@ function OnCommand_FileSave( _
 
         ' Do the actual saving to disk
         dim wszFilename as CWSTR = pDoc->DiskFilename
-        If pDoc->SaveFile(bSaveAs) Then
+        if pDoc->SaveFile(bSaveAs) then
             pDoc->ApplyProperties
             pDoc->ParseDocument()
             ' Apply document properties to this file because the file extension may have
-            ' changed. For example from Untitled to *.bas
+            ' changed. for example from Untitled to *.bas
             if pDoc->DiskFilename <> wszFilename then
-            If gApp.IsProjectActive Then
+            if gApp.IsProjectActive then
                 gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
             end if
             end if
@@ -192,37 +192,37 @@ function OnCommand_FileSave( _
 
     frmMain_SetFocusToCurrentCodeWindow
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Save all open files to disk
 ' ========================================================================================
-Function OnCommand_FileSaveAll( ByVal HWnd As HWnd ) As LRESULT
+function OnCommand_FileSaveAll( byval hwnd as HWND ) as LRESULT
 
-    If gTTabCtl.GetItemCount = 0 Then Exit Function
+    if gTTabCtl.GetItemCount = 0 then exit function
                 
     function = OnCommand_FileSave( HWnd, 0, false, true )
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Close current (or all) open file(s)
 ' ========================================================================================
-Function OnCommand_FileClose( _
-            ByVal HWnd As HWnd, _
-            ByVal veFileClose As eFileClose, _
+function OnCommand_FileClose( _
+            byval hwnd as HWND, _
+            byval veFileClose as eFileClose, _
             byval nTabNum as long = -1 _
-            ) As LRESULT
+            ) as LRESULT
 
-    Dim wText As WString * MAX_PATH  
-    Dim pDoc As clsDocument Ptr
-    Dim As Long r
+    dim wText as wstring * MAX_PATH  
+    dim pDoc as clsDocument ptr
+    dim as long r
     
-    ' If a Project is not active then we need to save the current non-project notes
+    ' if a Project is not active then we need to save the current non-project notes
     ' when this file is closed. It is possible that this file is being closed and
     ' a project is being opened.
     if gApp.IsProjectActive = false then
@@ -231,7 +231,7 @@ Function OnCommand_FileClose( _
     
     ' Build a list of files to check
     dim as long nCurSel 
-    ' If the incoming nTabNum is -1 then we want to close the current
+    ' if the incoming nTabNum is -1 then we want to close the current
     ' active document, otherwise close the specified tab.
     if nTabNum = -1 then 
         nCurSel = gTTabCtl.CurSel
@@ -265,27 +265,27 @@ Function OnCommand_FileClose( _
         if bCloseIndex(i) = false then continue for
 
         pDoc = gTTabCtl.GetDocumentPtr(i)
-        If pDoc = 0 Then Return true
+        if pDoc = 0 then return true
     
-        If cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) or pDoc->UserModified Then
+        if cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) or pDoc->UserModified then
             gTTabCtl.SetFocusTab(i)
-            r = MessageBox( HWnd, L(76,"Save current changes?") & WStr(" ") & wText, @WStr(APPNAME), _
+            r = MessageBox( hwnd, L(76,"Save current changes?") & wstr(" ") & wText, @wstr(APPNAME), _
                             MB_YESNOCANCEL Or MB_ICONQUESTION)
-            If r = IDCANCEL Then Exit Function
-            If r = IDYES Then 
+            if r = IDCANCEL then exit function
+            if r = IDYES then 
             r = pDoc->SaveFile()
-            If r = False Then Exit Function   ' save was cancelled
+            if r = false then exit function   ' save was cancelled
             elseif r = IDNO then
             ' Delete any existing AutoSave file because at this point the user doesn't
             ' care about any unsaved changes.
-            if AfxFileExists(pDoc->AutoSaveFilename) THEN AfxDeleteFile(pDoc->AutoSaveFilename)
-            End If
-        End If
+            if AfxFileExists(pDoc->AutoSaveFilename) then AfxDeleteFile(pDoc->AutoSaveFilename)
+            end if
+        end if
         
         ' Hide the Scintilla editing windows
         for ii as long = lbound(pDoc->hWindow) to ubound(pDoc->hWindow)
             ShowWindow( pDoc->hWindow(ii), SW_HIDE)
-        NEXT
+        next
         SetRectEmpty( @pDoc->rcSplitButton )
         
         ' remove tab from gTTabCtl.tabs() array
@@ -294,7 +294,7 @@ Function OnCommand_FileClose( _
         ' Only remove this document from the global collection if it is not
         ' part of any active Project or if it is new/unsaved file. Files that are part of a project are
         ' all closed (tabs/nodes) automatically in one shot rather than individually.
-        dim as Boolean bRemoveFile 
+        dim as boolean bRemoveFile 
         if pDoc->IsNewFlag = true then 
             bRemoveFile = true
         else
@@ -335,8 +335,8 @@ Function OnCommand_FileClose( _
     ' rectangle should all documents be closed. Removes screen artifacts.
     AfxRedrawWindow( HWND_FRMMAIN )
     
-    Function = true
-End Function
+    function = true
+end function
 
 
 ' ========================================================================================
@@ -351,7 +351,7 @@ function OnCommand_FileExplorerMessage( _
         OpenSelectedDocument( pDoc->DiskFilename, "" )
 
     elseif id = IDM_FILESAVE_EXPLORERLISTBOX then
-        OnCommand_FileSave( HWND_FRMMAIN, pDoc, False )
+        OnCommand_FileSave( HWND_FRMMAIN, pDoc, false )
 
     elseif id = IDM_FILESAVEAS_EXPLORERLISTBOX then
         OnCommand_FileSave( HWND_FRMMAIN, pDoc, true )
@@ -381,7 +381,7 @@ end function
 
 ' ========================================================================================
 ' Check the incoming filename to determine if a newer AutoSave file already exists. If
-' yes, then ask the user if he wants to use the AutoSave file. If yes, then copy then
+' yes, then ask the user if he wants to use the AutoSave file. if yes, then copy then
 ' delete the original file and rename the AutoSave file to the original returning the
 ' original filename.
 ' ========================================================================================
@@ -423,12 +423,12 @@ end function
 ' ========================================================================================
 ' Enable/Disable File auto save features
 ' ========================================================================================
-Function OnCommand_FileAutoSaveTimerProc( _
-            ByVal hWndTimer as HWnd, _
-            ByVal uMsg as Long, _
-            ByVal idEvent as Long, _
-            ByVal dwTime as Long _
-            ) as Long
+function OnCommand_FileAutoSaveTimerProc( _
+            byval hWndTimer as HWND, _
+            byval uMsg as long, _
+            byval idEvent as long, _
+            byval dwTime as long _
+            ) as long
                     
     ' Iterate all of the documents and determine which ones need to have
     ' the special #filename# temporary file created.
@@ -443,11 +443,11 @@ Function OnCommand_FileAutoSaveTimerProc( _
             pDoc->AutoSaveRequired = false
             end if   
         end if
-        pDoc = pDoc->pDocNext
+        pDoc = pDoc->pDocnext
     loop
 
-    Function = 0
-End function
+    function = 0
+end function
 
 ' ========================================================================================
 ' Kill AutoSave timer that checks for file changes between saves. This function
@@ -468,14 +468,14 @@ function OnCommand_FileAutoSaveStartTimer() as LRESULT
     OnCommand_FileAutoSaveKillTimer()
     SetTimer( HWND_FRMMAIN, gConfig.idAutoSaveTimer, _
                 gConfig.AutoSaveInterval * 1000, _
-                Cast(TimerProc, @OnCommand_FileAutoSaveTimerProc) )       
+                cast(TimerProc, @OnCommand_FileAutoSaveTimerProc) )       
     function = 0
 end function
 
 ' ========================================================================================
 ' Enable/Disable File auto save features
 ' ========================================================================================
-function OnCommand_FileAutoSave( byval HWnd As HWnd ) as LRESULT
+function OnCommand_FileAutoSave( byval hwnd as HWND ) as LRESULT
     ' Toggle the AutoSave state (when the menuitem is clicked)
     gConfig.AutoSaveFiles = not gConfig.AutoSaveFiles
     gConfig.SaveConfigFile
@@ -487,13 +487,13 @@ function OnCommand_FileAutoSave( byval HWnd As HWnd ) as LRESULT
         OnCommand_FileAutoSaveStartTimer()
             
     elseif gConfig.AutoSaveFiles = false then
-        ' If AutoSave is disabled then delete any existing #filename# temporary files
+        ' if AutoSave is disabled then delete any existing #filename# temporary files
         OnCommand_FileAutoSaveKillTimer()
         ' Delete any temporary ## files
         dim pDoc as clsDocument ptr = gApp.pDocList
         do until pDoc = 0
             AfxDeleteFile( pDoc->AutoSaveFilename )
-            pDoc = pDoc->pDocNext
+            pDoc = pDoc->pDocnext
         loop
     
     end if
@@ -505,20 +505,20 @@ end function
 ' ========================================================================================
 ' Load a previously saved session
 ' ========================================================================================
-function OnCommand_FileLoadSession( byval HWnd As HWnd ) as LRESULT
+function OnCommand_FileLoadSession( byval hwnd as HWND ) as LRESULT
     ' Display the Open File Dialog
-    Dim pwszName As WString Ptr = AfxIFileOpenDialogW(HWnd, IDM_LOADSESSION)
-    If pwszName Then 
+    dim pwszName as wstring ptr = AfxIFileOpenDialogW(hwnd, IDM_LOADSESSION)
+    if pwszName then 
         if gApp.IsProjectActive then 
             if OnCommand_ProjectClose(hwnd) = false then exit function
         else   
-            if OnCommand_FileClose(HWnd, EFC_CLOSEALL) = false then exit function
+            if OnCommand_FileClose(hwnd, EFC_CLOSEALL) = false then exit function
         end if
         ' Clear any previous info from the Output windows
         frmOutput_ResetAllControls()
         gConfig.LoadSessionFile(*pwszName) 
         CoTaskMemFree(pwszName)
-    End If
+    end if
     function = 0
 end function
 
@@ -526,14 +526,14 @@ end function
 ' ========================================================================================
 ' Save a session
 ' ========================================================================================
-function OnCommand_FileSaveSession( byval HWnd As HWnd ) as LRESULT
-    Dim wszFilename  As WString * MAX_PATH = ""
-    Dim wszExtension As WString * MAX_PATH = "session"
-    Dim pwszName As WString Ptr = AfxIFileSaveDialog(HWND_FRMMAIN, @wszFilename, @wszExtension, IDM_SAVESESSION)
-    If pwszName Then
+function OnCommand_FileSaveSession( byval hwnd as HWND ) as LRESULT
+    dim wszFilename  as wstring * MAX_PATH = ""
+    dim wszExtension as wstring * MAX_PATH = "session"
+    dim pwszName as wstring ptr = AfxIFileSaveDialog(HWND_FRMMAIN, @wszFilename, @wszExtension, IDM_SAVESESSION)
+    if pwszName then
         gConfig.SaveSessionFile(*pwszName)
         CoTaskMemFree(pwszName)
-    End If
+    end if
     function = 0
 end function
         

@@ -54,7 +54,7 @@ function frmFindReplace_PositionWindows() as LRESULT
     ' find/replace is a popup window so we need to use screen coordinates. Place the 
     ' window just below the toptabs or the menubar if the toptabs are not showing.
     ' Place the window the width of 2 scrollbars from the right of the main window.
-    dim as hwnd hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
+    dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
                                 HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
     dim as RECT rc = AfxGetWindowRect( hCtrl )
     SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, HWND_TOP, _
@@ -199,7 +199,7 @@ function frmFindReplace_NextSelection( _
         if SciExec( hEdit, SCI_INDICATORVALUEAT, 8, iStart-1) then
             gFind.foundCount = gFind.foundCount + 1
             if gFind.foundCount > ubound(iPositions) then
-            redim preserve iPositions(gFind.foundCount) as long 
+                redim preserve iPositions(gFind.foundCount) as long 
             end if
             iPositions(gFind.foundCount) = iStart - lenFind 
         end if
@@ -254,8 +254,8 @@ function frmFindReplace_DoReplace( _
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
 
-    dim as hwnd   hWndFind    = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
-    dim as hwnd   hWndReplace = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE)
+    dim as HWND   hWndFind    = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
+    dim as HWND   hWndReplace = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE)
     dim as string txtFind     = str(AfxGetWindowText(hWndFind))
     dim as string txtReplace  = str(AfxGetWindowText(hWndReplace))
     dim as long   lenFind     = len(txtFind)
@@ -264,7 +264,7 @@ function frmFindReplace_DoReplace( _
     
     dim as long nPos, startPos, endPos, findFlags, r
     
-    dim as hwnd hEdit = pDoc->hWndActiveScintilla
+    dim as HWND hEdit = pDoc->hWndActiveScintilla
     if fReplaceAll = true then 
         if gFind.nMatchCase then findFlags = (findFlags or SCFIND_MATCHCASE)
         if gFind.nWholeWord then findFlags = (findFlags or SCFIND_WHOLEWORD)
@@ -272,13 +272,6 @@ function frmFindReplace_DoReplace( _
         
         if pDoc->HasMarkerHighlight then
             startPos = SciExec( hEdit, SCI_POSITIONFROMLINE, pDoc->FirstMarkerHighlight, 0)
-            endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->LastMarkerHighlight, 0)
-            SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-            SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-        else
-            SciExec( hEdit, SCI_TARGETWHOLEDOCUMENT, 0, 0)
-            startPos = SciExec( hEdit, SCI_GETTARGETSTART, 0, 0)
-            endPos = SciExec( hEdit, SCI_GETTARGETEND, 0, 0)
         end if
         SciExec( hEdit, SCI_INDICATORCLEARRANGE, startPos, endPos)
         
@@ -286,6 +279,15 @@ function frmFindReplace_DoReplace( _
         SetWindowRedraw( hEdit, false )
         SendMessage( hEdit, SCI_BEGINUNDOACTION, 0, 0)
         do 
+            if pDoc->HasMarkerHighlight then
+                endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->LastMarkerHighlight, 0)
+            else    
+                ' Search the whole document. Get new length in case changed due to replacements.
+                endPos = SciExec( hEdit, SCI_GETLENGTH, 0, 0)
+            end if    
+            
+            SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
+            SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
             r = SciExec( hEdit, SCI_SEARCHINTARGET, len(txtFind), strptr(txtFind))
             if r = -1 then exit do
             dim as zstring * MAX_PATH sSelText
@@ -302,17 +304,12 @@ function frmFindReplace_DoReplace( _
                     sReplaceText = txtReplace
                 end if
                 SciExec( hEdit, SCI_REPLACETARGET, len(sReplaceText), strptr(sReplaceText) )
-                startPos = r + len(sReplaceText)
-                endPos = endPos + len(sReplaceText) - len(sSelText)
             else            
                 SciExec( hEdit, SCI_REPLACETARGET, len(txtReplace), strptr(txtReplace) )
-                startPos = r + len(txtReplace)  
-                endPos = endPos + len(txtReplace) - len(sSelText)
             end if
-            ' Need to update the end searching positions because the replace action may
-            ' have made the document larger or smaller.
-            SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-            SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
+            
+            ' Move start position after the replaced text
+            startPos = SendMessage(hEdit, SCI_GETTARGETEND, 0, 0)
         loop
         SendMessage( hEdit, SCI_ENDUNDOACTION, 0, 0)
         SetWindowRedraw( hEdit, true )
@@ -349,8 +346,7 @@ function frmFindReplace_DoReplace( _
         frmFindReplace_NextSelection(startPos, fMoveNext, true)
     end if
         
-    ' Need to reparse because some of the function names may been replaced
-    ' with new names.
+    ' Need to reparse because some of the function names may been replaced with new names.
     pDoc->bNeedsParsing = true
     pDoc->ParseDocument()
 
@@ -390,16 +386,15 @@ function frmFindReplace_HighlightSearches( byval bRepositionCaret as boolean ) a
     if pDoc->HasMarkerHighlight then
         startPos = SciExec( hEdit, SCI_POSITIONFROMLINE, pDoc->FirstMarkerHighlight, 0)
         endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->LastMarkerHighlight, 0)
-        SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-        SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
     else
-        SciExec( hEdit, SCI_TARGETWHOLEDOCUMENT, 0, 0)
-        startPos = SciExec( hEdit, SCI_GETTARGETSTART, 0, 0)
-        endPos = SciExec( hEdit, SCI_GETTARGETEND, 0, 0)
+        startPos = 0
+        endPos = SciExec( hEdit, SCI_GETLENGTH, 0, 0)
     end if
 
     ' Search for the text to find
     if len(txtFind) then
+        SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
+        SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
         do 
             r = SciExec( hEdit, SCI_SEARCHINTARGET, len(txtFind), strptr(txtFind))
             if r = -1 then exit do

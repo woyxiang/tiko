@@ -60,7 +60,7 @@ function MaskStringCharacters( byval st as string) as string
     ' ensures that we correctly deal with strings that have embedded single 
     ' quote characters.
     dim as long i 
-    dim as Boolean binstring = false
+    dim as boolean binstring = false
     for i = 0 to len(st) - 1
         if st[i] = 34 then binstring = not(binstring)
         if binstring then  
@@ -108,7 +108,7 @@ end function
 ' ========================================================================================
 function DereferenceLine( _
             byval pDoc as clsDocument ptr, _
-            byval sTrigger as String, _
+            byval sTrigger as string, _
             byval nPosition as long _
             ) as DB2_DATA ptr
     
@@ -120,7 +120,7 @@ function DereferenceLine( _
     
     dim as string sCurrentFunction, sTypeName
 
-    dim as hwnd hEdit   = pDoc->hWndActiveScintilla
+    dim as HWND hEdit   = pDoc->hWndActiveScintilla
     dim as long curPos  = nPosition  
     dim as long nCol    = SciExec(hEdit, SCI_GETCOLUMN, curPos, 0) 
     dim as string sLine = trim(left(pDoc->GetLine(pDoc->GetCurrentLineNumber), nCol+1), any chr(32,9))
@@ -168,7 +168,7 @@ function DereferenceLine( _
     if i then sLine = mid(sLine, i+1)
     
     ' Need to check if this line is part of a WITH / END WITH block.
-    if (len(sLine) = 0) or (left(sLine, 1) = ".") then
+    if (len(sLine) = 0) orelse (left(sLine, 1) = ".") then
         sLine = DetermineWithVariable(pDoc) & sLine
     end if
     
@@ -231,14 +231,14 @@ function DereferenceLine( _
             end if   
             end if
             if pData then
-            pLastData = pData
+                pLastData = pData
             end if
         end if
 
         if pData = 0 then
             pData = gdb2.dbFindFunction( sLookFor )
             if pData then
-            pLastData = pData
+                pLastData = pData
             end if
         end if
         
@@ -259,14 +259,14 @@ end function
 ' ========================================================================================
 function ShowCodetip( _
             byval pDoc as clsDocument ptr, _
-            byval bCommaTrigger as Boolean = false _
+            byval bCommaTrigger as boolean = false _
             ) as boolean
 
     if gConfig.CodeTips = false then exit function
     
     dim pData as DB2_DATA ptr
     dim as string codeTip
-    dim as hwnd hEdit  = pDoc->hWndActiveScintilla
+    dim as HWND hEdit  = pDoc->hWndActiveScintilla
     dim as long curPos = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0) 
 
     if bCommaTrigger then
@@ -284,11 +284,11 @@ function ShowCodetip( _
             bInClosed = true: continue for
             end if
             if sLine[i] = asc("(") then
-            if bInClosed = true then
-                bInClosed = false
-            else
-                exit for
-            end if
+                if bInClosed = true then
+                    bInClosed = false
+                else
+                    exit for
+                end if
             end if         
             curPos = curPos - 1
         next
@@ -313,7 +313,7 @@ end function
 ' Display the actual Autocomplete popup list window
 ' ========================================================================================
 function ShowAutoCompletePopup( _
-            byval hEdit as hwnd, _
+            byval hEdit as HWND, _
             byref sList as string _
             ) as Long
     if len(sList) = 0 then exit function
@@ -348,13 +348,13 @@ end function
 ' ========================================================================================
 ' Show Autocomplete list    
 ' ========================================================================================
-function ShowAutocompleteList( byval Notification as long = 0) as BOOLEAN
+function ShowAutocompleteList( byval Notification as long = 0) as boolean
     
-    IF gConfig.AutoComplete = false then exit function
+    if gConfig.AutoComplete = false then exit function
     
     dim as long curPos, nCol, nLenMatchWord, ub, iNextType
     dim as string sWord, sList, st, sDot, sLookFor, sElement, sProp
-    dim as Boolean bIsTHIS, bTypesOnly, bTypesNotPreloaded
+    dim as boolean bIsTHIS, bTypesOnly, bTypesNotPreloaded
     
     dim pDoc as clsDocument ptr
     dim pData as DB2_DATA ptr
@@ -362,7 +362,7 @@ function ShowAutocompleteList( byval Notification as long = 0) as BOOLEAN
     pDoc = gTTabCtl.GetActiveDocumentPtr()
     If pDoc = 0 then exit function
     
-    dim as hwnd hEdit = pDoc->hWndActiveScintilla
+    dim as HWND hEdit = pDoc->hWndActiveScintilla
                 
     ' Retrieve the position
     curPos = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0) 
@@ -496,54 +496,54 @@ function ShowAutocompleteList( byval Notification as long = 0) as BOOLEAN
             ' Add all of the TYPE definitions that were found
             gdb2.dbRewind()
             do 
-            pData = gdb2.dbGetNext()
-            if pData = 0 then exit do
+                pData = gdb2.dbGetNext()
+                if pData = 0 then exit do
 
-            if bTypesOnly = false then
-                if pData->id = DB2_STANDARDDATATYPE then
-                    st = pData->VariableType
+                if bTypesOnly = false then
+                    if pData->id = DB2_STANDARDDATATYPE then
+                        st = pData->VariableType
+                        if nLenMatchWord then
+                            if left(ucase(st), nLenMatchWord) = pDoc->sMatchWord then
+                                if instr(sList, st & "|") = 0 then
+                                    sList = sList & st & "|"
+                                end if   
+                            end if
+                        else
+                            if len(st) then      
+                                if instr(sList, st & "|") = 0 then
+                                    sList = sList & st & "|"
+                                end if   
+                            end if   
+                        end if
+                    end if   
+                end if
+        
+                if pData->id = DB2_TYPE then
+                    if bTypesOnly then
+                        if bTypesNotPreloaded then
+                            ' Only look at TYPES that are loaded into the editor. These would
+                            ' be entries that have a Filename attached to them. Preloaded TYPES
+                            ' from WinAPI or Afx do not have Filenames.
+                            if len(pData->fileName) = 0 then continue do
+                        end if
+                    end if
+        
+                    ' nLenMatchWord will allow partial matches to be added to the popup
+                    ' based on what the user has currently typed.
+                    st = rtrim(pData->VariableType)
+
                     if nLenMatchWord then
                         if left(ucase(st), nLenMatchWord) = pDoc->sMatchWord then
-                        if instr(sList, st & "|") = 0 then
-                            sList = sList & st & "|"
-                        end if   
+                            if ExistsInAutocompleteList(sList, st) = false then
+                            sList = sList & st & "|" 
+                            end if
                         end if
-                    else
-                        if len(st) then      
-                        if instr(sList, st & "|") = 0 then
-                            sList = sList & st & "|"
-                        end if   
-                        end if   
-                    end if
-                end if   
-            end if
-    
-            if pData->id = DB2_TYPE then
-                if bTypesOnly then
-                    if bTypesNotPreloaded then
-                        ' Only look at TYPES that are loaded into the editor. These would
-                        ' be entries that have a Filename attached to them. Preloaded TYPES
-                        ' from WinAPI or Afx do not have Filenames.
-                        if len(pData->fileName) = 0 then continue do
-                    end if
-                end if
-    
-                ' nLenMatchWord will allow partial matches to be added to the popup
-                ' based on what the user has currently typed.
-                st = rtrim(pData->VariableType)
-
-                if nLenMatchWord then
-                    if left(ucase(st), nLenMatchWord) = pDoc->sMatchWord then
+                    elseif len(st) then
                         if ExistsInAutocompleteList(sList, st) = false then
-                        sList = sList & st & "|" 
-                        end if
+                            sList = sList & st & "|"
+                        end if    
                     end if
-                elseif len(st) then
-                    if ExistsInAutocompleteList(sList, st) = false then
-                        sList = sList & st & "|"
-                    end if    
                 end if
-            end if
             loop
 
 
@@ -557,47 +557,47 @@ function ShowAutocompleteList( byval Notification as long = 0) as BOOLEAN
             sLookFor = ucase(sLookFor)
 
             do
-            gdb2.dbRewind()
-            do 
-                pData = gdb2.dbGetnext()
-                if pData = 0 then exit do
-                if pData->deleted = true then continue do
+                gdb2.dbRewind()
+                do 
+                    pData = gdb2.dbGetnext()
+                    if pData = 0 then exit do
+                    if pData->deleted = true then continue do
+                    
+                    dim as boolean bAddToList = false
+                    
+                    if (pData->id = DB2_VARIABLE) andalso _
+                        (ucase(pData->ParentName) = sLookFor) then
+                        st = pData->ElementName
+                        bAddToList = true
+                    elseif (pData->id = DB2_FUNCTION) andalso _
+                        (ucase(pData->ParentName) = sLookFor) then   
+                        st = AfxStrParse(pData->ElementName, 2, ".")
+                        bAddToList = true
+                    end if
+                            
+                    if bAddToList then
+                        if nLenMatchWord then
+                            if left(ucase(st), nLenMatchWord) = pDoc->sMatchWord then
+                                if ExistsInAutocompleteList(sList, st) = false then
+                                    sList = sList & st & "|"
+                                end if
+                            end if
+                        else
+                            If ExistsInAutocompleteList(sList, st) = false then
+                                sList = sList & st & "|"
+                            end if
+                        end if         
+                    end if   
+                loop 
                 
-                dim as boolean bAddToList = false
-                
-                if (pData->id = DB2_VARIABLE) andalso _
-                    (ucase(pData->ParentName) = sLookFor) then
-                    st = pData->ElementName
-                    bAddToList = true
-                elseif (pData->id = DB2_FUNCTION) andalso _
-                    (ucase(pData->ParentName) = sLookFor) then   
-                    st = AfxStrParse(pData->ElementName, 2, ".")
-                    bAddToList = true
+                dim pDataTYPE as DB2_DATA ptr
+                pDataTYPE = gdb2.dbFindTYPE( sLookFor )
+                if pDataTYPE then
+                    sLookFor = ucase(pDataType->TypeExtends)
+                else
+                    exit do   
                 end if
-                        
-                if bAddToList then
-                    if nLenMatchWord then
-                        if left(ucase(st), nLenMatchWord) = pDoc->sMatchWord then
-                        if ExistsInAutocompleteList(sList, st) = false then
-                            sList = sList & st & "|"
-                        end if
-                        end if
-                    else
-                        If ExistsInAutocompleteList(sList, st) = false then
-                        sList = sList & st & "|"
-                        end if
-                    end if         
-                end if   
-            loop 
-            
-            dim pDataTYPE as DB2_DATA ptr
-            pDataTYPE = gdb2.dbFindTYPE( sLookFor )
-            if pDataTYPE then
-                sLookFor = ucase(pDataType->TypeExtends)
-            else
-                exit do   
-            end if
-            if len(sLookFor) = 0 then exit do
+                if len(sLookFor) = 0 then exit do
             loop
         
     end select

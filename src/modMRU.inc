@@ -31,8 +31,8 @@ end function
 
 ''
 ''
-private function getNextFreeMRUindex() as long
-    ' gets the first available free MRU index in the gTopMenu array. If there are
+private function getnextFreeMRUindex() as long
+    ' gets the first available free MRU index in the gTopMenu array. if there are
     ' none free then the gTopMenu array is extended and that index is returned. This
     ' function is used for both Files and Projects MRU lists.
     dim as long nFoundAt = -1
@@ -49,38 +49,38 @@ end function
 
 ''
 ''
-public Function updateMRUFilesItems() as long
+public function updateMRUFilesItems() as long
     ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
     ' the gTopMenu array rather than erase it because existing menus depend on the 
     ' array index that aready exist. The function also returns the width to use for
     ' the resulting popup menu (based on text width metrics of each filename).
     clearMRUFilesItems( IDM_MRU )
     
-    dim wszText as WSTRING * 256
+    dim wszText as wstring * 256
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
     dim as long padding = AfxScaleX(12)
 
-    For i As Long = 0 To 9
-        ' If the file no longer exists then remove it from the MRU list
+    for i as long = 0 To 9
+        ' if the file no longer exists then remove it from the MRU list
         gConfig.MRU(i) = ProcessFromCurdriveApp( gConfig.MRU(i) )
-        If AfxFileExists( gConfig.MRU(i) ) = 0 Then
+        if AfxFileExists( gConfig.MRU(i) ) = 0 then
             gConfig.MRU(i) = ""
-        Else
+        else
             hasMRUfiles = true
-            setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRU, IDM_MRUBASE + i, 0, false, false )
+            setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUBASE + i, 0, false, false )
             wszText = gConfig.MRU(i)
             txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
-        End If
-    Next
+        end if
+    next
     
     if hasMRUfiles = false then
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRU, IDM_MRUFILES, 0, false, false )  ' (empty)
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUFILES, 0, false, false )  ' (empty)
     else
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRU, IDM_MRUFILES, 0, false, true ) 
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRU, IDM_MRUCLEAR, 0, false, false )
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUFILES, 0, false, true ) 
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUCLEAR, 0, false, false )
     end if   
     
     function = nMenuWidth + padding
@@ -89,37 +89,37 @@ end function
 
 ''
 ''
-public Function updateMRUSessionFilesItems() as long
+public function updateMRUSessionFilesItems() as long
     ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
     ' the gTopMenu array rather than erase it because existing menus depend on the 
     ' array index that aready eist.
     clearMRUFilesItems( IDM_MRUSESSION )
     
-    dim wszText as WSTRING * 256
+    dim wszText as wstring * 256
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
     dim as long padding = AfxScaleX(12)
 
-    For i As Long = 0 To 9
-        ' If the file no longer exists then remove it from the MRU list
+    for i as long = 0 To 9
+        ' if the file no longer exists then remove it from the MRU list
         gConfig.MRUSESSION(i) = ProcessFromCurdriveApp( gConfig.MRUSESSION(i) )
-        If AfxFileExists( gConfig.MRUSESSION(i) ) = 0 Then
+        if AfxFileExists( gConfig.MRUSESSION(i) ) = 0 then
             gConfig.MRUSESSION(i) = ""
-        Else
+        else
             hasMRUfiles = true
-            setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONBASE + i, 0, false, false )
+            setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONBASE + i, 0, false, false )
             wszText = gConfig.MRUSESSION(i)
             txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
-        End If
-    Next
+        end if
+    next
     
     if hasMRUfiles = false then
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONFILES, 0, false, false )  ' (empty)
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONFILES, 0, false, false )  ' (empty)
     else
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONFILES, 0, false, true ) 
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONCLEAR, 0, false, false )
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONFILES, 0, false, true ) 
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONCLEAR, 0, false, false )
     end if   
     
     function = nMenuWidth + padding
@@ -128,37 +128,37 @@ end function
 
 ''
 ''
-public Function updateMRUProjectFilesItems() as long
+public function updateMRUProjectFilesItems() as long
     ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
     ' the gTopMenu array rather than erase it because existing menus depend on the 
     ' array index that aready eist.
     clearMRUFilesItems( IDM_MRUPROJECT )
     
-    dim wszText as WSTRING * 256
+    dim wszText as wstring * 256
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
     dim as long padding = AfxScaleX(12)
 
-    For i As Long = 0 To 9
-        ' If the file no longer exists then remove it from the MRU list
+    for i as long = 0 To 9
+        ' if the file no longer exists then remove it from the MRU list
         gConfig.MRUPROJECT(i) = ProcessFromCurdriveApp( gConfig.MRUPROJECT(i) )
-        If AfxFileExists( gConfig.MRUPROJECT(i) ) = 0 Then
+        if AfxFileExists( gConfig.MRUPROJECT(i) ) = 0 then
             gConfig.MRUPROJECT(i) = ""
-        Else
+        else
             hasMRUfiles = true
-            setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTBASE + i, 0, false, false )
+            setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTBASE + i, 0, false, false )
             wszText = gConfig.MRUPROJECT(i)
             txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
-        End If
-    Next
+        end if
+    next
     
     if hasMRUfiles = false then
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTFILES, 0, false, false )  ' (empty)
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTFILES, 0, false, false )  ' (empty)
     else
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTFILES, 0, false, true ) 
-        setTopMenuMRUItem( getNextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTCLEAR, 0, false, false )
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTFILES, 0, false, true ) 
+        setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTCLEAR, 0, false, false )
     end if   
     
     function = nMenuWidth + padding
@@ -167,15 +167,15 @@ end function
 
 ''
 ''
-public function OpenMRUFile( byval HWnd As HWnd, _
-                                byval wID As long _
+public function OpenMRUFile( byval hwnd as HWND, _
+                                byval wID as long _
                                 ) as long
-    dim wszFile as WString * MAX_PATH
+    dim wszFile as wstring * MAX_PATH
     dim pDoc as clsDocument ptr
     dim pDocIn as clsDocument ptr
     wszFile = gConfig.MRU(wID - IDM_MRUBASE)
     
-    ' If file is already loaded then simply switch to that file
+    ' if file is already loaded then simply switch to that file
     ' within the editor.
     pDocIn = gApp.GetDocumentPtrByFilename( wszFile )
 
@@ -198,7 +198,7 @@ public function OpenMRUFile( byval HWnd As HWnd, _
     end if
 
     LoadExplorerFiles()
-    LoadFunctionsFiles()
+    LoadfunctionsFiles()
 
     function = 0
 end function
@@ -206,53 +206,53 @@ end function
 
 ''
 ''
-public Function ClearMRUlist( ByVal wID As Long ) As Long
+public function ClearMRUlist( byval wID as long ) as long
     Select Case wID
         Case IDM_MRUCLEAR
-            For i as long = 0 To 9
-            gConfig.MRU(i) = ""
-            Next
+            for i as long = 0 To 9
+                gConfig.MRU(i) = ""
+            next
         Case IDM_MRUSESSIONCLEAR
-            For i as long = 0 To 9
-            gConfig.MRUSESSION(i) = ""
-            Next
+            for i as long = 0 To 9
+                gConfig.MRUSESSION(i) = ""
+            next
         Case IDM_MRUPROJECTCLEAR
-            For i as long = 0 To 9
-            gConfig.MRUPROJECT(i) = ""
-            Next
-    End Select
-    Function = 0
-End Function
+            for i as long = 0 To 9
+                gConfig.MRUPROJECT(i) = ""
+            next
+    end Select
+    function = 0
+end function
 
 
 ''
 ''
-public Function UpdateMRUList( Byref wzFilename As WString ) As Long
+public function UpdateMRUList( byref wzFilename as wstring ) as long
 
-    Dim idxExistsAt as Long = -1   ' index of where filename already exists 
-    Dim i           as Long
-    Dim wzFile      As WString * MAX_PATH
+    dim idxExistsAt as long = -1   ' index of where filename already exists 
+    dim i           as long
+    dim wzFile      as wstring * MAX_PATH
     
     if gApp.IsProjectLoading then exit function
 
     ' Search the 10 MRU items to see if the filename already exists and
     ' also for an available entry to put the filename in.
-    For i = 0 To 9
+    for i = 0 To 9
         wzFile = gConfig.MRU(i)
         wzFile = ProcessFromCurdriveApp(wzFile)
-        If Ucase(wzFile) = Ucase(wzFilename) Then
-            idxExistsAt = i:  Exit For
-        End If   
-    Next
+        if ucase(wzFile) = ucase(wzFilename) then
+            idxExistsAt = i:  exit for
+        end if   
+    next
     
-    ' If does not already exist then we simply need to move all entries
+    ' if does not already exist then we simply need to move all entries
     ' down and add at the beginning of the list. The original 10th entry
     ' will now drop off the list.
-    If idxExistsAt = -1 Then idxExistsAt = 9
+    if idxExistsAt = -1 then idxExistsAt = 9
     
-    For i = idxExistsAt To 1 Step -1
+    for i = idxExistsAt To 1 step -1
         gConfig.MRU(i) = gConfig.MRU(i-1)
-    Next
+    next
     gConfig.MRU(0) = wzFilename 
     
     ' Save the MRU to the configuration file. Only write the MRU items
@@ -261,8 +261,8 @@ public Function UpdateMRUList( Byref wzFilename As WString ) As Long
     ' settings.ini file.
     gConfig.WriteMRU
 
-    Function = 0
-End Function  
+    function = 0
+end function  
 
 
 
@@ -270,40 +270,40 @@ End Function
 
 ''
 ''
-public Function OpenMRUSessionFile( ByVal HWnd As HWnd, _
-                                    ByVal wID As Long _
-                                    ) As Long
-    Dim wzFile As WString * MAX_PATH
+public function OpenMRUSessionFile( byval hwnd as HWND, _
+                                    byval wID as long _
+                                    ) as long
+    dim wzFile as wstring * MAX_PATH
     wzFile = gConfig.MRUSESSION(wID - IDM_MRUSESSIONBASE)
     gConfig.LoadSessionFile( wzFile )
-    Function = 0
-End Function
+    function = 0
+end function
 
     
 ''
 ''
-public Function UpdateMRUSessionList( Byval wszFilename As CWSTR ) As Long
+public function UpdateMRUSessionList( byval wszFilename as CWSTR ) as long
 
-    Dim idxExistsAt As Long = -1   ' index of where filename already exists 
-    Dim i           As Long
+    dim idxExistsAt as long = -1   ' index of where filename already exists 
+    dim i           as long
     
     ' Search the 10 MRU items to see if the filename already exists and
     ' also for an available entry to put the filename in.
-    For i = 0 To 9
+    for i = 0 To 9
         gConfig.MRUSession(i) = ProcessFromCurdriveApp(gConfig.MRUSession(i))
-        If Ucase(gConfig.MRUSession(i)) = Ucase(wszFilename) Then
-            idxExistsAt = i:  Exit For
-        End If   
-    Next
+        if ucase(gConfig.MRUSession(i)) = ucase(wszFilename) then
+            idxExistsAt = i:  exit For
+        end if   
+    next
     
-    ' If does not already exist then we simply need to move all entries
+    ' if does not already exist then we simply need to move all entries
     ' down and add at the beginning of the list. The original 10th entry
     ' will now drop off the list.
-    If idxExistsAt = -1 Then idxExistsAt = 9
+    if idxExistsAt = -1 then idxExistsAt = 9
 
-    For i = idxExistsAt To 1 Step -1
+    for i = idxExistsAt to 1 step -1
         gConfig.MRUSession(i) = gConfig.MRUSession(i-1)
-    Next
+    next
     gConfig.MRUSession(0) = wszFilename 
 
     ' Save the MRU to the configuration file. Only write the MRU items
@@ -312,48 +312,48 @@ public Function UpdateMRUSessionList( Byval wszFilename As CWSTR ) As Long
     ' settings.ini file.
     gConfig.WriteMRUSessions
 
-    Function = 0
-End Function  
+    function = 0
+end function  
 
 
 ''  PROJECTS  ''
 
 ''
 ''
-public Function OpenMRUProjectFile( ByVal HWnd As HWnd, _
-                                    ByVal wID As Long _
-                                    ) As Long
-    Dim wzFile As WString * MAX_PATH
+public function OpenMRUProjectFile( byval hwnd as HWND, _
+                                    byval wID as long _
+                                    ) as long
+    dim wzFile as wstring * MAX_PATH
     wzFile = gConfig.MRUPROJECT(wID - IDM_MRUPROJECTBASE)
-    frmMain_OpenProjectSafely(HWnd, wzFile) 
-    Function = 0
-End Function
+    frmMain_OpenProjectSafely(hwnd, wzFile) 
+    function = 0
+end function
 
     
 ''
 ''
-public Function UpdateMRUProjectList( Byval wszFilename As CWSTR ) As Long
+public function UpdateMRUProjectList( byval wszFilename as CWSTR ) as long
 
-    Dim idxExistsAt As Long = -1   ' index of where filename already exists 
-    Dim i           As Long
+    dim idxExistsAt as long = -1   ' index of where filename already exists 
+    dim i           as long
     
     ' Search the 10 MRU items to see if the filename already exists and
     ' also for an available entry to put the filename in.
-    For i = 0 To 9
+    for i = 0 To 9
         gConfig.MRUProject(i) = ProcessFromCurdriveApp(gConfig.MRUProject(i))
-        If Ucase(gConfig.MRUProject(i)) = Ucase(wszFilename) Then
-            idxExistsAt = i:  Exit For
-        End If   
-    Next
+        if ucase(gConfig.MRUProject(i)) = ucase(wszFilename) then
+            idxExistsAt = i:  exit For
+        end if   
+    next
     
-    ' If does not already exist then we simply need to move all entries
+    ' if does not already exist then we simply need to move all entries
     ' down and add at the beginning of the list. The original 10th entry
     ' will now drop off the list.
-    If idxExistsAt = -1 Then idxExistsAt = 9
+    if idxExistsAt = -1 then idxExistsAt = 9
 
-    For i = idxExistsAt To 1 Step -1
+    for i = idxExistsAt To 1 step -1
         gConfig.MRUProject(i) = gConfig.MRUProject(i-1)
-    Next
+    next
     gConfig.MRUProject(0) = wszFilename 
 
     ' Save the MRU to the configuration file. Only write the MRU items
@@ -362,8 +362,8 @@ public Function UpdateMRUProjectList( Byval wszFilename As CWSTR ) As Long
     ' settings.ini file.
     gConfig.WriteMRUProjects
 
-    Function = 0
-End Function  
+    function = 0
+end function  
 
 
 

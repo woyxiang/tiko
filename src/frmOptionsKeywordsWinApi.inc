@@ -17,85 +17,85 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOptionsKeywordsWinApi
 ' ========================================================================================
-Function frmOptionsKeywordsWinApi_OnCommand( _
-            ByVal HWnd As HWnd, _
-            ByVal id As Long, _
-            ByVal hwndCtl As HWnd, _
-            ByVal codeNotify As UINT _
-            ) As LRESULT
+function frmOptionsKeywordsWinApi_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
-    Select Case id
-        Case IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS
-            If codeNotify = EN_CHANGE Then 
-            ' The EN_CHANGE notification code is not sent when the ES_MULTILINE style is used and the text is sent through WM_SETTEXT. 
-            ' Set the flag in gConfig to indicate that the keywords need to be saved to disk should
-            ' the user press OK to close the Environment Options dialog.
-            gConfig.bKeywordsDirty = True
-            End If
-    End Select
+    select case id
+        case IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS
+            If codeNotify = EN_CHANGE then 
+                ' The EN_CHANGE notification code is not sent when the ES_MULTILINE style is used and the text is sent through WM_SETTEXT. 
+                ' Set the flag in gConfig to indicate that the keywords need to be saved to disk should
+                ' the user press OK to close the Environment Options dialog.
+                gConfig.bKeywordsDirty = true
+            end if
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmOptionsKeywordsWinApi
 ' ========================================================================================
-Function frmOptionsKeywordsWinApi_OnDestroy( byval HWnd As HWnd ) As LRESULT
-    Dim As HFONT hFont = AfxGetWindowFont(GetDlgItem(HWnd, IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS))
+function frmOptionsKeywordsWinApi_OnDestroy( byval hwnd as HWND ) as LRESULT
+    Dim as HFONT hFont = AfxGetWindowFont(GetDlgItem(hwnd, IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS))
     DeleteFont(hFont)
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmOptionsKeywordsWinApi Window procedure
 ' ========================================================================================
-Function frmOptionsKeywordsWinApi_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmOptionsKeywordsWinApi_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_COMMAND, frmOptionsKeywordsWinApi_OnCommand)
-        HANDLE_MSG (HWnd, WM_DESTROY, frmOptionsKeywordsWinApi_OnDestroy)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_COMMAND, frmOptionsKeywordsWinApi_OnCommand)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmOptionsKeywordsWinApi_OnDestroy)
+    end select
 
-    Function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmOptionsKeywordsWinApi_Show
 ' ========================================================================================
-function frmOptionsKeywordsWinApi_Show( ByVal hWndParent As HWnd ) as LRESULT
+function frmOptionsKeywordsWinApi_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-    HWND_FRMOPTIONSKEYWORDSWINAPI = pWindow->Create( hWndParent, "", _
+    HWND_FRMOPTIONSKEYWORDSWINAPI = pWindow->Create( hwndParent, "", _
         @frmOptionsKeywordsWinApi_WndProc, 0, 0, 0, 0, _
-        WS_CHILD Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING )
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING )
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
-    Dim As HWnd hTextBox = _
+    dim as HWND hTextBox = _
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS, "", 0, 0, 386, 345, _
-        WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or ES_LEFT Or _
-        ES_MULTILINE Or ES_AUTOVSCROLL Or ES_WANTRETURN, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING )
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or ES_LEFT or _
+        ES_MULTILINE or ES_AUTOVSCROLL or ES_WANTRETURN, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING )
     SendMessage( hTextBox, EM_SETLIMITTEXT, (1024 * 100), 0 )    ' max 100K text   
-    Dim As HFONT hFont = pWindow->CreateFont("Courier New", 9)
-    AfxSetWindowFont( hTextBox, hFont, True )
+    dim as HFONT hFont = pWindow->CreateFont("Courier New", 9)
+    AfxSetWindowFont( hTextBox, hFont, true )
 
-    gConfig.bKeywordsDirty = False
-    AfxSetWindowText( hTextBox, WStr(gConfig.WinApiKeywords) )
+    gConfig.bKeywordsDirty = false
+    AfxSetWindowText( hTextBox, wstr(gConfig.WinApiKeywords) )
     
-    Function = 0
+    function = 0
     
-End Function
+end function
 

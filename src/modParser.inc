@@ -133,13 +133,13 @@ function ctxParser.ParseDIM( _
             if i then varNames = mid( text, i + 1 )
             dim as long numItems = AfxStrParseCount( varNames, "," )
             for i as long = 1 to numItems
-            this.varName = AfxStrParse( varNames, i, "," )
-            this.varType = dataType
-            this.varScope = originFrom
-            if originFrom = DIMSCOPE.SCOPETYPE then
-                this.functionName = this.typeName
-            end if   
-            gdb2.dbAdd( @this, DB2_VARIABLE )
+                this.varName = AfxStrParse( varNames, i, "," )
+                this.varType = dataType
+                this.varScope = originFrom
+                if originFrom = DIMSCOPE.SCOPETYPE then
+                    this.functionName = this.typeName
+                end if   
+                gdb2.dbAdd( @this, DB2_VARIABLE )
             next   
         end if
         
@@ -211,9 +211,9 @@ function ctxParser.ParseENUM( byval action as PARSEACTION ) as boolean
 
         select case this.ltoken 
             case "explicit", "="
-            this.ReadToEOL()
+                this.ReadToEOL()
             case "'todo:"
-            this.ParseTODO( PARSINGACTION.PARSE_TODO )
+                this.ParseTODO( PARSINGACTION.PARSE_TODO )
             case "end"   
             case else
             if len(this.token) then
@@ -228,22 +228,22 @@ function ctxParser.ParseENUM( byval action as PARSEACTION ) as boolean
         
         if( this.ltoken = "end" ) then
             if this.GetToken() then
-            if this.EOL then return false
-            if( this.ltoken = "enum" ) then
-                this.objectEndLine = this.lineNum
-                this.typeAlias = this.typeName
-                gdb2.dbAdd( @this, DB2_TYPE )
+                if this.EOL then return false
+                if( this.ltoken = "enum" ) then
+                    this.objectEndLine = this.lineNum
+                    this.typeAlias = this.typeName
+                    gdb2.dbAdd( @this, DB2_TYPE )
 
-                ' Also add a variable so that the enum can be accessed directly
-                ' without having to assign it first to a variable.
-                this.varName = this.typeName
-                this.varType = this.typeName
-                this.varScope = DIMSCOPE.SCOPEGLOBAL
-                this.functionName = ""
-                gdb2.dbAdd( @this, DB2_VARIABLE )
+                    ' Also add a variable so that the enum can be accessed directly
+                    ' without having to assign it first to a variable.
+                    this.varName = this.typeName
+                    this.varType = this.typeName
+                    this.varScope = DIMSCOPE.SCOPEGLOBAL
+                    this.functionName = ""
+                    gdb2.dbAdd( @this, DB2_VARIABLE )
 
-                exit do
-            end if
+                    exit do
+                end if
             end if      
         end if
     loop
@@ -280,24 +280,24 @@ function ctxParser.ParseTYPE( byval action as PARSEACTION ) as boolean
         
         select case this.ltoken 
             case "extends"
-            bReadingExtends = true
+                bReadingExtends = true
             case "as"
-            this.ReadToSOL()
-            this.ParseDim( action, DIMSCOPE.SCOPETYPE )
+                this.ReadToSOL()
+                this.ParseDim( action, DIMSCOPE.SCOPETYPE )
             case "'todo:"
-            this.ParseTODO( PARSINGACTION.PARSE_TODO )
+                this.ParseTODO( PARSINGACTION.PARSE_TODO )
         end select
         
         if( this.ltoken = "end" ) then
             if this.GetToken() then
-            if this.EOL then return false
-            if( this.ltoken = "type" ) then
-                this.objectEndLine = this.lineNum
-                this.typeAlias = this.typeName
-                this.typeExtends = extendsTYPE
-                gdb2.dbAdd( @this, DB2_TYPE )
-                exit do
-            end if
+                if this.EOL then return false
+                if( this.ltoken = "type" ) then
+                    this.objectEndLine = this.lineNum
+                    this.typeAlias = this.typeName
+                    this.typeExtends = extendsTYPE
+                    gdb2.dbAdd( @this, DB2_TYPE )
+                    exit do
+                end if
             end if      
         end if
     loop
@@ -459,28 +459,28 @@ function ctxParser.ParseFunction( byval action as PARSEACTION ) as boolean
         
         select case this.ltoken 
             case "dim", "static"
-            this.ParseDim( action, DIMSCOPE.SCOPEFUNCTION )
+                this.ParseDim( action, DIMSCOPE.SCOPEFUNCTION )
             case "'todo:"
-            this.ParseTODO( PARSINGACTION.PARSE_TODO )
+                this.ParseTODO( PARSINGACTION.PARSE_TODO )
             case "property", "return"
-            if action = PARSINGACTION.PARSE_PROPERTY then
-                ' A Property statement found at this point would be a return statement
-                ' indicating that this would be a (get) property.
-                this.GetSet = "(get)"
-            end if
+                if action = PARSINGACTION.PARSE_PROPERTY then
+                    ' A Property statement found at this point would be a return statement
+                    ' indicating that this would be a (get) property.
+                    this.GetSet = "(get)"
+                end if
         end select
 
         if( this.ltoken = "end" ) then
             if this.GetToken() then
-            if this.EOL then return false
-            if( this.ltoken = "sub" ) orelse _
-                (this.ltoken = "function") orelse _
-                (this.ltoken = "property") orelse _
-                (this.ltoken = "constructor") orelse _
-                (this.ltoken = "destructor") then
-                this.objectEndLine = this.lineNum
-                exit do
-            end if
+                if this.EOL then return false
+                if( this.ltoken = "sub" ) orelse _
+                    (this.ltoken = "function") orelse _
+                    (this.ltoken = "property") orelse _
+                    (this.ltoken = "constructor") orelse _
+                    (this.ltoken = "destructor") then
+                    this.objectEndLine = this.lineNum
+                    exit do
+                end if
             end if      
         end if
     loop
@@ -613,19 +613,19 @@ function ctxParser.ReadQuoted _
         while( this.i < this.n )
             c = this.ReadChar()
             if( c = asc("""") ) then
-            c = this.PeekChar()
-            if( c = asc("""") ) then
-                c = this.ReadChar()
-            else
-                exit while
-            end if
-            elseif( c = asc("\") ) then
-            c = this.PeekChar()
-            if( c = 10 or c = 13 ) then
-                exit while
-            else
-                c = this.ReadChar()
-            end if
+                c = this.PeekChar()
+                if( c = asc("""") ) then
+                    c = this.ReadChar()
+                else
+                    exit while
+                end if
+                elseif( c = asc("\") ) then
+                c = this.PeekChar()
+                if( c = 10 or c = 13 ) then
+                    exit while
+                else
+                    c = this.ReadChar()
+                end if
             end if
         wend 
 
@@ -634,11 +634,11 @@ function ctxParser.ReadQuoted _
         while( this.i < this.n )
             c = this.ReadChar()
             if( c = asc("""") ) then
-            if( this.PeekChar() = asc("""") ) then
-                c = this.ReadChar()
-            else
-                exit while
-            end if
+                if( this.PeekChar() = asc("""") ) then
+                    c = this.ReadChar()
+                else
+                    exit while
+                end if
             endif
         wend
 
@@ -673,7 +673,7 @@ function ctxParser.GetToken() as boolean
         if( c = 13 ) then
             c = this.PeekChar()
             if( c = 10 ) then
-            c = this.ReadChar()
+                c = this.ReadChar()
             end if
         end if
         
@@ -712,10 +712,10 @@ function ctxParser.GetToken() as boolean
         while ( c )
             c = this.PeekChar()
             if( c = 9 or c = 32 )then
-            c = this.ReadChar()
+                c = this.ReadChar()
             else
-            this.startofline = false
-            exit while
+                this.startofline = false
+                exit while
             end if
         wend
         this.s = this.i
@@ -733,14 +733,14 @@ function ctxParser.GetToken() as boolean
         if( c = asc("t") or c = asc("T") ) then
             c = this.ReadChar()
             while( c )
-            c = this.PeekChar()
-            select case c
-                'case "O", "o", "D", "d", ":"
-                case 79, 111, 68, 100, 58    
-                    c = this.ReadChar()
-                case else
-                    exit while
-            end select
+                c = this.PeekChar()
+                select case c
+                    'case "O", "o", "D", "d", ":"
+                    case 79, 111, 68, 100, 58    
+                        c = this.ReadChar()
+                    case else
+                        exit while
+                end select
             wend
             this.token = mid( *this.text, this.s + 1, this.i - this.s)
             this.ltoken = lcase(this.token)
@@ -768,9 +768,9 @@ function ctxParser.GetToken() as boolean
                 ( c >= asc("A") and c <= asc("Z") ) or _
                 ( c >= asc("a") and c <= asc("z") ) _
             ) then
-            c = this.ReadChar()
+                c = this.ReadChar()
             else
-            exit while
+                exit while
             end if
         wend 
         this.inprepro = true
@@ -784,7 +784,7 @@ function ctxParser.GetToken() as boolean
         if( this.PeekChar(1) = asc("'") ) then
             c = this.ReadChar()
             c = this.ReadChar()
-            this.incomment = TRUE
+            this.incomment = true
             this.ReadToEOL()
             this.s = this.i
             continue while
@@ -797,8 +797,8 @@ function ctxParser.GetToken() as boolean
         if( this.PeekChar(1) = asc("""") ) then
             c = this.ReadChar() '' $
             if( this.ReadQuoted(true) ) then
-            this.s = this.i
-            continue while
+                this.s = this.i
+                continue while
             end if
         end if
     end if
@@ -846,10 +846,10 @@ function ctxParser.GetToken() as boolean
                 ( c = asc(".") ) _
             ) then
 
-            c = this.ReadChar()
+                c = this.ReadChar()
             else
-            '_ReadSuffix( ctx )
-            exit while
+                '_ReadSuffix( ctx )
+                exit while
             end if
         wend
 

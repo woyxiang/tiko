@@ -15,10 +15,10 @@
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
-function frmMenuBar_PositionWindows() As LRESULT
+function frmMenuBar_PositionWindows() as LRESULT
     
-    DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWND_FRMMAIN)
-    If pWindow = 0 Then Exit Function
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
+    If pWindow = 0 Then Exit function
 
     dim as HWND hCtrl
     dim as long nLeft, nTop, nWidth, nHeight
@@ -30,68 +30,69 @@ function frmMenuBar_PositionWindows() As LRESULT
     for i as long = IDC_MENUBAR_FILE to IDC_MENUBAR_HELP
         hCtrl = GetDlgItem( HWND_FRMMAIN_MENUBAR, i )
         nWidth = AfxGetWindowWidth(hCtrl)
-        SetWindowPos( hCtrl, 0, nLeft, nTop, nWidth, nHeight, SWP_SHOWWINDOW Or SWP_NOZORDER )
+        SetWindowPos( hCtrl, 0, nLeft, nTop, nWidth, nHeight, SWP_SHOWWINDOW or SWP_NOZORDER )
         AfxRedrawWindow( hCtrl )
         nLeft = nLeft + nWidth
     next
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmMenuBar
 ' ========================================================================================
 function frmMenuBar_OnSize( _
-            ByVal HWnd As HWnd, _
-            ByVal state As UINT, _
-            ByVal cx As Long, _
-            ByVal cy As Long _
-            ) As LRESULT
+            byval hwnd as HWND,_
+            byval state as UINT, _
+            byval cx as long, _
+            byval cy as long _
+            ) as LRESULT
     If state <> SIZE_MINIMIZED Then
         ' Position all of the child windows
         frmMenuBar_PositionWindows
-    End If
-    Function = 0
-End Function
+    end If
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmMenuBar Window procedure
 ' ========================================================================================
 function frmMenuBar_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+            byval hwnd   as HWND,_
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE, frmMenuBar_OnSize)
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_SIZE, frmMenuBar_OnSize)
     
     case WM_ERASEBKGND
         return true
 
     case WM_PAINT
-        Dim As PAINTSTRUCT ps
-        Dim As HDC hDc
-        Dim As Rect rc
+        dim as PAINTSTRUCT ps
+        dim as HDC hDc
+        dim as Rect rc
 
-        hDC = BeginPaint(hWnd, @ps)
-        GetClientRect(HWnd, @rc)
+        hDC = BeginPaint(hwnd, @ps)
+        GetClientRect(hwnd, @rc)
         FillRect( hDC, @rc, ghMenuBar.hPanelBrush )
         EndPaint hWnd, @ps
+        return 0
     
     case WM_DRAWITEM
-        Dim memDC as HDC      ' Double buffering
-        Dim hbit As HBITMAP   ' Double buffering
-        Dim As RECT rc
+        dim memDC as HDC      ' Double buffering
+        dim hbit as HBITMAP   ' Double buffering
+        dim as RECT rc
 
-        dim lpdis As DRAWITEMSTRUCT Ptr = cast( DRAWITEMSTRUCT Ptr, lParam )
+        dim lpdis as DRAWITEMSTRUCT ptr = cast( DRAWITEMSTRUCT ptr, lParam )
         if lpdis = 0 then exit function
 
-        DIM pWindow AS CWindow PTR = AfxCWindowPtr(lpdis->hwndItem)
-        If pWindow = 0 Then Exit Function
+        dim pWindow as CWindow ptr = AfxCWindowPtr(lpdis->hwndItem)
+        if pWindow = 0 then exit function
         
         if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
             ( lpdis->itemAction = ODA_SELECT ) orelse _
@@ -121,7 +122,7 @@ function frmMenuBar_WndProc( _
             SetBkColor( memDC, iif( IsHot, ghMenuBar.BackColorHot, ghMenuBar.BackColor) )   
             SetTextColor( memDC, iif( IsHot, ghMenuBar.ForeColorHot, ghMenuBar.ForeColor) )
 
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
+            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             
             ' pad the drawing rectangle to allow left and right margins
             dim as RECT rcText = lpdis->rcItem
@@ -129,7 +130,7 @@ function frmMenuBar_WndProc( _
             rcText.right = rcText.right - pWindow->ScaleX(4) 
             
             dim as CWSTR wszCaption = AfxGetWindowText( lpdis->hwndItem )
-            DrawText( memDC, wszCaption.sptr, -1, Cast(lpRect, @rcText), wsStyle )
+            DrawText( memDC, wszCaption.sptr, -1, cast(lpRect, @rcText), wsStyle )
             SelectObject( memDC, oldFont )
             
             BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
@@ -144,34 +145,34 @@ function frmMenuBar_WndProc( _
             return true
         end if   
 
-    End Select
+    end Select
     
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmMenuBar_SubclassProc 
 ' ========================================================================================
 function frmMenuBar_SubclassProc ( _
-            ByVal hWin   As HWnd, _                 ' // Control window handle
-            ByVal uMsg   As UINT, _                 ' // Type of message
-            ByVal _wParam As WPARAM, _               ' // First message parameter
-            ByVal _lParam As LPARAM, _               ' // Second message parameter
-            ByVal uIdSubclass As UINT_PTR, _        ' // The subclass ID
-            ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
-            ) As LRESULT
+            byval hWin   as HWND,_                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval _wParam as WPARAM, _               ' // First message parameter
+            byval _lParam as LPARAM, _               ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
 
-    DIM pWindow AS CWindow PTR = AfxCWindowPtr(hWin)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hWin)
 
-    Select Case uMsg
-        Case WM_GETDLGCODE
+    select case uMsg
+        case WM_GETDLGCODE
             ' Do not filter any types of messages. We want the dialog box manager to be
             ' able to correctly handle TAB, arrows, and focus rectangles, etc.
         
-        Case WM_MOUSEMOVE
+        case WM_MOUSEMOVE
             ' If we have moused over a new button then redraw the previous one so the hot
             ' state can be properly rendered. We do it here because WM_MOUSELEAVE can not 
             ' be depended on to fire if we move quickly between adjacent menubar buttons.
@@ -180,49 +181,49 @@ function frmMenuBar_SubclassProc ( _
             ghWndActiveMenuBarButton = hWin
             if prevCtrl then AfxRedrawWindow(prevCtrl)   
 
-            IF ghWndActiveMenuBarButton <> prevCtrl THEN
-            ' A new menubar button has been moused over. If a previous popup
-            ' menu exists then we will automatically continue to show a popup menu
-            ' for the newly selected menubar button.
-            if IsWindowVisible(HWND_MENU(0)) then
-                frmPopupMenu_Show( ID_POPUP, 0, hWin )
-            end if   
-            ' Track that we are over the control in order to catch the 
-            ' eventual WM_MOUSELEAVE event
-            Dim tme As TrackMouseEvent
-            tme.cbSize = Sizeof(TrackMouseEvent)
-            tme.dwFlags = TME_HOVER Or TME_LEAVE
-            tme.hwndTrack = hWin
-            TrackMouseEvent(@tme) 
-            End If
+            if ghWndActiveMenuBarButton <> prevCtrl then
+                ' A new menubar button has been moused over. If a previous popup
+                ' menu exists then we will automatically continue to show a popup menu
+                ' for the newly selected menubar button.
+                if IsWindowVisible(HWND_MENU(0)) then
+                    frmPopupMenu_Show( ID_POPUP, 0, hWin )
+                end if   
+                ' Track that we are over the control in order to catch the 
+                ' eventual WM_MOUSELEAVE event
+                dim tme as TrackMouseEvent
+                tme.cbSize = Sizeof(TrackMouseEvent)
+                tme.dwFlags = TME_HOVER or TME_LEAVE
+                tme.hwndTrack = hWin
+                TrackMouseEvent(@tme) 
+            end If
             ' refresh the label so that the Hot state can draw correctly
             AfxRedrawWindow(hWin)
             
         case WM_MOUSELEAVE
             if IsWindow(HWND_MENU(0)) = 0 then
-            ghWndActiveMenuBarButton = 0
-            AfxRedrawWindow(hWin)
+                ghWndActiveMenuBarButton = 0
+                AfxRedrawWindow(hWin)
             end if   
             
         case WM_LBUTTONDOWN
             ' activate the popup menu or toggle an existing one off 
             if IsWindow(HWND_MENU(0)) then
-            killPopupMenus()
-            killPopupSubMenus()
+                killPopupMenus()
+                killPopupSubMenus()
             else   
-            frmPopupMenu_Show( ID_POPUP, 0, hWin )
+                frmPopupMenu_Show( ID_POPUP, 0, hWin )
             end if
             AfxRedrawWindow(hWin)
         
-        Case WM_DESTROY
+        case WM_DESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmMenuBar_SubclassProc, uIdSubclass )
-    End Select
+    end Select
     
     ' For messages that we don't deal with
-    Function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
+    function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
 
-End Function
+end function
 
         
 ' ========================================================================================
@@ -232,31 +233,31 @@ function frmMenuBar_CreateButton( _
             byval isFirstControl as boolean, _
             byval pWindow as CWindow ptr, _
             byval CtrlID as long _
-            ) As HWND
+            ) as HWND
 
-    dim as long dwStyle = WS_CHILD Or SS_NOTIFY or SS_OWNERDRAW or WS_VISIBLE 
+    dim as long dwStyle = WS_CHILD or SS_NOTIFY or SS_OWNERDRAW or WS_VISIBLE 
     dim wszText as wstring * 200 = getMenuText(CtrlID)
     dim as long nWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 6 )
 
     if isFirstControl then dwStyle = dwStyle or WS_GROUP 
     function = pWindow->AddControl ( "LABEL", , CtrlID, wszText, 0, 0, nWidth, 0, dwStyle, 0, 0, _
-                Cast(SUBCLASSPROC, @frmMenuBar_SubclassProc), CtrlID, Cast(DWORD_PTR, 0) )
+                cast(SUBCLASSPROC, @frmMenuBar_SubclassProc), CtrlID, cast(DWORD_PTR, 0) )
 
 end function
 
 ' ========================================================================================
 ' frmMenuBar_Show
 ' ========================================================================================
-function frmMenuBar_Show( ByVal hWndParent As HWnd ) As LRESULT
+function frmMenuBar_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMMAIN_MENUBAR = pWindow->Create( hWndParent, "", @frmMenuBar_WndProc, _
         0, 0, 0, MENUBAR_HEIGHT, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
@@ -271,7 +272,7 @@ function frmMenuBar_Show( ByVal hWndParent As HWnd ) As LRESULT
 
     buildTopMenuDefinitions()
     
-    Function = 0
+    function = 0
     
-End Function
+end function
 

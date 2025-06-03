@@ -23,15 +23,15 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmMain
 ' ========================================================================================
-Function frmMain_OnCommand( _
-            ByVal HWnd As HWnd, _
-            ByVal id As Long, _
-            ByVal hwndCtl As HWnd, _
-            ByVal codeNotify As UINT _
-            ) As LRESULT
-    Dim As HWnd hEdit 
+function frmMain_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
+    dim as HWND hEdit 
 
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     If pDoc Then 
         select case codeNotify
             case SCEN_SETFOCUS
@@ -43,10 +43,10 @@ Function frmMain_OnCommand( _
 
         end select      
         hEdit = pDoc->hWndActiveScintilla
-    End If   
+    end if   
 
     ' Kill any currently displayed topmenu whenever a popup dialog is about to be activated
-    Select Case id
+    select case id
         case IDM_FILEOPEN, IDM_FILESAVEAS, _
             IDM_SAVESESSION, IDM_LOADSESSION, _
             IDM_KEYBOARDSHORTCUTS, IDM_USERTOOLSDIALOG, IDM_OPTIONSDIALOG, IDM_BUILDCONFIG, _
@@ -55,7 +55,7 @@ Function frmMain_OnCommand( _
             killAllPopupMenus()
     end select
     
-    Select Case id
+    select case id
         ' show any topmenu that were activated via keyboard Alt+ sequences     
         case IDC_MENUBAR_FILE to IDC_MENUBAR_HELP
             killAllPopupMenus()
@@ -66,36 +66,36 @@ Function frmMain_OnCommand( _
 
         case IDM_PROJECTFILETYPE
             dim as HMENU hPopupMenu = CreateStatusBarFileTypeContextMenu()
-            dim as POINT pt: GetCursorPos @pt
-            TrackPopupMenu(hPopUpMenu, 0, pt.x, pt.y, 0, HWnd, ByVal Null)
+            dim as point pt: GetCursorPos @pt
+            TrackPopupMenu(hPopUpMenu, 0, pt.x, pt.y, 0, hwnd, byval null)
             DestroyMenu hPopUpMenu
 
         case IDM_FILEENCODING
             dim as HMENU hPopupMenu = CreateStatusBarFileEncodingContextMenu()
-            dim as POINT pt: GetCursorPos @pt
-            TrackPopupMenu(hPopUpMenu, TPM_RIGHTALIGN, pt.x, pt.y, 0, HWnd, ByVal Null)
+            dim as point pt: GetCursorPos @pt
+            TrackPopupMenu(hPopUpMenu, TPM_RIGHTALIGN, pt.x, pt.y, 0, hwnd, byval null)
             DestroyMenu hPopUpMenu
         
         case IDM_LINEENDINGS
             dim as HMENU hPopupMenu = CreateStatusBarLineEndingsContextMenu()
-            dim as POINT pt: GetCursorPos @pt
-            TrackPopupMenu(hPopUpMenu, TPM_RIGHTALIGN, pt.x, pt.y, 0, HWnd, ByVal Null)
+            dim as point pt: GetCursorPos @pt
+            TrackPopupMenu(hPopUpMenu, TPM_RIGHTALIGN, pt.x, pt.y, 0, hwnd, byval null)
             DestroyMenu hPopUpMenu
 
         case IDM_SPACES
             dim as HMENU hPopupMenu = CreateStatusBarSpacesContextMenu()
-            dim as POINT pt: GetCursorPos @pt
-            dim as long idMenu = TrackPopupMenu(hPopUpMenu, TPM_RETURNCMD, pt.x, pt.y, 0, HWnd, ByVal Null)
+            dim as point pt: GetCursorPos @pt
+            dim as long idMenu = TrackPopupMenu(hPopUpMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, byval null)
             DestroyMenu hPopUpMenu
             if (idMenu >= IDM_SPACES) andalso (idMenu <= IDM_SPACES + 8) then
-            gConfig.TabSize = idMenu - IDM_SPACES
-            gSBPanels(4).wszText = "Spaces: " & gConfig.TabSize
-            frmStatusBar_PositionWindows
-            Dim pDoc As clsDocument Ptr = gApp.pDocList
-            do until pDoc = 0
-                pDoc->ApplyProperties
-                pDoc = pDoc->pDocNext
-            loop   
+                gConfig.TabSize = idMenu - IDM_SPACES
+                gSBPanels(4).wszText = "Spaces: " & gConfig.TabSize
+                frmStatusBar_PositionWindows
+                dim pDoc as clsDocument ptr = gApp.pDocList
+                do until pDoc = 0
+                    pDoc->ApplyProperties
+                    pDoc = pDoc->pDocNext
+                loop   
             end if
     
         case IDM_CLOSEPANEL
@@ -115,61 +115,61 @@ Function frmMain_OnCommand( _
 
 
         ''  FILE MENU
-        Case IDM_FILENEW:            OnCommand_FileNew( HWnd )
-        Case IDM_FILEOPEN:           OnCommand_FileOpen( HWnd, true )
-        Case IDM_FILESAVE:           OnCommand_FileSave( HWnd, pDoc, false, false )
-        Case IDM_FILESAVEAS:         OnCommand_FileSave( HWnd, pDoc, true, false )
-        Case IDM_FILECLOSE:          OnCommand_FileClose( HWnd, EFC_CLOSECURRENT )
-        Case IDM_FILESAVEALL:        OnCommand_FileSaveAll( HWnd ) 
-        case IDM_AUTOSAVE:           OnCommand_FileAutoSave( HWnd )
-        case IDM_LOADSESSION:        OnCommand_FileLoadSession( HWnd )   
-        case IDM_SAVESESSION:        OnCommand_FileSaveSession( HWnd )   
-        Case IDM_FILECLOSEALL:       OnCommand_FileClose( HWnd, EFC_CLOSEALL )
-        Case IDM_FILECLOSEALLOTHERS: OnCommand_FileClose( HWnd, EFC_CLOSEALLOTHERS )
-        Case IDM_CLOSEALLFORWARD:    OnCommand_FileClose( HWnd, EFC_CLOSEALLFORWARD )
-        Case IDM_CLOSEALLBACKWARD:   OnCommand_FileClose( HWnd, EFC_CLOSEALLBACKWARD )
-        Case IDM_KEYBOARDSHORTCUTS:  frmKeyboard_Show( HWnd )
-        case IDM_USERTOOLSDIALOG:    frmUserTools_Show( HWND ) 
-        Case IDM_OPTIONSDIALOG:      frmOptions_Show( HWnd )
-        case IDM_BUILDCONFIG:        frmBuildConfig_Show( HWND ) 
-        Case IDM_MRUCLEAR:           ClearMRUlist( id )
-        Case IDM_MRUSESSIONCLEAR:    ClearMRUlist( id )
+        case IDM_FILENEW:            OnCommand_FileNew( hwnd )
+        case IDM_FILEOPEN:           OnCommand_FileOpen( hwnd, true )
+        case IDM_FILESAVE:           OnCommand_FileSave( hwnd, pDoc, false, false )
+        case IDM_FILESAVEAS:         OnCommand_FileSave( hwnd, pDoc, true, false )
+        case IDM_FILECLOSE:          OnCommand_FileClose( hwnd, EFC_CLOSECURRENT )
+        case IDM_FILESAVEALL:        OnCommand_FileSaveAll( hwnd ) 
+        case IDM_AUTOSAVE:           OnCommand_FileAutoSave( hwnd )
+        case IDM_LOADSESSION:        OnCommand_FileLoadSession( hwnd )   
+        case IDM_SAVESESSION:        OnCommand_FileSaveSession( hwnd )   
+        case IDM_FILECLOSEALL:       OnCommand_FileClose( hwnd, EFC_CLOSEALL )
+        case IDM_FILECLOSEALLOTHERS: OnCommand_FileClose( hwnd, EFC_CLOSEALLOTHERS )
+        case IDM_CLOSEALLFORWARD:    OnCommand_FileClose( hwnd, EFC_CLOSEALLFORWARD )
+        case IDM_CLOSEALLBACKWARD:   OnCommand_FileClose( hwnd, EFC_CLOSEALLBACKWARD )
+        case IDM_KEYBOARDSHORTCUTS:  frmKeyboard_Show( hwnd )
+        case IDM_USERTOOLSDIALOG:    frmUserTools_Show( hwnd ) 
+        case IDM_OPTIONSDIALOG:      frmOptions_Show( hwnd )
+        case IDM_BUILDCONFIG:        frmBuildConfig_Show( hwnd ) 
+        case IDM_MRUCLEAR:           ClearMRUlist( id )
+        case IDM_MRUSESSIONCLEAR:    ClearMRUlist( id )
 
-        Case IDM_MRUBASE To (IDM_MRUBASE + 10)
-            OpenMRUFile( HWnd, id )
+        case IDM_MRUBASE to (IDM_MRUBASE + 10)
+            OpenMRUFile( hwnd, id )
 
-        Case IDM_MRUSESSIONBASE To (IDM_MRUSESSIONBASE + 10)
-            OpenMRUSessionFile( HWnd, id )
+        case IDM_MRUSESSIONBASE to (IDM_MRUSESSIONBASE + 10)
+            OpenMRUSessionFile( hwnd, id )
 
-        Case IDM_USERTOOLSBASE To (IDM_USERTOOLSBASE + UBound(gConfig.Tools))
+        case IDM_USERTOOLSBASE to (IDM_USERTOOLSBASE + ubound(gConfig.Tools))
             frmUserTools_ExecuteUserTool( id - IDM_USERTOOLSBASE )
 
-        Case IDM_EXIT
-            SendMessage( HWnd, WM_CLOSE, 0, 0 )
+        case IDM_EXIT
+            SendMessage( hwnd, WM_CLOSE, 0, 0 )
 
 
         ''  EDIT MENU
-        Case IDM_CUT, WM_CUT:        OnCommand_EditCut( pDoc, hEdit )
-        Case IDM_COPY, WM_COPY:      OnCommand_EditCopy( pDoc, hEdit )
-        Case IDM_PASTE, WM_PASTE:    OnCommand_EditPaste( pDoc, hEdit )
-        Case IDM_SELECTALL:          OnCommand_EditSelectAll( pDoc, hEdit )
-        Case IDM_FIND:               OnCommand_EditFindDialog()
+        case IDM_CUT, WM_CUT:        OnCommand_EditCut( pDoc, hEdit )
+        case IDM_COPY, WM_COPY:      OnCommand_EditCopy( pDoc, hEdit )
+        case IDM_PASTE, WM_PASTE:    OnCommand_EditPaste( pDoc, hEdit )
+        case IDM_SELECTALL:          OnCommand_EditSelectAll( pDoc, hEdit )
+        case IDM_FIND:               OnCommand_EditFindDialog()
         case IDM_REPLACE:            OnCommand_EditReplaceDialog()
-        Case IDM_FINDINFILES:        OnCommand_EditFindInFiles( hEdit )
+        case IDM_FINDINFILES:        OnCommand_EditFindInFiles( hEdit )
         case IDM_INDENTBLOCK:        OnCommand_EditIndentBlock( pDoc, hEdit )
         case IDM_UNINDENTBLOCK:      OnCommand_EditUnIndentBlock( pDoc, hEdit )
 
-        Case IDM_FINDNEXT, IDM_FINDPREV, _
+        case IDM_FINDNEXT, IDM_FINDPREV, _
             IDM_FINDNEXTACCEL, IDM_FINDPREVACCEL   ' F3/Shift+F3
             OnCommand_EditFindActions( id, pDoc )
             
-        Case IDM_REPLACENEXT, IDM_REPLACEPREV, IDM_REPLACEALL
+        case IDM_REPLACENEXT, IDM_REPLACEPREV, IDM_REPLACEALL
             OnCommand_EditReplaceActions( id, pDoc )
 
         case IDM_ANSI, IDM_UTF8BOM, IDM_UTF16BOM
             OnCommand_EditEncoding( id, pDoc )
 
-        Case IDM_DELETELINE,     IDM_INSERTFILE,     IDM_COMMENTBLOCK, _
+        case IDM_DELETELINE,     IDM_INSERTFILE,     IDM_COMMENTBLOCK, _
             IDM_UNCOMMENTBLOCK, IDM_DUPLICATELINE,  IDM_MOVELINEUP, _
             IDM_MOVELINEDOWN,   IDM_TOUPPERCASE,    IDM_NEWLINEBELOWCURRENT, _
             IDM_TOLOWERCASE,    IDM_TOMIXEDCASE,    IDM_EOLTOCRLF, _
@@ -180,8 +180,8 @@ Function frmMain_OnCommand( _
 
 
         ''  SEARCH MENU              
-        Case IDM_DEFINITION:           OnCommand_SearchGotoDefinition( pDoc )
-        Case IDM_LASTPOSITION:         OnCommand_SearchGotoLastPosition()
+        case IDM_DEFINITION:           OnCommand_SearchGotoDefinition( pDoc )
+        case IDM_LASTPOSITION:         OnCommand_SearchGotoLastPosition()
         case IDM_GOTONEXTCOMPILEERROR: OnCommand_SearchGotoCompileError( true )
         case IDM_GOTOPREVCOMPILEERROR: OnCommand_SearchGotoCompileError( false )
 
@@ -191,70 +191,70 @@ Function frmMain_OnCommand( _
             IDM_CLOSETAB
             OnCommand_SearchGotoFile( id, pDoc )
             
-        Case IDM_BOOKMARKTOGGLE,   IDM_BOOKMARKNEXT,   IDM_BOOKMARKPREV, _
+        case IDM_BOOKMARKTOGGLE,   IDM_BOOKMARKNEXT,   IDM_BOOKMARKPREV, _
             IDM_BOOKMARKCLEARALL, IDM_BOOKMARKCLEARALLDOCS
             OnCommand_SearchBookmarks( id, pDoc )
         
         
         ''  VIEW MENU
-        Case IDM_VIEWEXPLORER:       OnCommand_ViewExplorer():
-        Case IDM_VIEWOUTPUT:         OnCommand_ViewOutput():
-        Case IDM_FUNCTIONLIST:       OnCommand_ViewFunctionList():
-        Case IDM_BOOKMARKSLIST:      OnCommand_ViewBookmarksList():
+        case IDM_VIEWEXPLORER:       OnCommand_ViewExplorer():
+        case IDM_VIEWOUTPUT:         OnCommand_ViewOutput():
+        case IDM_FUNCTIONLIST:       OnCommand_ViewFunctionList():
+        case IDM_BOOKMARKSLIST:      OnCommand_ViewBookmarksList():
         case IDM_VIEWTODO:           OnCommand_ViewToDo():
         case IDM_VIEWNOTES:          OnCommand_ViewNotes():
-        Case IDM_RESTOREMAIN:        OnCommand_ViewRestoreMain():
-        Case IDM_EXPLORERPOSITION:   OnCommand_ViewExplorerPosition()
+        case IDM_RESTOREMAIN:        OnCommand_ViewRestoreMain():
+        case IDM_EXPLORERPOSITION:   OnCommand_ViewExplorerPosition()
             
-        Case IDM_FOLDTOGGLE, IDM_FOLDBELOW, IDM_FOLDALL, IDM_UNFOLDALL
+        case IDM_FOLDTOGGLE, IDM_FOLDBELOW, IDM_FOLDALL, IDM_UNFOLDALL
             OnCommand_ViewFold( id, pDoc )
 
-        Case IDM_ZOOMIN, IDM_ZOOMOUT
+        case IDM_ZOOMIN, IDM_ZOOMOUT
             OnCommand_ViewZoom( id, pDoc )
 
         
         ''  PROJECT MENU
-        Case IDM_PROJECTNEW:            OnCommand_ProjectNew( HWnd )
-        Case IDM_PROJECTSAVE:           OnCommand_ProjectSave( HWnd, False )
-        Case IDM_PROJECTSAVEAS:         OnCommand_ProjectSave( HWnd, True )
-        Case IDM_PROJECTOPEN:           OnCommand_ProjectOpen( HWnd )
-        Case IDM_PROJECTFILESADD:       OnCommand_ProjectFilesAdd( HWnd )
-        Case IDM_PROJECTCLOSE:
+        case IDM_PROJECTNEW:            OnCommand_ProjectNew( hwnd )
+        case IDM_PROJECTSAVE:           OnCommand_ProjectSave( hwnd, False )
+        case IDM_PROJECTSAVEAS:         OnCommand_ProjectSave( hwnd, True )
+        case IDM_PROJECTOPEN:           OnCommand_ProjectOpen( hwnd )
+        case IDM_PROJECTFILESADD:       OnCommand_ProjectFilesAdd( hwnd )
+        case IDM_PROJECTCLOSE:
             gConfig.wszLastActiveSession = ""
             gConfig.SaveConfigFile()
-            OnCommand_ProjectClose( HWnd )
+            OnCommand_ProjectClose( hwnd )
 
-        Case IDM_PROJECTOPTIONS:        frmProjectOptions_Show( HWnd, false ) 
-        Case IDM_MRUPROJECTCLEAR:       ClearMRUlist( id )
-        Case IDM_REMOVEFILEFROMPROJECT: OnCommand_ProjectRemove( id, pDoc )
+        case IDM_PROJECTOPTIONS:        frmProjectOptions_Show( hwnd, false ) 
+        case IDM_MRUPROJECTCLEAR:       ClearMRUlist( id )
+        case IDM_REMOVEFILEFROMPROJECT: OnCommand_ProjectRemove( id, pDoc )
                 
-        Case IDM_SETFILENORMAL, IDM_SETFILEMODULE, IDM_SETFILEMAIN, _
+        case IDM_SETFILENORMAL, IDM_SETFILEMODULE, IDM_SETFILEMAIN, _
             IDM_SETFILERESOURCE, IDM_SETFILEHEADER
             OnCommand_ProjectSetFileType( id, pDoc )
             
-        Case IDM_MRUPROJECTBASE To (IDM_MRUPROJECTBASE + 10)
-            OpenMRUProjectFile( HWnd, id )
+        case IDM_MRUPROJECTBASE to (IDM_MRUPROJECTBASE + 10)
+            OpenMRUProjectFile( hwnd, id )
 
             
         ''  COMPILE MENU          
-        Case IDM_BUILDEXECUTE, IDM_COMPILE, IDM_REBUILDALL, IDM_QUICKRUN, _
+        case IDM_BUILDEXECUTE, IDM_COMPILE, IDM_REBUILDALL, IDM_QUICKRUN, _
             IDM_RUNEXE, IDM_COMMANDLINE
             OnCommand_CompileCommon( id )
 
 
         ''   HELP MENU
-        Case IDM_HELP
+        case IDM_HELP
             ShowContextHelp(id) 
     
-        Case IDM_ABOUT
+        case IDM_ABOUT
             DisableAllModeless()
             frmAbout_Show( hwnd )
             EnableAllModeless()
             frmMain_SetFocusToCurrentCodeWindow()
         
-    End Select
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 

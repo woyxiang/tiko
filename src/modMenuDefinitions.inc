@@ -133,9 +133,9 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_EXPLORERPOSITION
             wszText = L(87,"Move Explorer Window")
             if gConfig.ExplorerPositionRight then
-            wszText = wszText & " " & L(88, "Left")
+                wszText = wszText & " " & L(88, "Left")
             else   
-            wszText = wszText & " " & L(89, "Right")
+                wszText = wszText & " " & L(89, "Right")
             end if
 
         case IDM_PROJECTNEW: wszText = L(180,"New Project")

@@ -19,7 +19,7 @@
 function frmTopTabs_ShowShadow() as long
     
     if IsWindowVisible( HWND_FRMMAIN_TOPTABS ) = 0 then exit function
-    Dim pDoc As clsDocument Ptr = gTTabCtl.GetActiveDocumentPtr()
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     
     if pDoc then
         dim as RECT rcFindReplace = AfxGetWindowRect( HWND_FRMFINDREPLACE )
@@ -79,13 +79,13 @@ end function
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
-function frmTopTabs_PositionWindows() As LRESULT
+function frmTopTabs_PositionWindows() as LRESULT
 
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMMAIN_TOPTABS)
-    If pWindow = 0 Then Exit Function
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_TOPTABS)
+    if pWindow = 0 then exit function
     
     ' Get the entire client area
-    Dim As Rect rc: GetClientRect( HWND_FRMMAIN_TOPTABS, @rc )
+    dim as Rect rc: GetClientRect( HWND_FRMMAIN_TOPTABS, @rc )
     
     ' Calculate the RECT positions for all of the top tabs
     dim pDoc as clsDocument ptr 
@@ -180,7 +180,7 @@ function frmTopTabs_PositionWindows() As LRESULT
         gTTabCtl.ClientRightEdge = gTTabCtl.rcActionPanel.left
         
         if gTTabCtl.CurSel = -1 then
-            ' Put If check for CurSel being invalid otherwise other tab calculations
+            ' Put if check for CurSel being invalid otherwise other tab calculations
             ' Scenarios will fail via GPF on invalid array access.
             
         ' SCENARIO #1
@@ -202,14 +202,14 @@ function frmTopTabs_PositionWindows() As LRESULT
         elseif gTTabCtl.tabs(gTTabCtl.CurSel).rcTab.right < gTTabCtl.ClientRightEdge then
             if gTTabCtl.tabs(ubound(gTTabCtl.tabs)).rcTab.right < gTTabCtl.ClientRightEdge then
             nAdjAmount = 0
-            if gTTabCtl.FirstDisplayTab - 1 >= 0 then
-                dim as long nTabWidth = _
-                        gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.Right - gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.left
-                if gTTabCtl.tabs(ubound(gTTabCtl.tabs)).rcTab.right + nTabWidth <= gTTabCtl.ClientRightEdge then
-                    frmTopTabs_AdjustTabRects( nTabWidth )
-                    gTTabCtl.FirstDisplayTab = gTTabCtl.FirstDisplayTab - 1
-                end if   
-            end if
+                if gTTabCtl.FirstDisplayTab - 1 >= 0 then
+                    dim as long nTabWidth = _
+                            gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.Right - gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.left
+                    if gTTabCtl.tabs(ubound(gTTabCtl.tabs)).rcTab.right + nTabWidth <= gTTabCtl.ClientRightEdge then
+                        frmTopTabs_AdjustTabRects( nTabWidth )
+                        gTTabCtl.FirstDisplayTab = gTTabCtl.FirstDisplayTab - 1
+                    end if   
+                end if
             end if
         
         ' SCENARIO #3
@@ -220,15 +220,15 @@ function frmTopTabs_PositionWindows() As LRESULT
             ' need to determine how far to move the gTTabCtl.FirstDisplayTab
             nAdjAmount = 0
             for i as long = gTTabCtl.FirstDisplayTab to gTTabCtl.CurSel 
-            ' remove the width of each successive tab starting with the
-            ' first tab and work our way until we reach the target tab.
-            dim as long nTabWidth = gTTabCtl.tabs(i).rcTab.Right - gTTabCtl.tabs(i).rcTab.left
-            nAdjAmount += nTabWidth
-            if gTTabCtl.tabs(gTTabCtl.CurSel).rcTab.Right - nAdjAmount <= gTTabCtl.ClientRightEdge then
-                gTTabCtl.FirstDisplayTab = i + 1
-                frmTopTabs_AdjustTabRects( -(nAdjAmount) )
-                exit for
-            end if   
+                ' remove the width of each successive tab starting with the
+                ' first tab and work our way until we reach the target tab.
+                dim as long nTabWidth = gTTabCtl.tabs(i).rcTab.Right - gTTabCtl.tabs(i).rcTab.left
+                nAdjAmount += nTabWidth
+                if gTTabCtl.tabs(gTTabCtl.CurSel).rcTab.Right - nAdjAmount <= gTTabCtl.ClientRightEdge then
+                    gTTabCtl.FirstDisplayTab = i + 1
+                    frmTopTabs_AdjustTabRects( -(nAdjAmount) )
+                    exit for
+                end if   
             next
         end if
 
@@ -242,34 +242,34 @@ function frmTopTabs_PositionWindows() As LRESULT
     end if
     AfxRedrawWindow( HWND_FRMMAIN_TOPTABS )
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmTopTabs
 ' ========================================================================================
-Function frmTopTabs_OnSize( _
-            ByVal HWnd As HWnd, _
-            ByVal state As UINT, _
-            ByVal cx As Long, _
-            ByVal cy As Long _
-            ) As LRESULT
+function frmTopTabs_OnSize( _
+            byval hwnd as HWND, _
+            byval state as UINT, _
+            byval cx as long, _
+            byval cy as long _
+            ) as LRESULT
 
-    If state <> SIZE_MINIMIZED Then
+    if state <> SIZE_MINIMIZED then
         frmTopTabs_PositionWindows()
-    End If
+    end If
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Do hit test to determine what tab is currently under the mouse cursor
 ' ========================================================================================
-function getHotTabHitTest( byval hWin as HWnd ) as long
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function getHotTabHitTest( byval hWin as HWND ) as long
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     dim as long hotTab = -1
     for i as long = lbound(gTTabCtl.tabs) to ubound(gTTabCtl.tabs)
         if PtInRect( @gTTabCtl.tabs(i).rcTab, pt ) then
@@ -285,10 +285,10 @@ end function
 ' ========================================================================================
 ' Do hit test to determine if "X" close button on tab was clicked
 ' ========================================================================================
-function isTabCloseHitTest( byval hWin as HWnd, byval idx as long ) as long
+function isTabCloseHitTest( byval hWin as HWND, byval idx as long ) as long
     if gTTabCtl.IsSafeIndex(idx) = false then exit function
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.tabs(idx).rcClose, pt ) then return idx
     function = -1
 end function
@@ -296,9 +296,9 @@ end function
 ' ========================================================================================
 ' Do hit test to determine if "..." button in action Area was clicked
 ' ========================================================================================
-function isActionButtonHitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isActionButtonHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.rcActionButton, pt ) then return true
     function = false
 end function
@@ -306,9 +306,9 @@ end function
 ' ========================================================================================
 ' Do hit test to determine if Prev Tabs button in action Area was clicked
 ' ========================================================================================
-function isPrevTabsHitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isPrevTabsHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.rcPrevTabs, pt ) then return true
     function = false
 end function
@@ -316,9 +316,9 @@ end function
 ' ========================================================================================
 ' Do hit test to determine if Next Tabs button in action Area was clicked
 ' ========================================================================================
-function isNextTabsHitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isNextTabsHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.rcNextTabs, pt ) then return true
     function = false
 end function
@@ -326,9 +326,9 @@ end function
 ' ========================================================================================
 ' Do hit test to determine if SplitEditor button in action Area was clicked
 ' ========================================================================================
-function isSplitEditorHitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isSplitEditorHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.rcSplitEditor, pt ) then return true
     function = false
 end function
@@ -336,9 +336,9 @@ end function
 ' ========================================================================================
 ' Do hit test if over the Action Panel (no action but prevents other tooltips)
 ' ========================================================================================
-function isActionPanelHitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isActionPanelHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.rcActionPanel, pt ) then return true
     function = false
 end function
@@ -346,59 +346,59 @@ end function
 ' ========================================================================================
 ' frmTopTabsShadow_WndProc Window procedure
 ' ========================================================================================
-Function frmTopTabsShadow_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmTopTabsShadow_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
+    select Case uMsg
         case WM_DESTROY
-            DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWnd)
-            If pWindow = 0 Then Delete pWindow
+            dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+            if pWindow = 0 then delete pWindow
     end select      
 
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
 end function
 
 ' ========================================================================================
 ' frmTopTabs Window procedure
 ' ========================================================================================
-Function frmTopTabs_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmTopTabs_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     static as long curr_idxHot = -1
     static hTooltip as HWND
     
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE, frmTopTabs_OnSize)
+    select Case uMsg
+        HANDLE_MSG (hwnd, WM_SIZE, frmTopTabs_OnSize)
     
     case WM_DESTROY
-        DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWnd)
-        If pWindow = 0 Then Delete pWindow
+        dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+        if pWindow = 0 then delete pWindow
         DestroyWindow( HWND_FRMMAIN_TOPTABS_SHADOW )
         
     case WM_ERASEBKGND
         return true
 
     case WM_MOUSEMOVE
-        Dim tme As TrackMouseEvent
-        tme.cbSize = Sizeof(TrackMouseEvent)
-        tme.dwFlags = TME_HOVER Or TME_LEAVE
-        tme.hwndTrack = HWnd
+        dim tme as TrackMouseEvent
+        tme.cbSize = sizeof(TrackMouseEvent)
+        tme.dwFlags = TME_HOVER or TME_LEAVE
+        tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
-        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( HWnd, "", false, false )
+        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
 
-        curr_idxHot = getHotTabHitTest( HWnd )
-        AfxRedrawWindow( HWnd )
+        curr_idxHot = getHotTabHitTest( hwnd )
+        AfxRedrawWindow( hwnd )
         
         if gApp.bDragTabActive then
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
@@ -412,66 +412,66 @@ Function frmTopTabs_WndProc( _
         
     case WM_MOUSELEAVE
         ' this will reset all tabs isHot to -1 and curr_idxHot to -1
-        curr_idxHot = getHotTabHitTest( HWnd )
-        AfxDeleteTooltip( hTooltip, HWnd )
+        curr_idxHot = getHotTabHitTest( hwnd )
+        AfxdeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
-        AfxRedrawWindow( HWnd )
+        AfxRedrawWindow( hwnd )
 
 
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip 
         ' test for Action Button, Filename caption or Close caption
-        curr_idxHot = getHotTabHitTest( HWnd )
-        if isPrevTabsHitTest( HWnd ) then
+        curr_idxHot = getHotTabHitTest( hwnd )
+        if isPrevTabsHitTest( hwnd ) then
             wszTooltip  = L(431, "Scroll Tabs Left")
-        elseif isNextTabsHitTest( HWnd ) then
+        elseif isNextTabsHitTest( hwnd ) then
             wszTooltip  = L(432, "Scroll Tabs Right")
-        elseif isSplitEditorHitTest( HWnd ) then
+        elseif isSplitEditorHitTest( hwnd ) then
             wszTooltip  = L(447, "Split Editor")
-        elseif isActionButtonHitTest( HWnd ) then
+        elseif isActionButtonHitTest( hwnd ) then
             wszTooltip  = L(430, "Tab List")
-        elseif isActionPanelHitTest( HWnd ) then
+        elseif isActionPanelHitTest( hwnd ) then
             ' do nothing. no tooltip.
-        elseif isTabCloseHitTest( HWnd, curr_idxHot ) = curr_idxHot then
+        elseif isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot then
             wszTooltip  = L(86, "Close Tab")
         else
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
             wszTooltip = gTTabCtl.tabs(curr_idxHot).pDoc->DiskFilename   
         end if
         ' Display the tooltip
-        AfxSetTooltipText( hTooltip, HWnd, wszTooltip )
-        AfxRedrawWindow( HWnd )
+        AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+        AfxRedrawWindow( hwnd )
 
 
     case WM_RBUTTONDOWN
-        if isPrevTabsHitTest( HWnd ) then
-        elseif isNextTabsHitTest( HWnd ) then
-        elseif isSplitEditorHitTest( HWnd ) then
-        elseif isActionButtonHitTest( HWnd ) then
-        elseif isActionPanelHitTest( HWnd ) then
+        if isPrevTabsHitTest( hwnd ) then
+        elseif isNextTabsHitTest( hwnd ) then
+        elseif isSplitEditorHitTest( hwnd ) then
+        elseif isActionButtonHitTest( hwnd ) then
+        elseif isActionPanelHitTest( hwnd ) then
         else
             ' Create the popup menu
-            curr_idxHot = getHotTabHitTest( HWnd )
+            curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
             gTTabCtl.SetFocusTab(curr_idxHot)
-            Dim As POINT pt
+            dim as point pt
             dim as HMENU hPopupMenu = CreateTopTabCtlContextMenu(curr_idxHot)
             GetCursorPos @pt
-            TrackPopupMenu(hPopUpMenu, 0, pt.x, pt.y, 0, HWND_FRMMAIN, ByVal Null)
+            TrackPopupMenu(hPopUpMenu, 0, pt.x, pt.y, 0, HWND_FRMMAIN, byval Null)
             DestroyMenu hPopUpMenu
             Return True   ' prevent further processing that leads to WM_CONTEXTMENU
         end if
 
     case WM_LBUTTONDOWN
-        if isPrevTabsHitTest( HWnd ) then
-        elseif isNextTabsHitTest( HWnd ) then
-        elseif isSplitEditorHitTest( HWnd ) then
-        elseif isActionButtonHitTest( HWnd ) then
-        elseif isActionPanelHitTest( HWnd ) then
+        if isPrevTabsHitTest( hwnd ) then
+        elseif isNextTabsHitTest( hwnd ) then
+        elseif isSplitEditorHitTest( hwnd ) then
+        elseif isActionButtonHitTest( hwnd ) then
+        elseif isActionPanelHitTest( hwnd ) then
         else
-            curr_idxHot = getHotTabHitTest( HWnd )
+            curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
-            if (isTabCloseHitTest( HWnd, curr_idxHot ) = curr_idxHot) and (curr_idxHot <> gTTabCtl.CurSel) then
+            if (isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot) andalso (curr_idxHot <> gTTabCtl.CurSel) then
             ' we are mouse down on an "X" close on a tab that is not currently the active tab. We
             ' will simply close that tab rather than bring it into focus and then delete.
             ' allow the mouse message to eventually bubble up WM_LBUTTONUP where we do the close.
@@ -482,41 +482,41 @@ Function frmTopTabs_WndProc( _
                 gApp.bDragTabActive = true
                 SetCursor( LoadCursor(0, MAKEINTRESOURCE(OCR_SIZEALL)) )
             end if
-            AfxRedrawWindow( HWnd )
+            AfxRedrawWindow( hwnd )
             end if
-            SetCapture(hWnd)
+            SetCapture(hwnd)
         end if
 
     case WM_LBUTTONUP
-        if isPrevTabsHitTest( HWnd ) then
+        if isPrevTabsHitTest( hwnd ) then
             ' if the first displayed tab is not index 0 then there must be tabs before it
-            ' that can be displayed. If no previous tabs then set focus to the first tab.
+            ' that can be displayed. if no previous tabs then set focus to the first tab.
             if gTTabCtl.FirstDisplayTab > 0 then
-            gTTabCtl.SetFocusTab( gTTabCtl.FirstDisplayTab - 1 )
+                gTTabCtl.SetFocusTab( gTTabCtl.FirstDisplayTab - 1 )
             else   
-            gTTabCtl.SetFocusTab(0)
+                gTTabCtl.SetFocusTab(0)
             end if
-        elseif isNextTabsHitTest( HWnd ) then
+        elseif isNextTabsHitTest( hwnd ) then
             ' determine if there are any tabs to the right of the current display view. Bring
             ' the first one found (if any) into view. Keep track of the found tab because if
             ' none found then simply set the CurSel to the last tab.
             dim as long nFound = -1
             for i as long = gTTabCtl.FirstDisplayTab to gTTabCtl.GetItemCount - 1
-            if gTTabCtl.tabs(i).rcTab.Left > gTTabCtl.ClientRightEdge then
-                nFound = i: exit for
-                exit for
-            end if
+                if gTTabCtl.tabs(i).rcTab.Left > gTTabCtl.ClientRightEdge then
+                    nFound = i: exit for
+                    exit for
+                end if
             next
             if nFound = -1 then nFound = gTTabCtl.GetItemCount - 1
             gTTabCtl.SetFocusTab(nFound)
 
-        elseif isSplitEditorHitTest( HWnd ) then
+        elseif isSplitEditorHitTest( hwnd ) then
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr
             if pDoc then
             pDoc->bEditorIsSplit = not pDoc->bEditorIsSplit
             if pDoc->bEditorIsSplit then
                 dim as RECT rc = AfxGetWindowRect(pDoc->hWindow(0))
-                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(POINT ptr, @rc), 2 )
+                MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
                 pDoc->SplitY = (rc.bottom - rc.top) / 2
             else
                 pDoc->SplitY = 0
@@ -524,11 +524,11 @@ Function frmTopTabs_WndProc( _
             frmMain_PositionWindows()
             end if
             
-        elseif isActionButtonHitTest( HWnd ) then
+        elseif isActionButtonHitTest( hwnd ) then
             dim as HMENU hPopupMenu = CreateTopTabsActionButtonContextMenu()
             ' Popup the menu to the bottom of the Action Button (right aligned)
             dim as RECT rc = gTTabCtl.rcActionButton   ' work with a copy
-            MapWindowPoints( HWND_FRMMAIN_TOPTABS, HWND_DESKTOP, cast(POINT ptr, @rc), 2 )
+            MapWindowpoints( HWND_FRMMAIN_TOPTABS, HWND_DESKTOP, cast(point ptr, @rc), 2 )
             dim as long id = TrackPopupMenu(hPopUpMenu, _
                                 TPM_RIGHTALIGN or TPM_RETURNCMD, _
                                 rc.right, rc.bottom, 0, HWND_FRMMAIN, byval null)
@@ -539,40 +539,40 @@ Function frmTopTabs_WndProc( _
             DestroyMenu( hPopUpMenu )
             Return true   ' prevent further processing that leads to WM_CONTEXTMENU
 
-        elseif isActionPanelHitTest( HWnd ) then
+        elseif isActionPanelHitTest( hwnd ) then
         else
             ' Reset the mouse pointer
             SetCursor( LoadCursor( null, IDC_ARROW ))
             ReleaseCapture
             gApp.bDragTabActive = false
-            ' If we are still over an "X" close during buttonup then close the tab
-            curr_idxHot = getHotTabHitTest( HWnd )
+            ' if we are still over an "X" close during buttonup then close the tab
+            curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
-            if isTabCloseHitTest( HWnd, curr_idxHot ) = curr_idxHot then
-            gTTabCtl.CloseTab( curr_idxHot )
-            frmTopTabs_PositionWindows()
+            if isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot then
+                gTTabCtl.CloseTab( curr_idxHot )
+                frmTopTabs_PositionWindows()
             end if
         end if
 
     case WM_PAINT
-        Dim As PAINTSTRUCT ps
-        Dim As HDC hDc
+        dim as PAINTSTRUCT ps
+        dim as HDC hDc
 
-        Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMMAIN_TOPTABS)
-        If pWindow = 0 Then Exit Function
+        dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_TOPTABS)
+        if pWindow = 0 then exit function
 
-        hDC = BeginPaint( hWnd, @ps )
+        hDC = BeginPaint( hwnd, @ps )
 
         SaveDC(hDC)
         dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
         dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
 
-        Dim memDC as HDC      ' Double buffering
-        Dim hbit As HBITMAP   ' Double buffering
+        dim memDC as HDC      ' Double buffering
+        dim hbit as HBITMAP   ' Double buffering
 
         memDC = CreateCompatibleDC( hDC )
         hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-        If hbit Then hbit = SelectObject( memDC, hbit )
+        if hbit then hbit = selectObject( memDC, hbit )
 
         ' Fill in the entire back panel width across the top of the screen
         FillRect( memDC, @ps.rcPaint, ghTopTabs.hPanelBrush )
@@ -580,11 +580,11 @@ Function frmTopTabs_WndProc( _
         ' Create a black pen that acts as the divider for each tab
         dim as long penWidth = pWindow->ScaleX(1)
         dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghTopTabs.Divider )
-        SelectObject( memDC, hPenSolid)
+        selectObject( memDC, hPenSolid)
         
         dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
 
-        dim as POINT pt: GetCursorPos( @pt )
+        dim as point pt: GetCursorPos( @pt )
         dim as RECT rc
         
         ' All of the rc calculations have already been done in frmTopTabs_PostionWindows
@@ -602,25 +602,25 @@ Function frmTopTabs_WndProc( _
             end if
             
             ' display the rcIcon
-            'dim as long wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
-            'SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-            'DrawText( memDC, wszTabDocument, -1, Cast(lpRect, @gTTabCtl.tabs(i).rcIcon), wsStyle )
+            'dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+            'selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+            'DrawText( memDC, wszTabDocument, -1, cast(lpRect, @gTTabCtl.tabs(i).rcIcon), wsStyle )
             
             ' display the tab text
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontMenuBar)
-            DrawText( memDC, gTTabCtl.tabs(i).wszText.sptr, -1, Cast(lpRect, @gTTabCtl.tabs(i).rcText), wsStyle )
+            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+            selectObject(memDC, ghMenuBar.hFontMenuBar)
+            DrawText( memDC, gTTabCtl.tabs(i).wszText.sptr, -1, cast(lpRect, @gTTabCtl.tabs(i).rcText), wsStyle )
             
             ' if this document is dirty then the dirty circle icon overrides the display of the close icon
             ' unless the tab isHot. The dirty icon displays always for active and inactive tabs.
             dim as boolean isDirty 
-            If cbool(SciExec( gTTabCtl.tabs(i).pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) then isDirty = true
+            if cbool(SciExec( gTTabCtl.tabs(i).pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) then isDirty = true
             if gTTabCtl.tabs(i).pDoc->UserModified then isDirty = true
             
             if isDirty then
                 ' if mouse is over the rcClose then draw the close icon, otherwise draw the dirty circle
-                SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                DrawText( memDC, wszCompileResultIcon, -1, Cast(lpRect, @gTTabCtl.tabs(i).rcClose), wsStyle )
+                selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @gTTabCtl.tabs(i).rcClose), wsStyle )
             end if
             
             if (i = gTTabCtl.CurSel) or (gTTabCtl.tabs(i).isHot = true) then
@@ -628,22 +628,22 @@ Function frmTopTabs_WndProc( _
                 ' if the dirty icon is not already being displayed
                 rc = gTTabCtl.tabs(i).rcClose
                 if isDirty = false then
-                    SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                    DrawText( memDC, wszClose, -1, Cast(lpRect, @rc), wsStyle )
+                    selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                    DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
                 end if
-                if (isTabCloseHitTest( HWnd, i ) = i) andalso (gApp.bDragTabActive = false) then
+                if (isTabCloseHitTest( hwnd, i ) = i) andalso (gApp.bDragTabActive = false) then
                     ' if we are hovered over the "X" close icon rect then highlight it
-                    SelectPen( memDC, hPenNull )
-                    SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+                    selectPen( memDC, hPenNull )
+                    selectObject( memDC, ghTopTabs.hCloseBrushHot )
                     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
                     SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                    SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                    DrawText( memDC, wszClose, -1, Cast(lpRect, @rc), wsStyle )
+                    selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                    DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
                 end if   
             end if
             
             ' Draw the righthand side black divider
-            SelectPen( memDC, hPenSolid )
+            selectPen( memDC, hPenSolid )
             MoveToEx( memDC, gTTabCtl.tabs(i).rcTab.Right - penWidth, gTTabCtl.tabs(i).rcTab.top, null )
             LineTo( memDC, gTTabCtl.tabs(i).rcTab.Right - penWidth, gTTabCtl.tabs(i).rcTab.bottom )   
             
@@ -656,99 +656,99 @@ Function frmTopTabs_WndProc( _
             FillRect( memDC, @gTTabCtl.rcActionPanel, ghTopTabs.hPanelBrush )
             
             ' Draw the PrevTabs button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
+            selectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isPrevTabsHitTest( HWnd ) then
+            if isPrevTabsHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+                selectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcPrevTabs
-            SelectPen( memDC, hPenNull )
+            selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER Or DT_TOP 'or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszChevronLeft, -1, Cast(lpRect, @rc), wsStyle )
+            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
+            selectObject(memDC, ghMenuBar.hFontSymbol)
+            DrawText( memDC, wszChevronLeft, -1, cast(lpRect, @rc), wsStyle )
 
             ' Draw the NextTabs button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
+            selectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isNextTabsHitTest( HWnd ) then
+            if isNextTabsHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+                selectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcNextTabs
-            SelectPen( memDC, hPenNull )
+            selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER Or DT_TOP 'or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszChevronRight, -1, Cast(lpRect, @rc), wsStyle )
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
+            selectObject(memDC, ghMenuBar.hFontSymbol)
+            DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rc), wsStyle )
             
             ' Draw the SplitEditor button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
+            selectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isSplitEditorHitTest( HWnd ) then
+            if isSplitEditorHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+                selectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcSplitEditor
-            SelectPen( memDC, hPenNull )
+            selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER Or DT_TOP 'or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszSplitEditor, -1, Cast(lpRect, @rc), wsStyle )
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
+            selectObject(memDC, ghMenuBar.hFontSymbol)
+            DrawText( memDC, wszSplitEditor, -1, cast(lpRect, @rc), wsStyle )
 
             ' Draw the Action buttom "..."
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
+            selectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isActionButtonHitTest( HWnd ) then
+            if isActionButtonHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+                selectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcActionButton
-            SelectPen( memDC, hPenNull )
+            selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER 'or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbolLargeBold)
-            DrawText( memDC, wszMoreActions, -1, Cast(lpRect, @rc), wsStyle )
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER 'or DT_SINGLELINE
+            selectObject(memDC, ghMenuBar.hFontSymbolLargeBold)
+            DrawText( memDC, wszMoreActions, -1, cast(lpRect, @rc), wsStyle )
         end if
     
         BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
         ' Cleanup
-        if hPenSolid then DeleteObject( hPenSolid )
-        if hPenNull  then DeleteObject( hPenNull )
-        if hbit  then DeleteObject( SelectObject(memDC, hbit) )
-        if memDC then DeleteDC( memDC )
+        if hPenSolid then deleteObject( hPenSolid )
+        if hPenNull  then deleteObject( hPenNull )
+        if hbit  then deleteObject( selectObject(memDC, hbit) )
+        if memDC then deleteDC( memDC )
         RestoreDC( hDC, -1 )
 
-        EndPaint( hWnd, @ps )
+        EndPaint( hwnd, @ps )
     
-    End Select
+    end select
     
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 
 ' ========================================================================================
 ' frmTopTabs_Show
 ' ========================================================================================
-Function frmTopTabs_Show( ByVal hWndParent As HWnd ) As LRESULT
+function frmTopTabs_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-    HWND_FRMMAIN_TOPTABS = pWindow->Create( hWndParent, "", @frmTopTabs_WndProc, _
+    HWND_FRMMAIN_TOPTABS = pWindow->Create( hwndParent, "", @frmTopTabs_WndProc, _
         0, 0, 0, TOPTABS_HEIGHT, _
-        WS_CHILD Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
@@ -759,7 +759,7 @@ Function frmTopTabs_Show( ByVal hWndParent As HWnd ) As LRESULT
         pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
         HWND_FRMMAIN_TOPTABS_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
             @frmTopTabsShadow_WndProc, 0, 0, 0, pWindow->ScaleY(1), _
-            WS_POPUP Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
+            WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
         pWindow->ClassStyle = CS_DBLCLKS
         pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
         ' 0 totally transparent, 255 totally opaque
@@ -767,7 +767,7 @@ Function frmTopTabs_Show( ByVal hWndParent As HWnd ) As LRESULT
     end if
     
     frmTopTabs_PositionWindows()
-    Function = 0
+    function = 0
     
-End Function
+end function
 

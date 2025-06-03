@@ -11,7 +11,7 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
-declare function frmPopupMenu_Show(byval nPopupType as long, byval nItemID as long, ByVal hParent as HWND) As HWND
+declare function frmPopupMenu_Show(byval nPopupType as long, byval nItemID as long, byval hParent as HWND) as HWND
 
 dim shared as HWND HWND_MENU(1)
 dim shared as HWND HWND_SHADOW(1)
@@ -130,8 +130,8 @@ end function
 ' ========================================================================================
 ' Create/Display the alpha blended shadow for the WS_EX_LAYERED window
 ' ========================================================================================
-function paintLayeredWindow( byval HWnd as HWnd, byval clrRGBA as integer ) as long
-    dim as RECT rcPos = AfxGetWindowRect(HWnd)
+function paintLayeredWindow( byval hwnd as HWND, byval clrRGBA as integer ) as long
+    dim as RECT rcPos = AfxGetWindowRect(hwnd)
     
     dim as HDC hdcScreen = GetDC(0)
     dim as HDC hDC = CreateCompatibleDC(hdcScreen)
@@ -146,17 +146,17 @@ function paintLayeredWindow( byval HWnd as HWnd, byval clrRGBA as integer ) as l
     sBI.bmiHeader.biBitCount    = 32 
     sBI.bmiHeader.biCompression = BI_RGB
 
-    dim as HBITMAP hBmp = CreateDIBSection(hDC, @sBI, DIB_RGB_COLORS, NULL, NULL, 0)
+    dim as HBITMAP hBmp = CreateDIBSection(hDC, @sBI, DIB_RGB_COLORS, null, null, 0)
     dim as HBITMAP hBmpOld = SelectObject(hDC, hBmp)
 
-    dim as Boolean bFillAlphaOK = bitmapFillAlpha(hBmp, clrRGBA)
-    dim as BLENDFUNCTION blend
+    dim as boolean bFillAlphaOK = bitmapFillAlpha(hBmp, clrRGBA)
+    dim as BLENDfunction blend
     blend.BlendOp             = AC_SRC_OVER
     blend.SourceConstantAlpha = iif(bFillAlphaOK, 160, 64)
     blend.AlphaFormat         = iif(bFillAlphaOK, AC_SRC_ALPHA, 0)
     
     ' Destination position at the screen
-    dim as POINT ptPos  = (rcPos.left, rcPos.top)
+    dim as point ptPos  = (rcPos.left, rcPos.top)
 
     ' Source position in source (memory DC)
     dim as point ptSrc = (0,0) 
@@ -164,7 +164,7 @@ function paintLayeredWindow( byval HWnd as HWnd, byval clrRGBA as integer ) as l
     ' Dimensions of the bits transfer
     dim as SIZE sizeWnd  = (iWidth, iHeight)
 
-    UpdateLayeredWindow(HWnd, hdcScreen, @ptPos, @sizeWnd, hDC, @ptSrc, 0, @blend, ULW_ALPHA) 
+    UpdateLayeredWindow(hwnd, hdcScreen, @ptPos, @sizeWnd, hDC, @ptSrc, 0, @blend, ULW_ALPHA) 
 
     SelectObject(hDC, hBmpOld)
     DeleteObject(hBmp)
@@ -179,27 +179,27 @@ end function
 ' Process WM_MEASUREITEM message for window/dialog: frmPopupMenu
 ' ========================================================================================
 function frmPopupMenu_OnMeasureItem( _
-                ByVal HWnd As HWnd, _
-                ByVal lpmis As MEASUREITEMSTRUCT Ptr _
-                ) As Long
+                byval hwnd as HWND, _
+                byval lpmis as MEASUREITEMSTRUCT ptr _
+                ) as Long
     ' Set the height of the menuitem list box items. 
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWnd)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     lpmis->itemHeight = pWindow->ScaleY(MENUITEM_HEIGHT)
         
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_DRAWITEM message for window/dialog: frmPopupMenu
 ' ========================================================================================
 function frmPopupMenu_OnDrawItem( _
-                ByVal HWnd As HWnd, _
-                ByVal lpdis As Const DRAWITEMSTRUCT Ptr _
-                ) As Long
+                byval hwnd as HWND, _
+                byval lpdis as const DRAWITEMSTRUCT ptr _
+                ) as long
 
-    DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWND_FRMMAIN)
-    If pWindow = 0 Then Exit Function
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
+    if pWindow = 0 then exit function
     
     if lpdis = 0 then exit function
     
@@ -213,8 +213,8 @@ function frmPopupMenu_OnDrawItem( _
 
         SaveDC(lpdis->hDC)
 
-        Dim memDC as HDC      ' Double buffering
-        Dim hbit As HBITMAP   ' Double buffering
+        dim memDC as HDC      ' Double buffering
+        dim hbit as HBITMAP   ' Double buffering
         dim as HPEN oldPen
         dim as HBRUSH oldBrush
         dim as HFONT oldFont
@@ -276,9 +276,9 @@ function frmPopupMenu_OnDrawItem( _
             ' checkmark
             if pMenu->isChecked then
             rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(30) 
-            wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-            DrawText( memDC, wszCheckmark, -1, Cast(lpRect, @rcBitmap), wsStyle )
+            DrawText( memDC, wszCheckmark, -1, cast(lpRect, @rcBitmap), wsStyle )
             SelectObject( memDC, oldFont )
             end if
             oldFont = SelectObject( memDC, ghMenuBar.hFontMenuBar )
@@ -286,23 +286,23 @@ function frmPopupMenu_OnDrawItem( _
             rcText.right = rcText.right - pWindow->ScaleX(30) 
 
             ' caption
-            wsStyle = DT_NOPREFIX or DT_LEFT Or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszLeft.sptr, -1, Cast(lpRect, @rcText), wsStyle )
+            wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
+            DrawText( memDC, wszLeft.sptr, -1, cast(lpRect, @rcText), wsStyle )
 
             ' keyboard accelerator 
-            wsStyle = DT_NOPREFIX or DT_RIGHT Or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszRight.sptr, -1, Cast(lpRect, @rcText), wsStyle )
+            wsStyle = DT_NOPREFIX or DT_RIGHT or DT_VCENTER or DT_SINGLELINE
+            DrawText( memDC, wszRight.sptr, -1, cast(lpRect, @rcText), wsStyle )
             SelectObject( memDC, oldFont )
 
             ' submenu arrow
             if pMenu->nChildID then
-            rcBitmap = rcText
-            rcBitmap.Left = rcText.Right
-            rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(20) 
-            oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-            wsStyle = DT_NOPREFIX or DT_RIGHT Or DT_TOP or DT_SINGLELINE
-            DrawText( memDC, wszChevronRight, -1, Cast(lpRect, @rcBitmap), wsStyle )
-            SelectObject( memDC, oldFont )
+                rcBitmap = rcText
+                rcBitmap.Left = rcText.Right
+                rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(20) 
+                oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
+                wsStyle = DT_NOPREFIX or DT_RIGHT or DT_TOP or DT_SINGLELINE
+                DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
+                SelectObject( memDC, oldFont )
             end if   
         end if
             
@@ -313,27 +313,27 @@ function frmPopupMenu_OnDrawItem( _
         
         ' Cleanup
         RestoreDC(memDC, -1)
-        If hbit  Then DeleteObject(hbit)
-        If memDC Then DeleteDC memDC
+        if hbit  then DeleteObject(hbit)
+        if memDC then DeleteDC memDC
         RestoreDC(lpdis->hDC, -1)
     end if   
 
-    Function = True 
-End Function
+    function = true 
+end function
 
 
 ' ========================================================================================
 ' frmPopupMenuShadow Window procedure
 ' ========================================================================================
 function frmPopupMenuShadow_WndProc( _
-                ByVal HWnd   As HWnd, _
-                ByVal uMsg   As UINT, _
-                ByVal wParam As WPARAM, _
-                ByVal lParam As LPARAM _
-                ) As LRESULT
+                byval hwnd   as HWND, _
+                byval uMsg   as UINT, _
+                byval wParam as WPARAM, _
+                byval lParam as LPARAM _
+                ) as LRESULT
 
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
 end function
 
@@ -342,19 +342,19 @@ end function
 ' frmPopupMenu Window procedure
 ' ========================================================================================
 function frmPopupMenu_WndProc( _
-                ByVal HWnd   As HWnd, _
-                ByVal uMsg   As UINT, _
-                ByVal wParam As WPARAM, _
-                ByVal lParam As LPARAM _
-                ) As LRESULT
+                byval hwnd   as HWND, _
+                byval uMsg   as UINT, _
+                byval wParam as WPARAM, _
+                byval lParam as LPARAM _
+                ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_MEASUREITEM, frmPopupMenu_OnMeasureItem)
-        HANDLE_MSG (HWnd, WM_DRAWITEM,    frmPopupMenu_OnDrawItem)
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_MEASUREITEM, frmPopupMenu_OnMeasureItem)
+        HANDLE_MSG (hwnd, WM_DRAWITEM,    frmPopupMenu_OnDrawItem)
 
         case WM_DESTROY
-            DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWnd)
-            select case HWnd
+            dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+            select case hwnd
             case HWND_MENU(0)
                 DestroyWindow(HWND_SHADOW(0))
                 Delete pWindow
@@ -376,36 +376,36 @@ function frmPopupMenu_WndProc( _
             return true
 
         case WM_PAINT
-            Dim As PAINTSTRUCT ps
-            Dim As HDC hDc
-            Dim As Rect rc
+            dim as PAINTSTRUCT ps
+            dim as HDC hDc
+            dim as Rect rc
 
-            hDC = BeginPaint(hWnd, @ps)
-            GetClientRect(HWnd, @rc)
+            hDC = BeginPaint(hwnd, @ps)
+            GetClientRect(hwnd, @rc)
             FillRect( hDC, @rc, ghPopup.hPanelBrush )
-            EndPaint hWnd, @ps
+            EndPaint hwnd, @ps
 
-    End Select
+    end Select
     
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmPopupMenu_SubclassProc 
 ' ========================================================================================
 function frmPopupMenu_SubclassProc ( _
-                    ByVal hWin   As HWnd, _                 ' // Control window handle
-                    ByVal uMsg   As UINT, _                 ' // Type of message
-                    ByVal _wParam As WPARAM, _               ' // First message parameter
-                    ByVal _lParam As LPARAM, _               ' // Second message parameter
-                    ByVal uIdSubclass As UINT_PTR, _        ' // The subclass ID
-                    ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
-                    ) As LRESULT
+                    byval hWin   as HWND, _                 ' // Control window handle
+                    byval uMsg   as UINT, _                 ' // Type of message
+                    byval _wParam as WPARAM, _               ' // First message parameter
+                    byval _lParam as LPARAM, _               ' // Second message parameter
+                    byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+                    byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+                    ) as LRESULT
 
-    DIM pWindow AS CWindow PTR = AfxCWindowPtr(hWin)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hWin)
 
     ' save the most recent selected line for the listbox on the main popup
     ' menu. We need this to ensure that the listbox line is highlighted
@@ -413,14 +413,14 @@ function frmPopupMenu_SubclassProc ( _
     ' gMenuLastCurSel  declared as a global because frmMain needs to access
     ' it for keyboard access.
     
-    Select Case uMsg
+    select case uMsg
 
-        Case WM_MOUSEMOVE
+        case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSELEAVE event
-            Dim tme As TrackMouseEvent
-            tme.cbSize = Sizeof(TrackMouseEvent)
-            tme.dwFlags = TME_HOVER Or TME_LEAVE
+            dim tme as TrackMouseEvent
+            tme.cbSize = sizeof(TrackMouseEvent)
+            tme.dwFlags = TME_HOVER or TME_LEAVE
             tme.hwndTrack = hWin
             tme.dwHoverTime = 200    ' system default is 400ms
             TrackMouseEvent(@tme) 
@@ -431,19 +431,19 @@ function frmPopupMenu_SubclassProc ( _
             dim as long nCurSel = ListBox_GetCurSel(hWin)
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
             if idx <> nCurSel then
-            ListBox_SetCurSel(hWin, idx)
-            ListBox_GetItemRect( hWin, idx, @rc )
-            InvalidateRect( hWin, @rc, true )
-            ListBox_GetItemRect( hWin, nCurSel, @rc )
-            InvalidateRect( hWin, @rc, true )
-            ' if we are mouse over on the submenu popup then ensure that the 
-            ' line in the main menu pope that called this submenu is also highlighted.
-            if GetParent(hWin) = HWND_MENU(1) then
-                dim as HWND hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
-                ListBox_SetCurSel( hListBox, gMenuLastCurSel)
-                ListBox_GetItemRect( hListBox, idx, @rc )
-                InvalidateRect( hListBox, @rc, true )
-            end if
+                ListBox_SetCurSel(hWin, idx)
+                ListBox_GetItemRect( hWin, idx, @rc )
+                InvalidateRect( hWin, @rc, true )
+                ListBox_GetItemRect( hWin, nCurSel, @rc )
+                InvalidateRect( hWin, @rc, true )
+                ' if we are mouse over on the submenu popup then ensure that the 
+                ' line in the main menu pope that called this submenu is also highlighted.
+                if GetParent(hWin) = HWND_MENU(1) then
+                    dim as HWND hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
+                    ListBox_SetCurSel( hListBox, gMenuLastCurSel)
+                    ListBox_GetItemRect( hListBox, idx, @rc )
+                    InvalidateRect( hListBox, @rc, true )
+                end if
             end if
                 
         case WM_MOUSELEAVE
@@ -454,9 +454,9 @@ function frmPopupMenu_SubclassProc ( _
             ' test if this menu item has a submenu then show it now if not already shown
             dim as HWND hListBox = GetDlgItem( HWND_MENU(0), IDC_MENU_LISTBOX )
             if hWin = hListBox then 
-            dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
-            gMenuLastCurSel = idx
-            frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hWin )
+                dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
+                gMenuLastCurSel = idx
+                frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hWin )
             end if
 
         case WM_ERASEBKGND
@@ -473,19 +473,19 @@ function frmPopupMenu_SubclassProc ( _
             if (gTopMenu(idx).isDisabled = true) orelse (gTopMenu(idx).isSeparator = true) then
             elseif gTopMenu(idx).nChildID <> 0 then
             else
-            killAllPopupMenus()
-            PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(gTopMenu(idx).nID, 0), 0 )
+                killAllPopupMenus()
+                PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(gTopMenu(idx).nID, 0), 0 )
             end if
             
         Case WM_DESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmPopupMenu_SubclassProc, uIdSubclass )
-    End Select
+    end Select
     
     ' For messages that we don't deal with
-    Function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
+    function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
 
-End Function
+end function
 
         
 ' ========================================================================================
@@ -508,21 +508,21 @@ function frmPopupMenu_GetMaxMenuWidth( byval nCtrlID as long ) as long
     for i as long = lbound(gTopMenu) to ubound(gTopMenu)
         if gTopMenu(i).nParentID = nCtrlID then
             wszText = getMenuText(gTopMenu(i).nID)
-            ' If an embedded tab character then this menu item has a caption and a keyboard
+            ' if an embedded tab character then this menu item has a caption and a keyboard
             ' accelerator so add extra internal space to expand the tab.
             if instr(wszText, chr(9)) then 
-            interior_width = AfxScaleX(20)
+                interior_width = AfxScaleX(20)
 
-            wszLeft = AfxStrParse(wszText, 1, chr(9))
-            left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszLeft, ghMenuBar.hFontMenuBar, 0 )
-            if left_width > max_left_width then max_left_width = left_width
-            
-            wszRight = AfxStrParse(wszText, 2, chr(9))
-            right_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszRight, ghMenuBar.hFontMenuBar, 0 )
-            if right_width > max_right_width then max_right_width = right_width
+                wszLeft = AfxStrParse(wszText, 1, chr(9))
+                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszLeft, ghMenuBar.hFontMenuBar, 0 )
+                if left_width > max_left_width then max_left_width = left_width
+                
+                wszRight = AfxStrParse(wszText, 2, chr(9))
+                right_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszRight, ghMenuBar.hFontMenuBar, 0 )
+                if right_width > max_right_width then max_right_width = right_width
             else   
-            left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 0 )
-            if left_width > max_left_width then max_left_width = left_width
+                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 0 )
+                if left_width > max_left_width then max_left_width = left_width
             end if
         end if   
     next
@@ -538,7 +538,7 @@ function frmPopupMenu_Show( _
                 byval nPopupType as long, _   ' popup or subpopup
                 byval nItemID as long, _      ' parent listbox row 
                 byval hParent as HWND _       ' listbox or menubar button
-                ) As HWND
+                ) as HWND
 
     dim pWindow as CWindow ptr 
     dim as long nMenuLeft, nMenuTop, nMenuWidth, nMenuHeight
@@ -556,10 +556,10 @@ function frmPopupMenu_Show( _
         end if
         nCtrlID = gTopMenu(nIdx).nID
         ListBox_GetItemRect( hParent, nItemID, @rc )
-        MapWindowPoints( hParent, HWND_DESKTOP, cast(POINT PTR, @rc), 2 )
+        MapWindowPoints( hParent, HWND_DESKTOP, cast(point ptr, @rc), 2 )
         nMenuLeft = rc.right: nMenuTop = rc.top
 
-        ' If the popup already exists and is being shown for this nCtrlID
+        ' if the popup already exists and is being shown for this nCtrlID
         ' then simply exit, otherwise the menu will just be destroyed and
         ' re-displayed causing unnecessary flicker. The nCtrlID is stored
         ' in the UserData section of the CWindow form.
@@ -574,7 +574,7 @@ function frmPopupMenu_Show( _
         nMenuLeft = rc.left
         nMenuTop = rc.bottom - 1  ' b/c rect doesn't include bottom pixel
 
-        ' If the popup already exists and is being shown for this nCtrlID
+        ' if the popup already exists and is being shown for this nCtrlID
         ' then simply exit, otherwise the menu will just be destroyed and
         ' re-displayed causing unnecessary flicker. The nCtrlID is stored
         ' in the UserData section of the CWindow form.
@@ -595,7 +595,7 @@ function frmPopupMenu_Show( _
     nMenuLeft = pWindow->UnScaleX(nMenuLeft)
     nMenuTop = pWindow->UnScaleY(nMenuTop)
 
-    ' If popup menu was already active prior to this menubar button gaining
+    ' if popup menu was already active prior to this menubar button gaining
     ' focus then automatically show the new popup menu rather than forcing
     ' the user to have to click on the button.
     dim as HWND prevPopup
@@ -603,8 +603,8 @@ function frmPopupMenu_Show( _
     if nPopupType = ID_SUBPOPUP and IsWindow(HWND_MENU(1)) then prevPopup = HWND_MENU(1)
 
     dim as HWND hPopupMenu = pWindow->Create( HWND_FRMMAIN, "", @frmPopupMenu_WndProc, _
-        nMenuLeft, nMenuTop, 0, 0, WS_POPUP Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        nMenuLeft, nMenuTop, 0, 0, WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->UserData(0) = nCtrlID
 
     ' Disable background erasing by only assigning the one style
@@ -612,9 +612,9 @@ function frmPopupMenu_Show( _
     
     dim as HWND hPopupListBox = _ 
         pWindow->AddControl("LISTBOX", , IDC_MENU_LISTBOX, "", 0, 0, 0, 0, _
-        WS_CHILD Or WS_TABSTOP Or LBS_NOINTEGRALHEIGHT Or _
-        LBS_OWNERDRAWFIXED Or LBS_HASSTRINGS Or LBS_NOTIFY, WS_EX_LEFT Or WS_EX_RIGHTSCROLLBAR, , _
-        Cast(SUBCLASSPROC, @frmPopupMenu_SubclassProc), IDC_MENU_LISTBOX, Cast(DWORD_PTR, @pWindow))
+        WS_CHILD or WS_TABSTOP or LBS_NOINTEGRALHEIGHT or _
+        LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
+        cast(SUBCLASSPROC, @frmPopupMenu_SubclassProc), IDC_MENU_LISTBOX, cast(DWORD_PTR, @pWindow))
 
     nMenuWidth = frmPopupMenu_GetMaxMenuWidth(nCtrlID)
     select case nCtrlID
@@ -649,7 +649,7 @@ function frmPopupMenu_Show( _
     SetWindowPos( hPopupListBox, 0, _
                     pWindow->ScaleX(nLeft), pWindow->ScaleY(nTop), _
                     pWindow->ScaleX(nWidth), pWindow->ScaleY(nHeight), _
-                    SWP_NOZORDER Or SWP_SHOWWINDOW)
+                    SWP_NOZORDER or SWP_SHOWWINDOW)
 
     nMenuHeight = nTop + nHeight + nTop
     
@@ -668,11 +668,11 @@ function frmPopupMenu_Show( _
     
     
     ' create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
-    pWindow = New CWindow
+    pWindow = new CWindow
     pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
     dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, "", _
         @frmPopupMenuShadow_WndProc, nMenuLeft - 1, nMenuTop + 4, nMenuWidth + 3, nMenuHeight, _
-        WS_POPUP Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
+        WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
     pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT)   ' black background
     SetLayeredWindowAttributes( hPopupShadow, 0, 20, LWA_ALPHA ) 
 
@@ -691,7 +691,7 @@ function frmPopupMenu_Show( _
     HWND_MENU(nPopupType) = hPopupMenu
     HWND_SHADOW(nPopupType) = hPopupShadow
             
-    Function = hPopupMenu
+    function = hPopupMenu
     
-End Function
+end function
 

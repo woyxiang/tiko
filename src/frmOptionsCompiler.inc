@@ -18,121 +18,121 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOptionsCompiler
 ' ========================================================================================
-private Function frmOptionsCompiler_OnCommand( ByVal HWnd As HWnd, _
-                                                ByVal id As Long, _
-                                                ByVal hwndCtl As HWnd, _
-                                                ByVal codeNotify As UINT _
-                                                ) As LRESULT
+private function frmOptionsCompiler_OnCommand( byval hwnd as HWND, _
+                                                byval id as long, _
+                                                byval hwndCtl as HWND, _
+                                                byval codeNotify as UINT _
+                                                ) as LRESULT
 
-    Select Case id
+    select case id
 
         case IDC_FRMOPTIONSCOMPILER_CMDFBHELPFILE
 
-            If codeNotify = BN_CLICKED Then
-            ' Display the Open File Dialog
-            Dim pwszName As WString Ptr = AfxIFileOpenDialogW(HWnd, id)
-            If pwszName Then
-                SetWindowTextW( GetDlgItem(HWnd, IDC_FRMOPTIONSCOMPILER_TXTFBHELPFILE), pwszName )
-                CoTaskMemFree pwszName
-            End If
-            Exit Function
-            End If
+            if codeNotify = BN_CLICKED then
+                ' Display the Open File Dialog
+                dim pwszName as wstring ptr = AfxIFileOpenDialogW(hwnd, id)
+                if pwszName then
+                    SetWindowTextW( GetDlgItem(hwnd, IDC_FRMOPTIONSCOMPILER_TXTFBHELPFILE), pwszName )
+                    CoTaskMemFree pwszName
+                end if
+                exit function
+            end if
 
-    End Select
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmOptionsCompiler Window procedure
 ' ========================================================================================
-private Function frmOptionsCompiler_WndProc( ByVal HWnd   As HWnd, _
-                                                ByVal uMsg   As UINT, _
-                                                ByVal wParam As WPARAM, _
-                                                ByVal lParam As LPARAM _
-                                                ) As LRESULT
+private function frmOptionsCompiler_WndProc( byval hwnd   as HWND, _
+                                                byval uMsg   as UINT, _
+                                                byval wParam as WPARAM, _
+                                                byval lParam as LPARAM _
+                                                ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_COMMAND, frmOptionsCompiler_OnCommand)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_COMMAND, frmOptionsCompiler_OnCommand)
+    end select
 
-    Function = DefWindowProcW(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProcW(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmOptionsCompiler_Show
 ' ========================================================================================
-public Function frmOptionsCompiler_Show( ByVal hWndParent As HWnd ) as LRESULT
+public function frmOptionsCompiler_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
+    dim pWindow as CWindow ptr = new CWindow
+    pWindow->DPI = AfxCWindowptr(hwndParent)->DPI
     
     HWND_FRMOPTIONSCOMPILER = pWindow->Create( hWndParent, "", @frmOptionsCompiler_WndProc, 0, 0, 0, 0, _
-        WS_CHILD, WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD, WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
 
     pWindow->AddControl("LABEL", , IDC_FRMOPTIONSCOMPILER_LBLTOOLCHAINS, _
         L(420,"Toolchains") & ":", 0, 2, 375, 15, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     
     dim as HWND hListBox = _
     pWindow->AddControl("LISTBOX", , IDC_FRMOPTIONSCOMPILER_LSTTOOLCHAINS, "", 0, 20, 386, 124, _
-        WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or LBS_NOTIFY Or LBS_NOINTEGRALHEIGHT, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or LBS_NOTIFY or LBS_NOINTEGRALHEIGHT, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     pWindow->AddControl("LABEL", , IDC_FRMOPTIONSCOMPILER_LBLSWITCHES, _
         L(153,"Additional compiler option switches (optional)" & ":"), 0, 148, 375, 16, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSCOMPILER_TXTFBSWITCHES, "", 0, 167, 386, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     pWindow->AddControl("LABEL", , IDC_FRMOPTIONSCOMPILER_LBLINCLUDES, _
         L(152,"Additional Include paths (semi colon separated)" & ":"), 0, 191, 375, 16, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSCOMPILER_TXTINCLUDES, "", 0, 211, 386, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSCOMPILER_CHKRUNVIACOMMANDWINDOW, _
         L(273,"Run compiled programs using command window"), 0, 241, 400, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSCOMPILER_CHKDISABLECOMPILEBEEP, _
         L(413,"Disable successful compile sound"), 0, 262, 400, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     pWindow->AddControl("LABEL", , IDC_FRMOPTIONSCOMPILER_LBLFBHELP, _
         L(155,"FreeBASIC Help file (*.chm)") & ":", 0, 300, 375, 18, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSCOMPILER_TXTFBHELPFILE, "", 0, 320, 356, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->AddControl("BUTTON", , IDC_FRMOPTIONSCOMPILER_CMDFBHELPFILE, "...", 362, 320, 24, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     
     gConfig.FBWINCompiler32  = ProcessFromCurdriveApp(gConfig.FBWINCompiler32)
     gConfig.FBWINCompiler64  = ProcessFromCurdriveApp(gConfig.FBWINCompiler64)
     gConfig.CompilerHelpfile = ProcessFromCurdriveApp(gConfig.CompilerHelpfile)
 
     ' Load the Toolchain listbox
-    DIM hSearch as HANDLE
-    dim WFD AS WIN32_FIND_DATAW
-    DIM wszPath AS WSTRING * MAX_PATH
-    dim wszCurPath AS WSTRING * MAX_PATH
-    dim wszFullPath AS WSTRING * (MAX_PATH * 2)
-    dim wszDisplayName AS WSTRING * (MAX_PATH * 2)
+    dim hSearch as HANDLE
+    dim WFD as WIN32_FIND_DATAW
+    dim wszPath as wstring * MAX_PATH
+    dim wszCurPath as wstring * MAX_PATH
+    dim wszFullPath as wstring * (MAX_PATH * 2)
+    dim wszDisplayName as wstring * (MAX_PATH * 2)
     dim as long nCount = 0
     dim as long idx = 0
     dim as long idxMatch = -1
@@ -141,36 +141,36 @@ public Function frmOptionsCompiler_Show( ByVal hWndParent As HWnd ) as LRESULT
     wszCurPath = wszPath + "*"
 
     hSearch = FindFirstFile( wszCurPath, @WFD )
-    IF hSearch <> INVALID_HANDLE_VALUE THEN
-        DO
-            IF (WFD.dwFileAttributes AND FILE_ATTRIBUTE_DIRECTORY) = FILE_ATTRIBUTE_DIRECTORY THEN
-            if (WFD.cFileName <> ".") andalso (WFD.cFileName <> "..") then
-                wszFullPath = ucase( wszPath & WFD.cFileName & "\fbc32.exe" )
+    if hSearch <> INVALID_HANDLE_VALUE then
+        do
+            if (WFD.dwFileAttributes AND FILE_ATTRIBUTE_DIRECTORY) = FILE_ATTRIBUTE_DIRECTORY then
+                if (WFD.cFileName <> ".") andalso (WFD.cFileName <> "..") then
+                    wszFullPath = ucase( wszPath & WFD.cFileName & "\fbc32.exe" )
 
-                ' Do check to see if path contains spaces as we will have to warn the user to fix it
-                wszDisplayName = WFD.cFileName
-                if instr( wszFullPath, " " ) then
-                    wszDisplayName = wszDisplayName & "   (Warning: File path contains spaces)"
-                end if
+                    ' Do check to see if path contains spaces as we will have to warn the user to fix it
+                    wszDisplayName = WFD.cFileName
+                    if instr( wszFullPath, " " ) then
+                        wszDisplayName = wszDisplayName & "   (Warning: File path contains spaces)"
+                    end if
 
-                idx = SendMessage( hListBox, LB_ADDSTRING, 0, cast(LPARAM, @wszDisplayName) )
-                if ucase(gConfig.FBWINCompiler32) = wszFullPath then
-                    idxMatch = idx
-                end if
-                
-            end if   
-            END IF
-        LOOP WHILE FindNextFile( hSearch, @WFD )
+                    idx = SendMessage( hListBox, LB_ADDSTRING, 0, cast(LPARAM, @wszDisplayName) )
+                    if ucase(gConfig.FBWINCompiler32) = wszFullPath then
+                        idxMatch = idx
+                    end if
+                    
+                end if   
+            end if
+        loop while FindNextFile( hSearch, @WFD )
         FindClose( hSearch )
-    END IF
+    end if
     SendMessage( hListBox, LB_SETCURSEL, idxMatch, 0 )
     
-    Dim As HWnd HWnd = HWND_FRMOPTIONSCOMPILER
-    AfxSetWindowText( GetDlgItem( HWnd, IDC_FRMOPTIONSCOMPILER_TXTFBSWITCHES),     gConfig.CompilerSwitches)
-    AfxSetWindowText( GetDlgItem( HWnd, IDC_FRMOPTIONSCOMPILER_TXTINCLUDES),       gConfig.CompilerIncludes)
-    AfxSetWindowText( GetDlgItem( HWnd, IDC_FRMOPTIONSCOMPILER_TXTFBHELPFILE),     gConfig.CompilerHelpfile)
-    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSCOMPILER_CHKRUNVIACOMMANDWINDOW), gConfig.RunViaCommandWindow)
-    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSCOMPILER_CHKDISABLECOMPILEBEEP),  gConfig.DisableCompileBeep)
+    dim as hwnd HWND = HWND_FRMOPTIONSCOMPILER
+    AfxSetWindowText( GetDlgItem( hwnd, IDC_FRMOPTIONSCOMPILER_TXTFBSWITCHES),     gConfig.CompilerSwitches)
+    AfxSetWindowText( GetDlgItem( hwnd, IDC_FRMOPTIONSCOMPILER_TXTINCLUDES),       gConfig.CompilerIncludes)
+    AfxSetWindowText( GetDlgItem( hwnd, IDC_FRMOPTIONSCOMPILER_TXTFBHELPFILE),     gConfig.CompilerHelpfile)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSCOMPILER_CHKRUNVIACOMMANDWINDOW), gConfig.RunViaCommandWindow)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSCOMPILER_CHKDISABLECOMPILEBEEP),  gConfig.DisableCompileBeep)
 
-    Function = 0 
-End Function
+    function = 0 
+end function

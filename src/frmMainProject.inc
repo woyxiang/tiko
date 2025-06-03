@@ -17,8 +17,8 @@
 ' ========================================================================================
 ' Add one or more files to the project (but don't open them to Tabs)
 ' ========================================================================================
-Function OnCommand_ProjectFilesAdd( byval HWnd As HWnd ) as LRESULT
-    OnCommand_FileOpen( HWnd, false )
+function OnCommand_ProjectFilesAdd( byval hwnd As HWnd ) as LRESULT
+    OnCommand_FileOpen( hwnd, false )
     LoadExplorerFiles()
     function = 0
 end function
@@ -27,32 +27,32 @@ end function
 ' ========================================================================================
 ' Save project file to disk
 ' ========================================================================================
-Function OnCommand_ProjectSave( _
-            byval HWnd As HWnd, _
-            ByVal bSaveAs As BOOLEAN = False _
+function OnCommand_ProjectSave( _
+            byval hwnd as HWND, _
+            byval bSaveAs as boolean = False _
             ) As LRESULT
             
     ' Save all dirty files
-    OnCommand_FileSaveAll( HWnd )
+    OnCommand_FileSaveAll( hwnd )
     
     ' Do the actual saving to disk of the Project file
     gApp.SaveProject(bSaveAs)
 
     frmMain_SetFocusToCurrentCodeWindow
 
-    Function = 0
-End Function 
+    function = 0
+end function 
 
 
 ' ========================================================================================
 ' Close currently active project
 ' ========================================================================================
-Function OnCommand_ProjectClose( ByVal HWnd As HWnd ) As LRESULT
+function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
 
     ' Save the project configuration to disk and any dirty files
     ' Do the actual saving to disk of the Project file
     gApp.SaveProject(false)
-    if OnCommand_FileClose( HWnd, EFC_CLOSEALL ) = false then exit function
+    if OnCommand_FileClose( hwnd, EFC_CLOSEALL ) = false then exit function
     
     ' If the entire app is closing down then we do not have to process the
     ' remaining project cleanup commands. 
@@ -96,18 +96,17 @@ Function OnCommand_ProjectClose( ByVal HWnd As HWnd ) As LRESULT
     frmMain_SetStatusbar
     frmMain_SetFocusToCurrentCodeWindow
 
-    Function = true
-End Function
+    function = true
+end function
 
 
 ' ========================================================================================
 ' Create a new project
 ' ========================================================================================
-Function OnCommand_ProjectNew( ByVal HWnd As HWnd ) As LRESULT
-
+function OnCommand_ProjectNew( byval hwnd As HWND ) As LRESULT
     
     ' Ensure that the Project Manager window has been created (show it now as well)
-    frmProjectOptions_Show( HWnd, true ) 
+    frmProjectOptions_Show( hwnd, true ) 
     
     if gApp.IsNewProjectFlag then 
         ' Need to remove resource file (if created) from the document list otherwise it
@@ -123,7 +122,7 @@ Function OnCommand_ProjectNew( ByVal HWnd As HWnd ) As LRESULT
     end if
         
     gApp.IsNewProjectFlag = false
-    gApp.IsProjectLoading = FALSE
+    gApp.IsProjectLoading = false
 
     frmExplorer_PositionWindows
     frmMain_PositionWindows
@@ -135,26 +134,26 @@ Function OnCommand_ProjectNew( ByVal HWnd As HWnd ) As LRESULT
     ' This will update the main window to show the project name in the window caption
     frmMain_SetFocusToCurrentCodeWindow
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Open a Project
 ' ========================================================================================
-Function OnCommand_ProjectOpen( ByVal HWnd As HWnd ) As LRESULT
+function OnCommand_ProjectOpen( byval hwnd As HWND ) as LRESULT
 
     ' Display the Open File Dialog
-    Dim pwszName As WString Ptr = AfxIFileOpenDialogW(HWnd, IDM_PROJECTOPEN)
-    If pwszName Then 
+    dim pwszName as wstring ptr = AfxIFileOpenDialogW(hwnd, IDM_PROJECTOPEN)
+    if pwszName then 
         ' Pass the info to our generic project open function to handle everything.
         frmMain_OpenProjectSafely(HWND_FRMMAIN, *pwszName) 
         CoTaskMemFree(pwszName)
-    End If
+    end if
     frmMain_SetFocusToCurrentCodeWindow
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================

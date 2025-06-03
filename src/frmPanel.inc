@@ -128,7 +128,7 @@ end function
 ' Process WM_SIZE message for window/dialog: frmPanel
 ' ========================================================================================
 function frmPanel_OnSize( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval state as UINT, _
             byval cx as long, _
             byval cy as long _
@@ -143,9 +143,9 @@ end function
 ' ========================================================================================
 ' Do hit test to determine if "..." button in action Area was clicked
 ' ========================================================================================
-function isPanelActionButtonHitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isPanelActionButtonHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gPanel.rcActionMenu, pt ) then return true
     function = false
 end function
@@ -153,9 +153,9 @@ end function
 ' ========================================================================================
 ' Do hit test on Button0 
 ' ========================================================================================
-function isPanelButton0HitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isPanelButton0HitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gPanelButton(0).rc, pt ) then return true
     function = false
 end function
@@ -163,108 +163,18 @@ end function
 ' ========================================================================================
 ' Do hit test on Button1
 ' ========================================================================================
-function isPanelButton1HitTest( byval hWin as HWnd ) as boolean
-    dim as POINT pt: GetCursorPos( @pt )
-    MapWindowPoints( HWND_DESKTOP, hWin, cast( POINT ptr, @pt ), 1 )
+function isPanelButton1HitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gPanelButton(1).rc, pt ) then return true
     function = false
 end function
-
-'' ========================================================================================
-'' Process WM_PAINT message for window/dialog: frmPanel
-'' ========================================================================================
-'function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
-            
-'    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
-'    if pWindow = 0 then exit function
-
-'    dim as PAINTSTRUCT ps
-'    dim as HDC hDc
-'    dim as HPEN oldPen
-'    dim as HFONT oldFont
-'    dim as HBRUSH oldBrush
-    
-'    hDC = BeginPaint(hWnd, @ps)
-
-'    SaveDC( hDC )
-
-'    FillRect( hDC, @ps.rcPaint, ghPanel.hPanelBrush )
-    
-'    ' Draw the panel Label
-'    SetTextColor( hDC, ghPanel.forecolor )
-'    SetBkColor( hDC, ghPanel.backcolor )
-'    oldFont = SelectObject( hDC, ghStatusBar.hFontStatusBar )
-
-'    dim as long wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE  
-'    DrawText( hDC, gPanel.wszLabel.sptr, -1, cast(lpRect, @gPanel.rcLabel), wsStyle )
-'    SelectObject( hDC, oldFont )
-    
-'    ' Draw the "..." menu item
-'    SetTextColor( hDC, ghPanel.ForeColorHot )
-'    if isPanelActionButtonHitTest( HWnd ) then
-'        oldBrush = SelectObject( hDC, ghPanel.hBackBrushHot )
-'        SetBkColor( hDC, ghPanel.BackColorHot )
-'    else
-'        oldBrush = SelectObject( hDC, ghPanel.hPanelBrush )
-'        SetBkColor( hDC, ghPanel.BackColor )
-'    end if
-'    dim as RECT rc = gPanel.rcActionMenu
-
-'    dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-'    oldPen = SelectObject( hDC, hPenNull )
-'    RoundRect( hDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-'    DeleteObject SelectObject( hDC, oldPen )
-    
-'    wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER
-'    oldFont = SelectObject( hDC, ghMenuBar.hFontSymbolLargeBold )
-'    DrawText( hDC, wszMoreActions, -1, Cast(lpRect, @rc), wsStyle )
-'    SelectObject( hDC, oldFont )
-'    SelectObject( hDC, oldBrush )
-
-'    ' Draw the bottom two Panel buttons
-'    dim as long penWidth = pWindow->ScaleX(1)
-'    dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghTopTabs.Divider )
-'    oldPen = SelectObject( hDC, hPenSolid)
-
-'    dim as HBRUSH hBrush
-'    dim as COLORREF foreclr, backclr
-'    dim as boolean isHot 
-    
-'    for i as long = lbound(gPanelButton) to ubound(gPanelButton)
-'        dim as RECT rc = gPanelButton(i).rc
-
-'        isHot = isMouseOverRECT( HWnd, rc )
-'        hBrush = iif( isHot, ghPanel.hBackBrushButtonHot, ghPanel.hBackBrushButton)
-'        backclr = iif( isHot, ghPanel.BackColorButtonHot, ghPanel.BackColorButton)
-'        foreclr = iif( isHot, ghPanel.ForeColorButtonHot, ghPanel.ForeColorButton)
-        
-'        oldBrush = SelectObject( hDC, hBrush )
-'        SetBkColor( hDC, backclr )
-'        SetTextColor( hDC, foreclr )
-
-'        SelectPen( hDC, hPenSolid )
-'        Rectangle( hDC, rc.left, rc.top, rc.right, rc.bottom )
-'        wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
-'        oldFont = SelectObject( hDC, ghStatusBar.hFontStatusBar )
-'        DrawText( hDC, gPanelButton(i).wszCaption.sptr, -1, Cast(lpRect, @rc), wsStyle )
-
-'        SelectObject( hDC, oldFont )
-'        SelectObject( hDC, oldBrush )
-'    next   
-
-'    DeleteObject SelectObject( hDC, oldPen )
-'    RestoreDC( hDC, -1 )
-
-'    EndPaint( hWnd, @ps )
-
-'    function = 0
-'end function
 
 
 ' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmPanel
 ' ========================================================================================
-function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
+function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
             
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
     if pWindow = 0 then exit function
@@ -275,18 +185,18 @@ function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
     dim as HFONT oldFont
     dim as HBRUSH oldBrush
     
-    hDC = BeginPaint(hWnd, @ps)
+    hDC = BeginPaint(hwnd, @ps)
 
     SaveDC(hDC)
     dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
     dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
 
-    Dim memDC as HDC      ' Double buffering
-    Dim hbit As HBITMAP   ' Double buffering
+    dim memDC as HDC      ' Double buffering
+    dim hbit as HBITMAP   ' Double buffering
 
     memDC = CreateCompatibleDC( hDC )
     hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-    If hbit Then hbit = SelectObject( memDC, hbit )
+    if hbit then hbit = SelectObject( memDC, hbit )
 
     FillRect( memDC, @ps.rcPaint, ghPanel.hPanelBrush )
     
@@ -301,7 +211,7 @@ function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
     
     ' Draw the "..." menu item
     SetTextColor( memDC, ghPanel.ForeColorHot )
-    if isPanelActionButtonHitTest( HWnd ) then
+    if isPanelActionButtonHitTest( hwnd ) then
         oldBrush = SelectObject( memDC, ghPanel.hBackBrushHot )
         SetBkColor( memDC, ghPanel.BackColorHot )
     else
@@ -315,9 +225,9 @@ function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     DeleteObject SelectObject( memDC, oldPen )
     
-    wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER
+    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER
     oldFont = SelectObject( memDC, ghMenuBar.hFontSymbolLargeBold )
-    DrawText( memDC, wszMoreActions, -1, Cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszMoreActions, -1, cast(lpRect, @rc), wsStyle )
     SelectObject( memDC, oldFont )
     SelectObject( memDC, oldBrush )
 
@@ -333,7 +243,7 @@ function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
     for i as long = lbound(gPanelButton) to ubound(gPanelButton)
         dim as RECT rc = gPanelButton(i).rc
 
-        isHot = isMouseOverRECT( HWnd, rc )
+        isHot = isMouseOverRECT( hwnd, rc )
         hBrush = iif( isHot, ghPanel.hBackBrushButtonHot, ghPanel.hBackBrushButton)
         backclr = iif( isHot, ghPanel.BackColorButtonHot, ghPanel.BackColorButton)
         foreclr = iif( isHot, ghPanel.ForeColorButtonHot, ghPanel.ForeColorButton)
@@ -344,7 +254,7 @@ function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
 
         SelectPen( memDC, hPenSolid )
         Rectangle( memDC, rc.left, rc.top, rc.right, rc.bottom )
-        wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
+        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
         oldFont = SelectObject( memDC, ghStatusBar.hFontStatusBar )
         DrawText( memDC, gPanelButton(i).wszCaption.sptr, -1, Cast(lpRect, @rc), wsStyle )
 
@@ -363,7 +273,7 @@ function frmPanel_OnPaint( byval HWnd as HWnd ) as LRESULT
 
     RestoreDC( hDC, -1 )
 
-    EndPaint( hWnd, @ps )
+    EndPaint( hwnd, @ps )
 
     function = 0
 end function
@@ -374,18 +284,18 @@ end function
 ' frmPanel Window procedure
 ' ========================================================================================
 function frmPanel_WndProc( _
-            byval HWnd   as HWnd, _
+            byval hwnd   as HWND, _
             byval uMsg   as UINT, _
             byval wParam as WPARAM, _
             byval lParam as LPARAM _
             ) as LRESULT
 
     static as boolean isPrevHotAction, isPrevHotButton0, isPrevHotButton1
-    static hTooltip as HWND
+    static hTooltip as hwnd
 
     select case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE,  frmPanel_OnSize)
-        HANDLE_MSG (HWnd, WM_PAINT, frmPanel_OnPaint)
+        HANDLE_MSG (hwnd, WM_SIZE,  frmPanel_OnSize)
+        HANDLE_MSG (hwnd, WM_PAINT, frmPanel_OnPaint)
     
     case WM_ERASEBKGND
         return true
@@ -397,34 +307,34 @@ function frmPanel_WndProc( _
         dim tme as TrackMouseEvent
         tme.cbSize = sizeof(TrackMouseEvent)
         tme.dwFlags = TME_HOVER or TME_LEAVE
-        tme.hwndTrack = HWnd
+        tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
         ' Repaint the gPanelMenuRect to ensure Hot highlighting
         dim as boolean isHotAction, isHotButton0, isHotButton1 
-        isHotAction = isPanelActionButtonHitTest( HWnd )
-        isHotButton0 = isPanelButton0HitTest( HWnd )
-        isHotButton1 = isPanelButton1HitTest( HWnd )
+        isHotAction = isPanelActionButtonHitTest( hwnd )
+        isHotButton0 = isPanelButton0HitTest( hwnd )
+        isHotButton1 = isPanelButton1HitTest( hwnd )
 
         if isHotAction <> isPrevHotAction then   
-            AfxRedrawWindow( HWnd )
+            AfxRedrawWindow( hwnd )
             isPrevHotAction = isHotAction
         end if   
             
         if isHotButton0 <> isPrevHotButton0 then   
-            AfxRedrawWindow( HWnd )
+            AfxRedrawWindow( hwnd )
             isPrevHotButton0 = isHotButton0
         end if   
 
         if isHotButton1 <> isPrevHotButton1 then   
-            AfxRedrawWindow( HWnd )
+            AfxRedrawWindow( hwnd )
             isPrevHotButton1 = isHotButton1
         end if
 
 
 
         ' PANELS LEFT/RIGHT SPLITTER
-        dim as POINT pt
+        dim as point pt
         dim as Rect rc
         GetWindowRect HWND_FRMPANEL, @rc
 
@@ -436,13 +346,13 @@ function frmPanel_WndProc( _
 
         GetCursorPos(@pt)
         if PtInRect( @rc, pt ) then
-            if WindowFromPoint(pt) = HWND_FRMPANEL then
+            if WindowFrompoint(pt) = HWND_FRMPANEL then
             SetCursor( ghCursorSizeWE )
             end if
         end if
 
         if gApp.bDragActive then
-            if gApp.hWndPanel = HWND_FRMPANEL then
+            if gApp.hwndPanel = HWND_FRMPANEL then
                 ' Get the current rect of the panel and compare right side to the current cursor position
                 ' and then move the right side to equal the cursor position.
                 dim as long nDiff = pt.x - rc.right
@@ -454,7 +364,7 @@ function frmPanel_WndProc( _
                 nWidth = max( nWidth, pWindow->ScaleX(80) )
                 SetWindowPos( HWND_FRMPANEL, 0, 0, 0, nWidth, rc.Bottom - rc.Top, SWP_NOMOVE or SWP_NOZORDER )
                 frmMain_PositionWindows()
-                AfxRedrawWindow(HWnd)   ' ensure the More Actions menu repaints
+                AfxRedrawWindow(hwnd)   ' ensure the More Actions menu repaints
                 AfxDoEvents()           ' allow screen to repaint
             end if
         end if
@@ -466,7 +376,7 @@ function frmPanel_WndProc( _
 
         ' PANELS LEFT/RIGHT SPLITTER
         dim as Rect rc
-        dim as Point pt 
+        dim as point pt 
         gApp.bDragActive = false 
         GetWindowRect HWND_FRMPANEL, @rc
 
@@ -478,10 +388,10 @@ function frmPanel_WndProc( _
 
         GetCursorPos(@pt)
         if PtInRect( @rc, pt ) then
-            if WindowFromPoint(pt) = HWND_FRMPANEL then
+            if WindowFrompoint(pt) = HWND_FRMPANEL then
             SetCursor( ghCursorSizeWE )
             gApp.bDragActive = true 
-            gApp.hWndPanel   = HWND_FRMPANEL
+            gApp.hwndPanel   = HWND_FRMPANEL
             SetCapture( HWND_FRMPANEL )
             end if
         end if
@@ -491,10 +401,10 @@ function frmPanel_WndProc( _
     case WM_LBUTTONUP
         if gApp.bDragActive then
             gApp.bDragActive = false 
-            gApp.hWndPanel = 0
+            gApp.hwndPanel = 0
             ReleaseCapture()
         end if
-        if isPanelActionButtonHitTest( HWnd ) then
+        if isPanelActionButtonHitTest( hwnd ) then
             dim as HMENU hPopupMenu 
             select case gPanel.hActiveChild
             case HWND_FRMEXPLORER
@@ -506,19 +416,19 @@ function frmPanel_WndProc( _
             end select
             ' Popup the menu to the bottom of the Action Button (right aligned)
             dim as RECT rc = gPanel.rcActionMenu   ' work with a copy
-            MapWindowPoints( HWND_FRMPANEL, HWND_DESKTOP, cast(POINT ptr, @rc), 2 )
+            MapWindowpoints( HWND_FRMPANEL, HWND_DESKTOP, cast(point ptr, @rc), 2 )
             TrackPopupMenu( hPopUpMenu, TPM_RIGHTALIGN, _
                                 rc.right, rc.bottom, 0, HWND_FRMMAIN, byval null)
             DestroyMenu( hPopUpMenu )
             Return true   ' prevent further processing that leads to WM_CONTEXTMENU
         end if
         
-        if isPanelButton0HitTest( HWnd ) then
+        if isPanelButton0HitTest( hwnd ) then
             gPanel.hActiveChild = gPanelButton(0).hActionChild
             frmPanel_PositionWindows()
         end if
         
-        if isPanelButton1HitTest( HWnd ) then
+        if isPanelButton1HitTest( hwnd ) then
             gPanel.hActiveChild = gPanelButton(1).hActionChild
             frmPanel_PositionWindows()
         end if
@@ -529,26 +439,26 @@ function frmPanel_WndProc( _
         isPrevHotAction = false
         isPrevHotButton0 = false
         isPrevHotButton1 = false
-        AfxDeleteTooltip( hTooltip, HWnd )
+        AfxDeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
-        AfxRedrawWindow(HWnd)
+        AfxRedrawWindow(hwnd)
         return 0   
 
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip 
-        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( HWnd, "", false, false )
-        if isPanelActionButtonHitTest( HWnd ) then
+        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
+        if isPanelActionButtonHitTest( hwnd ) then
             wszTooltip  = L(440, "More Actions") & "..."
         end if
         ' Display the tooltip
-        AfxSetTooltipText( hTooltip, HWnd, wszTooltip )
-        AfxRedrawWindow( HWnd )
+        AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+        AfxRedrawWindow( hwnd )
         return 0   
         
     end select
 
     ' for messages that we don't deal with
-    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
 end function
 
@@ -556,10 +466,10 @@ end function
 ' ========================================================================================
 ' frmPanel_Show
 ' ========================================================================================
-function frmPanel_Show( byval hWndParent as HWnd ) as LRESULT
+function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     ' Only make the Panel initially visible if it was already visible
@@ -567,7 +477,7 @@ function frmPanel_Show( byval hWndParent as HWnd ) as LRESULT
     ' the window to the last used visible width.
     dim as long nWidth = iif(gConfig.ShowPanel, gConfig.ShowPanelWidth, 250)
     
-    HWND_FRMPANEL = pWindow->Create( hWndParent, "Panel Window", @frmPanel_WndProc, _
+    HWND_FRMPANEL = pWindow->Create( hwndParent, "Panel Window", @frmPanel_WndProc, _
         0, 0, nWidth, 0, _
         WS_CHILD or iif(gConfig.ShowPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)

@@ -19,15 +19,15 @@
 ' View fold actions
 ' ========================================================================================
 function OnCommand_ViewFold( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
     
     select case id      
-        Case IDM_FOLDTOGGLE: pDoc->FoldToggle( pDoc->GetCurrentLineNumber() )
-        Case IDM_FOLDBELOW:  pDoc->FoldToggleOnwards( pDoc->GetCurrentLineNumber() )
-        Case IDM_FOLDALL:    pDoc->FoldAll()
-        Case IDM_UNFOLDALL:  pDoc->UnFoldAll()
+        case IDM_FOLDTOGGLE: pDoc->FoldToggle( pDoc->GetCurrentLineNumber() )
+        case IDM_FOLDBELOW:  pDoc->FoldToggleOnwards( pDoc->GetCurrentLineNumber() )
+        case IDM_FOLDALL:    pDoc->FoldAll()
+        case IDM_UNFOLDALL:  pDoc->UnFoldAll()
     end select
     
     function = 0
@@ -37,7 +37,7 @@ end function
 ' View zoom actions
 ' ========================================================================================
 function OnCommand_ViewZoom( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
     
@@ -79,7 +79,7 @@ function OnCommand_ViewBookmarksList() as LRESULT
 end function
 
 function OnCommand_ViewOutput() as LRESULT
-    ShowWindow( HWND_FRMOUTPUT, Iif(IsWindowVisible(HWND_FRMOUTPUT), SW_HIDE, SW_SHOW) )
+    ShowWindow( HWND_FRMOUTPUT, iif(IsWindowVisible(HWND_FRMOUTPUT), SW_HIDE, SW_SHOW) )
     frmMain_PositionWindows
     function = 0
 end function
@@ -88,7 +88,7 @@ end function
 ' View Restore Main window size
 ' ========================================================================================
 function OnCommand_ViewRestoreMain() as LRESULT
-    Dim rc As Rect
+    dim rc as Rect
     SystemParametersInfo( SPI_GETWORKAREA, 0, @rc, 0 )
     MoveWindow( HWND_FRMMAIN, 0, 0, rc.Right - rc.Left, rc.Bottom - rc.Top, CTRUE )
     function = 0

@@ -52,7 +52,7 @@ function frmProjectOptions_CreateResourceManifest() as Long
                     "Please reinstall the application." & vbcrlf & vbcrlf & _ 
                     wszFilesMissing, _
                     "Error", _
-                    MB_OK Or MB_ICONWARNING Or MB_DEFBUTTON1 Or MB_APPLMODAL )
+                    MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
         exit function
     end if
     
@@ -68,7 +68,7 @@ function frmProjectOptions_CreateResourceManifest() as Long
                                 wszResource, _  ' pwszName
                                 0 )  ' pDocIn
         gApp.ProjectSetFileType(pDoc, FILETYPE_RESOURCE)
-    END IF
+    end if
     
     function = 0
 end function
@@ -77,25 +77,25 @@ end function
 ' ========================================================================================
 ' Save all options for the Project
 ' ========================================================================================
-function frmProjectOptions_SaveProjectOptions( ByVal HWnd As HWnd ) As BOOLEAN    
+function frmProjectOptions_SaveProjectOptions( byval hwnd as HWND ) as BOOLEAN    
     
-    Dim wText As WString * MAX_PATH  
+    dim wText as wstring * MAX_PATH  
     
     ' Determine if the project path was specified
-    wText = AfxGetWindowText(GetDlgItem(HWnd, IDC_FRMPROJECTOPTIONS_TXTPROJECTPATH))
-    If Len(wText) = 0 Then
-        MessageBox( HWnd, L(217,"Invalid project path specified."), L(201,"Error"), _
-                        MB_OK Or MB_ICONINFORMATION Or MB_DEFBUTTON1 )
+    wText = AfxGetWindowText(GetDlgItem(hwnd, IDC_FRMPROJECTOPTIONS_TXTPROJECTPATH))
+    if len(wText) = 0 then
+        MessageBox( hwnd, L(217,"Invalid project path specified."), L(201,"Error"), _
+                        MB_OK or MB_ICONINFORMATION or MB_DEFBUTTON1 )
         return False
-    End If
+    end if
 
     if gApp.IsNewProjectFlag then 
         ' Need to close any open files or project at this point before loading
         ' and displaying the new project.
         if gApp.IsProjectActive then
-            if OnCommand_ProjectClose(HWnd) = false then exit function
+            if OnCommand_ProjectClose(hwnd) = false then exit function
         else
-            if OnCommand_FileClose(HWnd, EFC_CLOSEALL) = false then exit function
+            if OnCommand_FileClose(hwnd, EFC_CLOSEALL) = false then exit function
         end if
     end if
 
@@ -104,22 +104,22 @@ function frmProjectOptions_SaveProjectOptions( ByVal HWnd As HWnd ) As BOOLEAN
     gApp.ProjectFilename = wText
     gApp.ProjectName = AfxStrPathname( "NAMEX", gApp.ProjectFilename )
 
-    gApp.ProjectOther32     = AfxGetWindowText(GetDlgItem(HWnd, IDC_FRMPROJECTOPTIONS_TXTOPTIONS32))
-    gApp.ProjectOther64     = AfxGetWindowText(GetDlgItem(HWnd, IDC_FRMPROJECTOPTIONS_TXTOPTIONS64))
-    gApp.ProjectManifest    = Button_GetCheck(GetDlgItem(HWnd, IDC_FRMPROJECTOPTIONS_CHKMANIFEST))
-    gApp.ProjectBuild       = frmBuildConfig_GetSelectedBuildGUID()
+    gApp.ProjectOther32     = AfxGetWindowText(GetDlgItem(hwnd, IDC_FRMPROJECTOPTIONS_TXTOPTIONS32))
+    gApp.ProjectOther64     = AfxGetWindowText(GetDlgItem(hwnd, IDC_FRMPROJECTOPTIONS_TXTOPTIONS64))
+    gApp.ProjectManifest    = Button_GetCheck(GetDlgItem(hwnd, IDC_FRMPROJECTOPTIONS_CHKMANIFEST))
+    gApp.ProjectBuild       = frmBuildConfig_GetselectedBuildGUID()
     gApp.ProjectNotes       = ""
     gApp.ProjectCommandLine = ""
     
     
     ' Create the resource file and manifest if applicable
-    if gApp.ProjectManifest THEN frmProjectOptions_CreateResourceManifest()
+    if gApp.ProjectManifest then frmProjectOptions_CreateResourceManifest()
 
     ' Save the actual Project data to disk.
     gConfig.ProjectSaveToFile()   
 
     function = true   
-End Function
+end function
 
 
 
@@ -127,53 +127,53 @@ End Function
 ' Process WM_COMMAND message for window/dialog: frmProjectOptions
 ' ========================================================================================
 function frmProjectOptions_OnCommand( _
-            ByVal HWnd As HWnd, _
-            ByVal id As Long, _
-            ByVal hwndCtl As HWnd, _
-            ByVal codeNotify As UINT _
-            ) As LRESULT
+            byval hwnd as HWND, _
+            byval id as Long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
-    Select Case id
-        Case IDC_FRMPROJECTOPTIONS_CMDSELECT
-            If codeNotify = BN_CLICKED Then
-            dim as CWSTR wszProjectName = ""
-            if gApp.IsNewProjectFlag = false then wszProjectName = gApp.ProjectName
-            Dim pwszName As WString Ptr = AfxIFileSaveDialog(HWnd, wszProjectName, @wstr(APPEXTENSION), IDC_FRMPROJECTOPTIONS_CMDSELECT)
-            If pwszName Then
-                AfxSetWindowText( GetDlgItem(HWnd, IDC_FRMPROJECTOPTIONS_TXTPROJECTPATH), pwszName )
-                CoTaskMemFree pwszName
-            End If
-            Exit Function
-            End If
+    select case id
+        case IDC_FRMPROJECTOPTIONS_CMDselect
+            if codeNotify = BN_CLICKED then
+                dim as CWSTR wszProjectName = ""
+                if gApp.IsNewProjectFlag = false then wszProjectName = gApp.ProjectName
+                dim pwszName as WString Ptr = AfxIFileSaveDialog(hwnd, wszProjectName, @wstr(APPEXTENSION), IDC_FRMPROJECTOPTIONS_CMDselect)
+                if pwszName then
+                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMPROJECTOPTIONS_TXTPROJECTPATH), pwszName )
+                    CoTaskMemFree pwszName
+                end if
+                exit function
+            end if
             
-        Case IDOK
-            If codeNotify = BN_CLICKED Then
-            If frmProjectOptions_SaveProjectOptions(HWnd) Then
-                SendMessage HWnd, WM_CLOSE, 0, 0
-            End If
-            Exit Function
-            End If
+        case IDOK
+            if codeNotify = BN_CLICKED then
+                if frmProjectOptions_SaveProjectOptions(hwnd) then
+                    SendMessage hwnd, WM_CLOSE, 0, 0
+                end if
+                exit function
+            end if
         
-        Case IDCANCEL
-            If codeNotify = BN_CLICKED Then
-            gApp.IsNewProjectFlag = false
-            SendMessage HWnd, WM_CLOSE, 0, 0
-            exit function
-            End If
+        case IDCANCEL
+            if codeNotify = BN_CLICKED then
+                gApp.IsNewProjectFlag = false
+                SendMessage hwnd, WM_CLOSE, 0, 0
+                exit function
+            end if
 
-    End Select
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmProjectOptions
 ' ========================================================================================
 function frmProjectOptions_OnCreate( _
-            ByVal HWnd As HWnd, _
-            ByVal lpCreateStructPtr As LPCREATESTRUCT _
-            ) As BOOLEAN
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -182,152 +182,152 @@ function frmProjectOptions_OnCreate( _
     '  OnCreate handler even though returning -1 from a standard WM_CREATE
     '  call would stop creating the window. This is just one of those Windows
     '  inconsistencies.
-    Return True
-End Function
+    return true
+end function
 
 
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmProjectOptions
 ' ========================================================================================
-function frmProjectOptions_OnClose( byval HWnd As HWnd ) As LRESULT
+function frmProjectOptions_OnClose( byval hwnd as HWND ) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
-    DestroyWindow HWnd
-    Function = 0
+    DestroyWindow hwnd
+    function = 0
 end function
 
 
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmProjectOptions
 ' ========================================================================================
-function frmProjectOptions_OnDestroy( byval HWnd As HWnd ) As LRESULT
+function frmProjectOptions_OnDestroy( byval hwnd as HWND ) as LRESULT
     PostQuitMessage(0)
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmProjectOptions Window procedure
 ' ========================================================================================
 function frmProjectOptions_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_CREATE,   frmProjectOptions_OnCreate)
-        HANDLE_MSG (HWnd, WM_CLOSE,    frmProjectOptions_OnClose)
-        HANDLE_MSG (HWnd, WM_DESTROY,  frmProjectOptions_OnDestroy)
-        HANDLE_MSG (HWnd, WM_COMMAND,  frmProjectOptions_OnCommand)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_CREATE,   frmProjectOptions_OnCreate)
+        HANDLE_MSG (hwnd, WM_CLOSE,    frmProjectOptions_OnClose)
+        HANDLE_MSG (hwnd, WM_DESTROY,  frmProjectOptions_OnDestroy)
+        HANDLE_MSG (hwnd, WM_COMMAND,  frmProjectOptions_OnCommand)
+    end select
 
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmProjectOptions_Show
 ' ========================================================================================
 function frmProjectOptions_Show( _
-            ByVal hWndParent As HWnd, _
+            byval hwndParent as HWND, _
             byval IsNewProject as boolean _
-            ) As LRESULT
+            ) as LRESULT
 
-    Dim wszTitle As WString * MAX_PATH
+    dim wszTitle as wstring * MAX_PATH
     dim as long nLeft, nTop, nWidth, nHeight, nMidPoint
     
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
-    Dim As HWnd hForm = _
-    pWindow->Create( hWndParent, "", @frmProjectOptions_WndProc, 0, 0, 0, 0, _
-        WS_POPUP Or WS_CAPTION Or WS_SYSMENU Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_DLGMODALFRAME Or WS_EX_CONTROLPARENT Or WS_EX_LEFT)
+    dim as hwnd hForm = _
+    pWindow->Create( hwndParent, "", @frmProjectOptions_WndProc, 0, 0, 0, 0, _
+        WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT)
     pWindow->SetClientSize(600, 342)
-    pWindow->Center(pWindow->hWindow, hWndParent)
+    pWindow->Center(pWindow->hWindow, hwndParent)
         
     dim as RECT rcClient
     GetClientRect( hForm, @rcClient )
     nMidPoint = pWindow->UnScaleX((rcClient.Right / 2))
     
     pWindow->AddControl("LABEL", , IDC_FRMPROJECTOPTIONS_LABEL1, L(240,"Project Path"), 26, 15, 235, 18, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)                                              
-    Dim As HWnd hProjectPath = _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT, _
+        WS_EX_LEFT or WS_EX_LTRREADING)                                              
+    dim as hwnd hProjectPath = _
     pWindow->AddControl("TEXTBOX", , IDC_FRMPROJECTOPTIONS_TXTPROJECTPATH, "", 26, 35, 508, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)     
-    pWindow->AddControl("BUTTON", , IDC_FRMPROJECTOPTIONS_CMDSELECT, "...", 544, 33, 37, 24, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)     
+    pWindow->AddControl("BUTTON", , IDC_FRMPROJECTOPTIONS_CMDselect, "...", 544, 33, 37, 24, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     nTop    = 95 
     nWidth  = 555
     nHeight = 20
     pWindow->AddControl("LABEL", , IDC_FRMPROJECTOPTIONS_LABEL5, L(283,"Specify compiler options in addition to the selected build configuration") & ":", 26, nTop, 555, nHeight, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     pWindow->AddControl("LABEL", , IDC_FRMPROJECTOPTIONS_LABEL2, L(241,"Other Options (32-bit compiler)"), 26, 121, 555, 18, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
-    Dim As HWnd hProjectOther32 = _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    dim as hwnd hProjectOther32 = _
     pWindow->AddControl("TEXTBOX", , IDC_FRMPROJECTOPTIONS_TXTOPTIONS32, "", 26, 141, 555, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     
     pWindow->AddControl("LABEL", , IDC_FRMPROJECTOPTIONS_LABEL4, L(242,"Other Options (64-bit compiler)"), 26, 170, 555, 18, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
-    Dim As HWnd hProjectOther64 = _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    dim as hwnd hProjectOther64 = _
     pWindow->AddControl("TEXTBOX", , IDC_FRMPROJECTOPTIONS_TXTOPTIONS64, "", 26, 190, 555, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or ES_LEFT Or ES_AUTOHSCROLL, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     nWidth = iIf(IsNewProject, 280, 555) 
     dim as hwnd hManifest = _
     pWindow->AddControl("CHECKBOX", , IDC_FRMPROJECTOPTIONS_CHKMANIFEST, L(308,"Create resource file and manifest"), 26, 222, nWidth, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     
     pWindow->AddControl("LABEL", , IDC_FRMPROJECTOPTIONS_LABEL3, "", 10, 282, 572, 2, _
-        WS_CHILD Or WS_VISIBLE Or SS_LEFT Or SS_NOTIFY Or SS_SUNKEN, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY or SS_SUNKEN, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("BUTTON", , IDOK, L(0,"&OK"), 423, 297, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_DEFPUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_DEFPUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("BUTTON", , IDCANCEL, L(1,"&Cancel"), 508, 297, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     wszTitle = L(214,"Project Options")
 
     ' gApp.IsNewProjectFlag is only used within frmProjectOptions in order to
     ' keep the state when OK is pressed.
     gApp.IsNewProjectFlag = IsNewProject
-    If IsNewProject Then
+    if IsNewProject then
         ' Set the default values for a new project
         wszTitle = wszTitle & " - " & L(215, "New Project")
         Button_SetCheck( hManifest, true)
-    Else
+    else
         wszTitle = wszTitle + " - " + gApp.ProjectName
         AfxSetWindowText( hProjectPath, gApp.ProjectFilename )
         AfxSetWindowText( hProjectOther32, gApp.ProjectOther32 )
         AfxSetWindowText( hProjectOther64, gApp.ProjectOther64 )
         Button_SetCheck( hManifest, gApp.ProjectManifest)
-    End If
+    end if
     AfxSetWindowText( hForm, wszTitle )
 
     SetFocus GetDlgItem(hForm, IDOK)
     
     ' Process Windows messages(modal)
-    Function = pWindow->DoEvents(SW_SHOW)
+    function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmProjectOptions CWindow class manually allocated memory 
-    Delete pWindow
+    delete pWindow
 
-End Function
+end function

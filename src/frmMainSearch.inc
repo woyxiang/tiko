@@ -82,19 +82,19 @@ function OnCommand_SearchGotoDefinition( byval pDoc as clsDocument ptr ) as LRES
             ' Determine if the function name is part of a class. This would be identified
             ' by a preceeding "." or "->" symbol.  eg  pDoc->GetCurrentLineNumber
             dim as long curPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0)
-            dim as long wordStartPos = SciExec( hEdit, SCI_WORDSTARTPOSITION, curPos, True)
+            dim as long wordStartPos = SciExec( hEdit, SCI_WORDSTARTPOSITION, curPos, true)
             sTrigger = right( pDoc->GetWord( wordStartPos - 1 ), 1 )
             if sTrigger = ">" then sTrigger = "->"
             if ( sTrigger = "." ) orelse ( sTrigger = "->" ) then
-            ' In the DereferenceLine function any "->" are converted to "." for simplicity.
-            pData = DereferenceLine( pDoc, sTrigger, wordStartPos - 1 )
-            if pData then
-                sTypeName = pData->VariableType
-                sLookFor = sTypeName & "." & sFunctionName
-                ' Set pData to null because it currently points at the TYPE definition and
-                ' we the gdb2 searches below to actually find the sub/function.
-                pData = 0
-            end if
+                ' In the DereferenceLine function any "->" are converted to "." for simplicity.
+                pData = DereferenceLine( pDoc, sTrigger, wordStartPos - 1 )
+                if pData then
+                    sTypeName = pData->VariableType
+                    sLookFor = sTypeName & "." & sFunctionName
+                    ' Set pData to null because it currently points at the TYPE definition and
+                    ' we the gdb2 searches below to actually find the sub/function.
+                    pData = 0
+                end if
             end if   
 
             ' Search the list of TYPE Function names
@@ -108,8 +108,8 @@ function OnCommand_SearchGotoDefinition( byval pDoc as clsDocument ptr ) as LRES
         
         end if
         
-        IF pData = 0 then
-            MessageBox( HWND_FRMMAIN, L(224,"Sub/Function definition not found."), @WStr(APPNAME), MB_ICONWARNING)
+        if pData = 0 then
+            MessageBox( HWND_FRMMAIN, L(224,"Sub/Function definition not found."), @wstr(APPNAME), MB_ICONWARNING)
             exit function
         end if
         wszFilename = pData->filename
@@ -121,8 +121,8 @@ function OnCommand_SearchGotoDefinition( byval pDoc as clsDocument ptr ) as LRES
     OnCommand_SearchSaveLastPosition( pDoc )
     OpenSelectedDocument( wszFilename, sFunctionName, nLineNum )
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
@@ -131,32 +131,32 @@ End Function
 function OnCommand_SearchGotoLastPosition() as LRESULT
 
     ' Is the pDoc pointer still valid
-    If gLastPosition.pDoc = 0 Then Exit Function
+    if gLastPosition.pDoc = 0 then exit function
 
     ' Position ourselves to the correct previous position.
     frmMain_OpenFileSafely(HWND_FRMMAIN, _
-            False, _    ' bIsNewFile
-            False, _    ' bIsTemplate
-            True,  _    ' bShowInTab
+            false, _    ' bIsNewFile
+            false, _    ' bIsTemplate
+            true,  _    ' bShowInTab
             false, _    ' bIsInclude
             gLastPosition.pDoc->DiskFilename, _ ' wszFileName
             gLastPosition.pDoc )  ' pDocIn
     SciExec( GetFocus, SCI_SETFIRSTVISIBLELINE, gLastPosition.nFirstLine, 0) 
     SciExec( GetFocus, SCI_GOTOPOS, gLastPosition.nPosition, 0) 
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Position editor to Header/Source/Main/Resource document
 ' ========================================================================================
 function OnCommand_SearchGotoFile( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
 
-    If pDoc = 0 Then Exit Function
+    if pDoc = 0 then exit function
     
     dim pDocFile as clsDocument ptr
     dim as CWSTR wszFilename
@@ -164,7 +164,7 @@ function OnCommand_SearchGotoFile( _
     dim as HWND hEdit = pDoc->hWndActiveScintilla
     
     select case id
-        Case IDM_GOTO
+        case IDM_GOTO
             frmGoto_Show( hEdit )
             exit function
         
@@ -176,15 +176,15 @@ function OnCommand_SearchGotoFile( _
             pDoc->GotoPrevFunction
             exit function
             
-        Case IDM_GOTONEXTTAB
+        case IDM_GOTONEXTTAB
             gTTabCtl.NextTab
             exit function
         
-        Case IDM_GOTOPREVTAB
+        case IDM_GOTOPREVTAB
             gTTabCtl.PrevTab
             exit function
         
-        Case IDM_CLOSETAB
+        case IDM_CLOSETAB
             gTTabCtl.CloseTab
             exit function
 
@@ -216,30 +216,30 @@ function OnCommand_SearchGotoFile( _
 
     OpenSelectedDocument( wszFilename )
     
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Search action Common actions
 ' ========================================================================================
 function OnCommand_SearchBookmarks( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
         
     dim as HWND hEdit = pDoc->hWndActiveScintilla
 
     select case id
-        Case IDM_BOOKMARKNEXT:     pDoc->NextBookmark
-        Case IDM_BOOKMARKPREV:     pDoc->PrevBookmark
+        case IDM_BOOKMARKNEXT:     pDoc->NextBookmark
+        case IDM_BOOKMARKPREV:     pDoc->PrevBookmark
         
-        Case IDM_BOOKMARKCLEARALL
+        case IDM_BOOKMARKCLEARALL
             SciExec( hEdit, SCI_MARKERDELETEALL, -1, 0 )
             LoadBookmarksFiles
             AfxRedrawWindow( HWND_FRMBOOKMARKS )
 
-        Case IDM_BOOKMARKTOGGLE
+        case IDM_BOOKMARKTOGGLE
             pDoc->ToggleBookmark( pDoc->GetCurrentLineNumber )
             LoadBookmarksFiles
             AfxRedrawWindow( HWND_FRMBOOKMARKS )

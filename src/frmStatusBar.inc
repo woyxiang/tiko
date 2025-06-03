@@ -15,13 +15,13 @@
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
-Function frmStatusBar_PositionWindows() As LRESULT
+function frmStatusBar_PositionWindows() as LRESULT
 
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMMAIN_STATUSBAR)
-    If pWindow = 0 Then Exit Function
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_STATUSBAR)
+    if pWindow = 0 then exit function
     
     ' Get the entire client area
-    Dim As Rect rc
+    dim as Rect rc
     GetClientRect(HWND_FRMMAIN_STATUSBAR, @rc)
 
     dim as long i = 0
@@ -105,47 +105,47 @@ Function frmStatusBar_PositionWindows() As LRESULT
     gSBPanels(i).nID       = IDM_VIEWOUTPUT
 
     AfxRedrawWindow( HWND_FRMMAIN_STATUSBAR )
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmStatusBar
 ' ========================================================================================
-Function frmStatusBar_OnSize( _
-            ByVal HWnd As HWnd, _
-            ByVal state As UINT, _
-            ByVal cx As Long, _
-            ByVal cy As Long _
-            ) As LRESULT
-    If state <> SIZE_MINIMIZED Then
+function frmStatusBar_OnSize( _
+            byval hwnd as HWND, _
+            byval state as UINT, _
+            byval cx as long, _
+            byval cy as long _
+            ) as LRESULT
+    if state <> SIZE_MINIMIZED then
         frmStatusBar_PositionWindows()
-    End If
-    Function = 0
-End Function
+    end if
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmStatusBar Window procedure
 ' ========================================================================================
-Function frmStatusBar_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmStatusBar_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     static as long prev_idxHot = -1
     static as long curr_idxHot = -1
     static as boolean resizing
-    static as POINT prev_pt
+    static as point prev_pt
     
     Select Case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE, frmStatusBar_OnSize)
+        HANDLE_MSG (hwnd, WM_SIZE, frmStatusBar_OnSize)
     
     case WM_DESTROY
-        DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWnd)
-        If pWindow = 0 Then Delete pWindow
+        dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+        if pWindow = 0 then delete pWindow
         
     case WM_ERASEBKGND
         return true
@@ -153,23 +153,23 @@ Function frmStatusBar_WndProc( _
     case WM_LBUTTONDOWN
         ' Are we over the resize gripper
 '      dim as POINT pt: GetCursorPos( @pt )
-'      MapWindowPoints( HWND_DESKTOP, HWnd, cast( POINT ptr, @pt ), 1 )
+'      MapWindowPoints( HWND_DESKTOP, hwnd, cast( POINT ptr, @pt ), 1 )
 '      if PtInRect( @grcGripper, pt ) then
 '         SetCursor LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZENWSE), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )
 '         resizing = true
 '         prev_pt = pt
-            SetCapture( HWnd )
+            SetCapture( hwnd )
 '      end if
         
     case WM_MOUSEMOVE
-        Dim tme As TrackMouseEvent
-        tme.cbSize = Sizeof(TrackMouseEvent)
-        tme.dwFlags = TME_HOVER Or TME_LEAVE
-        tme.hwndTrack = HWnd
+        dim tme as TrackMouseEvent
+        tme.cbSize = sizeof(TrackMouseEvent)
+        tme.dwFlags = TME_HOVER or TME_LEAVE
+        tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
-        dim as POINT pt: GetCursorPos( @pt )
-        MapWindowPoints( HWND_DESKTOP, HWnd, cast( POINT ptr, @pt ), 1 )
+        dim as point pt: GetCursorPos( @pt )
+        MapWindowPoints( HWND_DESKTOP, hwnd, cast( point ptr, @pt ), 1 )
         
         ' Are we over the resize gripper
 '      if PtInRect( @grcGripper, pt ) then
@@ -189,19 +189,19 @@ Function frmStatusBar_WndProc( _
             ' Are we over one of the status bar panels
             curr_idxHot = -1
             for i as long = lbound(gSBPanels) to ubound(gSBPanels)
-            if PtInRect( @gSBPanels(i).rc, pt ) then
-                ' Only make hot panels that have actual text
-                if len(gSBPanels(i).wszText) then
-                    curr_idxHot = i
-                    gSBPanels(i).isHot = true
-                end if   
-            else   
-                gSBPanels(i).isHot = false
-            end if
+                if PtInRect( @gSBPanels(i).rc, pt ) then
+                    ' Only make hot panels that have actual text
+                    if len(gSBPanels(i).wszText) then
+                        curr_idxHot = i
+                        gSBPanels(i).isHot = true
+                    end if   
+                else   
+                    gSBPanels(i).isHot = false
+                end if
             next
             if curr_idxHot <> prev_idxHot then
-            AfxRedrawWindow( HWnd )
-            prev_idxHot = curr_idxHot 
+                AfxRedrawWindow( hwnd )
+                prev_idxHot = curr_idxHot 
             end if
         end if
             
@@ -211,37 +211,37 @@ Function frmStatusBar_WndProc( _
         next
         prev_idxHot = -1
         curr_idxHot = -1
-        AfxRedrawWindow( HWnd )
+        AfxRedrawWindow( hwnd )
 
     case WM_LBUTTONUP
-        dim as POINT pt: GetCursorPos( @pt )
-        MapWindowPoints( HWND_DESKTOP, HWnd, cast( POINT ptr, @pt ), 1 )
+        dim as point pt: GetCursorPos( @pt )
+        MapWindowPoints( HWND_DESKTOP, hwnd, cast( point ptr, @pt ), 1 )
         SetCursor( LoadCursor( null, IDC_ARROW ))
         ReleaseCapture
         resizing = false
         ' Are we over one of the status bar panels
         for i as long = lbound(gSBPanels) to ubound(gSBPanels)
             if PtInRect( @gSBPanels(i).rc, pt ) then
-            PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(gSBPanels(i).nID, 0), 0 )
-            exit for
+                PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(gSBPanels(i).nID, 0), 0 )
+                exit for
             end if
         next   
 
     case WM_PAINT
-        Dim As PAINTSTRUCT ps
-        Dim As HDC hDc
+        dim as PAINTSTRUCT ps
+        dim as HDC hDc
 
-        Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMMAIN_STATUSBAR)
-        If pWindow = 0 Then Exit Function
+        dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_STATUSBAR)
+        if pWindow = 0 then exit function
 
-        hDC = BeginPaint(hWnd, @ps)
+        hDC = BeginPaint(hwnd, @ps)
 
         SaveDC(hDC)
         dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
         dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
 
-        Dim memDC as HDC      ' Double buffering
-        Dim hbit As HBITMAP   ' Double buffering
+        dim memDC as HDC      ' Double buffering
+        dim hbit as HBITMAP   ' Double buffering
 
         memDC = CreateCompatibleDC( hDC )
         hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
@@ -258,8 +258,8 @@ Function frmStatusBar_WndProc( _
             SetBkColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.BackColorHot, ghStatusBar.BackColor) )   
             SetTextColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.ForeColorHot, ghStatusBar.ForeColor) )
             FillRect( memDC, @gSBPanels(i).rc, iif( gSBPanels(i).isHot, ghStatusBar.hBackBrushHot, ghStatusBar.hBackBrush) )
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, gSBPanels(i).wszText.sptr, -1, Cast(lpRect, @gSBPanels(i).rc), wsStyle )
+            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+            DrawText( memDC, gSBPanels(i).wszText.sptr, -1, cast(lpRect, @gSBPanels(i).rc), wsStyle )
             
             ' if this is the compile result panel then display the green/success or red/failure "icon"
             if i = 1 then
@@ -274,8 +274,8 @@ Function frmStatusBar_WndProc( _
                 rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
                 rcBitmap.left = rcBitmap.right - pWindow->ScaleX(16)
 
-                dim as long wsStyle = DT_NOPREFIX or DT_CENTER Or DT_VCENTER or DT_SINGLELINE
-                DrawText( memDC, wszCompileResultIcon, -1, Cast(lpRect, @rcBitmap), wsStyle )
+                dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+                DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
             end if
             end if   
         next
@@ -284,39 +284,39 @@ Function frmStatusBar_WndProc( _
 
         ' Cleanup
         RestoreDC(memDC, -1)
-        If hbit  Then DeleteObject(hbit)
-        If memDC Then DeleteDC(memDC)
+        if hbit  then DeleteObject(hbit)
+        if memDC then DeleteDC(memDC)
         RestoreDC(hDC, -1)
 
-        EndPaint hWnd, @ps
+        EndPaint hwnd, @ps
     
-    End Select
+    end Select
     
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmStatusBar_Show
 ' ========================================================================================
-Function frmStatusBar_Show( ByVal hWndParent As HWnd ) As LRESULT
+function frmStatusBar_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = New CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-    HWND_FRMMAIN_STATUSBAR = pWindow->Create( hWndParent, "", @frmStatusBar_WndProc, _
+    HWND_FRMMAIN_STATUSBAR = pWindow->Create( hwndParent, "", @frmStatusBar_WndProc, _
         0, 0, 0, STATUSBAR_HEIGHT, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
     
     frmStatusBar_PositionWindows()
-    Function = 0
+    function = 0
     
-End Function
+end function
 

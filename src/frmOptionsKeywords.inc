@@ -18,81 +18,81 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOptionsKeywords
 ' ========================================================================================
-private Function frmOptionsKeywords_OnCommand( ByVal HWnd As HWnd, _
-                                                ByVal id As Long, _
-                                                ByVal hwndCtl As HWnd, _
-                                                ByVal codeNotify As UINT _
-                                                ) As LRESULT
-    Select Case id
-        Case IDC_FRMOPTIONSKEYWORDS_TXTKEYWORDS
-            If codeNotify = EN_CHANGE Then 
-            ' The EN_CHANGE notification code is not sent when the ES_MULTILINE style is used and the text is sent through WM_SETTEXT. 
-            ' Set the flag in gConfig to indicate that the keywords need to be saved to disk should
-            ' the user press OK to close the Environment Options dialog.
-            gConfig.bKeywordsDirty = True
-            End If
-    End Select
+private function frmOptionsKeywords_OnCommand( byval hwnd as HWND, _
+                                                byval id as long, _
+                                                byval hwndCtl as HWND, _
+                                                byval codeNotify as UINT _
+                                                ) as LRESULT
+    select case id
+        case IDC_FRMOPTIONSKEYWORDS_TXTKEYWORDS
+            if codeNotify = EN_CHANGE then 
+                ' The EN_CHANGE notification code is not sent when the ES_MULTILINE style is used and the text is sent through WM_SETTEXT. 
+                ' Set the flag in gConfig to indicate that the keywords need to be saved to disk should
+                ' the user press OK to close the Environment Options dialog.
+                gConfig.bKeywordsDirty = true
+            end if
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmOptionsKeywords
 ' ========================================================================================
-private Function frmOptionsKeywords_OnDestroy( byval HWnd As HWnd ) As LRESULT
-    Dim As HFONT hFont = AfxGetWindowFont(GetDlgItem(HWnd, IDC_FRMOPTIONSKEYWORDS_TXTKEYWORDS))
+private function frmOptionsKeywords_OnDestroy( byval hwnd as HWND ) as LRESULT
+    Dim as HFONT hFont = AfxGetWindowFont(GetDlgItem(hwnd, IDC_FRMOPTIONSKEYWORDS_TXTKEYWORDS))
     DeleteFont(hFont)
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmOptionsKeywords Window procedure
 ' ========================================================================================
-private Function frmOptionsKeywords_WndProc( ByVal HWnd   As HWnd, _
-                                                ByVal uMsg   As UINT, _
-                                                ByVal wParam As WPARAM, _
-                                                ByVal lParam As LPARAM _
-                                                ) As LRESULT
+private function frmOptionsKeywords_WndProc( byval hwnd   as HWND, _
+                                                byval uMsg   as UINT, _
+                                                byval wParam as WPARAM, _
+                                                byval lParam as LPARAM _
+                                                ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_COMMAND, frmOptionsKeywords_OnCommand)
-        HANDLE_MSG (HWnd, WM_DESTROY, frmOptionsKeywords_OnDestroy)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_COMMAND, frmOptionsKeywords_OnCommand)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmOptionsKeywords_OnDestroy)
+    end select
 
-    Function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmOptionsKeywords_Show
 ' ========================================================================================
-public function frmOptionsKeywords_Show( ByVal hWndParent As HWnd ) as LRESULT
+public function frmOptionsKeywords_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-    HWND_FRMOPTIONSKEYWORDS = pWindow->Create( hWndParent, "", @frmOptionsKeywords_WndProc, 0, 0, 0, 0, _
-        WS_CHILD Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING )
+    HWND_FRMOPTIONSKEYWORDS = pWindow->Create( hwndParent, "", @frmOptionsKeywords_WndProc, 0, 0, 0, 0, _
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING )
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
-    Dim As HWnd hTextBox = _
+    dim as HWND hTextBox = _
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSKEYWORDS_TXTKEYWORDS, "", 0, 0, 386, 345, _
-        WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or ES_LEFT Or _
-        ES_MULTILINE Or ES_AUTOVSCROLL Or ES_WANTRETURN, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING )
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or ES_LEFT or _
+        ES_MULTILINE or ES_AUTOVSCROLL or ES_WANTRETURN, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING )
     SendMessage( hTextBox, EM_SETLIMITTEXT, (1024 * 100), 0 )    ' max 100K text   
-    Dim As HFONT hFont = pWindow->CreateFont("Courier New", 9)
+    Dim as HFONT hFont = pWindow->CreateFont("Courier New", 9)
     AfxSetWindowFont hTextBox, hFont, True
 
-    gConfig.bKeywordsDirty = False
-    SetWindowTextW hTextBox, WStr(gConfig.FBKeywords)
+    gConfig.bKeywordsDirty = false
+    SetWindowTextW hTextBox, wstr(gConfig.FBKeywords)
     
-    Function = 0
+    function = 0
     
-End Function
+end function
 

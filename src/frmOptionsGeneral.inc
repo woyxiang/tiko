@@ -18,56 +18,56 @@
 ' ========================================================================================
 ' frmOptionsGeneral Window procedure
 ' ========================================================================================
-private Function frmOptionsGeneral_WndProc( ByVal HWnd   As HWnd, _
-                                            ByVal uMsg   As UINT, _
-                                            ByVal wParam As WPARAM, _
-                                            ByVal lParam As LPARAM _
-                                            ) As LRESULT
+private function frmOptionsGeneral_WndProc( byval hwnd   as HWND, _
+                                            byval uMsg   as UINT, _
+                                            byval wParam as WPARAM, _
+                                            byval lParam as LPARAM _
+                                            ) as LRESULT
 
     ' for messages that we don't deal with
-    Function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmOptionsGeneral_Show
 ' ========================================================================================
-public Function frmOptionsGeneral_Show( ByVal hWndParent As HWnd ) as LRESULT
+public function frmOptionsGeneral_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
-    HWND_FRMOPTIONSGENERAL = pWindow->Create( hWndParent, "", @frmOptionsGeneral_WndProc, 0, 0, 0, 0, _
-        WS_CHILD Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMOPTIONSGENERAL = pWindow->Create( hwndParent, "", @frmOptionsGeneral_WndProc, 0, 0, 0, 0, _
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES, L(119,"Allow multiple instances"), 0, 0, 400, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE, L(121,"Autosave files before compiling"), 0, 21, 235, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKASKEXIT, L(274,"Ask before exiting the editor"), 0, 42, 400, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION, L(423,"Restore previous session/project files on startup"), 0, 63, 400, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
-    Dim As Long idx = 0
-    Dim As HWnd HWnd = HWND_FRMOPTIONSGENERAL
+    dim as long idx = 0
+    dim as hwnd HWND = HWND_FRMOPTIONSGENERAL
     
-    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES),  gConfig.MultipleInstances)
-    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE),    gConfig.CompileAutoSave)
-    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT),            gConfig.AskExit)
-    Button_SetCheck( GetDlgItem( HWnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION),     gConfig.RestoreSession)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES),  gConfig.MultipleInstances)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE),    gConfig.CompileAutoSave)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT),            gConfig.AskExit)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION),     gConfig.RestoreSession)
 
-    Function = 0
+    function = 0
     
-End Function
+end function
 
 
 

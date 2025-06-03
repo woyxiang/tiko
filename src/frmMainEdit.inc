@@ -333,18 +333,18 @@ function OnCommand_EditReplaceActions( _
 
     select case id
         case IDM_REPLACENEXT, IDM_REPLACEPREV, IDM_REPLACEALL
-            if (GetForeGroundWindow = HWND_FRMFINDREPLACE) then
-            if gFind.foundCount = 0 then exit function
-            if id = IDM_REPLACEPREV then 
-                frmFindReplace_DoReplace( false, false )
-            elseif id = IDM_REPLACENEXT then 
-                frmFindReplace_DoReplace( false, true )
-            elseif id = IDM_REPLACEALL then 
-                frmFindReplace_DoReplace( true, true )
-            end if   
-            frmFindReplace_HighlightSearches( true )
-            pDoc->CenterCurrentLine
-            AfxRedrawWindow( HWND_FRMFINDREPLACE )
+            if (GetForeGroundWindow() = HWND_FRMFINDREPLACE) then
+                if gFind.foundCount = 0 then exit function
+                if id = IDM_REPLACEPREV then 
+                    frmFindReplace_DoReplace( false, false )
+                elseif id = IDM_REPLACENEXT then 
+                    frmFindReplace_DoReplace( false, true )
+                elseif id = IDM_REPLACEALL then 
+                    frmFindReplace_DoReplace( true, true )
+                end if   
+                frmFindReplace_HighlightSearches( true )
+                pDoc->CenterCurrentLine
+                AfxRedrawWindow( HWND_FRMFINDREPLACE )
             end if
     end select
     

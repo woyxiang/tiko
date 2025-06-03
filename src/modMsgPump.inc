@@ -24,16 +24,16 @@ function handleMouseScrollBar( byval uMsg as MSG ) as boolean
     select case uMsg.message 
         case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP
             if IsWindowVisible( HWND_FRMPANEL_VSCROLLBAR ) then
-            dim as POINT pt: GetCursorPos( @pt )
-            dim as RECT rc = AfxGetWindowRect(HWND_FRMPANEL_VSCROLLBAR)
-            if PtInRect( @rc, pt ) orelse _
-                GetCapture() = HWND_FRMPANEL_VSCROLLBAR then 
-                ' forward the message to the scrollbar instead of say 
-                ' the Explorer listbox that is underneath it
-                AfxRedrawWindow( gPanelVScroll.hListBox )
-                SendMessage( HWND_FRMPANEL_VSCROLLBAR, uMsg.message, uMsg.wParam, uMsg.lParam )
-                return true
-            end if
+                dim as point pt: GetCursorPos( @pt )
+                dim as RECT rc = AfxGetWindowRect(HWND_FRMPANEL_VSCROLLBAR)
+                if PtInRect( @rc, pt ) orelse _
+                    GetCapture() = HWND_FRMPANEL_VSCROLLBAR then 
+                    ' forward the message to the scrollbar instead of say 
+                    ' the Explorer listbox that is underneath it
+                    AfxRedrawWindow( gPanelVScroll.hListBox )
+                    SendMessage( HWND_FRMPANEL_VSCROLLBAR, uMsg.message, uMsg.wParam, uMsg.lParam )
+                    return true
+                end if
             end if
     end select
     ' we want our mouse message to continue so return FALSE
@@ -72,12 +72,12 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
             dim as long curState = iif(isVisible, SW_SHOWNA, SW_HIDE)
             dim as long newState = SW_HIDE
             if isMouseOverWindow( pDoc->hWindow(i) ) orelse _
-            isMouseOverWindow( HWND_FRMEDITOR_HSCROLLBAR(i) ) then 
-            newState = frmEditorHScroll_NeedScrollBar( pDoc, i )
+                isMouseOverWindow( HWND_FRMEDITOR_HSCROLLBAR(i) ) then 
+                newState = frmEditorHScroll_NeedScrollBar( pDoc, i )
             end if
             if newState <> curState then 
-            ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(i), newState )
-            frmMain_PositionWindows()
+                ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(i), newState )
+                frmMain_PositionWindows()
             end if
         next
     end if
@@ -140,30 +140,30 @@ end function
 function handleKeysTopMenu( byval uMsg as MSG ) as boolean
     ' If topmenus or menubar are active then process all keyboard input for them rather than 
     ' passing it off to the system to process.
-    if (uMsg.message = WM_KEYDOWN) and (ghWndActiveMenuBarButton <> 0) then
+    if (uMsg.message = WM_KEYDOWN) andalso (ghWndActiveMenuBarButton <> 0) then
         if uMsg.wParam = VK_RETURN then
             ' simulate pressing ENTER on a menuitem by sending WM_LBUTTONUP message
             ' to the active popup menu or menubar button. If this item hasa submenu 
             ' then convert the key from ENTER to RIGHT ARROW.
             dim as HWND hListBox
-            if IsWindowVisible( HWND_MENU(0) ) THEN hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
-            if IsWindowVisible( HWND_MENU(1) ) THEN hListBox = GetDlgItem(HWND_MENU(1), IDC_MENU_LISTBOX)
+            if IsWindowVisible( HWND_MENU(0) ) then hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
+            if IsWindowVisible( HWND_MENU(1) ) then hListBox = GetDlgItem(HWND_MENU(1), IDC_MENU_LISTBOX)
             ' If we have a valid listbox then process the action on the current listbox selection, otherwise
             ' no popup menu exists so simulate pressing enter on the active menubar button.
             if hListBox then
-            ' Determine if the menu entry has a child popup. If yes, then convert the keypress to right
-            ' arrow and process it below in the VK_RIGHT handler.
-            dim as long nCurSel = ListBox_GetCurSel(hListBox)
-            dim as long idx = ListBox_GetItemData(hListBox, nCurSel)
-            if gTopMenu(idx).nChildID <> 0 then
-                uMsg.wParam = VK_RIGHT
-            else
-                SendMessage( hListBox, WM_LBUTTONUP, 0, 0 )
-                return true
-            end if   
+                ' Determine if the menu entry has a child popup. If yes, then convert the keypress to right
+                ' arrow and process it below in the VK_RIGHT handler.
+                dim as long nCurSel = ListBox_GetCurSel(hListBox)
+                dim as long idx = ListBox_GetItemData(hListBox, nCurSel)
+                if gTopMenu(idx).nChildID <> 0 then
+                    uMsg.wParam = VK_RIGHT
+                else
+                    SendMessage( hListBox, WM_LBUTTONUP, 0, 0 )
+                    return true
+                end if   
             else   
-            SendMessage( ghWndActiveMenuBarButton, WM_LBUTTONDOWN, 0, 0 )
-            return true
+                SendMessage( ghWndActiveMenuBarButton, WM_LBUTTONDOWN, 0, 0 )
+                return true
             end if
         end if
         
@@ -183,7 +183,7 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
             end if   
     
             case VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
-            if IsWindowVisible(HWND_MENU(0)) or IsWindowVisible(HWND_MENU(1)) then   
+            if IsWindowVisible(HWND_MENU(0)) orelse IsWindowVisible(HWND_MENU(1)) then   
                 if uMsg.wParam = VK_DOWN then 
                     setNextMenuItemTabIndex(false)
                     return true
@@ -257,25 +257,25 @@ function handleKeysExplorerListBox( byval uMsg as MSG ) as boolean
         dim as CWSTR wszCaption = AfxGetListBoxText( hList, nSel )
         if uMsg.wParam = VK_RETURN then
             if left(wszCaption, 1) = "%" then
-            ' expand/contract the header node
-            dim as long idxArray = getExplorerNodeHeaderIndex( wszCaption )
-            if idxArray <> -1 then
-                gConfig.Cat(idxArray).bShow = not gConfig.Cat(idxArray).bShow
-            end if
-            LoadExplorerFiles()
-            SetFocus( hList )
-            return true
+                ' expand/contract the header node
+                dim as long idxArray = getExplorerNodeHeaderIndex( wszCaption )
+                if idxArray <> -1 then
+                    gConfig.Cat(idxArray).bShow = not gConfig.Cat(idxArray).bShow
+                end if
+                LoadExplorerFiles()
+                SetFocus( hList )
+                return true
             else   
-            ' open the selected document
-            dim as CWSTR wszFilename
-            dim as long p = ListBox_GetItemData( hList, nSel )
-            dim pDoc as clsDocument ptr = cast( clsDocument ptr, cast(integer, p) )
-            if pDoc then
-                wszFilename = pDoc->DiskFilename
-                OpenSelectedDocument( wszFilename, "" )
-            end if
-            SetFocus( hList )
-            return true
+                ' open the selected document
+                dim as CWSTR wszFilename
+                dim as long p = ListBox_GetItemData( hList, nSel )
+                dim pDoc as clsDocument ptr = cast( clsDocument ptr, cast(integer, p) )
+                if pDoc then
+                    wszFilename = pDoc->DiskFilename
+                    OpenSelectedDocument( wszFilename, "" )
+                end if
+                SetFocus( hList )
+                return true
             end if
         end if
     end if
@@ -314,24 +314,24 @@ function handleKeysFindReplace( byval uMsg as MSG ) as boolean
         if (uMsg.message = WM_KEYDOWN) and (uMsg.wParam = VK_RETURN) then
             if (GetAsyncKeyState(VK_CONTROL) and &H8000) andalso _
             (GetAsyncKeyState(VK_MENU) and &H8000) THEN
-            ' Ctrl+Alt+Enter  Replace All
-            SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEALL, 0), 0 )
-            return true
+                ' Ctrl+Alt+Enter  Replace All
+                SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEALL, 0), 0 )
+                return true
             end if
             if (GetAsyncKeyState(VK_SHIFT) and &H8000) THEN
-            if GetFocus = hFind then
-                SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDPREV, 0), 0 )
-            elseif GetFocus = hReplace then
-                SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEPREV, 0), 0 )
-            end if   
-            return true
+                if GetFocus = hFind then
+                    SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDPREV, 0), 0 )
+                elseif GetFocus = hReplace then
+                    SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEPREV, 0), 0 )
+                end if   
+                return true
             else   
-            if GetFocus = hFind then
-                SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDNEXT, 0), 0 )
-            elseif GetFocus = hReplace then
-                SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACENEXT, 0), 0 )
-            end if
-            return true
+                if GetFocus = hFind then
+                    SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDNEXT, 0), 0 )
+                elseif GetFocus = hReplace then
+                    SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACENEXT, 0), 0 )
+                end if
+                return true
             end if   
         end if
     end if

@@ -12,8 +12,8 @@
 '    GNU General Public License for more details.
 
 'https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmsetwindowattribute
-Declare Function DwmSetWindowAttribute Lib "Dwmapi.dll" Alias "DwmSetWindowAttribute" ( _
-    hwnd As HWND, dwAttribute As DWORD, pvAttribute As LPCVOID, cbAttribute As DWORD) As HRESULT
+declare function DwmSetWindowAttribute lib "Dwmapi.dll" alias "DwmSetWindowAttribute" ( _
+    hwnd as HWND, dwAttribute as DWORD, pvAttribute as LPCVOID, cbAttribute as DWORD) as HRESULT
 const DWMWA_USE_IMMERSIVE_DARK_MODE = 20
 
 type THEME_TYPE
@@ -260,7 +260,7 @@ function LoadThemeFile() as boolean
     DwmSetWindowAttribute(HWND_FRMMAIN, DWMWA_USE_IMMERSIVE_DARK_MODE, @nvalue, sizeof(nvalue))
 
 
-    dim pStream AS CTextStream   
+    dim pStream as CTextStream   
     if pStream.Open(wszFilename) <> S_OK then return true   ' error
 
     ' Ensure to delete any existing gTheme data
@@ -352,7 +352,7 @@ function LoadThemeFile() as boolean
     pStream.Close
     
     ' Load the TYPE's for each of the forms that require theme data   
-    DIM pWindow AS CWindow PTR = AfxCWindowPtr(HWND_FRMMAIN)
+    DIM pWindow as CWindow PTR = AfxCWindowPtr(HWND_FRMMAIN)
 
     dim as THEME_TYPE ptr pTheme
     
