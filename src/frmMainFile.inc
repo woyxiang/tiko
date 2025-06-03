@@ -273,12 +273,12 @@ function OnCommand_FileClose( _
                             MB_YESNOCANCEL Or MB_ICONQUESTION)
             if r = IDCANCEL then exit function
             if r = IDYES then 
-            r = pDoc->SaveFile()
-            if r = false then exit function   ' save was cancelled
-            elseif r = IDNO then
-            ' Delete any existing AutoSave file because at this point the user doesn't
-            ' care about any unsaved changes.
-            if AfxFileExists(pDoc->AutoSaveFilename) then AfxDeleteFile(pDoc->AutoSaveFilename)
+                r = pDoc->SaveFile()
+                if r = false then exit function   ' save was cancelled
+                elseif r = IDNO then
+                ' Delete any existing AutoSave file because at this point the user doesn't
+                ' care about any unsaved changes.
+                if AfxFileExists(pDoc->AutoSaveFilename) then AfxDeleteFile(pDoc->AutoSaveFilename)
             end if
         end if
         

@@ -1232,7 +1232,7 @@ function frmMain_OnActivateApp( _
         
         do
             idx = -1
-            for i as long = 0 to ubound(pDocs)
+            for i as long = lbound(pDocs) to ubound(pDocs)
                 if pDocs(i) then 
                     idx = i: exit for
                 end if
@@ -1258,13 +1258,17 @@ function frmMain_OnActivateApp( _
                                             pDoc )      ' pDocIn
                     if MessageBox( HWND_FRMMAIN, _
                                     pDoc->DiskFilename & vbCrLf & _ 
-                                    L(286, "This document has been deleted...?"), _
+                                    L(286, "This document has been deleted or is no longer available. Do you wish to keep the file open in the editor?"), _
                                     L(267, "File Changed"), MB_ICONQUESTION or MB_YESNO) = IDYES then
                         ' Keep the file open and simply mark it as dirty so it can be prompted to be saved.
                         pDoc->UserModified = true                
                     else
                         ' No. Close the file.
-                        frmMain_OnCommand(HWND_FRMMAIN, IDM_REMOVEFILEFROMPROJECT, 0, 0)
+                        if gApp.IsProjectActive then 
+                            OnCommand_ProjectRemove( 0, pDoc )  ' the first param (id) is not used.
+                        else
+                            if OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT ) = false then continue do
+                        end if    
                         pDocs(idx) = 0
                         continue do
                     end if
@@ -1286,7 +1290,11 @@ function frmMain_OnActivateApp( _
                         dim as CWSTR wszFileType = pDoc->ProjectFileType
                         
                         ' Remove the current file and open the changed file.
-                        frmMain_OnCommand(HWND_FRMMAIN, IDM_REMOVEFILEFROMPROJECT, 0, 0)
+                        if gApp.IsProjectActive then 
+                            OnCommand_ProjectRemove( 0, pDoc )  ' the first param (id) is not used.
+                        else
+                            if OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT ) = false then continue do
+                        end if    
                         
                         ' Ensure that the file is open and displayed
                         dim as clsDocument ptr pDocLoad = _
@@ -1306,10 +1314,11 @@ function frmMain_OnActivateApp( _
 
             pDocs(idx) = 0
         loop      
-                
-        bInActivateApp = false
             
     end if
+
+    bInActivateApp = false
+
     function = 0
 end Function
 
