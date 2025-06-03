@@ -817,6 +817,11 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
         end if
     end if
     frmFindInFiles_AddToFolderCombo(sFolder)
+    
+    if gApp.IsProjectActive then
+        gFindInFiles.nSearchProject = BST_CHECKED
+        frmFindInFiles_SetControlStates
+    end if
 
     AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND), gFindInFiles.txtFind )    
     AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFILES), gFindInFiles.txtFiles )    

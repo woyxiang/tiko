@@ -44,123 +44,123 @@ end function
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmKeyboardEdit
 ' ========================================================================================
-Function frmKeyboardEdit_OnCreate( _
-            ByVal HWnd As HWnd, _
-            ByVal lpCreateStructPtr As LPCREATESTRUCT _
-            ) As BOOLEAN
+function frmKeyboardEdit_OnCreate( _
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
-    EnableWindow( GetParent(Hwnd), false )
+    EnableWindow( GetParent(hwnd), false )
 
     '  Message cracker macro expects a True to be returned for a successful
     '  OnCreate handler even though returning -1 from a standard WM_CREATE
     '  call would stop creating the window. This is just one of those Windows
     '  inconsistencies.
     Return True
-End Function
+end function
 
 
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmKeyboard
 ' ========================================================================================
-Function frmKeyboardEdit_OnCommand( _
-            ByVal HWnd As HWnd, _
-            ByVal id As Long, _
-            ByVal hwndCtl As HWnd, _
-            ByVal codeNotify As UINT _
-            ) As LRESULT
+function frmKeyboardEdit_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as Long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
-    Select Case id
+    select case id
 
         case IDC_FRMKEYBOARDEDIT_CHKCTRL, IDC_FRMKEYBOARDEDIT_CHKALT, IDC_FRMKEYBOARDEDIT_CHKSHIFT
             if codeNotify = BN_CLICKED then
-            Dim As Long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
-            If nCurSel < 0 Then exit function
-            dim as CWSTR wszKeys = frmKeyboardEdit_GenerateKeyBinding()
-            frmKeyboard_CheckForKeyConflict( wszKeys, nCurSel )
+                dim as long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
+                if nCurSel < 0 then exit function
+                dim as CWSTR wszKeys = frmKeyboardEdit_GenerateKeyBinding()
+                frmKeyboard_CheckForKeyConflict( wszKeys, nCurSel )
             end if
             
         case IDC_FRMKEYBOARDEDIT_COMBOACCEL
             if codeNotify = CBN_SELCHANGE then
-            Dim As Long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
-            If nCurSel < 0 Then exit function
-            dim as CWSTR wszKeys = frmKeyboardEdit_GenerateKeyBinding()
-            frmKeyboard_CheckForKeyConflict( wszKeys, nCurSel )
+                dim as long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
+                if nCurSel < 0 then exit function
+                dim as CWSTR wszKeys = frmKeyboardEdit_GenerateKeyBinding()
+                frmKeyboard_CheckForKeyConflict( wszKeys, nCurSel )
             end if
 
-        Case IDOK
+        case IDOK
             If codeNotify = BN_CLICKED Then
-            ' Update the gKeysEdit entry with the new UserKeys value & Enabled value
-            dim as CWSTR wszKeys = frmKeyboardEdit_GenerateKeyBinding()
-            gKeysEdit.wszUserKeys = wszKeys
-            dim as HWND hCtrl = GetDlgItem( HWND_FRMKEYBOARDEDIT, IDC_FRMKEYBOARDEDIT_CHKDISABLED )
-            gKeysEdit.bDefaultDisabled = iif( Button_GetCheck(hCtrl) = BST_CHECKED, true, false )
-            SendMessage( HWnd, WM_CLOSE, 0, 0 )
-            Exit Function
+                ' Update the gKeysEdit entry with the new UserKeys value & Enabled value
+                dim as CWSTR wszKeys = frmKeyboardEdit_GenerateKeyBinding()
+                gKeysEdit.wszUserKeys = wszKeys
+                dim as HWND hCtrl = GetDlgItem( HWND_FRMKEYBOARDEDIT, IDC_FRMKEYBOARDEDIT_CHKDISABLED )
+                gKeysEdit.bDefaultDisabled = iif( Button_GetCheck(hCtrl) = BST_CHECKED, true, false )
+                SendMessage( HWnd, WM_CLOSE, 0, 0 )
+                exit function
             end if
             
-        Case IDCANCEL
-            If codeNotify = BN_CLICKED Then
-            SendMessage( HWnd, WM_CLOSE, 0, 0 )
-            Exit Function
-            End If
-    End Select
+        case IDCANCEL
+            if codeNotify = BN_CLICKED then
+                SendMessage( hwnd, WM_CLOSE, 0, 0 )
+                exit function
+            end if
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmKeyboardEdit
 ' ========================================================================================
-Function frmKeyboardEdit_OnClose( byval HWnd As HWnd ) As LRESULT
+function frmKeyboardEdit_OnClose( byval hwnd as HWND ) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
-    EnableWindow( GetParent(Hwnd), true )
-    DestroyWindow( HWnd )
-    Function = 0
-End Function
+    EnableWindow( GetParent(hwnd), true )
+    DestroyWindow( hwnd )
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmKeyboardEdit
 ' ========================================================================================
-Function frmKeyboardEdit_OnDestroy( byval HWnd As HWnd) As LRESULT
+function frmKeyboardEdit_OnDestroy( byval hwnd as HWND) as LRESULT
     PostQuitMessage(0)
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' frmKeyboard Window procedure
 ' ========================================================================================
-Function frmKeyboardEdit_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmKeyboardEdit_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_CREATE,      frmKeyboardEdit_OnCreate)
-        HANDLE_MSG (HWnd, WM_CLOSE,       frmKeyboardEdit_OnClose)
-        HANDLE_MSG (HWnd, WM_DESTROY,     frmKeyboardEdit_OnDestroy)
-        HANDLE_MSG (HWnd, WM_COMMAND,     frmKeyboardEdit_OnCommand)
-    End Select
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_CREATE,      frmKeyboardEdit_OnCreate)
+        HANDLE_MSG (hwnd, WM_CLOSE,       frmKeyboardEdit_OnClose)
+        HANDLE_MSG (hwnd, WM_DESTROY,     frmKeyboardEdit_OnDestroy)
+        HANDLE_MSG (hwnd, WM_COMMAND,     frmKeyboardEdit_OnCommand)
+    end select
 
     ' for messages that we don't deal with
-    Function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmKeyboardEdit_Show
 ' ========================================================================================
-Function frmKeyboardEdit_Show( ByVal hWndParent As HWnd ) As LRESULT
+function frmKeyboardEdit_Show( byval hWndParent as HWND ) as LRESULT
 
-    dim hCtrl as HWnd
+    dim hCtrl as HWND
     dim as CWSTR wszText
     
     ' Get the components of the current user key binding
@@ -184,82 +184,82 @@ Function frmKeyboardEdit_Show( ByVal hWndParent As HWnd ) As LRESULT
             wszAccel = wszString
         else
             select case ucase(wszString)
-            case "CTRL": isCtrl = BST_CHECKED
-            case "SHIFT": isShift = BST_CHECKED
-            case "ALT": isAlt = BST_CHECKED
+                case "CTRL": isCtrl = BST_CHECKED
+                case "SHIFT": isShift = BST_CHECKED
+                case "ALT": isAlt = BST_CHECKED
             end select
         end if
     next
     
     
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     HWND_FRMKEYBOARDEDIT = _
     pWindow->Create(hWndParent, L(220,"Keyboard Shortcuts"), _
         @frmKeyboardEdit_WndProc, 0, 0, 0, 0, _
-        WS_POPUP Or WS_CAPTION Or WS_SYSMENU Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_DLGMODALFRAME Or WS_EX_CONTROLPARENT Or WS_EX_LEFT )
+        WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->SetClientSize( 330, 220 )
     pWindow->Center( pWindow->hWindow, hWndParent )
 
     hCtrl = pWindow->AddControl("LABEL", , IDC_FRMKEYBOARDEDIT_LABEL1, "", 20, 10, 350, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowText( hCtrl, gKeysEdit.wszDescription )
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
 
     hCtrl = pWindow->AddControl("LABEL", , IDC_FRMKEYBOARDEDIT_LABEL2, "", 20, 30, 350, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     wszText = gKeysEdit.wszDefaultKeys
     if len(wszText) = 0 then wszText = "(no key binding)"
     AfxSetWindowText( hCtrl, "Default: " & wszText  )
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
 
     hCtrl = pWindow->AddControl("CHECKBOX", , IDC_FRMKEYBOARDEDIT_CHKDISABLED, "Disable Default", 20, 50, 150, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
     Button_SetCheck( hCtrl, isDisabled )
 
     hCtrl = pWindow->AddControl("LABEL", , IDC_FRMKEYBOARDEDIT_LABEL3, "", 20, 94, 350, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_LEFT Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowText( hCtrl, "User defined Keybinding" )
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
 
     hCtrl = pWindow->AddControl("CHECKBOX", , IDC_FRMKEYBOARDEDIT_CHKCTRL, "Ctrl", 20, 114, 48, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
     Button_SetCheck( hCtrl, isCtrl )
     
     hCtrl = pWindow->AddControl("CHECKBOX", , IDC_FRMKEYBOARDEDIT_CHKALT, "Alt", 75, 114, 42, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
     Button_SetCheck( hCtrl, isAlt )
     
     hCtrl = pWindow->AddControl("CHECKBOX", , IDC_FRMKEYBOARDEDIT_CHKSHIFT, "Shift", 127, 114, 48, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_NOTIFY Or BS_AUTOCHECKBOX Or BS_LEFT Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
     Button_SetCheck( hCtrl, isShift )
 
     dim as HWND hCombo 
     hCombo = pWindow->AddControl("COMBOBOX", , IDC_FRMKEYBOARDEDIT_COMBOACCEL, "", 190, 114, 120, 200, _
-        WS_CHILD Or WS_VISIBLE Or WS_VSCROLL Or WS_TABSTOP Or CBS_DROPDOWNLIST, _
-        WS_EX_CLIENTEDGE Or WS_EX_LEFT Or WS_EX_LTRREADING Or WS_EX_RIGHTSCROLLBAR)
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
 
     pWindow->AddControl("BUTTON", , IDOK, L(0,"OK"), 154, 170, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("BUTTON", , IDCANCEL, L(1,"Cancel"), 236, 170, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
                                         
     ComboBox_AddString( hCombo, @wstr("None") ) 
     ComboBox_AddString( hCombo, @wstr("Backspace") ) 
@@ -332,10 +332,10 @@ Function frmKeyboardEdit_Show( ByVal hWndParent As HWnd ) As LRESULT
     SetFocus( GetDlgItem(HWND_FRMKEYBOARDEDIT, IDOK) )    
     
     ' Process Windows messages(modal)
-    Function = pWindow->DoEvents(SW_SHOW)
+    function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the CWindow class manually allocated memory 
-    Delete pWindow
+    delete pWindow
 
-End Function
+end function
 

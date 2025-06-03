@@ -20,7 +20,7 @@
 ' ========================================================================================
 function OnCommand_EditCut( _
             byval pDoc as clsDocument ptr, _
-            ByVal hEdit as HWND _
+            byval hEdit as HWND _
             ) as LRESULT
     
     ' Check if the Compiler log file or Notes windows or Snippets have
@@ -32,7 +32,7 @@ function OnCommand_EditCut( _
             GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE)
             SendMessage( GetFocus, WM_CUT, 0, 0 )
         case else     
-            SciExec( GetFocus(), Iif(GetFocus()=hEdit, SCI_CUT, WM_CUT), 0, 0)
+            SciExec( GetFocus(), iif(GetFocus()=hEdit, SCI_CUT, WM_CUT), 0, 0)
             frmMain_PositionWindows()    ' ensure custom scrollbars display
     end select
 
@@ -45,7 +45,7 @@ end function
 ' ========================================================================================
 function OnCommand_EditCopy( _
             byval pDoc as clsDocument ptr, _
-            ByVal hEdit as HWND _
+            byval hEdit as HWND _
             ) as LRESULT
     
     ' Check if the Compiler log file or Notes windows or Snippets have
@@ -69,7 +69,7 @@ end function
 ' ========================================================================================
 function OnCommand_EditPaste( _
             byval pDoc as clsDocument ptr, _
-            ByVal hEdit as HWND _
+            byval hEdit as HWND _
             ) as LRESULT
 
     ' Check if the Compiler log file or Notes windows or Snippets have
@@ -95,7 +95,7 @@ end function
 ' ========================================================================================
 function OnCommand_EditIndentBlock( _
             byval pDoc as clsDocument ptr, _
-            ByVal hEdit as HWND _
+            byval hEdit as HWND _
             ) as LRESULT
 
     ' If a TAB was pressed then manually terminate any active autocomplete.
@@ -128,7 +128,7 @@ end function
 ' ========================================================================================
 function OnCommand_EditUnIndentBlock( _
             byval pDoc as clsDocument ptr, _
-            ByVal hEdit as HWND _
+            byval hEdit as HWND _
             ) as LRESULT
     
     if GetFocus = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND) then
@@ -136,7 +136,7 @@ function OnCommand_EditUnIndentBlock( _
     elseif GetFocus = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE) then
         if gFind.bExpanded then SetFocus GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
     elseif AfxGetFormHandle(GetFocus) = HWND_FRMFINDINFILES then
-        Dim As HWnd hCtrl = GetNextDlgTabItem( HWND_FRMFINDINFILES, GetFocus, true )
+        Dim As HWND hCtrl = GetNextDlgTabItem( HWND_FRMFINDINFILES, GetFocus, true )
         SetFocus(hCtrl)
     else
         gApp.SuppressNotify = true
@@ -157,7 +157,7 @@ end function
 ' ========================================================================================
 function OnCommand_EditSelectAll( _
             byval pDoc as clsDocument ptr, _
-            ByVal hEdit as HWND _
+            byval hEdit as HWND _
             ) as LRESULT
 
     ' Check if the Compiler log file or Notes windows or Snippets have
@@ -180,30 +180,30 @@ end function
 ' Edit action File Encoding
 ' ========================================================================================
 function OnCommand_EditEncoding( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
 
     select case id      
         case IDM_ANSI
-            if pDoc->FileEncoding <> FILE_ENCODING_ANSI THEN 
-            pDoc->UserModified = true
-            ' Convert buffer to ANSI and redisplay the text in the editor
-            ConvertTextBuffer(pDoc, FILE_ENCODING_ANSI)
+            if pDoc->FileEncoding <> FILE_ENCODING_ANSI then 
+                pDoc->UserModified = true
+                ' Convert buffer to ANSI and redisplay the text in the editor
+                ConvertTextBuffer(pDoc, FILE_ENCODING_ANSI)
             end if   
             pDoc->FileEncoding = FILE_ENCODING_ANSI 
         
         case IDM_UTF8BOM
-            if pDoc->FileEncoding <> FILE_ENCODING_UTF8_BOM THEN 
-            pDoc->UserModified = true
-            ConvertTextBuffer(pDoc, FILE_ENCODING_UTF8_BOM)
+            if pDoc->FileEncoding <> FILE_ENCODING_UTF8_BOM then 
+                pDoc->UserModified = true
+                ConvertTextBuffer(pDoc, FILE_ENCODING_UTF8_BOM)
             end if   
             pDoc->FileEncoding = FILE_ENCODING_UTF8_BOM 
         
         case IDM_UTF16BOM
-            if pDoc->FileEncoding <> FILE_ENCODING_UTF16_BOM THEN 
-            pDoc->UserModified = true
-            ConvertTextBuffer(pDoc, FILE_ENCODING_UTF16_BOM)
+            if pDoc->FileEncoding <> FILE_ENCODING_UTF16_BOM then 
+                pDoc->UserModified = true
+                ConvertTextBuffer(pDoc, FILE_ENCODING_UTF16_BOM)
             end if   
     end select
     
@@ -242,7 +242,7 @@ end function
 ' Edit action Find actions
 ' ========================================================================================
 function OnCommand_EditFindActions( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
 
@@ -265,54 +265,54 @@ function OnCommand_EditFindActions( _
             AfxRedrawWindow( HWND_FRMFINDREPLACE )
             end if
 
-        Case IDM_FINDNEXTACCEL, IDM_FINDPREVACCEL   ' F3/Shift+F3
+        case IDM_FINDNEXTACCEL, IDM_FINDPREVACCEL   ' F3/Shift+F3
             dim as long startPos, endPos, curPos, mainSel, r
-            Dim As String sFindText = pDoc->GetSelText
+            dim as string sFindText = pDoc->GetSelText
             
             if len(sFindText) = 0 then
-            if len(gFind.txtFind) then 
-                sFindText = gFind.txtFind
-            end if   
+                if len(gFind.txtFind) then 
+                    sFindText = gFind.txtFind
+                end if   
             end if
             gFind.txtFind = sFindText
             
             if len(sFindText) then
-            curPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) 
-            if id = IDM_FINDNEXTACCEL then
-                startPos = curPos + 1
-                endPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
-                SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-                SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-                ' Search for the text to find
-                r = SciExec( hEdit, SCI_SEARCHINTARGET, Len(sFindText), Strptr(sFindText))
-                If r = -1 Then
-                    ' No match found. Do search starting from the beginning of the file.
-                    SciExec( hEdit, SCI_SETTARGETSTART, 0, 0)
-                    r = SciExec( hEdit, SCI_SEARCHINTARGET, Len(sFindText), Strptr(sFindText))
-                end if
-                If r <> -1 Then 
-                    SciExec( hEdit, SCI_SETSEL, r, r + len(sFindText)) 
-                    pDoc->CenterCurrentLine
-                end if
-                
-            elseif id = IDM_FINDPREVACCEL then
-                startPos = curPos - 1
-                endPos = 0
-                SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-                SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-                ' Search for the text to find
-                r = SciExec( hEdit, SCI_SEARCHINTARGET, Len(sFindText), Strptr(sFindText))
-                If r = -1 Then
-                    ' No match found. Do search starting from the end of the file.
-                    startPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
+                curPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+                if id = IDM_FINDNEXTACCEL then
+                    startPos = curPos + 1
+                    endPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
                     SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-                    r = SciExec( hEdit, SCI_SEARCHINTARGET, Len(sFindText), Strptr(sFindText))
+                    SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
+                    ' Search for the text to find
+                    r = SciExec( hEdit, SCI_SEARCHINTARGET, len(sFindText), strptr(sFindText))
+                    if r = -1 then
+                        ' No match found. Do search starting from the beginning of the file.
+                        SciExec( hEdit, SCI_SETTARGETSTART, 0, 0)
+                        r = SciExec( hEdit, SCI_SEARCHINTARGET, Len(sFindText), strptr(sFindText))
+                    end if
+                    If r <> -1 then 
+                        SciExec( hEdit, SCI_SETSEL, r, r + len(sFindText)) 
+                        pDoc->CenterCurrentLine
+                    end if
+                    
+                elseif id = IDM_FINDPREVACCEL then
+                    startPos = curPos - 1
+                    endPos = 0
+                    SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
+                    SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
+                    ' Search for the text to find
+                    r = SciExec( hEdit, SCI_SEARCHINTARGET, len(sFindText), strptr(sFindText))
+                    if r = -1 then
+                        ' No match found. Do search starting from the end of the file.
+                        startPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
+                        SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
+                        r = SciExec( hEdit, SCI_SEARCHINTARGET, len(sFindText), strptr(sFindText))
+                    end if
+                    if r <> -1 then 
+                        SciExec( hEdit, SCI_SETSEL, r, r + len(sFindText)) 
+                        pDoc->CenterCurrentLine
+                    end if
                 end if
-                If r <> -1 Then 
-                    SciExec( hEdit, SCI_SETSEL, r, r + len(sFindText)) 
-                    pDoc->CenterCurrentLine
-                end if
-            end if
             end if
     
     end select
@@ -325,14 +325,14 @@ end function
 ' Edit action Replace actions
 ' ========================================================================================
 function OnCommand_EditReplaceActions( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
             
     dim as HWND hEdit = pDoc->hWndActiveScintilla
 
     select case id
-        Case IDM_REPLACENEXT, IDM_REPLACEPREV, IDM_REPLACEALL
+        case IDM_REPLACENEXT, IDM_REPLACEPREV, IDM_REPLACEALL
             if (GetForeGroundWindow = HWND_FRMFINDREPLACE) then
             if gFind.foundCount = 0 then exit function
             if id = IDM_REPLACEPREV then 
@@ -356,32 +356,32 @@ end function
 ' Edit action Common actions
 ' ========================================================================================
 function OnCommand_EditCommon( _
-            ByVal id as long, _
+            byval id as long, _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
         
     dim as HWND hEdit = pDoc->hWndActiveScintilla
 
     select case id
-        Case IDM_REDO:                SciExec( hEdit, SCI_REDO, 0, 0)
-        Case IDM_UNDO, WM_UNDO:       SciExec( hEdit, SCI_UNDO, 0, 0)
-        Case WM_UNDO:                 SciExec( GetFocus(), WM_UNDO, 0, 0)
-        Case IDM_DELETELINE:          SciExec(hEdit, SCI_LINECUT, 0, 0)
-        Case IDM_INSERTFILE:          pDoc->InsertFile()
-        Case IDM_COMMENTBLOCK:        pDoc->BlockComment(True) 
-        Case IDM_UNCOMMENTBLOCK:      pDoc->BlockComment(False) 
-        Case IDM_DUPLICATELINE:       pDoc->LineDuplicate()
-        Case IDM_MOVELINEUP:          pDoc->MoveCurrentLines(False) 
-        Case IDM_MOVELINEDOWN:        pDoc->MoveCurrentLines(True)  
-        Case IDM_NEWLINEBELOWCURRENT: pDoc->NewLineBelowCurrent()  
-        Case IDM_TOUPPERCASE:         pDoc->ChangeSelectionCase(1)
-        Case IDM_TOLOWERCASE:         pDoc->ChangeSelectionCase(2)
-        Case IDM_TOMIXEDCASE:         pDoc->ChangeSelectionCase(3)
-        Case IDM_EOLTOCRLF:           pDoc->ConvertEOL(SC_EOL_CRLF)
-        Case IDM_EOLTOCR:             pDoc->ConvertEOL(SC_EOL_CR)
-        Case IDM_EOLTOLF:             pDoc->ConvertEOL(SC_EOL_LF)
-        Case IDM_TABSTOSPACES:        pDoc->TabsToSpaces()
-        Case IDM_SELECTLINE:          pDoc->SelectLine(-1)
+        case IDM_REDO:                SciExec( hEdit, SCI_REDO, 0, 0)
+        case IDM_UNDO, WM_UNDO:       SciExec( hEdit, SCI_UNDO, 0, 0)
+        case WM_UNDO:                 SciExec( GetFocus(), WM_UNDO, 0, 0)
+        case IDM_DELETELINE:          SciExec(hEdit, SCI_LINECUT, 0, 0)
+        case IDM_INSERTFILE:          pDoc->InsertFile()
+        case IDM_COMMENTBLOCK:        pDoc->BlockComment(true) 
+        case IDM_UNCOMMENTBLOCK:      pDoc->BlockComment(false) 
+        case IDM_DUPLICATELINE:       pDoc->LineDuplicate()
+        case IDM_MOVELINEUP:          pDoc->MoveCurrentLines(false) 
+        case IDM_MOVELINEDOWN:        pDoc->MoveCurrentLines(true)  
+        case IDM_NEWLINEBELOWCURRENT: pDoc->NewLineBelowCurrent()  
+        case IDM_TOUPPERCASE:         pDoc->ChangeSelectionCase(1)
+        case IDM_TOLOWERCASE:         pDoc->ChangeSelectionCase(2)
+        case IDM_TOMIXEDCASE:         pDoc->ChangeSelectionCase(3)
+        case IDM_EOLTOCRLF:           pDoc->ConvertEOL(SC_EOL_CRLF)
+        case IDM_EOLTOCR:             pDoc->ConvertEOL(SC_EOL_CR)
+        case IDM_EOLTOLF:             pDoc->ConvertEOL(SC_EOL_LF)
+        case IDM_TABSTOSPACES:        pDoc->TabsToSpaces()
+        case IDM_SELECTLINE:          pDoc->SelectLine(-1)
     end select
     
     function = 0

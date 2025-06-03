@@ -21,12 +21,12 @@
 ' ========================================================================================
 ' Reparse any dirty files
 ' ========================================================================================
-function frmFunctions_ReparseFiles() as Long
+function frmFunctions_ReparseFiles() as long
     '  Need to re-parse any dirty files. This is especially important for QuickRun scenarios
     '  where the file is never physically saved.
-    Dim pDoc As clsDocument Ptr = gApp.pDocList
+    dim pDoc as clsDocument ptr = gApp.pDocList
     do until pDoc = 0
-        If cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) or pDoc->UserModified Then
+        If cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) or pDoc->UserModified then
             pDoc->bNeedsParsing = true
             pDoc->ParseDocument()
         end if
@@ -112,7 +112,7 @@ function frmFunctions_SelectItemData( byval pDoc as clsDocument ptr ) as boolean
         if ListBox_GetItemData(HWND_FRMFUNCTIONS_LISTBOX, i) = pDoc then
             ListBox_SetCurSel( HWND_FRMFUNCTIONS_LISTBOX, i )
             if ListBox_GetTopIndex( HWND_FRMFUNCTIONS_LISTBOX ) <> i then
-            ListBox_SetTopIndex( HWND_FRMFUNCTIONS_LISTBOX, i )
+                ListBox_SetTopIndex( HWND_FRMFUNCTIONS_LISTBOX, i )
             end if   
             AfxRedrawWindow( HWND_FRMFUNCTIONS_LISTBOX )
             return true
@@ -126,7 +126,6 @@ end function
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
 function frmFunctions_PositionWindows() as LRESULT
-
     ' Get the entire client area
     dim as Rect rc
     GetClientRect( HWND_FRMFUNCTIONS, @rc )
@@ -143,7 +142,7 @@ end function
 ' Process WM_SIZE message for window/dialog: frmFunctions
 ' ========================================================================================
 function frmFunctions_OnSize( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval state as UINT, _
             byval cx as long, _
             byval cy as long _
@@ -158,17 +157,17 @@ end function
 ' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmFunctions
 ' ========================================================================================
-function frmFunctions_OnPaint( byval HWnd as HWnd ) as LRESULT
+function frmFunctions_OnPaint( byval hwnd as HWND ) as LRESULT
             
     dim as PAINTSTRUCT ps
     dim as HDC hDc
     
-    hDC = BeginPaint(hWnd, @ps)
+    hDC = BeginPaint(hwnd, @ps)
 
     SaveDC( hDC )
     FillRect( hDC, @ps.rcPaint, ghPanel.hPanelBrush )
     RestoreDC( hDC, -1 )
-    EndPaint( hWnd, @ps )
+    EndPaint( hwnd, @ps )
     
     function = 0
 end function
@@ -178,11 +177,11 @@ end function
 ' Process WM_MEASUREITEM message for window/dialog: frmFunctions
 ' ========================================================================================
 function frmFunctions_OnMeasureItem( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval lpmis as MEASUREITEMSTRUCT ptr _
             ) as long
     ' Set the height of the list box items. 
-    dim pWindow as CWindow ptr = AfxCWindowPtr(HWnd)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     lpmis->itemHeight = pWindow->ScaleY(EXPLORERITEM_HEIGHT)
         
     function = 0
@@ -193,7 +192,7 @@ end function
 ' Process WM_DRAWITEM message for window/dialog: frmFunctions
 ' ========================================================================================
 function frmFunctions_OnDrawItem( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval lpdis as const DRAWITEMSTRUCT ptr _
             ) as long
 
@@ -230,9 +229,9 @@ function frmFunctions_OnDrawItem( _
         dim as boolean isNodeHeader = false
         dim as boolean isIconDown = false
             
-        dim as POINT pt
+        dim as point pt
         GetCursorPos( @pt )
-        MapWindowPoints( lpdis->hwndItem, HWND_DESKTOP, cast( POINT ptr, @rc ), 2 )
+        MapWindowPoints( lpdis->hwndItem, HWND_DESKTOP, cast( point ptr, @rc ), 2 )
         if PtInRect( @rc, pt ) then IsHot = true
         
         ' if mouse is over VScrollBar then reset hot
@@ -279,11 +278,6 @@ function frmFunctions_OnDrawItem( _
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20)
             SelectObject( memDC, ghMenuBar.hFontSymbol )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE  
-'         if isIconDown then 
-'            DrawText( memDC, wszChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
-'         else   
-'            DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
-'         end if
             DrawText( memDC, wszDocumentIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
             wszCaption = wszCaption
             rcText.left = rcBitmap.right
@@ -293,7 +287,7 @@ function frmFunctions_OnDrawItem( _
         else
             ' This would be a function name.
             if gFunctionsDisplay = FunctionsDisplayState.ViewAsTree then
-            rcBitmap.left = rcText.left + pWindow->ScaleX(20)
+                rcBitmap.left = rcText.left + pWindow->ScaleX(20)
             end if
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20) 
 
@@ -324,9 +318,9 @@ end function
 ' Process WM_COMMAND message for window/dialog: frmFunctions
 ' ========================================================================================
 function frmFunctions_OnCommand( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval id as long, _
-            byval hwndCtl as HWnd, _
+            byval hwndCtl as HWND, _
             byval codeNotify as UINT _
             ) as LRESULT
 
@@ -346,20 +340,18 @@ end function
 ' frmFunctions Window procedure
 ' ========================================================================================
 function frmFunctions_WndProc( _
-            byval HWnd   as HWnd, _
+            byval hwnd   as HWND, _
             byval uMsg   as UINT, _
             byval wParam as WPARAM, _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static hTooltip as HWND
-
     select case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE,        frmFunctions_OnSize)
-        HANDLE_MSG (HWnd, WM_PAINT,       frmFunctions_OnPaint)
-        HANDLE_MSG (HWnd, WM_COMMAND,     frmFunctions_OnCommand)
-        HANDLE_MSG (HWnd, WM_MEASUREITEM, frmFunctions_OnMeasureItem)
-        HANDLE_MSG (HWnd, WM_DRAWITEM,    frmFunctions_OnDrawItem)
+        HANDLE_MSG (hwnd, WM_SIZE,        frmFunctions_OnSize)
+        HANDLE_MSG (hwnd, WM_PAINT,       frmFunctions_OnPaint)
+        HANDLE_MSG (hwnd, WM_COMMAND,     frmFunctions_OnCommand)
+        HANDLE_MSG (hwnd, WM_MEASUREITEM, frmFunctions_OnMeasureItem)
+        HANDLE_MSG (hwnd, WM_DRAWITEM,    frmFunctions_OnDrawItem)
     
     case WM_ERASEBKGND
         return true
@@ -367,7 +359,7 @@ function frmFunctions_WndProc( _
     end select
     
     ' for messages that we don't deal with
-    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
 end function
 
@@ -375,7 +367,7 @@ end function
 ' frmFunctionsListBox_SubclassProc 
 ' ========================================================================================
 function frmFunctionsListBox_SubclassProc ( _
-            byval hWin   as HWnd, _                 ' // Control window handle
+            byval hWin   as HWND, _                 ' // Control window handle
             byval uMsg   as UINT, _                 ' // Type of message
             byval _wParam as WPARAM, _               ' // First message parameter
             byval _lParam as LPARAM, _               ' // Second message parameter
@@ -402,17 +394,18 @@ function frmFunctionsListBox_SubclassProc ( _
             dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
             accumDelta = accumDelta + zDelta
             if accumDelta >= 120 then       ' scroll up 3 lines
-            nTopIndex = nTopIndex - 3
-            nTopIndex = max( 0, nTopIndex )
-            SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
-            accumDelta = 0
-            frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                nTopIndex = nTopIndex - 3
+                nTopIndex = max( 0, nTopIndex )
+                SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                accumDelta = 0
+                frmPanelVScroll_PositionWindows( SW_SHOWNA )
             elseif accumDelta <= -120 then  ' scroll down 3 lines
-            nTopIndex = nTopIndex + 3
-            SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
-            accumDelta = 0
-            frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                nTopIndex = nTopIndex + 3
+                SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                accumDelta = 0
+                frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
+            return 0
             
         Case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
@@ -432,14 +425,14 @@ function frmFunctionsListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            if idx <> nLastIdx then
-                ListBox_GetItemRect( hWin, idx, @rc )
-                InvalidateRect( hWin, @rc, true )
-                ListBox_GetItemRect( hWin, nLastIdx, @rc )
-                InvalidateRect( hWin, @rc, true )
-                nLastIdx = idx
+                if idx <> nLastIdx then
+                    ListBox_GetItemRect( hWin, idx, @rc )
+                    InvalidateRect( hWin, @rc, true )
+                    ListBox_GetItemRect( hWin, nLastIdx, @rc )
+                    InvalidateRect( hWin, @rc, true )
+                    nLastIdx = idx
+                end if
             end if
-        end if
                             
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip 
@@ -449,26 +442,26 @@ function frmFunctionsListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            static wszPrevTooltip as CWSTR
-            wszTooltip = ""
-            dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
-            if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
-                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-                if pDoc then wszTooltip = pDoc->DiskFilename
-            else
-                ' Get the function prototype and display it in popup multiline tooltip
-                wszTooltip = getFunctionsPrototype(wszCaption)
-                if len(wszTooltip) then
-                    SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 300 )
-                    wszTooltip = FormatCodetip( wszTooltip )
+                static wszPrevTooltip as CWSTR
+                wszTooltip = ""
+                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
+                if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
+                    dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                    if pDoc then wszTooltip = pDoc->DiskFilename
+                else
+                    ' Get the function prototype and display it in popup multiline tooltip
+                    wszTooltip = getFunctionsPrototype(wszCaption)
+                    if len(wszTooltip) then
+                        SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 300 )
+                        wszTooltip = FormatCodetip( wszTooltip )
+                    end if   
+                end if
+                ' Display the tooltip
+                if wszPrevTooltip <> wszTooltip then
+                    AfxSetTooltipText( hTooltip, hWin, wszTooltip )
+                    wszPrevTooltip = wszTooltip
+                    AfxRedrawWindow( hWin )
                 end if   
-            end if
-            ' Display the tooltip
-            if wszPrevTooltip <> wszTooltip then
-                AfxSetTooltipText( hTooltip, hWin, wszTooltip )
-                wszPrevTooltip = wszTooltip
-                AfxRedrawWindow( hWin )
-            end if   
             end if
             
         case WM_MOUSELEAVE
@@ -483,18 +476,18 @@ function frmFunctionsListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-            dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
-            if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
-                OpenSelectedDocument( pDoc->DiskFilename, "", -1 )
-            else
-                ' Attempt to show the function name
-                dim as long nLineNum = getFunctionsLinenumber( wszCaption )
-                dim as CWSTR wszFunctionName = getFunctionsFunctionName( wszCaption )
-                dim as CWSTR wszDiskFilename 
-                if pDoc then wszDiskFilename = pDoc->DiskFilename
-                OpenSelectedDocument( wszDiskFilename, wszFunctionName, nLineNum )
-            end if
+                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
+                if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
+                    OpenSelectedDocument( pDoc->DiskFilename, "", -1 )
+                else
+                    ' Attempt to show the function name
+                    dim as long nLineNum = getFunctionsLinenumber( wszCaption )
+                    dim as CWSTR wszFunctionName = getFunctionsFunctionName( wszCaption )
+                    dim as CWSTR wszDiskFilename 
+                    if pDoc then wszDiskFilename = pDoc->DiskFilename
+                    OpenSelectedDocument( wszDiskFilename, wszFunctionName, nLineNum )
+                end if
             end if
                         
         case WM_ERASEBKGND
@@ -514,16 +507,16 @@ function frmFunctionsListBox_SubclassProc ( _
             dim as long bottom_index = 0
                         
             if NumItems > 0 then
-            ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-            bottom_index = (nTopIndex + ItemsPerPage) 
-            if bottom_index >= NumItems then bottom_index = NumItems - 1
-            visible_rows = (bottom_index - nTopIndex) + 1
-            rc.top = visible_rows * itemHeight 
+                ItemsPerPage = (rc.bottom - rc.top) / itemHeight
+                bottom_index = (nTopIndex + ItemsPerPage) 
+                if bottom_index >= NumItems then bottom_index = NumItems - 1
+                visible_rows = (bottom_index - nTopIndex) + 1
+                rc.top = visible_rows * itemHeight 
             end if
 
             if rc.top < rc.bottom then
-            dim as HDC _hDC = cast(HDC, _wParam)
-            FillRect( _hDC, @rc, ghPanel.hPanelBrush )
+                dim as HDC _hDC = cast(HDC, _wParam)
+                FillRect( _hDC, @rc, ghPanel.hPanelBrush )
             end if
 
             ValidateRect( hWin, @rc )
@@ -543,10 +536,10 @@ end function
 ' ========================================================================================
 ' frmFunctions_Show
 ' ========================================================================================
-function frmFunctions_Show( byval hWndParent as HWnd ) as LRESULT
+function frmFunctions_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMFUNCTIONS = pWindow->Create( hWndParent, "Function List", @frmFunctions_WndProc, _
@@ -573,7 +566,7 @@ end function
 ' ========================================================================================
 ' Simple QuickSort of Filename array
 ' ========================================================================================
-function QuickSortpDocs( pDocs() As clsDocument ptr, lo as long, hi as long ) as long
+function QuickSortpDocs( pDocs() as clsDocument ptr, lo as long, hi as long ) as long
     dim as long i, j
     dim as CWSTR pivot
     
@@ -682,15 +675,15 @@ function LoadFilesAndFunctions() as long
             gdb2.dbRewind()
             do 
             pData = gdb2.dbGetNext
-            if pData = 0 THEN exit do
+            if pData = 0 then exit do
             if pData->deleted then continue do
             if pData->nFileType <> DB2_FILETYPE_USERCODE then continue do
             select case pData->id 
                 case DB2_FUNCTION
-                    if wszFilename = ucase(pData->fileName) THEN
+                    if wszFilename = ucase(pData->fileName) then
                         wszNodeName = pData->ElementName
                         if len(pData->GetSet) then 
-                        wszNodeName = wszNodeName & " " & pData->GetSet
+                            wszNodeName = wszNodeName & " " & pData->GetSet
                         end if
                         ub = ubound(arrFuncs) + 1
                         redim preserve arrFuncs(ub)
@@ -704,12 +697,12 @@ function LoadFilesAndFunctions() as long
             quickSortFuncs( arrFuncs(), lbound(arrFuncs), ubound(arrFuncs) )
 
             for ii as long = lbound(arrFuncs) to ubound(arrFuncs)
-            wszText = wstr(arrFuncs(ii).nLineNumber) & _
-                        "%" & ltrim(arrFuncs(ii).wszFunctionName) & _
-                        "%" & trim(arrFuncs(ii).wszPrototype)
-            idx = Listbox_AddString( hList, @wszText )
-            ListBox_SetItemData( hList, idx, pDocs(i) )
-            pDocs(i)->bHasFunctions = true
+                wszText = wstr(arrFuncs(ii).nLineNumber) & _
+                            "%" & ltrim(arrFuncs(ii).wszFunctionName) & _
+                            "%" & trim(arrFuncs(ii).wszPrototype)
+                idx = Listbox_AddString( hList, @wszText )
+                ListBox_SetItemData( hList, idx, pDocs(i) )
+                pDocs(i)->bHasFunctions = true
             next 
             erase arrFuncs  
         end if
@@ -765,20 +758,20 @@ function LoadFunctionsOnly() as long
     gdb2.dbRewind()
     do 
         pData = gdb2.dbGetNext
-        if pData = 0 THEN exit do
+        if pData = 0 then exit do
         if pData->deleted then continue do
         if pData->nFileType <> DB2_FILETYPE_USERCODE then continue do
         select case pData->id 
             case DB2_FUNCTION
-            wszNodeName = pData->ElementName
-            if len(pData->GetSet) then
-                wszNodeName = wszNodeName & " " & pData->GetSet
-            end if
-            ub = ubound(arrFuncs) + 1
-            redim preserve arrFuncs(ub)
-            arrFuncs(ub).wszFunctionName = wszNodeName
-            arrFuncs(ub).wszPrototype = pData->CallTip
-            arrFuncs(ub).nLineNumber = pData->nLineStart
+                wszNodeName = pData->ElementName
+                if len(pData->GetSet) then
+                    wszNodeName = wszNodeName & " " & pData->GetSet
+                end if
+                ub = ubound(arrFuncs) + 1
+                redim preserve arrFuncs(ub)
+                arrFuncs(ub).wszFunctionName = wszNodeName
+                arrFuncs(ub).wszPrototype = pData->CallTip
+                arrFuncs(ub).nLineNumber = pData->nLineStart
         end select
     loop      
             

@@ -19,7 +19,7 @@
 ' Save the gKeys() keybinding array to disk file
 ' ========================================================================================
 function frmKeyboard_SaveKeyBindings( byval wszFilename as CWSTR ) as long
-    dim pStream AS CTextStream
+    dim pStream as CTextStream
     if pStream.Create( wszFilename ) = S_OK then 
         dim as CWSTR wszLine
         for i as long = lbound(gKeys) to ubound(gKeys)
@@ -51,7 +51,7 @@ function frmKeyBoard_AddKeyBinding( _
             byval bDisabled as boolean _
             ) as long
             
-    ' Search the array to see if the id exists. If it does then update
+    ' Search the array to see if the id exists. if it does then update
     ' that binding, otherwise, add it to the array.
     dim as boolean bFound = false
     dim as long nFoundIdx = -1
@@ -161,7 +161,7 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     '' VIEW MENU
     frmKeyBoard_AddKeyBinding( "View", IDM_VIEWEXPLORER, "IDM_VIEWEXPLORER", "View Explorer window", "F9", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_VIEWOUTPUT, "IDM_VIEWOUTPUT", "View Output window", "Ctrl+F9", "", false )
-    frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONLIST, "IDM_FUNCTIONLIST", "View Function List", "F4", "", false )
+    frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONLIST, "IDM_FUNCTIONLIST", "View function List", "F4", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_BOOKMARKSLIST, "IDM_BOOKMARKSLIST", "View Bookmarks List", "Shift+F4", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_ZOOMIN, "IDM_ZOOMIN", "Zoom in", "Ctrl+Plus", "", false )     ' VK_OEM_PLUS
     frmKeyBoard_AddKeyBinding( "View", IDM_ZOOMOUT, "IDM_ZOOMOUT", "Zoom out", "Ctrl+Minus", "", false )   ' VK_OEM_MINUS
@@ -174,8 +174,8 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     frmKeyBoard_AddKeyBinding( "View", IDM_VIEWTODO, "IDM_VIEWTODO", "List of TODO's for this file or project", "", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_EXPLORER_EXPANDALL, "IDM_EXPLORER_EXPANDALL", "Expand all nodes in the Explorer window", "", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_EXPLORER_COLLAPSEALL, "IDM_EXPLORER_COLLAPSEALL", "Collapse all nodes in the Explorer window", "", "", false )
-    frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONS_EXPANDALL, "IDM_FUNCTIONS_EXPANDALL", "Expand all nodes in the Function List window", "", "", false )
-    frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONS_COLLAPSEALL, "IDM_FUNCTIONS_COLLAPSEALL", "Collapse all nodes in the Function List window", "", "", false )
+    frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONS_EXPANDALL, "IDM_FUNCTIONS_EXPANDALL", "Expand all nodes in the function List window", "", "", false )
+    frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONS_COLLAPSEALL, "IDM_FUNCTIONS_COLLAPSEALL", "Collapse all nodes in the function List window", "", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_BOOKMARKS_EXPANDALL, "IDM_BOOKMARKS_EXPANDALL", "Expand all nodes in the Bookmarks window", "", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_BOOKMARKS_COLLAPSEALL, "IDM_BOOKMARKS_COLLAPSEALL", "Collapse all nodes in the Bookmarks window", "", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_CLOSEPANEL, "IDM_CLOSEPANEL", "Close left side panel", "", "", false )
@@ -204,13 +204,13 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     ' user defined key mappings.
     dim as CWSTR wszFilename = AfxGetExePathName & "settings\keybindings.ini" 
     
-    dim pStream AS CTextStream
+    dim pStream as CTextStream
     
     if pStream.Open( wszFilename ) = S_OK then 
         do until pStream.EOS
             dim as CWSTR wst = pStream.ReadLine
             wst = trim(wst)
-            if len(wst) = 0 then Continue Do
+            if len(wst) = 0 then continue Do
             
             ' Each keybinding entry has fields separated by a colon 
             if instr( wst, ":" ) = 0 then continue do
@@ -223,8 +223,8 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
             dim as long i
             i = instr(wszMsgString, "(DISABLED)")
             if i then
-            bDisabled = true
-            wszMsgString = left(wszMsgString, i-1 )
+                bDisabled = true
+                wszMsgString = left(wszMsgString, i-1 )
             end if   
             
             dim as CWSTR wszUserKeys = trim(AfxStrParse(wst, 2, ":"))
@@ -355,8 +355,8 @@ end function
 ' ========================================================================================
 ' Build the main keyboard accelerator table
 ' ========================================================================================
-Function frmKeyboard_BuildAcceleratorTable() As long
-    Dim pWindow As CWindow Ptr = AfxCWindowPtr(HWND_FRMMAIN)
+function frmKeyboard_BuildAcceleratorTable() as long
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
     if pWindow = 0 then exit function
 
     ' Create mapping array that equates the string representation of the
@@ -373,13 +373,13 @@ Function frmKeyboard_BuildAcceleratorTable() As long
     
     ' The following ALWAYS get created and can not be altered because they are shortcuts
     ' to activate each of the top menus.
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_F,   IDC_MENUBAR_FILE )
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_E,   IDC_MENUBAR_EDIT )
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_S,   IDC_MENUBAR_SEARCH )
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_V,   IDC_MENUBAR_VIEW )
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_P,   IDC_MENUBAR_PROJECT )
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_C,   IDC_MENUBAR_COMPILE )
-    pWindow->AddAccelerator( FVIRTKEY Or FALT,     VK_H,   IDC_MENUBAR_HELP )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_F,   IDC_MENUBAR_FILE )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_E,   IDC_MENUBAR_EDIT )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_S,   IDC_MENUBAR_SEARCH )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_V,   IDC_MENUBAR_VIEW )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_P,   IDC_MENUBAR_PROJECT )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_C,   IDC_MENUBAR_COMPILE )
+    pWindow->AddAccelerator( FVIRTKEY or FALT,     VK_H,   IDC_MENUBAR_HELP )
 
     ' Create the accelerator table based on the data in the gKeys() array
     for i as long = lbound(gKeys) to ubound(gKeys)
@@ -392,7 +392,7 @@ Function frmKeyboard_BuildAcceleratorTable() As long
         else
             ' Only create the default keyboard short if it has not been disabled
             if gKeys(i).bDefaultDisabled then
-            wszKeys = ""
+                wszKeys = ""
             end if
         end if
         
@@ -418,9 +418,9 @@ Function frmKeyboard_BuildAcceleratorTable() As long
             ' number of items in the string
             dim as CWSTR wszString = AfxStrParse( wszKeys, ii, "+" )
             if ii = nCount then
-            nAccelValue = frmKeyboard_AccelKeyToValue( wszString )
+                nAccelValue = frmKeyboard_AccelKeyToValue( wszString )
             else
-            nVirtValue = nVirtValue or frmKeyboard_VirtKeyToValue( wszString )
+                nVirtValue = nVirtValue or frmKeyboard_VirtKeyToValue( wszString )
             end if
         next
         if nAccelValue <> 0 then   ' value can be zero if no default or user key defined
@@ -431,12 +431,12 @@ Function frmKeyboard_BuildAcceleratorTable() As long
     pWindow->CreateAcceleratorTable()
 
     function = 0
-End Function
+end function
 
 ' ========================================================================================
 ' Check for keybinding conflict with other keys and display warning label message
 ' ========================================================================================
-Function frmKeyboard_CheckForKeyConflict ( _
+function frmKeyboard_CheckForKeyConflict ( _
             byval wszKeys as CWSTR, _
             byval nSkipIndex as long _
             ) as long
@@ -446,7 +446,7 @@ Function frmKeyboard_CheckForKeyConflict ( _
     
     for i as long = lbound(gKeys) to ubound(gKeys)
         if i = nSkipIndex then continue for
-        ' If user binding exists then check that b/c it would override the default binding
+        ' if user binding exists then check that b/c it would override the default binding
         wszCheck = iif( len(gKeys(i).wszUserKeys), gKeys(i).wszUserKeys, gKeys(i).wszDefaultKeys )
         if len(wszCheck) = 0 then continue for
         if wszKeys = wszCheck then
@@ -465,10 +465,10 @@ end function
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmKeyboard
 ' ========================================================================================
-Function frmKeyboard_OnCreate( _
-            ByVal HWnd As HWnd, _
-            ByVal lpCreateStructPtr As LPCREATESTRUCT _
-            ) As BOOLEAN
+function frmKeyboard_OnCreate( _
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -477,15 +477,15 @@ Function frmKeyboard_OnCreate( _
     '  OnCreate handler even though returning -1 from a standard WM_CREATE
     '  call would stop creating the window. This is just one of those Windows
     '  inconsistencies.
-    Return True
-End Function
+    return true
+end function
 
 
 ' ========================================================================================
 ' Process WM_NOTIFY message for window/dialog: frmMain
 ' ========================================================================================
 function frmKeyboard_OnNotify( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWnd, _
             byval id as long, _
             byval pNMHDR as NMHDR ptr _
             ) as LRESULT
@@ -494,158 +494,158 @@ function frmKeyboard_OnNotify( _
 
         case LVN_ITEMCHANGED 
             if id = IDC_FRMKEYBOARD_LIST1 then
-            Dim As Long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
-            If nCurSel < 0 Then exit function
-            dim as CWSTR wszKeys = iif( len(gKeys(nCurSel).wszUserKeys), _
-                                            gKeys(nCurSel).wszUserKeys, gKeys(nCurSel).wszDefaultKeys )
-            frmKeyboard_CheckForKeyConflict( wszKeys, nCurSel )
+                dim as long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
+                if nCurSel < 0 then exit function
+                dim as CWSTR wszKeys = iif( len(gKeys(nCurSel).wszUserKeys), _
+                                                gKeys(nCurSel).wszUserKeys, gKeys(nCurSel).wszDefaultKeys )
+                frmKeyboard_CheckForKeyConflict( wszKeys, nCurSel )
             end if   
 
     end select
     
-    Function = 0
+    function = 0
 
 end function
 
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmKeyboard
 ' ========================================================================================
-Function frmKeyboard_OnCommand( _
-            ByVal HWnd As HWnd, _
-            ByVal id As Long, _
-            ByVal hwndCtl As HWnd, _
-            ByVal codeNotify As UINT _
-            ) As LRESULT
+function frmKeyboard_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
-    Select Case id
+    select case id
 
         case IDC_FRMKEYBOARD_CMDMODIFY
-            if codeNotify = BN_CLICKED THEN
-            PostMessage( HWnd, MSG_USER_SHOW_KEYBOARDEDIT, 0, 0 )
+            if codeNotify = BN_CLICKED then
+                PostMessage( hwnd, MSG_USER_SHOW_KEYBOARDEDIT, 0, 0 )
             end if
 
         case IDC_FRMKEYBOARD_CMDCLEAR
-            if codeNotify = BN_CLICKED THEN
-            Dim As Long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
-            If nCurSel < 0 Then exit function
-            gKeys(nCurSel).wszUserKeys = ""
-            dim wszText as wstring * MAX_PATH = gKeys(nCurSel).wszUserKeys
-            FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
-            frmKeyboard_CheckForKeyConflict( "", nCurSel )
-            ListView_SelectItem( HWND_FRMKEYBOARD_LISTVIEW, nCurSel )
-            SetFocus( HWND_FRMKEYBOARD_LISTVIEW )
+            if codeNotify = BN_CLICKED then
+                dim as long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
+                if nCurSel < 0 then exit function
+                gKeys(nCurSel).wszUserKeys = ""
+                dim wszText as wstring * MAX_PATH = gKeys(nCurSel).wszUserKeys
+                FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
+                frmKeyboard_CheckForKeyConflict( "", nCurSel )
+                ListView_SelectItem( HWND_FRMKEYBOARD_LISTVIEW, nCurSel )
+                SetFocus( HWND_FRMKEYBOARD_LISTVIEW )
             end if
 
-        Case IDCANCEL
-            If codeNotify = BN_CLICKED Then
-            SendMessage( HWnd, WM_CLOSE, 0, 0 )
-            Exit Function
-            End If
-    End Select
+        case IDCANCEL
+            if codeNotify = BN_CLICKED then
+                SendMessage( hwnd, WM_CLOSE, 0, 0 )
+                exit function
+            end if
+    end select
 
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmKeyboard
 ' ========================================================================================
-Function frmKeyboard_OnClose( byval HWnd As HWnd ) As LRESULT
+function frmKeyboard_OnClose( byval hwnd as HWND ) as LRESULT
     dim as CWSTR wszFilename = AfxGetExePathName & "settings\keybindings.ini" 
     frmKeyboard_SaveKeyBindings( wszFilename )
     frmKeyboard_BuildAcceleratorTable
 
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
-    DestroyWindow( HWnd )
-    Function = 0
-End Function
+    DestroyWindow( hwnd )
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmKeyboard
 ' ========================================================================================
-Function frmKeyboard_OnDestroy( byval HWnd As HWnd) As LRESULT
+function frmKeyboard_OnDestroy( byval hwnd as HWND) as LRESULT
     PostQuitMessage(0)
-    Function = 0
-End Function
+    function = 0
+end function
 
 
 ' ========================================================================================
 ' Processes messages for the subclassed ListBox window.
 ' ========================================================================================
-Function frmKeyboard_ListView_SubclassProc ( _
-            ByVal HWnd   As HWnd, _                 ' // Control window handle
-            ByVal uMsg   As UINT, _                 ' // Type of message
-            ByVal wParam As WPARAM, _               ' // First message parameter
-            ByVal lParam As LPARAM, _               ' // Second message parameter
-            ByVal uIdSubclass As UINT_PTR, _        ' // The subclass ID
-            ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
-            ) As LRESULT
+function frmKeyboard_ListView_SubclassProc ( _
+            byval hwnd   as HWND, _                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval wParam as WPARAM, _               ' // First message parameter
+            byval lParam as LPARAM, _               ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
     
 
     ' Convert our ENTER key presses into LBUTTONDBLCLK to process them similarly
-    If (uMsg = WM_KEYUP) And (Loword(wParam) = VK_RETURN) Then uMsg = WM_LBUTTONDBLCLK
+    if (uMsg = WM_KEYUP) and (loword(wParam) = VK_RETURN) then uMsg = WM_LBUTTONDBLCLK
     
-    Select Case uMsg
+    select case uMsg
 
-        Case WM_LBUTTONDBLCLK
-            PostMessage( GetParent(HWnd), MSG_USER_SHOW_KEYBOARDEDIT, 0, 0 )
-            Exit Function
+        case WM_LBUTTONDBLCLK
+            PostMessage( GetParent(hwnd), MSG_USER_SHOW_KEYBOARDEDIT, 0, 0 )
+            exit function
             
-        Case WM_CHAR   ' prevent the annoying beep
-            If wParam = VK_RETURN Then Return 0
+        case WM_CHAR   ' prevent the annoying beep
+            if wParam = VK_RETURN then return 0
 
-        Case WM_DESTROY
+        case WM_DESTROY
             ' REQUIRED: Remove control subclassing
-            RemoveWindowSubclass( HWnd, @frmKeyboard_ListView_SubclassProc, uIdSubclass )
+            RemoveWindowSubclass( hwnd, @frmKeyboard_ListView_SubclassProc, uIdSubclass )
 
-    End Select
+    end select
 
     ' Default processing of Windows messages
-    Function = DefSubclassProc( HWnd, uMsg, wParam, lParam )
+    function = DefSubclassProc( hwnd, uMsg, wParam, lParam )
 
-End Function
+end function
 
 ' ========================================================================================
 ' frmKeyboard Window procedure
 ' ========================================================================================
-Function frmKeyboard_WndProc( _
-            ByVal HWnd   As HWnd, _
-            ByVal uMsg   As UINT, _
-            ByVal wParam As WPARAM, _
-            ByVal lParam As LPARAM _
-            ) As LRESULT
+function frmKeyboard_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
-    Select Case uMsg
-        HANDLE_MSG (HWnd, WM_CREATE,      frmKeyboard_OnCreate)
-        HANDLE_MSG (HWnd, WM_CLOSE,       frmKeyboard_OnClose)
-        HANDLE_MSG (HWnd, WM_DESTROY,     frmKeyboard_OnDestroy)
-        HANDLE_MSG (HWnd, WM_COMMAND,     frmKeyboard_OnCommand)
-        HANDLE_MSG (HWnd, WM_NOTIFY,      frmKeyboard_OnNotify)
+    select case uMsg
+        HANDLE_MSG (hwnd, WM_CREATE,      frmKeyboard_OnCreate)
+        HANDLE_MSG (hwnd, WM_CLOSE,       frmKeyboard_OnClose)
+        HANDLE_MSG (hwnd, WM_DESTROY,     frmKeyboard_OnDestroy)
+        HANDLE_MSG (hwnd, WM_COMMAND,     frmKeyboard_OnCommand)
+        HANDLE_MSG (hwnd, WM_NOTIFY,      frmKeyboard_OnNotify)
 
         case MSG_USER_SHOW_KEYBOARDEDIT   
-            Dim As Long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
-            If nCurSel < 0 Then Return 0 
+            dim as long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
+            if nCurSel < 0 then return 0 
             dim wszText as wstring * MAX_PATH
             FF_ListView_GetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 0, @wszText, MAX_PATH) 
             dim as long idx = val( wszText )
             if (idx >= lbound(gKeys)) and (idx <= ubound(gKeys)) then
-            gKeysEdit = gKeys(idx)
-            frmKeyboardEdit_Show( Hwnd )
-            gKeys(idx) = gKeysEdit
+                gKeysEdit = gKeys(idx)
+                frmKeyboardEdit_Show( hwnd )
+                gKeys(idx) = gKeysEdit
 
-            ' Update the Default keys column because it could have changed (DISABLED)
-            wszText = gKeysEdit.wszDefaultKeys
-            if gKeys(idx).bDefaultDisabled then
-                wszText = wszText & " (DISABLED)"
-            end if   
-            FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 4, wszText, MAX_PATH ) 
-            
-            ' Update the UserKeys column because it could have changed
-            wszText = gKeysEdit.wszUserKeys
-            FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
-            frmKeyboard_CheckForKeyConflict( wszText, nCurSel )
+                ' Update the Default keys column because it could have changed (DISABLED)
+                wszText = gKeysEdit.wszDefaultKeys
+                if gKeys(idx).bDefaultDisabled then
+                    wszText = wszText & " (DISABLED)"
+                end if   
+                FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 4, wszText, MAX_PATH ) 
+                
+                ' Update the UserKeys column because it could have changed
+                wszText = gKeysEdit.wszUserKeys
+                FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
+                frmKeyboard_CheckForKeyConflict( wszText, nCurSel )
             end if
             ListView_SelectItem( HWND_FRMKEYBOARD_LISTVIEW, nCurSel )
             SetFocus( HWND_FRMKEYBOARD_LISTVIEW )
@@ -653,43 +653,43 @@ Function frmKeyboard_WndProc( _
     End Select
     
     ' for messages that we don't deal with
-    Function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
-End Function
+end function
 
 
 ' ========================================================================================
 ' frmKeyboard_Show
 ' ========================================================================================
-Function frmKeyboard_Show( ByVal hWndParent As HWnd ) As LRESULT
+function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
 
-    dim hCtrl as HWnd
+    dim hCtrl as HWND
 
     '  Create the main window and child controls
-    Dim pWindow As CWindow Ptr = New CWindow
+    dim pWindow as CWindow ptr = new CWindow
     pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     HWND_FRMKEYBOARD = _
     pWindow->Create(hWndParent, L(220,"Keyboard Shortcuts"), _
         @frmKeyboard_WndProc, 0, 0, 0, 0, _
-        WS_POPUP Or WS_CAPTION Or WS_SYSMENU Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN, _
-        WS_EX_DLGMODALFRAME Or WS_EX_CONTROLPARENT Or WS_EX_LEFT )
+        WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->SetClientSize(622, 436)
     pWindow->Center(pWindow->hWindow, hWndParent)
 
     HWND_FRMKEYBOARD_LISTVIEW = _
         pWindow->AddControl("LISTVIEW", , IDC_FRMKEYBOARD_LIST1, "", 0, 0, 622, 364, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or LVS_REPORT Or LVS_SHOWSELALWAYS or LVS_SINGLESEL, _
-        WS_EX_LEFT Or WS_EX_RIGHTSCROLLBAR, , _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or LVS_REPORT or LVS_SHOWSELALWAYS or LVS_SINGLESEL, _
+        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
         Cast(SUBCLASSPROC, @frmKeyboard_ListView_SubclassProc), IDC_FRMKEYBOARD_LIST1, Cast(DWORD_PTR, @pWindow))
                                         
     ' Make the listview header flat
     ListView_MakeHeaderFlat( HWND_FRMKEYBOARD_LISTVIEW )
             
     ' Add some extended styles
-    Dim dwExStyle As DWORD
+    dim dwExStyle as DWORD
     dwExStyle = ListView_GetExtendedListViewStyle( HWND_FRMKEYBOARD_LISTVIEW )
-    dwExStyle = dwExStyle Or LVS_EX_FULLROWSELECT Or LVS_EX_GRIDLINES Or LVS_EX_DOUBLEBUFFER Or LVS_EX_FLATSB
+    dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_GRIDLINES or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
     ListView_SetExtendedListViewStyle( HWND_FRMKEYBOARD_LISTVIEW, dwExStyle )
 
     ' Configure the ListView
@@ -702,18 +702,18 @@ Function frmKeyboard_Show( ByVal hWndParent As HWnd ) As LRESULT
     ListView_AddColumn( hLV, 5, "User Keys", pWindow->ScaleX(125) )
     
     pWindow->AddControl("BUTTON", , IDC_FRMKEYBOARD_CMDMODIFY, L(433, "Modify"), 8, 388, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("BUTTON", , IDC_FRMKEYBOARD_CMDCLEAR, L(434, "Clear"), 90, 388, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("BUTTON", , IDCANCEL, L(161,"Close"), 536, 388, 74, 28, _
-        WS_CHILD Or WS_VISIBLE Or WS_TABSTOP Or BS_TEXT Or BS_PUSHBUTTON Or BS_NOTIFY Or BS_CENTER Or BS_VCENTER, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     hCtrl = pWindow->AddControl("LABEL", , IDC_FRMKEYBOARD_LBLCONFLICT, "", 168, 394, 350, 20, _
-        WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN Or SS_CENTER Or SS_NOTIFY, _
-        WS_EX_LEFT Or WS_EX_LTRREADING)
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_CENTER or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
 
     ' Load the listview with these temp keys
@@ -739,12 +739,12 @@ Function frmKeyboard_Show( ByVal hWndParent As HWnd ) As LRESULT
     UpdateWindow HWND_FRMKEYBOARD
 
     ' Message loop (modal)
-    DIM uMsg AS MSG
-    WHILE GetMessage( @uMsg, NULL, 0, 0 )
+    dim uMsg as MSG
+    while GetMessage( @uMsg, null, 0, 0 )
         if (uMsg.message = WM_KEYDOWN) andalso (uMsg.wParam = VK_ESCAPE) then
             SendMessage( HWND_FRMKEYBOARD, WM_CLOSE, 0, 0 )
         end if
-        IF IsDialogMessage( HWND_FRMKEYBOARD, @uMsg ) = 0 THEN
+        if IsDialogMessage( HWND_FRMKEYBOARD, @uMsg ) = 0 THEN
             TranslateMessage( @uMsg )
             DispatchMessage( @uMsg )
         end if
@@ -752,7 +752,7 @@ Function frmKeyboard_Show( ByVal hWndParent As HWnd ) As LRESULT
     function = uMsg.wParam
     
     ' Delete the CWindow class manually allocated memory 
-    Delete pWindow
+    delete pWindow
 
-End Function
+end function
 

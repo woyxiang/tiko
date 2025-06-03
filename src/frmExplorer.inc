@@ -146,7 +146,7 @@ end function
 ' Process WM_SIZE message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnSize( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval state as UINT, _
             byval cx as long, _
             byval cy as long _
@@ -161,17 +161,17 @@ end function
 ' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmExplorer
 ' ========================================================================================
-function frmExplorer_OnPaint( byval HWnd as HWnd ) as LRESULT
+function frmExplorer_OnPaint( byval hwnd as HWND ) as LRESULT
             
     dim as PAINTSTRUCT ps
     dim as HDC hDc
     
-    hDC = BeginPaint(hWnd, @ps)
+    hDC = BeginPaint(hwnd, @ps)
 
     SaveDC( hDC )
     FillRect( hDC, @ps.rcPaint, ghPanel.hPanelBrush )
     RestoreDC( hDC, -1 )
-    EndPaint( hWnd, @ps )
+    EndPaint( hwnd, @ps )
     
     function = 0
 end function
@@ -181,11 +181,11 @@ end function
 ' Process WM_MEASUREITEM message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnMeasureItem( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval lpmis as MEASUREITEMSTRUCT ptr _
             ) as long
     ' Set the height of the list box items. 
-    dim pWindow as CWindow ptr = AfxCWindowPtr(HWnd)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND)
     lpmis->itemHeight = pWindow->ScaleY(EXPLORERITEM_HEIGHT)
         
     function = 0
@@ -196,7 +196,7 @@ end function
 ' Process WM_DRAWITEM message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnDrawItem( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval lpdis as const DRAWITEMSTRUCT ptr _
             ) as long
 
@@ -233,9 +233,9 @@ function frmExplorer_OnDrawItem( _
         dim as boolean isNodeHeader = false
         dim as boolean isIconDown = false
             
-        dim as POINT pt
+        dim as point pt
         GetCursorPos( @pt )
-        MapWindowPoints( lpdis->hwndItem, HWND_DESKTOP, cast( POINT ptr, @rc ), 2 )
+        MapWindowPoints( lpdis->hwndItem, HWND_DESKTOP, cast( point ptr, @rc ), 2 )
         if PtInRect( @rc, pt ) then IsHot = true
         
         ' if mouse is over VScrollBar then reset hot
@@ -272,9 +272,9 @@ function frmExplorer_OnDrawItem( _
             SelectObject( memDC, ghMenuBar.hFontSymbol )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE  
             if isIconDown then 
-            DrawText( memDC, wszChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
+                DrawText( memDC, wszChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
             else   
-            DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
+                DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
             end if
             wszCaption = getExplorerNodeHeaderDescription(wszCaption)
             rcText.left = rcBitmap.right
@@ -313,9 +313,9 @@ end function
 ' Process WM_COMMAND message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnCommand( _
-            byval HWnd as HWnd, _
+            byval hwnd as HWND, _
             byval id as long, _
-            byval hwndCtl as HWnd, _
+            byval hwndCtl as HWND, _
             byval codeNotify as UINT _
             ) as LRESULT
 
@@ -335,20 +335,18 @@ end function
 ' frmExplorer Window procedure
 ' ========================================================================================
 function frmExplorer_WndProc( _
-            byval HWnd   as HWnd, _
+            byval hwnd   as HWND, _
             byval uMsg   as UINT, _
             byval wParam as WPARAM, _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static hTooltip as HWND
-
     select case uMsg
-        HANDLE_MSG (HWnd, WM_SIZE,        frmExplorer_OnSize)
-        HANDLE_MSG (HWnd, WM_PAINT,       frmExplorer_OnPaint)
-        HANDLE_MSG (HWnd, WM_COMMAND,     frmExplorer_OnCommand)
-        HANDLE_MSG (HWnd, WM_MEASUREITEM, frmExplorer_OnMeasureItem)
-        HANDLE_MSG (HWnd, WM_DRAWITEM,    frmExplorer_OnDrawItem)
+        HANDLE_MSG (hwnd, WM_SIZE,        frmExplorer_OnSize)
+        HANDLE_MSG (hwnd, WM_PAINT,       frmExplorer_OnPaint)
+        HANDLE_MSG (hwnd, WM_COMMAND,     frmExplorer_OnCommand)
+        HANDLE_MSG (hwnd, WM_MEASUREITEM, frmExplorer_OnMeasureItem)
+        HANDLE_MSG (hwnd, WM_DRAWITEM,    frmExplorer_OnDrawItem)
     
     case WM_ERASEBKGND
         return true
@@ -356,7 +354,7 @@ function frmExplorer_WndProc( _
     end select
     
     ' for messages that we don't deal with
-    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+    function = DefWindowProc( hwnd, uMsg, wParam, lParam )
 
 end function
 
@@ -364,7 +362,7 @@ end function
 ' frmExplorerListBox_SubclassProc 
 ' ========================================================================================
 function frmExplorerListBox_SubclassProc ( _
-            byval hWin   as HWnd, _                 ' // Control window handle
+            byval hWin   as HWND, _                 ' // Control window handle
             byval uMsg   as UINT, _                 ' // Type of message
             byval _wParam as WPARAM, _               ' // First message parameter
             byval _lParam as LPARAM, _               ' // Second message parameter
@@ -391,17 +389,18 @@ function frmExplorerListBox_SubclassProc ( _
             dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
             accumDelta = accumDelta + zDelta
             if accumDelta >= 120 then       ' scroll up 3 lines
-            nTopIndex = nTopIndex - 3
-            nTopIndex = max( 0, nTopIndex )
-            SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
-            accumDelta = 0
-            frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                nTopIndex = nTopIndex - 3
+                nTopIndex = max( 0, nTopIndex )
+                SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                accumDelta = 0
+                frmPanelVScroll_PositionWindows( SW_SHOWNA )
             elseif accumDelta <= -120 then  ' scroll down 3 lines
-            nTopIndex = nTopIndex + 3
-            SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
-            accumDelta = 0
-            frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                nTopIndex = nTopIndex + 3
+                SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                accumDelta = 0
+                frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
+            return 0
             
         Case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
@@ -420,14 +419,15 @@ function frmExplorerListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            if idx <> nLastIdx then
-                ListBox_GetItemRect( hWin, idx, @rc )
-                InvalidateRect( hWin, @rc, true )
-                ListBox_GetItemRect( hWin, nLastIdx, @rc )
-                InvalidateRect( hWin, @rc, true )
-                nLastIdx = idx
+                if idx <> nLastIdx then
+                    ListBox_GetItemRect( hWin, idx, @rc )
+                    InvalidateRect( hWin, @rc, true )
+                    ListBox_GetItemRect( hWin, nLastIdx, @rc )
+                    InvalidateRect( hWin, @rc, true )
+                    nLastIdx = idx
+                end if
             end if
-            end if
+            return 0
                         
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip 
@@ -437,16 +437,18 @@ function frmExplorerListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-            if pDoc then wszTooltip = pDoc->DiskFilename
-            ' Display the tooltip
-            AfxSetTooltipText( hTooltip, hWin, wszTooltip )
-            AfxRedrawWindow( hWin )
+                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                if pDoc then wszTooltip = pDoc->DiskFilename
+                ' Display the tooltip
+                AfxSetTooltipText( hTooltip, hWin, wszTooltip )
+                AfxRedrawWindow( hWin )
             end if
+            return 0
             
         case WM_MOUSELEAVE
             nLastIdx = -1
-            AfxRedrawWindow(hWin)   
+            AfxRedrawWindow(hWin)
+            return 0   
             
         case WM_RBUTTONDOWN
             ' Create the popup menu
@@ -455,62 +457,62 @@ function frmExplorerListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-            if pDoc then
-                ' If only 1 line has been previously selected then unselect that line
-                ' and select this current line, otherwise, the menu actions on all selected lines.
-                dim as long nSelCount = SendMessage( hWin, LB_GETSELCOUNT, 0, 0 )
-                if nSelCount = 1 then
-                    for i as long = 0 to ListBox_GetCount( hWin ) - 1 
-                        ListBox_SetSel( hWin, false, i )
-                    next 
-                end if
-                
-                ListBox_SetSel( hWin, true, idx )
-                dim as HMENU hPopupMenu = CreateExplorerContextMenu(pDoc)
-                dim as POINT pt: GetCursorPos( @pt )
-                dim as long id = TrackPopupMenu(hPopUpMenu, TPM_RETURNCMD, pt.x, pt.y, 0, HWND_FRMMAIN, byval null)
-                ' process the selected rows. Need to save the current state of selected
-                ' rows prior to processing because as the items are processed some of the
-                ' actions may reset the state of listbox. We save the pDoc's in an array
-                ' rather than index values because the listbox may get reloaded during
-                ' some actions invalidating some indexes. 
-                nSelCount = SendMessage( hWin, LB_GETSELCOUNT, 0, 0 )
-                dim pDocArray(nSelCount-1) as clsDocument ptr 
-                dim as long nextIdx = 0
-                for i as long = 0 to ListBox_GetCount( hWin ) - 1
-                    if ListBox_GetSel( hWin, i ) then
-                        dim as CWSTR wszCaption = AfxGetListBoxText( hWin, i )
-                        if left(wszCaption, 1) = "%" then 
-                        pDocArray(nextIdx) = 0
-                        else   
-                        pDocArray(nextIdx) = cast(clsDocument ptr, ListBox_GetItemData( hWin, i ))
-                        end if
-                        nextIdx = nextIdx + 1
+                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                if pDoc then
+                    ' If only 1 line has been previously selected then unselect that line
+                    ' and select this current line, otherwise, the menu actions on all selected lines.
+                    dim as long nSelCount = SendMessage( hWin, LB_GETSELCOUNT, 0, 0 )
+                    if nSelCount = 1 then
+                        for i as long = 0 to ListBox_GetCount( hWin ) - 1 
+                            ListBox_SetSel( hWin, false, i )
+                        next 
                     end if
-                next         
-                ' Process our array of selected pDoc's.
-                for i as long = lbound(pDocArray) to ubound(pDocArray)
-                    if pDocArray(i) = 0 then continue for
-                    select case id
-                        case IDM_FILEOPEN_EXPLORERLISTBOX, IDM_FILECLOSE_EXPLORERLISTBOX, _
-                            IDM_FILESAVE_EXPLORERLISTBOX, IDM_FILESAVEAS_EXPLORERLISTBOX
-                            OnCommand_FileExplorerMessage( id, pDocArray(i) )
-                        case IDM_REMOVEFILEFROMPROJECT_EXPLORERLISTBOX
-                            OnCommand_ProjectRemove( id, pDocArray(i) )
-                        case IDM_SETFILEMAIN_EXPLORERTREEVIEW, IDM_SETFILERESOURCE_EXPLORERTREEVIEW, _
-                            IDM_SETFILEHEADER_EXPLORERTREEVIEW, IDM_SETFILEMODULE_EXPLORERTREEVIEW, _
-                            IDM_SETFILENORMAL_EXPLORERTREEVIEW 
-                            OnCommand_ProjectSetFileType( id, pDocArray(i) )
-                        case is > IDM_SETCATEGORY     
-                            OnCommand_ProjectSetFileType( id, pDocArray(i) )
-                    end select
-                next
-                LoadExplorerFiles()
-                frmExplorer_UnSelectListBox() 
-                DestroyMenu( hPopUpMenu )
-                Return true   ' prevent further processing that leads to WM_CONTEXTMENU
-            end if
+                    
+                    ListBox_SetSel( hWin, true, idx )
+                    dim as HMENU hPopupMenu = CreateExplorerContextMenu(pDoc)
+                    dim as POINT pt: GetCursorPos( @pt )
+                    dim as long id = TrackPopupMenu(hPopUpMenu, TPM_RETURNCMD, pt.x, pt.y, 0, HWND_FRMMAIN, byval null)
+                    ' process the selected rows. Need to save the current state of selected
+                    ' rows prior to processing because as the items are processed some of the
+                    ' actions may reset the state of listbox. We save the pDoc's in an array
+                    ' rather than index values because the listbox may get reloaded during
+                    ' some actions invalidating some indexes. 
+                    nSelCount = SendMessage( hWin, LB_GETSELCOUNT, 0, 0 )
+                    dim pDocArray(nSelCount-1) as clsDocument ptr 
+                    dim as long nextIdx = 0
+                    for i as long = 0 to ListBox_GetCount( hWin ) - 1
+                        if ListBox_GetSel( hWin, i ) then
+                            dim as CWSTR wszCaption = AfxGetListBoxText( hWin, i )
+                            if left(wszCaption, 1) = "%" then 
+                            pDocArray(nextIdx) = 0
+                            else   
+                            pDocArray(nextIdx) = cast(clsDocument ptr, ListBox_GetItemData( hWin, i ))
+                            end if
+                            nextIdx = nextIdx + 1
+                        end if
+                    next         
+                    ' Process our array of selected pDoc's.
+                    for i as long = lbound(pDocArray) to ubound(pDocArray)
+                        if pDocArray(i) = 0 then continue for
+                        select case id
+                            case IDM_FILEOPEN_EXPLORERLISTBOX, IDM_FILECLOSE_EXPLORERLISTBOX, _
+                                IDM_FILESAVE_EXPLORERLISTBOX, IDM_FILESAVEAS_EXPLORERLISTBOX
+                                OnCommand_FileExplorerMessage( id, pDocArray(i) )
+                            case IDM_REMOVEFILEFROMPROJECT_EXPLORERLISTBOX
+                                OnCommand_ProjectRemove( id, pDocArray(i) )
+                            case IDM_SETFILEMAIN_EXPLORERTREEVIEW, IDM_SETFILERESOURCE_EXPLORERTREEVIEW, _
+                                IDM_SETFILEHEADER_EXPLORERTREEVIEW, IDM_SETFILEMODULE_EXPLORERTREEVIEW, _
+                                IDM_SETFILENORMAL_EXPLORERTREEVIEW 
+                                OnCommand_ProjectSetFileType( id, pDocArray(i) )
+                            case is > IDM_SETCATEGORY     
+                                OnCommand_ProjectSetFileType( id, pDocArray(i) )
+                        end select
+                    next
+                    LoadExplorerFiles()
+                    frmExplorer_UnSelectListBox() 
+                    DestroyMenu( hPopUpMenu )
+                    return true   ' prevent further processing that leads to WM_CONTEXTMENU
+                end if
             end if
             
         case WM_LBUTTONUP
@@ -520,32 +522,33 @@ function frmExplorerListBox_SubclassProc ( _
             dim as boolean isCtrl = (GetAsyncKeyState(VK_CONTROL) and &H8000)
             dim as boolean isShift = (GetAsyncKeyState(VK_SHIFT) and &H8000) 
             if (isCtrl = false) andalso (isShift = false) then
-            ' determine if we clicked on a regular file or a node header
-            dim as RECT rc
-            dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
-            ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
-            ' if the specified point is in the client area of the list box, or one if it is outside the 
-            ' client area.
-            if hiword(idx) <> 1 then
-                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
-                if left(wszCaption, 1) = "%" then
-                    ' Toggle the show/hide of files under this node
-                    dim as long idxArray = getExplorerNodeHeaderIndex(wszCaption)
-                    if idxArray <> -1 then
-                        gConfig.Cat(idxArray).bShow = not gConfig.Cat(idxArray).bShow
-                    end if   
-                    ' allow listbox click event to fully process before loading new explorer files
-                    ' so that we can correctly select the current item.
-                    PostMessage( hWin, MSG_USER_LOAD_EXPLORERFILES, 0, 0 )
-                else
-                    ' if the file is already showing in the Top tabs then switch to that tab.
-                    ' We do not open a new tab on single click. Only double click or ENTER will
-                    ' open a new tab. 
-                    dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-                    gTTabCtl.SetTabIndexByDocumentPtr( pDoc )
+                ' determine if we clicked on a regular file or a node header
+                dim as RECT rc
+                dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
+                ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
+                ' if the specified point is in the client area of the list box, or one if it is outside the 
+                ' client area.
+                if hiword(idx) <> 1 then
+                    dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
+                    if left(wszCaption, 1) = "%" then
+                        ' Toggle the show/hide of files under this node
+                        dim as long idxArray = getExplorerNodeHeaderIndex(wszCaption)
+                        if idxArray <> -1 then
+                            gConfig.Cat(idxArray).bShow = not gConfig.Cat(idxArray).bShow
+                        end if   
+                        ' allow listbox click event to fully process before loading new explorer files
+                        ' so that we can correctly select the current item.
+                        PostMessage( hWin, MSG_USER_LOAD_EXPLORERFILES, 0, 0 )
+                    else
+                        ' if the file is already showing in the Top tabs then switch to that tab.
+                        ' We do not open a new tab on single click. Only double click or ENTER will
+                        ' open a new tab. 
+                        dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                        gTTabCtl.SetTabIndexByDocumentPtr( pDoc )
+                    end if
                 end if
             end if
-            end if
+            return 0
                     
         case WM_LBUTTONDBLCLK 
             ' determine if we clicked on a regular file or a node header. If it is a regular
@@ -556,16 +559,17 @@ function frmExplorerListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-            dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
-            if left(wszCaption, 1) <> "%" then
-                dim as CWSTR wszFilename
-                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-                if pDoc then
-                    wszFilename = pDoc->DiskFilename
-                    OpenSelectedDocument( wszFilename, "" )
-                end if   
+                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
+                if left(wszCaption, 1) <> "%" then
+                    dim as CWSTR wszFilename
+                    dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                    if pDoc then
+                        wszFilename = pDoc->DiskFilename
+                        OpenSelectedDocument( wszFilename, "" )
+                    end if   
+                end if
             end if
-            end if
+            return 0
                 
         case WM_ERASEBKGND
             ' if the number of lines in the listbox maybe less than the number per page then 
@@ -584,16 +588,16 @@ function frmExplorerListBox_SubclassProc ( _
             dim as long bottom_index = 0
                         
             if NumItems > 0 then
-            ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-            bottom_index = (nTopIndex + ItemsPerPage) 
-            if bottom_index >= NumItems then bottom_index = NumItems - 1
-            visible_rows = (bottom_index - nTopIndex) + 1
-            rc.top = visible_rows * itemHeight 
+                ItemsPerPage = (rc.bottom - rc.top) / itemHeight
+                bottom_index = (nTopIndex + ItemsPerPage) 
+                if bottom_index >= NumItems then bottom_index = NumItems - 1
+                visible_rows = (bottom_index - nTopIndex) + 1
+                rc.top = visible_rows * itemHeight 
             end if
 
             if rc.top < rc.bottom then
-            dim as HDC _hDC = cast(HDC, _wParam)
-            FillRect( _hDC, @rc, ghPanel.hPanelBrush )
+                dim as HDC _hDC = cast(HDC, _wParam)
+                FillRect( _hDC, @rc, ghPanel.hPanelBrush )
             end if
 
             ValidateRect( hWin, @rc )
@@ -613,7 +617,7 @@ end function
 ' ========================================================================================
 ' frmExplorer_Show
 ' ========================================================================================
-function frmExplorer_Show( byval hWndParent as HWnd ) as LRESULT
+function frmExplorer_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = New CWindow
@@ -718,9 +722,9 @@ function LoadExplorerFiles() as long
         dim pDoc as clsDocument ptr = gApp.pDocList
         do until pDoc = 0
             if pDoc->ProjectFiletype = gConfig.Cat(ii).idFileType then
-            ub = ubound(pDocs) + 1
-            redim preserve pDocs(ub)
-            pDocs(ub) = pDoc
+                ub = ubound(pDocs) + 1
+                redim preserve pDocs(ub)
+                pDocs(ub) = pDoc
             end if
             pDoc = pDoc->pDocNext
         loop
@@ -733,7 +737,7 @@ function LoadExplorerFiles() as long
             ' pDoc item is stored in ListBox ItemData
             ListBox_SetItemData( hList, idx, pDocs(i) )    
             if pDocActive then 
-            if pDocs(i) = pDocActive then idxRestore = idx
+                if pDocs(i) = pDocActive then idxRestore = idx
             end if
         next   
         

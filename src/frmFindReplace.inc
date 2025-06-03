@@ -212,7 +212,7 @@ function frmFindReplace_NextSelection( _
         mainIdx = 1
         for i as long = 1 to gFind.foundCount
             if iPositions(i) > startPos then
-            mainIdx = i: exit for
+                mainIdx = i: exit for
             end if
         next
     else
@@ -220,7 +220,7 @@ function frmFindReplace_NextSelection( _
         mainIdx = gFind.foundCount
         for i as long = 1 to gFind.foundCount
             if iPositions(i) < startPos then
-            mainIdx = i
+                mainIdx = i
             end if
         next
     end if
@@ -293,21 +293,21 @@ function frmFindReplace_DoReplace( _
             ' If Preserve Case is active then check the selection to see if the entire
             ' selection is all UPPERCASE or all lowercase.
             if gFind.nPreserve then
-            dim as string sReplaceText
-            if isUpperCaseString( sSelText ) then
-                sReplaceText = ucase(txtReplace)
-            elseif isLowerCaseString( sSelText ) then
-                sReplaceText = lcase(txtReplace)
-            else
-                sReplaceText = txtReplace
-            end if
-            SciExec( hEdit, SCI_REPLACETARGET, len(sReplaceText), strptr(sReplaceText) )
-            startPos = r + len(sReplaceText)
-            endPos = endPos + len(sReplaceText) - len(sSelText)
+                dim as string sReplaceText
+                if isUpperCaseString( sSelText ) then
+                    sReplaceText = ucase(txtReplace)
+                elseif isLowerCaseString( sSelText ) then
+                    sReplaceText = lcase(txtReplace)
+                else
+                    sReplaceText = txtReplace
+                end if
+                SciExec( hEdit, SCI_REPLACETARGET, len(sReplaceText), strptr(sReplaceText) )
+                startPos = r + len(sReplaceText)
+                endPos = endPos + len(sReplaceText) - len(sSelText)
             else            
-            SciExec( hEdit, SCI_REPLACETARGET, len(txtReplace), strptr(txtReplace) )
-            startPos = r + len(txtReplace)  
-            endPos = endPos + len(txtReplace) - len(sSelText)
+                SciExec( hEdit, SCI_REPLACETARGET, len(txtReplace), strptr(txtReplace) )
+                startPos = r + len(txtReplace)  
+                endPos = endPos + len(txtReplace) - len(sSelText)
             end if
             ' Need to update the end searching positions because the replace action may
             ' have made the document larger or smaller.
@@ -334,11 +334,11 @@ function frmFindReplace_DoReplace( _
             dim as string sSelText = pDoc->GetSelText
             dim as string sReplaceText
             if isUpperCaseString( sSelText ) then
-            sReplaceText = ucase(txtReplace)
+                sReplaceText = ucase(txtReplace)
             elseif isLowerCaseString( sSelText ) then
-            sReplaceText = lcase(txtReplace)
+                sReplaceText = lcase(txtReplace)
             else
-            sReplaceText = txtReplace
+                sReplaceText = txtReplace
             end if
             SciExec( hEdit, SCI_REPLACETARGET, len(sReplaceText), strptr(sReplaceText) )
             startPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) + len(sReplaceText)
@@ -364,12 +364,12 @@ end function
 function frmFindReplace_HighlightSearches( byval bRepositionCaret as boolean ) as long
 
     dim as long r, startPos, endPos, findFlags, nLength
-    dim as hwnd hWndFind = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
+    dim as HWND hWndFind = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
     
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
 
-    dim as hwnd hEdit = pDoc->hWndActiveScintilla
+    dim as HWND hEdit = pDoc->hWndActiveScintilla
     SciExec( hEdit, SCI_SETADDITIONALCARETSVISIBLE, false, 0) 
     SciExec( hEdit, SCI_INDICSETSTYLE, 8, INDIC_STRAIGHTBOX)
     SciExec( hEdit, SCI_SETINDICATORCURRENT, 8, 0)
@@ -432,32 +432,32 @@ end function
 ' Process WM_COMMAND message for window/dialog: frmFindReplace
 ' ========================================================================================
 function frmFindReplace_OnCommand( _
-        byval HWnd as HWnd, _
+        byval hwnd as HWND, _
         byval id as Long, _
-        byval hwndCtl as HWnd, _
+        byval hwndCtl as HWND, _
         byval codeNotify as UINT _
         ) as LRESULT
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
 
-    dim as hwnd hEdit = pDoc->hWndActiveScintilla
+    dim as HWND hEdit = pDoc->hWndActiveScintilla
 
     select case id
 
         case IDC_FRMFINDREPLACE_TXTFIND
             if (codeNotify = EN_CHANGE) then
-            gFind.txtFind = AfxGetWindowText(hwndCtl)
-            frmFindReplace_HighlightSearches( true )
-            SetFocus( hwndCtl )   ' in case search stole focus from textbox
-            AfxRedrawWindow( hWnd )
+                gFind.txtFind = AfxGetWindowText(hwndCtl)
+                frmFindReplace_HighlightSearches( true )
+                SetFocus( hwndCtl )   ' in case search stole focus from textbox
+                AfxRedrawWindow( hwnd )
             elseif (codeNotify = EN_SETFOCUS) then
-            AfxRedrawWindow( hWnd )
+                AfxRedrawWindow( hwnd )
             end if
                 
         case IDC_FRMFINDREPLACE_TXTREPLACE
             if (codeNotify = EN_SETFOCUS) then
-            AfxRedrawWindow( hWnd )
+                AfxRedrawWindow( hwnd )
             end if
 
     end select
@@ -469,7 +469,7 @@ end function
 ' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmFindReplace
 ' ========================================================================================
-function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
+function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
             
     dim as PAINTSTRUCT ps
     dim as HPEN hPen
@@ -479,10 +479,10 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     
     dim as long wsStyle
     
-    dim pWindow as CWindow ptr = AfxCWindowOwnerPtr(HWND)
+    dim pWindow as CWindow ptr = AfxCWindowOwnerPtr(hwnd)
     if pWindow = 0 then exit function
 
-    hDC = BeginPaint( hWnd, @ps )
+    hDC = BeginPaint( hwnd, @ps )
 
     SaveDC( hDC )
 
@@ -509,7 +509,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     DeletePen( hPen )
 
     ' Paint the Expand/Collapse button
-    if isMouseOverRECT( HWnd, gFind.rcExpand ) then
+    if isMouseOverRECT( hwnd, gFind.rcExpand ) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         FillRect( memDC, @gFind.rcExpand, ghFindReplace.hIconBrushHot )
@@ -527,15 +527,15 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     hPen = CreatePen( PS_SOLID, 1, BGR(0,0,255) )  ' blue
     SelectPen( memDC, hPen )
     hCtl = GetFocus()
-    if hCtl = GetDlgItem(HWND, IDC_FRMFINDREPLACE_TXTFIND) then
+    if hCtl = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND) then
         SelectObject( hDC, ghFindReplace.hBackBrushTextBox )
-        GetWindowRect( GetDlgItem(HWND, IDC_FRMFINDREPLACE_TXTFIND), @rc )
-        MapWindowPoints( HWND_DESKTOP, HWND, cast(LPPOINT, @rc), 2)
+        GetWindowRect( GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND), @rc )
+        MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rc), 2)
         Rectangle( memDC, rc.left - 1, rc.top - 1, rc.right + pWindow->ScaleX(49), rc.bottom + 1 )
-    elseif hCtl = GetDlgItem(HWND, IDC_FRMFINDREPLACE_TXTREPLACE) then
+    elseif hCtl = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE) then
         SelectObject( hDC, ghFindReplace.hBackBrushTextBox )
-        GetWindowRect( GetDlgItem(HWND, IDC_FRMFINDREPLACE_TXTREPLACE), @rc )
-        MapWindowPoints( HWND_DESKTOP, HWND, cast(LPPOINT, @rc), 2)
+        GetWindowRect( GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE), @rc )
+        MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rc), 2)
         Rectangle( memDC, rc.left - 1, rc.top - 1, rc.right + pWindow->ScaleX(25), rc.bottom + 1 )
     end if
     DeleteObject( hPen )
@@ -547,7 +547,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
         SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
         SetTextColor( memDC, ghFindReplace.ForeColor )
         SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
-    elseif isMouseOverRECT( HWnd, gFind.rcMatchCase ) then
+    elseif isMouseOverRECT( hwnd, gFind.rcMatchCase ) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -570,7 +570,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
         SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
         SetTextColor( memDC, ghFindReplace.ForeColor )
         SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
-    elseif isMouseOverRECT( HWnd, gFind.rcWholeWord ) then
+    elseif isMouseOverRECT( hwnd, gFind.rcWholeWord ) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -600,7 +600,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     DrawText( memDC, gFind.wszResults.sptr, -1, cast(lpRect, @gFind.rcResults), wsStyle )
     
     ' Paint the Up Arrow
-    if isMouseOverRECT( HWnd, gFind.rcUpArrow ) then
+    if isMouseOverRECT( hwnd, gFind.rcUpArrow ) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -636,7 +636,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
         SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
         SetTextColor( memDC, ghFindReplace.ForeColor )
         SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
-    elseif isMouseOverRECT( HWnd, gFind.rcSelection) then
+    elseif isMouseOverRECT( hwnd, gFind.rcSelection) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -652,7 +652,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     DrawText( memDC, wszSelection, -1, cast(lpRect, @rc), wsStyle )
 
     ' Paint the Close icon
-    if isMouseOverRECT( HWnd, gFind.rcClose) then
+    if isMouseOverRECT( hwnd, gFind.rcClose) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -672,7 +672,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
         SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
         SetTextColor( memDC, ghFindReplace.ForeColor )
         SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
-    elseif isMouseOverRECT( HWnd, gFind.rcPreserve ) then
+    elseif isMouseOverRECT( hwnd, gFind.rcPreserve ) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -707,7 +707,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     DrawText( memDC, wszReplace, -1, cast(lpRect, @rc), wsStyle )
 
     ' Paint the ReplaceAll icon
-    if isMouseOverRECT( HWnd, gFind.rcReplaceAll) then
+    if isMouseOverRECT( hwnd, gFind.rcReplaceAll) then
         SetBkColor( memDC, ghFindReplace.IconBackColorHot )
         SetTextColor( memDC, ghFindReplace.ForeColorHot )
         SelectObject( memDC, ghFindReplace.hIconBrushHot )
@@ -730,7 +730,7 @@ function frmFindReplace_OnPaint( byval HWnd as HWND) as LRESULT
     if memDC then DeleteDC( memDC )
     RestoreDC( hDC, -1 )
 
-    EndPaint( hWnd, @ps )
+    EndPaint( hwnd, @ps )
     
     function = true
 end function
@@ -739,8 +739,8 @@ end function
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmFindReplace
 ' ========================================================================================
-function frmFindReplace_OnClose( byval HWnd as HWnd ) as LRESULT
-    DestroyWindow HWnd
+function frmFindReplace_OnClose( byval hwnd as HWND ) as LRESULT
+    DestroyWindow(hwnd)
     function = 0
 end function
 
@@ -748,7 +748,7 @@ end function
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmFindReplace
 ' ========================================================================================
-function frmFindReplace_OnDestroy( byval HWnd as HWnd ) as LRESULT 
+function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT 
     
     ' Remove selected attributes (Attribute #8). We need to remove it from all
     ' open documents because the user may have tabbed between documents while
@@ -769,7 +769,7 @@ function frmFindReplace_OnDestroy( byval HWnd as HWnd ) as LRESULT
     HWND_FRMFINDREPLACE = 0
 
     ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
-    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow then delete pWindow
     
     function = 0
@@ -780,7 +780,7 @@ end function
 ' frmFindReplaceShadow_WndProc Window procedure
 ' ========================================================================================
 function frmFindReplaceShadow_WndProc( _
-        byval HWnd   as HWnd, _
+        byval hwnd   as HWND, _
         byval uMsg   as UINT, _
         byval wParam as WPARAM, _
         byval lParam as LPARAM _
@@ -788,13 +788,13 @@ function frmFindReplaceShadow_WndProc( _
         
     select case uMsg
         case WM_DESTROY
-            dim pWindow as CWindow ptr = AfxCWindowPtr(HWnd)
+            dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
             if pWindow = 0 then delete pWindow
             HWND_FRMFINDREPLACE_SHADOW = 0
     end select      
 
     ' for messages that we don't deal with
-    function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
 end function
 
@@ -803,7 +803,7 @@ end function
 ' frmFindReplace Window procedure
 ' ========================================================================================
 function frmFindReplace_WndProc( _
-        byval HWnd   as HWnd, _
+        byval hwnd   as HWND, _
         byval uMsg   as UINT, _
         byval wParam as WPARAM, _
         byval lParam as LPARAM _
@@ -812,13 +812,13 @@ function frmFindReplace_WndProc( _
     static hTooltip as HWND
     
     select case uMsg
-        HANDLE_MSG (HWnd, WM_CLOSE,    frmFindReplace_OnClose)
-        HANDLE_MSG (HWnd, WM_DESTROY,  frmFindReplace_OnDestroy)
-        HANDLE_MSG (HWnd, WM_COMMAND,  frmFindReplace_OnCommand)
-        HANDLE_MSG (HWnd, WM_PAINT,    frmFindReplace_OnPaint)
+        HANDLE_MSG (hwnd, WM_CLOSE,    frmFindReplace_OnClose)
+        HANDLE_MSG (hwnd, WM_DESTROY,  frmFindReplace_OnDestroy)
+        HANDLE_MSG (hwnd, WM_COMMAND,  frmFindReplace_OnCommand)
+        HANDLE_MSG (hwnd, WM_PAINT,    frmFindReplace_OnPaint)
 
     case WM_ACTIVATE
-        AfxRedrawWindow( HWnd )
+        AfxRedrawWindow( hwnd )
         
     case WM_ERASEBKGND
         return true
@@ -827,47 +827,50 @@ function frmFindReplace_WndProc( _
         dim tme as TrackMouseEvent
         tme.cbSize = sizeof(TrackMouseEvent)
         tme.dwFlags = TME_HOVER or TME_LEAVE
-        tme.hwndTrack = HWnd
+        tme.hwndTrack = hwnd
         tme.dwHoverTime = 400    ' system default is 400ms
         TrackMouseEvent(@tme) 
 
-        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( HWnd, "", false, false )
-        AfxRedrawWindow(HWnd)
+        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
+        AfxRedrawWindow(hwnd)
+        return 0
 
 
     case WM_MOUSELEAVE
-        AfxDeleteTooltip( hTooltip, HWnd )
+        AfxDeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
-        AfxRedrawWindow( HWnd )
+        AfxRedrawWindow( hwnd )
+        return 0
 
 
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip = ""
-        if isMouseOverRECT( HWnd, gFind.rcExpand ) then
+        if isMouseOverRECT( hwnd, gFind.rcExpand ) then
             wszTooltip = L(270, "Toggle Replace mode")
-        elseif isMouseOverRECT( HWnd, gFind.rcMatchCase ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcMatchCase ) then
             wszTooltip = L(163,"Match Case")
-        elseif isMouseOverRECT( HWnd, gFind.rcWholeWord ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcWholeWord ) then
             wszTooltip = L(162,"Match Whole Words")
-        elseif isMouseOverRECT( HWnd, gFind.rcUpArrow ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcUpArrow ) then
             wszTooltip = L(45,"Find Previous") & " (Shift+F3)"
-        elseif isMouseOverRECT( HWnd, gFind.rcDownArrow ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcDownArrow ) then
             wszTooltip = L(44,"Find next") & " (F3)"
-        elseif isMouseOverRECT( HWnd, gFind.rcSelection ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcSelection ) then
             wszTooltip = L(148,"Selection")
-        elseif isMouseOverRECT( HWnd, gFind.rcPreserve ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcPreserve ) then
             wszTooltip = L(424,"Preserve Case")
-        elseif isMouseOverRECT( HWnd, gFind.rcReplace ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcReplace ) then
             wszTooltip = L(173,"Replace") & " (Enter)"
-        elseif isMouseOverRECT( HWnd, gFind.rcReplaceAll ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcReplaceAll ) then
             wszTooltip = L(174,"Replace All") & " (Ctrl+Alt+Enter)"
-        elseif isMouseOverRECT( HWnd, gFind.rcClose ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcClose ) then
             wszTooltip = L(161,"Close") & " (Esc)"
         end if
 
         ' Display the tooltip
-        if len(wszTooltip) then AfxSetTooltipText( hTooltip, HWnd, wszTooltip )
-        AfxRedrawWindow( HWnd )
+        if len(wszTooltip) then AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+        AfxRedrawWindow( hwnd )
+        return 0
 
 
     case WM_RBUTTONDOWN
@@ -875,64 +878,64 @@ function frmFindReplace_WndProc( _
     case WM_LBUTTONDOWN
 
     case WM_LBUTTONUP
-        dim as hwnd hEdit 
+        dim as HWND hEdit 
         dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
         if pDoc then hEdit = pDoc->hWndActiveScintilla
         
-        if isMouseOverRECT( HWnd, gFind.rcExpand ) then
+        if isMouseOverRECT( hwnd, gFind.rcExpand ) then
             gFind.bExpanded = not gFind.bExpanded
-            frmFindReplace_Show( HWnd, gFind.bExpanded )
+            frmFindReplace_Show( hwnd, gFind.bExpanded )
 
-        elseif isMouseOverRECT( HWnd, gFind.rcMatchCase ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcMatchCase ) then
             gFind.nMatchCase = not gFind.nMatchCase
             frmFindReplace_HighlightSearches( true )
-            AfxRedrawWindow(HWnd)
+            AfxRedrawWindow(hwnd)
 
-        elseif isMouseOverRECT( HWnd, gFind.rcWholeWord ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcWholeWord ) then
             gFind.nWholeWord = not gFind.nWholeWord
             frmFindReplace_HighlightSearches( true )
-            AfxRedrawWindow(HWnd)
+            AfxRedrawWindow(hwnd)
 
-        elseif isMouseOverRECT( HWnd, gFind.rcUpArrow ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcUpArrow ) then
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDPREV, 0), 0 )
 
-        elseif isMouseOverRECT( HWnd, gFind.rcDownArrow ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcDownArrow ) then
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDnext, 0), 0 )
 
-        elseif isMouseOverRECT( HWnd, gFind.rcSelection ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcSelection ) then
             if pDoc = 0 then exit function   
             if (pDoc->IsMultilineSelection) or (pDoc->HasMarkerHighlight) then
-            gFind.nSelection = not gFind.nSelection
+                gFind.nSelection = not gFind.nSelection
             else
-            gFind.nSelection = false
+                gFind.nSelection = false
             end if
             if gFind.nSelection then
-            pDoc->SetMarkerHighlight
+                pDoc->SetMarkerHighlight
             else   
-            pDoc->RemoveMarkerHighlight
+                pDoc->RemoveMarkerHighlight
             end if
             frmFindReplace_HighlightSearches( true )
-            AfxRedrawWindow(HWnd)
+            AfxRedrawWindow(hwnd)
 
-        elseif isMouseOverRECT( HWnd, gFind.rcPreserve ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcPreserve ) then
             if pDoc = 0 then exit function   
             gFind.nPreserve = not gFind.nPreserve
 
-        elseif isMouseOverRECT( HWnd, gFind.rcReplace ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcReplace ) then
             if pDoc = 0 then exit function   
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEnext, 0), 0 )
 
-        elseif isMouseOverRECT( HWnd, gFind.rcReplaceAll ) then
+        elseif isMouseOverRECT( hwnd, gFind.rcReplaceAll ) then
             if pDoc = 0 then exit function   
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEALL, 0), 0 )
 
-        elseif isMouseOverRECT( HWnd, gFind.rcClose ) then
-            SendMessage( HWnd, WM_CLOSE, 0, 0 )
+        elseif isMouseOverRECT( hwnd, gFind.rcClose ) then
+            SendMessage( hwnd, WM_CLOSE, 0, 0 )
         end if
             
     End Select
 
-    function = DefWindowProc(HWnd, uMsg, wParam, lParam)
+    function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
 end function
 
@@ -941,7 +944,7 @@ end function
 ' frmFindReplace_RichEdit_SubclassProc Window procedure
 ' ========================================================================================
 Function frmFindReplace_RichEdit_SubclassProc ( _
-        byval hWin   as HWnd, _                 ' // Control window handle
+        byval hWin   as HWND, _                 ' // Control window handle
         byval uMsg   as UINT, _                 ' // Type of message
         byval _wParam as WPARAM, _               ' // First message parameter
         byval _lParam as LPARAM, _               ' // Second message parameter
@@ -956,45 +959,45 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
         case WM_PRINTCLIENT, WM_PAINT
             dim as long textLength = AfxGetWindowTextLength(hWin)
             if (textLength = 0 ) then 
-            ' Get the needed DC with DCX_INTERSECTUPDATE before the EDIT
-            ' control's WM_PAINT handler calls BeginPaint/EndPaint, which
-            ' validates the update rect and would otherwise lead to drawing
-            ' nothing later because the region is empty. Also, grab it from
-            ' the cache so we don't mess with the EDIT's DC.
-            dim as HDC hdc = iif(uMsg = WM_PRINTCLIENT, cast(HDC, _wParam), _
-                    GetDCEx(hWin, 0, DCX_INTERSECTUPDATE or DCX_CACHE or DCX_CLIPCHILDREN or DCX_CLIPSIBLINGS) )
+                ' Get the needed DC with DCX_INTERSECTUPDATE before the EDIT
+                ' control's WM_PAINT handler calls BeginPaint/EndPaint, which
+                ' validates the update rect and would otherwise lead to drawing
+                ' nothing later because the region is empty. Also, grab it from
+                ' the cache so we don't mess with the EDIT's DC.
+                dim as HDC hdc = iif(uMsg = WM_PRINTCLIENT, cast(HDC, _wParam), _
+                        GetDCEx(hWin, 0, DCX_INTERSECTUPDATE or DCX_CACHE or DCX_CLIPCHILDREN or DCX_CLIPSIBLINGS) )
 
-            ' Call the EDIT control so that the caret is properly handled,
-            ' no caret litter left on the screen after tabbing away.
-            dim as LRESULT result = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
+                ' Call the EDIT control so that the caret is properly handled,
+                ' no caret litter left on the screen after tabbing away.
+                dim as LRESULT result = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
 
-            ' Get the font and margin so the cue banner text has a
-            ' consistent appearance and placement with existing text.
-            dim as HFONT font = ghStatusBar.hFontStatusBar 
-            dim as Rect editRect: SendMessage( hWin, EM_GETRECT, 0, cast(LPARAM, @editRect) )
+                ' Get the font and margin so the cue banner text has a
+                ' consistent appearance and placement with existing text.
+                dim as HFONT font = ghStatusBar.hFontStatusBar 
+                dim as Rect editRect: SendMessage( hWin, EM_GETRECT, 0, cast(LPARAM, @editRect) )
 
-            ' Ideally we would call Edit_GetCueBannerText, but since that message
-            ' returns nothing when ES_MULTILINE, use a window property instead.
-            dim cueBannerText as wstring * 250
-            if hWin = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND ) then
-                cueBannerText = L(158,"Find")
-            elseif hWin = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE ) then
-                cueBannerText = L(173,"Replace")
-            end if
+                ' Ideally we would call Edit_GetCueBannerText, but since that message
+                ' returns nothing when ES_MULTILINE, use a window property instead.
+                dim cueBannerText as wstring * 250
+                if hWin = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND ) then
+                    cueBannerText = L(158,"Find")
+                elseif hWin = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE ) then
+                    cueBannerText = L(173,"Replace")
+                end if
 
-            dim as HFONT previousFont = SelectFont(hdc, font)
-            SetTextColor( hDC, ghFindReplace.CueBannerForeColor )
-            SetBkMode(hdc, TRANSPARENT)
-            dim as long wsStyle = DT_TOP or DT_LEFT or DT_NOPREFIX or DT_NOCLIP
-            DrawText(hdc, cueBannerText, -1, @editRect, wsStyle)
-            SelectFont(hdc, previousFont)
+                dim as HFONT previousFont = SelectFont(hdc, font)
+                SetTextColor( hDC, ghFindReplace.CueBannerForeColor )
+                SetBkMode(hdc, TRANSPARENT)
+                dim as long wsStyle = DT_TOP or DT_LEFT or DT_NOPREFIX or DT_NOCLIP
+                DrawText(hdc, cueBannerText, -1, @editRect, wsStyle)
+                SelectFont(hdc, previousFont)
 
-            RestoreDC( hDC, -1 )
-            ReleaseDC(hWin, hdc)
+                RestoreDC( hDC, -1 )
+                ReleaseDC(hWin, hdc)
 
-            ' Return the EDIT's result (could probably safely just return zero here,
-            ' but seems safer to relay whatever value came from the edit).
-            return result
+                ' Return the EDIT's result (could probably safely just return zero here,
+                ' but seems safer to relay whatever value came from the edit).
+                return result
             end if
         
         case WM_CONTEXTMENU 
@@ -1002,31 +1005,31 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
             dim as CWSTR wszText = RichEdit_GetSelText( hWin )
             Dim hPopUpMenu As HMENU = CreatePopupMenu()
             if len(wszText) then 
-            AppendMenu( hPopUpMenu, MF_ENABLED, IDM_CUT, wstr("Cut") )
-            AppendMenu( hPopUpMenu, MF_ENABLED, IDM_COPY, wstr("Copy") )
+                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_CUT, wstr("Cut") )
+                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_COPY, wstr("Copy") )
             end if
             if RichEdit_CanPaste( hWin, 0 ) then
-            if len(wszText) then 
-                AppendMenu( hPopUpMenu, MF_SEPARATOR, 0, "" )
-            end if   
-            AppendMenu( hPopUpMenu, MF_ENABLED, IDM_PASTE, wstr("Paste") )
+                if len(wszText) then 
+                    AppendMenu( hPopUpMenu, MF_SEPARATOR, 0, "" )
+                end if   
+                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_PASTE, wstr("Paste") )
             end if   
 
             dim as long nResult
             nResult = TrackPopupMenu( hPopUpMenu, TPM_RETURNCMD or TPM_NONOTIFY, _
                             loword(_lParam), hiword(_lParam), 0, HWND_FRMFINDREPLACE, 0 ) 
             select case nResult
-            case IDM_CUT:   SendMessage( hWin, WM_CUT, 0, 0 )
-            case IDM_COPY:  SendMessage( hWin, WM_COPY, 0, 0 )
-            case IDM_PASTE: SendMessage( hWin, WM_PASTE, 0, 0 )
+                case IDM_CUT:   SendMessage( hWin, WM_CUT, 0, 0 )
+                case IDM_COPY:  SendMessage( hWin, WM_COPY, 0, 0 )
+                case IDM_PASTE: SendMessage( hWin, WM_PASTE, 0, 0 )
             end select
             DestroyMenu hPopUpMenu
             return 0
 
-        Case WM_DESTROY
+        case WM_DESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmFindReplace_RichEdit_SubclassProc, uIdSubclass )
-    End Select
+    end select
     
     ' For messages that we don't deal with
     function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
@@ -1038,8 +1041,8 @@ end function
 ' frmFindReplace_Show
 ' ========================================================================================
 function frmFindReplace_Show( _
-        byval hWndParent as HWnd, _
-        byval fShowReplace as BOOLEAN _
+        byval hWndParent as HWND, _
+        byval fShowReplace as boolean _
         ) as LRESULT
 
     '  Create the main window and child controls
