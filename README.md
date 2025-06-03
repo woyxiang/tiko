@@ -3,8 +3,11 @@
 ## Programmer's Code Editor for the FreeBASIC Compiler
 
 
-This editor is a leaner 64-bit only version of my WinFBE Editor project. 
-tiko is simply a code editor without all the bloat of an embedded visual designer.
+This editor is small, fast, and easy to use code editor.
+
+tiko is a code editor without the bloat.
+
+User interface is based on the WinFBE Editor project. 
 
 This repository contains the code for the tiko editor itself. Check the releases https://github.com/PaulSquires/tiko/releases section for downloads of the editor itself or the editor bundled with the complete FreeBasic Compiler (tiko_suite).
 
