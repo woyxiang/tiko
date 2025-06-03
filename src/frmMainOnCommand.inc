@@ -124,10 +124,7 @@ function frmMain_OnCommand( _
         case IDM_AUTOSAVE:           OnCommand_FileAutoSave( hwnd )
         case IDM_LOADSESSION:        OnCommand_FileLoadSession( hwnd )   
         case IDM_SAVESESSION:        OnCommand_FileSaveSession( hwnd )   
-        case IDM_CLOSESESSION
-            gConfig.wszLastActiveSession = ""
-            gConfig.SaveConfigFile()
-            OnCommand_FileCloseSession( hwnd )   
+        case IDM_CLOSESESSION:       OnCommand_FileCloseSession( hwnd )   
         case IDM_FILECLOSEALL:       OnCommand_FileClose( hwnd, EFC_CLOSEALL )
         case IDM_FILECLOSEALLOTHERS: OnCommand_FileClose( hwnd, EFC_CLOSEALLOTHERS )
         case IDM_CLOSEALLFORWARD:    OnCommand_FileClose( hwnd, EFC_CLOSEALLFORWARD )
@@ -223,10 +220,7 @@ function frmMain_OnCommand( _
         case IDM_PROJECTSAVEAS:         OnCommand_ProjectSave( hwnd, True )
         case IDM_PROJECTOPEN:           OnCommand_ProjectOpen( hwnd )
         case IDM_PROJECTFILESADD:       OnCommand_ProjectFilesAdd( hwnd )
-        case IDM_PROJECTCLOSE:
-            gConfig.wszLastActiveSession = ""
-            gConfig.SaveConfigFile()
-            OnCommand_ProjectClose( hwnd )
+        case IDM_PROJECTCLOSE:          OnCommand_ProjectClose( hwnd )
 
         case IDM_PROJECTOPTIONS:        frmProjectOptions_Show( hwnd, false ) 
         case IDM_MRUPROJECTCLEAR:       ClearMRUlist( id )

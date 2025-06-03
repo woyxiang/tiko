@@ -48,6 +48,8 @@ end function
 ' Close currently active project
 ' ========================================================================================
 function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
+    gConfig.wszLastActiveSession = ""
+    gConfig.SaveConfigFile()
 
     ' Save the project configuration to disk and any dirty files
     ' Do the actual saving to disk of the Project file

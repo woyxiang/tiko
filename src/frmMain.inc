@@ -883,7 +883,8 @@ function frmMain_PositionWindows() as LRESULT
                     rc.Right - nLeft, _
                     nHeightOutput, _
                     SWP_NOZORDER or SWP_SHOWWINDOW ) 
-    Else
+        frmOutput_PositionWindows()
+    else
         nHeightOutput = 0
     end if
 
@@ -928,6 +929,7 @@ function frmMain_PositionWindows() as LRESULT
                         rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                         pDoc->SplitY - rcDoc.top - iHScrollbarHeight, _ 
                         lStyle )
+            RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
 
             ' Position the TOP view horizontal scroll bar
             if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
@@ -935,6 +937,7 @@ function frmMain_PositionWindows() as LRESULT
                                 rcDoc.left, pDoc->SplitY - iHScrollbarHeight, _
                                 rcDoc.right - rcDoc.left - iVScrollbarWidth, iHScrollbarHeight, _
                                 SWP_NOZORDER )
+                RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
             end if
             
             ' Position the TOP view vertical scroll bar
@@ -944,6 +947,7 @@ function frmMain_PositionWindows() as LRESULT
                                 rcDoc.right - iVScrollbarWidth, rcDoc.top, _
                                 iVScrollbarWidth, pDoc->SplitY - rcDoc.top, _ 
                                 lStyle )
+                RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
             end if
         end if
             
@@ -957,6 +961,7 @@ function frmMain_PositionWindows() as LRESULT
                     rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                     rcDoc.bottom - nTop - iHScrollbarHeight, _
                     lStyle )
+        RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
 
         ' Position the MAIN view horizontal scroll bar
         if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then
@@ -964,6 +969,7 @@ function frmMain_PositionWindows() as LRESULT
                         rcDoc.left, rcDoc.bottom - iHScrollbarHeight, _
                         rcDoc.right - rcDoc.left - iVScrollbarWidth, iHScrollbarHeight, _
                         SWP_NOZORDER )
+            RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
         end if
 
         ' Position the MAIN view vertical scroll bar
@@ -974,6 +980,7 @@ function frmMain_PositionWindows() as LRESULT
                         iVScrollbarWidth, _
                         rcDoc.bottom - nTop, _ 
                         lStyle )
+            RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
         else
             ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
         end if

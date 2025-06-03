@@ -60,12 +60,15 @@ function frmPanel_PositionWindows() as LRESULT
     dim as long nWidth = rc.right  - rc.Left - pWindow->ScaleX(3)   
     dim as long nHeight = gPanelButton(0).rc.top - rc.top - nTop
 
-    SetWindowPos( HWND_FRMEXPLORER, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER or SWP_HIDEWINDOW )
-    SetWindowPos( HWND_FRMBOOKMARKS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER or SWP_HIDEWINDOW )
-    SetWindowPos( HWND_FRMFUNCTIONS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER or SWP_HIDEWINDOW )
+    SetWindowPos( HWND_FRMEXPLORER, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
+    SetWindowPos( HWND_FRMBOOKMARKS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
+    SetWindowPos( HWND_FRMFUNCTIONS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
 
     select case gPanel.hActiveChild
         case HWND_FRMEXPLORER
+            ShowWindow( HWND_FRMBOOKMARKS, SW_HIDE )
+            ShowWindow( HWND_FRMFUNCTIONS, SW_HIDE )
+
             gPanel.wszLabel = L(247,"EXPLORER")
             ShowWindow( HWND_FRMEXPLORER, SW_SHOW )
             gPanelVScroll.hListBox = HWND_FRMEXPLORER_LISTBOX
@@ -76,6 +79,9 @@ function frmPanel_PositionWindows() as LRESULT
             gPanelButton(1).hActionChild = HWND_FRMBOOKMARKS
         
         case HWND_FRMBOOKMARKS
+            ShowWindow( HWND_FRMEXPLORER, SW_HIDE )
+            ShowWindow( HWND_FRMFUNCTIONS, SW_HIDE )
+
             gPanel.wszLabel = ucase( L(188,"Bookmarks") )
             ShowWindow( HWND_FRMBOOKMARKS, SW_SHOW )
             gPanelVScroll.hListBox = HWND_FRMBOOKMARKS_LISTBOX
@@ -86,6 +92,9 @@ function frmPanel_PositionWindows() as LRESULT
             gPanelButton(1).hActionChild = HWND_FRMFUNCTIONS
 
         case HWND_FRMFUNCTIONS
+            ShowWindow( HWND_FRMEXPLORER, SW_HIDE )
+            ShowWindow( HWND_FRMBOOKMARKS, SW_HIDE )
+
             gPanel.wszLabel = ucase( L(223,"Function List") )
             ShowWindow( HWND_FRMFUNCTIONS, SW_SHOW )
             gPanelVScroll.hListBox = HWND_FRMFUNCTIONS_LISTBOX
@@ -363,9 +372,8 @@ function frmPanel_WndProc( _
                 ' be able to grab the panel edge to resize
                 nWidth = max( nWidth, pWindow->ScaleX(80) )
                 SetWindowPos( HWND_FRMPANEL, 0, 0, 0, nWidth, rc.Bottom - rc.Top, SWP_NOMOVE or SWP_NOZORDER )
+                RedrawWindow( HWND_FRMPANEL, null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
                 frmMain_PositionWindows()
-                AfxRedrawWindow(hwnd)   ' ensure the More Actions menu repaints
-                AfxDoEvents()           ' allow screen to repaint
             end if
         end if
         return 0    

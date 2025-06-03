@@ -287,7 +287,7 @@ function frmOutput_OnSize( _
 
     if state <> SIZE_MINIMIZED then
         ' Position all of the child windows
-        frmOutput_PositionWindows
+        frmOutput_PositionWindows()
     end if
 
     function = 0
