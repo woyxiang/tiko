@@ -828,14 +828,12 @@ function frmFindReplace_WndProc( _
 
         if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
         AfxRedrawWindow(hwnd)
-        return 0
 
 
     case WM_MOUSELEAVE
         AfxDeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
         AfxRedrawWindow( hwnd )
-        return 0
 
 
     case WM_MOUSEHOVER
@@ -865,7 +863,6 @@ function frmFindReplace_WndProc( _
         ' Display the tooltip
         if len(wszTooltip) then AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
         AfxRedrawWindow( hwnd )
-        return 0
 
 
     case WM_RBUTTONDOWN
@@ -1019,7 +1016,6 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
                 case IDM_PASTE: SendMessage( hWin, WM_PASTE, 0, 0 )
             end select
             DestroyMenu hPopUpMenu
-            return 0
 
         case WM_DESTROY
             ' REQUIRED: Remove control subclassing

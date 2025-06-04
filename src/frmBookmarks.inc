@@ -355,7 +355,6 @@ function frmBookmarksListBox_SubclassProc ( _
                 accumDelta = 0
                 frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
-            return 0
             
         Case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the
@@ -382,7 +381,6 @@ function frmBookmarksListBox_SubclassProc ( _
                     nLastIdx = idx
                 end if
             end if
-            return 0
 
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip
@@ -401,7 +399,6 @@ function frmBookmarksListBox_SubclassProc ( _
                     AfxRedrawWindow( hWin )
                 end if
             end if
-            return 0
 
         case WM_MOUSELEAVE
             nLastIdx = -1
@@ -437,7 +434,6 @@ function frmBookmarksListBox_SubclassProc ( _
                     Return true   ' prevent further processing that leads to WM_CONTEXTMENU
                 end if
             end if
-            return 0
 
         case WM_LBUTTONUP
             ' determine if we clicked on a regular file or a node header
@@ -462,7 +458,6 @@ function frmBookmarksListBox_SubclassProc ( _
                     OpenSelectedDocument( wszDiskFilename, "", nLineNum )
                 end if
             end if
-            return 0
 
         case WM_ERASEBKGND
             ' if the number of lines in the listbox maybe less than the number per page then

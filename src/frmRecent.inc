@@ -244,7 +244,6 @@ private function frmRecent_Tree_SubclassProc ( _
                 end if
                 frmMain_PositionWindows
                 SetFocusScintilla
-                return 0
             end if   
             
         case WM_KEYUP

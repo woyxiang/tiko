@@ -81,7 +81,6 @@ function frmMenuBar_WndProc( _
         GetClientRect(hwnd, @rc)
         FillRect( hDC, @rc, ghMenuBar.hPanelBrush )
         EndPaint hWnd, @ps
-        return 0
     
     case WM_DRAWITEM
         dim memDC as HDC      ' Double buffering

@@ -405,7 +405,6 @@ function frmFunctionsListBox_SubclassProc ( _
                 accumDelta = 0
                 frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
-            return 0
             
         Case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 

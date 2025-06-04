@@ -400,7 +400,6 @@ function frmExplorerListBox_SubclassProc ( _
                 accumDelta = 0
                 frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
-            return 0
             
         Case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
@@ -427,7 +426,6 @@ function frmExplorerListBox_SubclassProc ( _
                     nLastIdx = idx
                 end if
             end if
-            return 0
                         
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip 
@@ -443,12 +441,10 @@ function frmExplorerListBox_SubclassProc ( _
                 AfxSetTooltipText( hTooltip, hWin, wszTooltip )
                 AfxRedrawWindow( hWin )
             end if
-            return 0
             
         case WM_MOUSELEAVE
             nLastIdx = -1
             AfxRedrawWindow(hWin)
-            return 0   
             
         case WM_RBUTTONDOWN
             ' Create the popup menu
@@ -484,9 +480,9 @@ function frmExplorerListBox_SubclassProc ( _
                         if ListBox_GetSel( hWin, i ) then
                             dim as CWSTR wszCaption = AfxGetListBoxText( hWin, i )
                             if left(wszCaption, 1) = "%" then 
-                            pDocArray(nextIdx) = 0
+                                pDocArray(nextIdx) = 0
                             else   
-                            pDocArray(nextIdx) = cast(clsDocument ptr, ListBox_GetItemData( hWin, i ))
+                                pDocArray(nextIdx) = cast(clsDocument ptr, ListBox_GetItemData( hWin, i ))
                             end if
                             nextIdx = nextIdx + 1
                         end if
@@ -548,7 +544,6 @@ function frmExplorerListBox_SubclassProc ( _
                     end if
                 end if
             end if
-            return 0
                     
         case WM_LBUTTONDBLCLK 
             ' determine if we clicked on a regular file or a node header. If it is a regular
@@ -569,7 +564,6 @@ function frmExplorerListBox_SubclassProc ( _
                     end if   
                 end if
             end if
-            return 0
                 
         case WM_ERASEBKGND
             ' if the number of lines in the listbox maybe less than the number per page then 

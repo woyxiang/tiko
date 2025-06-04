@@ -612,7 +612,6 @@ function frmOutputTabs_SubclassProc ( _
                 isLastClose = isClose
                 AfxRedrawWindow(hWin)   
             end if
-            return 0
                         
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip = ""
@@ -621,7 +620,6 @@ function frmOutputTabs_SubclassProc ( _
                 wszTooltip  = L(161, "Close")
             end if
             AfxSetTooltipText( hTooltip, hWin, wszTooltip )
-            return 0
 
         case WM_MOUSELEAVE
             ' reset the hot tab index
@@ -630,7 +628,6 @@ function frmOutputTabs_SubclassProc ( _
             AfxDeleteTooltip( hTooltip, hWin )
             hTooltip = 0
             AfxRedrawWindow(hWin)   
-            return 0
         
         case WM_LBUTTONUP
             if isMouseOverRECT( hWin, gOutputCloseRect ) = true then
@@ -642,7 +639,6 @@ function frmOutputTabs_SubclassProc ( _
                 AfxRedrawWindow(hWin)   
                 frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
             end if
-            return 0
             
         case WM_ERASEBKGND
             return true
@@ -801,7 +797,6 @@ function frmOutput_RichEdit_SubclassProc ( _
                 case IDM_PASTE: SendMessage( hWin, WM_PASTE, 0, 0 )
             end select
             DestroyMenu hPopUpMenu
-            return 0
 
         case WM_DESTROY
             ' REQUIRED: Remove control subclassing

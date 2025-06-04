@@ -376,7 +376,6 @@ function frmPanel_WndProc( _
                 frmMain_PositionWindows()
             end if
         end if
-        return 0    
         
     case WM_LBUTTONDOWN
         dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
@@ -403,7 +402,6 @@ function frmPanel_WndProc( _
             SetCapture( HWND_FRMPANEL )
             end if
         end if
-        return 0   
 
         
     case WM_LBUTTONUP
@@ -440,7 +438,6 @@ function frmPanel_WndProc( _
             gPanel.hActiveChild = gPanelButton(1).hActionChild
             frmPanel_PositionWindows()
         end if
-        return 0   
 
 
     case WM_MOUSELEAVE
@@ -450,7 +447,7 @@ function frmPanel_WndProc( _
         AfxDeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
         AfxRedrawWindow(hwnd)
-        return 0   
+
 
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip 
@@ -461,7 +458,6 @@ function frmPanel_WndProc( _
         ' Display the tooltip
         AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
         AfxRedrawWindow( hwnd )
-        return 0   
         
     end select
 
