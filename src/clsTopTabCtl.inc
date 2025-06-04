@@ -35,7 +35,7 @@ end function
 ''
 ''
 function clsTopTabCtl.AddTab( byval pDoc as clsDocument ptr ) as long
-    ' Return the index of the added tab. we attempt to add it immediately
+    ' Return the index of the added tab. We attempt to add it immediately
     ' after the current active tab.
     dim idx as long
     redim preserve this.tabs(ubound(this.tabs) + 1) as TOPTABS_TYPE
@@ -51,6 +51,33 @@ function clsTopTabCtl.AddTab( byval pDoc as clsDocument ptr ) as long
         idx = this.CurSel + 1
     end if
     
+    this.tabs(idx).pDoc = pDoc
+    this.SetTabText(idx)
+
+    function = idx
+end function
+
+''
+''
+function clsTopTabCtl.InsertTab( byval pDoc as clsDocument ptr, byval insertIdx as long ) as long
+    ' Return the index of the inserted tab. We attempt to insert it at the
+    ' insertIdx tab.
+    dim idx as long
+    redim preserve this.tabs(ubound(this.tabs) + 1) as TOPTABS_TYPE
+    
+    if insertIdx = this.GetItemCount - 1 then
+        ' add the tab at the end of the array
+        idx = ubound(this.tabs)
+    else
+        ' move down elements in order to make room for the insert
+        for i as long = ubound(this.tabs) to insertIdx + 1 step -1
+            this.tabs(i) = this.tabs(i - 1)
+        next
+        idx = insertIdx + 1
+    end if
+
+print "LastTab: "; gTTabCtl.LastDisplayTab, "insertIdx: "; insertIdx, "Idx: "; idx
+        
     this.tabs(idx).pDoc = pDoc
     this.SetTabText(idx)
 

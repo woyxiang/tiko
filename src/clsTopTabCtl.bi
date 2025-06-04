@@ -49,6 +49,7 @@ type clsTopTabCtl
         declare function GetItemCount() as long
         declare function RemoveElement( byval idx as long ) as long
         declare function AddTab( byval pDoc as clsDocument Ptr ) as long
+        declare function InsertTab( byval pDoc as clsDocument ptr, byval insertIdx as long ) as long
         declare function GetTabIndexFromFilename( byref wszName as wstring ) as long
         declare function GetTabIndexByDocumentPtr( byval pDocIn as clsDocument ptr ) as long
         declare function SetTabIndexByDocumentPtr( byval pDocIn as clsDocument ptr ) as long

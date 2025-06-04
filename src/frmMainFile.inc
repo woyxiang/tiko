@@ -32,14 +32,13 @@ function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisplayTab a
                                         0 )        ' pDocIn
     if bShowAfterLastDisplayTab then
         ' Move the new file to the end of the tabs currently displayed. Basically,
-        ' right before the "+" Add New file button. Basically, swap the positions
-        ' of the newly created pDoc with the pDoc at the LastDisplayTab position.
-        dim as long idx = gTTabCtl.AddTab( pDocNew )  ' Add the new document to the top tabcontrol
-        if idx <> -1 then
-            ' swap the position of the new doc with the last display tab index position
-            swap gTTabCtl.tabs(idx), gTTabCtl.tabs(gTTabCtl.LastDisplayTab) 
-            gTTabCtl.SetFocusTab(gTTabCtl.LastDisplayTab)
-        end if
+        ' right before the "+" Add New file button. 
+        LoadExplorerFiles()
+        dim as long idx = gTTabCtl.InsertTab( pDocNew, gTTabCtl.LastDisplayTab )  ' Add the new document to the top tabcontrol
+        frmTopTabs_PositionWindows()
+        gTTabCtl.SetFocusTab(idx)
+'        frmMain_PositionWindows
+        frmMain_SetFocusToCurrentCodeWindow
     end if
     
     function = pDocNew

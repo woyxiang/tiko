@@ -173,9 +173,6 @@ function frmTopTabs_PositionWindows() as LRESULT
             gTTabCtl.tabs(i).isHot = false
             nLeft = gTTabCtl.tabs(i).rcTab.right
             
-            if gTTabCtl.tabs(i).rcTab.right < gTTabCtl.rcActionPanel.left then
-                gTTabCtl.LastDisplayTab = i
-            end if
         end if
     next
     
@@ -682,6 +679,12 @@ function frmTopTabs_WndProc( _
             MoveToEx( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.top, null )
             LineTo( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.bottom )   
             
+            ' Do the calculation of the LastDisplayTab here because we need to
+            ' do testing of when the tab rect goes beyond the visual area.
+            if gTTabCtl.tabs(i).rcTab.right < gTTabCtl.rcActionPanel.left then
+                gTTabCtl.LastDisplayTab = i
+            end if
+
         next
         
         
