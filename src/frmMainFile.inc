@@ -17,14 +17,32 @@
 ' ========================================================================================
 ' Create a new editing window
 ' ========================================================================================
-function OnCommand_FileNew( byval hwnd as HWND ) as clsDocument ptr
-    function = frmMain_OpenFileSafely(hwnd, _
+function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisplayTab as boolean ) as clsDocument ptr
+    dim pDocNew as clsDocument ptr
+    
+    dim as boolean bShowInTab = true
+    if bShowAfterLastDisplayTab then bShowInTab = false
+    
+    pDocNew = frmMain_OpenFileSafely(hwnd, _
                                         true,  _   ' bIsNewFile
                                         false, _   ' bIsTemplate
-                                        true,  _   ' bShowInTab
+                                        bShowInTab,  _   ' bShowInTab
                                         false, _   ' bIsInclude
                                         "", _      ' wszName
                                         0 )        ' pDocIn
+    if bShowAfterLastDisplayTab then
+        ' Move the new file to the end of the tabs currently displayed. Basically,
+        ' right before the "+" Add New file button. Basically, swap the positions
+        ' of the newly created pDoc with the pDoc at the LastDisplayTab position.
+        dim as long idx = gTTabCtl.AddTab( pDocNew )  ' Add the new document to the top tabcontrol
+        if idx <> -1 then
+            ' swap the position of the new doc with the last display tab index position
+            swap gTTabCtl.tabs(idx), gTTabCtl.tabs(gTTabCtl.LastDisplayTab) 
+            gTTabCtl.SetFocusTab(gTTabCtl.LastDisplayTab)
+        end if
+    end if
+    
+    function = pDocNew
 end function
 
 

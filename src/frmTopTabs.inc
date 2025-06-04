@@ -94,7 +94,7 @@ function frmTopTabs_PositionWindows() as LRESULT
     dim as long TabHeight = TOPTABS_HEIGHT
     dim as long rcTextWidth = 70
     dim as long rcCloseWidth = 20
-    dim as long rcIconWidth = 20   ' currently not using an icon in the tabs
+    dim as long rcIconWidth = 20 
     dim as long rightBorderWidth = 2
     dim as long hmargin = 3
     dim as long ActionPanelWidth = 114
@@ -102,6 +102,7 @@ function frmTopTabs_PositionWindows() as LRESULT
     dim as long ActionButtonHeight = 22
     dim as long PrevTabsButtonWidth = 20
     dim as long PrevTabsButtonHeight = 20
+    dim as long AddFileButtonWidth = 24
     
     ' calculate the right hand side Action area panel that holds the
     ' more actions "..." button.
@@ -133,6 +134,11 @@ function frmTopTabs_PositionWindows() as LRESULT
     gTTabCtl.rcActionButton.bottom = gTTabCtl.rcActionButton.top + pWindow->ScaleY( ActionButtonHeight )
     gTTabCtl.rcActionButton.right = gTTabCtl.rcActionButton.left + pWindow->ScaleY( ActionButtonWidth )
 
+    ' calculate the + add new file button. 
+    ' Left position is calculated below once we know hpw many tabs will be drawn in the tab control.
+    gTTabCtl.rcAddFileButton = gTTabCtl.rcActionButton 
+    gTTabCtl.rcAddFileButton.left = 0
+
     for i as long = lbound(gTTabCtl.tabs) to ubound(gTTabCtl.tabs) 
         pDoc = gTTabCtl.tabs(i).pDoc
         if pDoc then
@@ -143,30 +149,44 @@ function frmTopTabs_PositionWindows() as LRESULT
 
             ' calculate the various tab dimensions
             gTTabCtl.tabs(i).rcTab = rc
-            gTTabCtl.tabs(i).rcTab.Left = nLeft
-            gTTabCtl.tabs(i).rcTab.Right = nLeft + pWindow->ScaleX(rcIconWidth + nTextWidth + hmargin + rcCloseWidth + hmargin + rightBorderWidth)
+            gTTabCtl.tabs(i).rcTab.left = nLeft
+            gTTabCtl.tabs(i).rcTab.right = nLeft + pWindow->ScaleX(rcIconWidth + nTextWidth + _
+               hmargin + rcCloseWidth + hmargin + rightBorderWidth)
             
             gTTabCtl.tabs(i).rcIcon = gTTabCtl.tabs(i).rcTab
             gTTabCtl.tabs(i).rcIcon.top = gTTabCtl.tabs(i).rcIcon.top + pWindow->ScaleY(vmargin)
             gTTabCtl.tabs(i).rcIcon.bottom = gTTabCtl.tabs(i).rcIcon.top + pWindow->ScaleY(rcCloseWidth)
-            gTTabCtl.tabs(i).rcIcon.Left = gTTabCtl.tabs(i).rcTab.Left 
-            gTTabCtl.tabs(i).rcIcon.Right = gTTabCtl.tabs(i).rcIcon.Left + pWindow->ScaleX(rcIconWidth)
+            gTTabCtl.tabs(i).rcIcon.left = gTTabCtl.tabs(i).rcTab.left 
+            gTTabCtl.tabs(i).rcIcon.right = gTTabCtl.tabs(i).rcIcon.left + pWindow->ScaleX(rcIconWidth)
             
             gTTabCtl.tabs(i).rcText = gTTabCtl.tabs(i).rcTab
-            gTTabCtl.tabs(i).rcText.Left = gTTabCtl.tabs(i).rcIcon.Right
-            gTTabCtl.tabs(i).rcText.Right = gTTabCtl.tabs(i).rcText.Left + pWindow->ScaleX(nTextWidth)
+            gTTabCtl.tabs(i).rcText.left = gTTabCtl.tabs(i).rcIcon.right
+            gTTabCtl.tabs(i).rcText.right = gTTabCtl.tabs(i).rcText.left + pWindow->ScaleX(nTextWidth)
             
             gTTabCtl.tabs(i).rcClose = gTTabCtl.tabs(i).rcTab
             gTTabCtl.tabs(i).rcClose.top = gTTabCtl.tabs(i).rcClose.top + pWindow->ScaleY(vmargin)
             gTTabCtl.tabs(i).rcClose.bottom = gTTabCtl.tabs(i).rcClose.top + pWindow->ScaleY(rcCloseWidth)
-            gTTabCtl.tabs(i).rcClose.Left = gTTabCtl.tabs(i).rcText.Right + hmargin + hmargin
-            gTTabCtl.tabs(i).rcClose.Right = gTTabCtl.tabs(i).rcClose.Left + pWindow->ScaleX(rcCloseWidth)
+            gTTabCtl.tabs(i).rcClose.left = gTTabCtl.tabs(i).rcText.right + hmargin + hmargin
+            gTTabCtl.tabs(i).rcClose.right = gTTabCtl.tabs(i).rcClose.left + pWindow->ScaleX(rcCloseWidth)
 
             gTTabCtl.tabs(i).pDoc = pDoc
             gTTabCtl.tabs(i).isHot = false
-            nLeft = gTTabCtl.tabs(i).rcTab.Right
+            nLeft = gTTabCtl.tabs(i).rcTab.right
+            
+            if gTTabCtl.tabs(i).rcTab.right < gTTabCtl.rcActionPanel.left then
+                gTTabCtl.LastDisplayTab = i
+            end if
         end if
     next
+    
+    ' The + Add New file button
+    gTTabCtl.rcAddFileButton.left = nLeft + pWindow->ScaleX( hmargin )
+    ' Ensure that the button stays within the tab area and always gets drawn whether
+    ' it is immediately after the last tab or at the very end next top the right panel.
+    dim as long MaxLeftAddFileButton = gTTabCtl.rcActionPanel.left - pWindow->ScaleY( AddFileButtonWidth )
+    gTTabCtl.rcAddFileButton.left = min(gTTabCtl.rcAddFileButton.left, MaxLeftAddFileButton)
+    gTTabCtl.rcAddFileButton.right = gTTabCtl.rcAddFileButton.left + pWindow->ScaleY( AddFileButtonWidth )
+    
 
     ' We now know the exact width and postions of all tabs so now we need to calculate
     ' and adjust the gTTabCtl.FirstDisplayTab based on where the gTTabCtl.CurSel is located.
@@ -204,7 +224,7 @@ function frmTopTabs_PositionWindows() as LRESULT
             nAdjAmount = 0
                 if gTTabCtl.FirstDisplayTab - 1 >= 0 then
                     dim as long nTabWidth = _
-                            gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.Right - gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.left
+                            gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.right - gTTabCtl.tabs(gTTabCtl.FirstDisplayTab - 1).rcTab.left
                     if gTTabCtl.tabs(ubound(gTTabCtl.tabs)).rcTab.right + nTabWidth <= gTTabCtl.ClientRightEdge then
                         frmTopTabs_AdjustTabRects( nTabWidth )
                         gTTabCtl.FirstDisplayTab = gTTabCtl.FirstDisplayTab - 1
@@ -222,9 +242,9 @@ function frmTopTabs_PositionWindows() as LRESULT
             for i as long = gTTabCtl.FirstDisplayTab to gTTabCtl.CurSel 
                 ' remove the width of each successive tab starting with the
                 ' first tab and work our way until we reach the target tab.
-                dim as long nTabWidth = gTTabCtl.tabs(i).rcTab.Right - gTTabCtl.tabs(i).rcTab.left
+                dim as long nTabWidth = gTTabCtl.tabs(i).rcTab.right - gTTabCtl.tabs(i).rcTab.left
                 nAdjAmount += nTabWidth
-                if gTTabCtl.tabs(gTTabCtl.CurSel).rcTab.Right - nAdjAmount <= gTTabCtl.ClientRightEdge then
+                if gTTabCtl.tabs(gTTabCtl.CurSel).rcTab.right - nAdjAmount <= gTTabCtl.ClientRightEdge then
                     gTTabCtl.FirstDisplayTab = i + 1
                     frmTopTabs_AdjustTabRects( -(nAdjAmount) )
                     exit for
@@ -240,6 +260,7 @@ function frmTopTabs_PositionWindows() as LRESULT
         end if   
     
     end if
+
     AfxRedrawWindow( HWND_FRMMAIN_TOPTABS )
 
     function = 0
@@ -291,6 +312,16 @@ function isTabCloseHitTest( byval hWin as HWND, byval idx as long ) as long
     MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
     if PtInRect( @gTTabCtl.tabs(idx).rcClose, pt ) then return idx
     function = -1
+end function
+
+' ========================================================================================
+' Do hit test to determine if "+" add new file button was clicked
+' ========================================================================================
+function isAddFileButtonHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
+    if PtInRect( @gTTabCtl.rcAddFileButton, pt ) then return true
+    function = false
 end function
 
 ' ========================================================================================
@@ -430,6 +461,8 @@ function frmTopTabs_WndProc( _
             wszTooltip  = L(447, "Split Editor")
         elseif isActionButtonHitTest( hwnd ) then
             wszTooltip  = L(430, "Tab List")
+        elseif isAddFileButtonHitTest( hwnd ) then
+            wszTooltip  = L(003, "New File")
         elseif isActionPanelHitTest( hwnd ) then
             ' do nothing. no tooltip.
         elseif isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot then
@@ -449,6 +482,7 @@ function frmTopTabs_WndProc( _
         elseif isSplitEditorHitTest( hwnd ) then
         elseif isActionButtonHitTest( hwnd ) then
         elseif isActionPanelHitTest( hwnd ) then
+        elseif isAddFileButtonHitTest( hwnd ) then
         else
             ' Create the popup menu
             curr_idxHot = getHotTabHitTest( hwnd )
@@ -468,7 +502,8 @@ function frmTopTabs_WndProc( _
         elseif isSplitEditorHitTest( hwnd ) then
         elseif isActionButtonHitTest( hwnd ) then
         elseif isActionPanelHitTest( hwnd ) then
-        else
+        elseif isAddFileButtonHitTest( hwnd ) then
+        else ' regular tab
             curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
             if (isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot) andalso (curr_idxHot <> gTTabCtl.CurSel) then
@@ -502,7 +537,7 @@ function frmTopTabs_WndProc( _
             ' none found then simply set the CurSel to the last tab.
             dim as long nFound = -1
             for i as long = gTTabCtl.FirstDisplayTab to gTTabCtl.GetItemCount - 1
-                if gTTabCtl.tabs(i).rcTab.Left > gTTabCtl.ClientRightEdge then
+                if gTTabCtl.tabs(i).rcTab.left > gTTabCtl.ClientRightEdge then
                     nFound = i: exit for
                     exit for
                 end if
@@ -539,6 +574,10 @@ function frmTopTabs_WndProc( _
             DestroyMenu( hPopUpMenu )
             Return true   ' prevent further processing that leads to WM_CONTEXTMENU
 
+        elseif isAddFileButtonHitTest( hwnd ) then
+            ' Add a new file tab
+            PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FILENEWLASTTAB, 0), 0 )
+
         elseif isActionPanelHitTest( hwnd ) then
         else
             ' Reset the mouse pointer
@@ -572,7 +611,7 @@ function frmTopTabs_WndProc( _
 
         memDC = CreateCompatibleDC( hDC )
         hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-        if hbit then hbit = selectObject( memDC, hbit )
+        if hbit then hbit = SelectObject( memDC, hbit )
 
         ' Fill in the entire back panel width across the top of the screen
         FillRect( memDC, @ps.rcPaint, ghTopTabs.hPanelBrush )
@@ -580,12 +619,13 @@ function frmTopTabs_WndProc( _
         ' Create a black pen that acts as the divider for each tab
         dim as long penWidth = pWindow->ScaleX(1)
         dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghTopTabs.Divider )
-        selectObject( memDC, hPenSolid)
+        SelectObject( memDC, hPenSolid)
         
         dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
 
         dim as point pt: GetCursorPos( @pt )
         dim as RECT rc
+        dim as long wsStyle
         
         ' All of the rc calculations have already been done in frmTopTabs_PostionWindows
         if gTTabCtl.FirstDisplayTab > ubound(gTTabCtl.tabs) then gTTabCtl.FirstDisplayTab = lbound(gTTabCtl.tabs)
@@ -601,14 +641,9 @@ function frmTopTabs_WndProc( _
                 FillRect( memDC, @gTTabCtl.tabs(i).rcTab, ghTopTabs.hBackBrush )
             end if
             
-            ' display the rcIcon
-            'dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            'selectObject( memDC, ghMenuBar.hFontSymbolSmall )
-            'DrawText( memDC, wszTabDocument, -1, cast(lpRect, @gTTabCtl.tabs(i).rcIcon), wsStyle )
-            
             ' display the tab text
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            selectObject(memDC, ghMenuBar.hFontMenuBar)
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+            SelectObject(memDC, ghMenuBar.hFontMenuBar)
             DrawText( memDC, gTTabCtl.tabs(i).wszText.sptr, -1, cast(lpRect, @gTTabCtl.tabs(i).rcText), wsStyle )
             
             ' if this document is dirty then the dirty circle icon overrides the display of the close icon
@@ -619,7 +654,7 @@ function frmTopTabs_WndProc( _
             
             if isDirty then
                 ' if mouse is over the rcClose then draw the close icon, otherwise draw the dirty circle
-                selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
                 DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @gTTabCtl.tabs(i).rcClose), wsStyle )
             end if
             
@@ -628,26 +663,45 @@ function frmTopTabs_WndProc( _
                 ' if the dirty icon is not already being displayed
                 rc = gTTabCtl.tabs(i).rcClose
                 if isDirty = false then
-                    selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                    SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
                     DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
                 end if
                 if (isTabCloseHitTest( hwnd, i ) = i) andalso (gApp.bDragTabActive = false) then
                     ' if we are hovered over the "X" close icon rect then highlight it
                     selectPen( memDC, hPenNull )
-                    selectObject( memDC, ghTopTabs.hCloseBrushHot )
+                    SelectObject( memDC, ghTopTabs.hCloseBrushHot )
                     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
                     SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                    selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                    SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
                     DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
                 end if   
             end if
             
             ' Draw the righthand side black divider
             selectPen( memDC, hPenSolid )
-            MoveToEx( memDC, gTTabCtl.tabs(i).rcTab.Right - penWidth, gTTabCtl.tabs(i).rcTab.top, null )
-            LineTo( memDC, gTTabCtl.tabs(i).rcTab.Right - penWidth, gTTabCtl.tabs(i).rcTab.bottom )   
+            MoveToEx( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.top, null )
+            LineTo( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.bottom )   
             
         next
+        
+        
+        ' Draw the + new file button
+        SelectObject( memDC, ghTopTabs.hPanelBrush )
+        SetBkColor( memDC, ghTopTabs.BackColor )
+        SetTextColor( memDC, ghTopTabs.ForeColor )
+        if isAddFileButtonHitTest( hwnd ) then
+            SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
+            SetTextColor( memDC, ghTopTabs.ForeColorHot )
+            SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+        end if
+        rc = gTTabCtl.rcAddFileButton
+        FillRect( memDC, @rc, ghTopTabs.hPanelBrush )
+        selectPen( memDC, hPenNull )
+        RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
+        wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
+        SelectObject(memDC, ghMenuBar.hFontSymbol)
+        DrawText( memDC, wszAddFileButton, -1, cast(lpRect, @rc), wsStyle )
+        
         
         ' Lastly, draw the TopTabs Action Area (basically, the little panel to the
         ' right of all of the top tabs that has the "..." icon.
@@ -656,63 +710,63 @@ function frmTopTabs_WndProc( _
             FillRect( memDC, @gTTabCtl.rcActionPanel, ghTopTabs.hPanelBrush )
             
             ' Draw the PrevTabs button
-            selectObject( memDC, ghTopTabs.hPanelBrush )
+            SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
             if isPrevTabsHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                selectObject( memDC, ghTopTabs.hCloseBrushHot )
+                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcPrevTabs
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
-            selectObject(memDC, ghMenuBar.hFontSymbol)
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
+            SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszChevronLeft, -1, cast(lpRect, @rc), wsStyle )
 
             ' Draw the NextTabs button
-            selectObject( memDC, ghTopTabs.hPanelBrush )
+            SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
             if isNextTabsHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                selectObject( memDC, ghTopTabs.hCloseBrushHot )
+                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcNextTabs
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
-            selectObject(memDC, ghMenuBar.hFontSymbol)
+            SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rc), wsStyle )
             
             ' Draw the SplitEditor button
-            selectObject( memDC, ghTopTabs.hPanelBrush )
+            SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
             if isSplitEditorHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                selectObject( memDC, ghTopTabs.hCloseBrushHot )
+                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcSplitEditor
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
-            selectObject(memDC, ghMenuBar.hFontSymbol)
+            SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszSplitEditor, -1, cast(lpRect, @rc), wsStyle )
 
             ' Draw the Action buttom "..."
-            selectObject( memDC, ghTopTabs.hPanelBrush )
+            SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
             if isActionButtonHitTest( hwnd ) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                selectObject( memDC, ghTopTabs.hCloseBrushHot )
+                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcActionButton
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER 'or DT_SINGLELINE
-            selectObject(memDC, ghMenuBar.hFontSymbolLargeBold)
+            SelectObject(memDC, ghMenuBar.hFontSymbolLargeBold)
             DrawText( memDC, wszMoreActions, -1, cast(lpRect, @rc), wsStyle )
         end if
     
@@ -721,7 +775,7 @@ function frmTopTabs_WndProc( _
         ' Cleanup
         if hPenSolid then deleteObject( hPenSolid )
         if hPenNull  then deleteObject( hPenNull )
-        if hbit  then deleteObject( selectObject(memDC, hbit) )
+        if hbit  then deleteObject( SelectObject(memDC, hbit) )
         if memDC then deleteDC( memDC )
         RestoreDC( hDC, -1 )
 

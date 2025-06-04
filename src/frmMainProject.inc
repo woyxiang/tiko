@@ -77,7 +77,6 @@ function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
     gApp.ProjectNotes         = ""
     gApp.ProjectCommandLine   = ""
     gApp.wszLastOpenFolder    = ""
-    gApp.ProjectDefaultFont   = "Segoe UI,9,400,0,0,0,1"
     
     gApp.wszPanelText = ""
     gApp.hIconPanel = 0

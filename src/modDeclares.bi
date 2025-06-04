@@ -41,7 +41,7 @@ enum
     
     '' FILE
     IDM_FILE_START
-    IDM_FILE, IDM_FILENEW, IDM_FILEOPEN
+    IDM_FILE, IDM_FILENEW, IDM_FILENEWLASTTAB, IDM_FILEOPEN
     IDM_FILEOPEN_EXPLORERLISTBOX
     IDM_FILECLOSE, IDM_FILECLOSE_EXPLORERLISTBOX
     IDM_FILECLOSEALL, IDM_FILECLOSEALLOTHERS, IDM_CLOSEALLFORWARD, IDM_CLOSEALLBACKWARD
@@ -274,7 +274,7 @@ dim shared as wstring * 10 _
     wszDocumentIcon, wszUpArrow, wszDownArrow, wszSelection, wszCheckmark, _
     wszClose, wszDirty, wszCompileResultIcon, wszMatchCase, wszWholeWord, _
     wszPreserveCase, wszReplace, wszReplaceAll, wszMoreActions, _
-    wszTriangleDown, wszTriangleUp, wszSplitEditor
+    wszTriangleDown, wszTriangleUp, wszSplitEditor, wszAddFileButton
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 if isWineActive() then
@@ -299,26 +299,29 @@ if isWineActive() then
     wszReplace = !"\u2631"             ' replace
     wszReplaceAll = !"\u2637"          ' replace all
     wszMoreActions = !"\u2630"         ' ...
+    wszSplitEditor = !"\u229F"         ' squared minus
+    wszAddFileButton = "+"             ' plus sign
 else
-    wszClose = !"\u2715"                ' light X  
+    wszClose = !"\u2715"               ' light X  
     wszChevronLeft = !"\uE09A"
     wszChevronRight = !"\uE097"
     wszChevronUp = !"\uE098"
     wszChevronDown = !"\uE099"
     wszTriangleDown = !"\u23F7"        ' triangle down
     wszTriangleUp = !"\u23F6"          ' triangle up
-    wszDocumentIcon = !"\u22C5"      ' small dot
-    wszUpArrow = !"\uE1FE"           ' up arrow
-    wszDownArrow = !"\uE1FC"         ' down arrow
-    wszSelection = !"\uE1EE"         ' selection icon
-    wszCheckmark = !"\u2713"         ' narrow checkmark
-    wszDirty = !"\u2981"            ' larger dot
-    wszCompileResultIcon = !"\u25CF" ' larger circle  
-    wszMatchCase = "Aa"                 ' match case
-    wszWholeWord = "W"                  ' whole word
-    wszPreserveCase = "AB"              ' preserve case
-    wszReplace = !"\uE297"           ' replace
-    wszReplaceAll = !"\uE299"        ' replace all
-    wszMoreActions = !"\u22EF"       ' ...
-    wszSplitEditor = !"\u229F"       ' squared minus
+    wszDocumentIcon = !"\u22C5"        ' small dot
+    wszUpArrow = !"\uE1FE"             ' up arrow
+    wszDownArrow = !"\uE1FC"           ' down arrow
+    wszSelection = !"\uE1EE"           ' selection icon
+    wszCheckmark = !"\u2713"           ' narrow checkmark
+    wszDirty = !"\u2981"               ' larger dot
+    wszCompileResultIcon = !"\u25CF"   ' larger circle  
+    wszMatchCase = "Aa"                ' match case
+    wszWholeWord = "W"                 ' whole word
+    wszPreserveCase = "AB"             ' preserve case
+    wszReplace = !"\uE297"             ' replace
+    wszReplaceAll = !"\uE299"          ' replace all
+    wszMoreActions = !"\u22EF"         ' ...
+    wszSplitEditor = !"\u229F"         ' squared minus
+    wszAddFileButton = !"\u002B"       ' plus sign
 end if

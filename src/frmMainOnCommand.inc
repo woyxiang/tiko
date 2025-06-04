@@ -115,7 +115,8 @@ function frmMain_OnCommand( _
 
 
         ''  FILE MENU
-        case IDM_FILENEW:            OnCommand_FileNew( hwnd )
+        case IDM_FILENEW:            OnCommand_FileNew( hwnd, false )
+        case IDM_FILENEWLASTTAB:     OnCommand_FileNew( hwnd, true )
         case IDM_FILEOPEN:           OnCommand_FileOpen( hwnd, true )
         case IDM_FILESAVE:           OnCommand_FileSave( hwnd, pDoc, false, false )
         case IDM_FILESAVEAS:         OnCommand_FileSave( hwnd, pDoc, true, false )

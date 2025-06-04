@@ -21,7 +21,7 @@ enum eFileClose
     EFC_CLOSEALLBACKWARD 
 end enum
 
-declare function OnCommand_FileNew( byval hwnd as HWND ) as clsDocument ptr
+declare function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisplayTab as boolean ) as clsDocument ptr
 declare function OnCommand_FileOpen( byval hwnd as HWND, byval bShowInTab as boolean = true ) as LRESULT
 declare function OnCommand_FileSave( byval hwnd as HWND, byval pDoc as clsDocument ptr, _
         byval bSaveAs as boolean = false, byval bSaveAll as boolean = false ) as LRESULT
