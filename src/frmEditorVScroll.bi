@@ -16,7 +16,6 @@ type EDITOR_VSCROLL_TYPE
     numLines     as long 
     linesPerPage as long
     thumbHeight  as long
-    thumbRatio   as single
     rc           as RECT
 end type
 

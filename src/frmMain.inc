@@ -474,68 +474,68 @@ function Scintilla_OnNotify( _
             if gApp.SuppressNotify then return true
             pDoc = gApp.GetDocumentPtrByWindow( pNSC->hdr.hwndFrom )
             if pDoc then 
-            if pDoc->IsValidScintillaID( pNSC->hdr.idFrom ) then
-                frmMain_SetStatusbar
-                                
-                '// Has the caret changed position
-                var caretPos = SciExec( pDoc->hWndActiveScintilla, SCI_GETCURRENTPOS, 0, 0)
+                if pDoc->IsValidScintillaID( pNSC->hdr.idFrom ) then
+                    frmMain_SetStatusbar
+                                    
+                    '// Has the caret changed position
+                    var caretPos = SciExec( pDoc->hWndActiveScintilla, SCI_GETCURRENTPOS, 0, 0)
 
-                if pDoc->lastCaretPos <> caretPos then
-                    pDoc->lastCaretPos = caretPos
-                    
-                    '// If the xOffset has changed then we need to update the horizontal scrollbar
-                    dim as long GetXOffset = SciExec( pDoc->hWndActiveScintilla, SCI_GETXOFFSET, 0, 0 )
-                    if pDoc->lastXOffsetPos <> GetXOffset then
-                        pDoc->lastXOffsetPos = GetXOffset
-                        AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0) )
-                        AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1) )
-                    end if
-                
-                    '// Update any occurrence highlights
-                    if gConfig.OccurrenceHighlight then
-                        static as string sCurWord, sPrevWord
-                        sCurWord = pDoc->GetWord()
-                        if sCurWord <> sPrevWord then
-                            frmMain_HighlightWord( pDoc, sCurWord )
-                            sPrevWord = sCurWord
-                        end if
-                    end if
-                    
-                    '// Update any brace highlighting
-                    if gConfig.BraceHighlight then
-                        var bracePos1 = -1
-                        var bracePos2 = -1
-    
-                        '// Is there a brace to the left or right
-                        if (caretPos > 0) and ( frmMain_IsBrace(SciExec(pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos - 1, 0))) then
-                            bracePos1 = (caretPos - 1)
-                        elseif frmMain_IsBrace(SciExec(pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos, 0)) then
-                            bracePos1 = caretPos
-                        end if
+                    if pDoc->lastCaretPos <> caretPos then
+                        pDoc->lastCaretPos = caretPos
                         
-                        if bracePos1 >= 0 then
-                        '// Find the matching brace
-                            bracePos2 = SciExec( pDoc->hWndActiveScintilla, SCI_BRACEMATCH, bracePos1, 0)
-                            if bracePos2 = -1 then
-                                SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad )
-                                SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, bracePos1, 0 )
-                            else
-                                SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
-                                SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, bracePos1, bracePos2 )
+                        '// If the xOffset has changed then we need to update the horizontal scrollbar
+                        dim as long GetXOffset = SciExec( pDoc->hWndActiveScintilla, SCI_GETXOFFSET, 0, 0 )
+                        if pDoc->lastXOffsetPos <> GetXOffset then
+                            pDoc->lastXOffsetPos = GetXOffset
+                            AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0) )
+                            AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1) )
+                        end if
+                    
+                        '// Update any occurrence highlights
+                        if gConfig.OccurrenceHighlight then
+                            static as string sCurWord, sPrevWord
+                            sCurWord = pDoc->GetWord()
+                            if sCurWord <> sPrevWord then
+                                frmMain_HighlightWord( pDoc, sCurWord )
+                                sPrevWord = sCurWord
                             end if
-                            SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETOUTLINEALPHA, 9, 127 ) ' transparency of outline
-                            SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETALPHA, 9, 127 )        ' transparency of interior      
-                        else
-                            '// Turn off brace matching
-                            SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
                         end if
                         
-                    else
-                        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
-                    end if         
+                        '// Update any brace highlighting
+                        if gConfig.BraceHighlight then
+                            var bracePos1 = -1
+                            var bracePos2 = -1
+        
+                            '// Is there a brace to the left or right
+                            if (caretPos > 0) and ( frmMain_IsBrace(SciExec(pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos - 1, 0))) then
+                                bracePos1 = (caretPos - 1)
+                            elseif frmMain_IsBrace(SciExec(pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos, 0)) then
+                                bracePos1 = caretPos
+                            end if
+                            
+                            if bracePos1 >= 0 then
+                            '// Find the matching brace
+                                bracePos2 = SciExec( pDoc->hWndActiveScintilla, SCI_BRACEMATCH, bracePos1, 0)
+                                if bracePos2 = -1 then
+                                    SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad )
+                                    SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, bracePos1, 0 )
+                                else
+                                    SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
+                                    SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, bracePos1, bracePos2 )
+                                end if
+                                SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETOUTLINEALPHA, 9, 127 ) ' transparency of outline
+                                SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETALPHA, 9, 127 )        ' transparency of interior      
+                            else
+                                '// Turn off brace matching
+                                SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
+                            end if
+                            
+                        else
+                            SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
+                        end if         
+                    end if
+                    
                 end if
-                
-            end if
             end if
             return true
             
@@ -570,26 +570,26 @@ function Scintilla_OnNotify( _
                     end if   
                     frmMain_SetStatusbar
 
-                        pDoc->bNeedsParsing = true
-                        if (pNSC->modificationType and SC_MOD_DELETETEXT) then
-                            ' Do a check to see if we have backspaced to a point where there is a
-                            ' period to try to popup an autocomplete or codetip.
-                            dim as long nPos, nChar
-                            hEdit = pDoc->hWndActiveScintilla
-                            nPos  = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0 ) - 1
-                            nChar = SciExec( hEdit, SCI_GETCHARAT, nPos, 0 )
-                            select case chr(nChar)
-                                case ".", ">"    '  Show autocomplete list for TYPE variables
-                                    ' dot "." or ">"  part of a pointer
-                                    ' Need to PostMessage in order to give time for notification to complete. The "."
-                                    ' is also used as a character that selects and closes the popup list. If no
-                                    ' PostMessage then the "." will automatically select the first entry in the list
-                                    ' and close.
-                            pDoc->AutoCTriggerStartPos = nPos
-                                    pDoc->AutoCompleteType = AUTOCOMPLETE_NONE
-                                    PostMessage( HWND_FRMMAIN, MSG_USER_SHOWAUTOCOMPLETE, nChar, 0 )
-                            end select 
-                        end if
+                    pDoc->bNeedsParsing = true
+                    if (pNSC->modificationType and SC_MOD_DELETETEXT) then
+                        ' Do a check to see if we have backspaced to a point where there is a
+                        ' period to try to popup an autocomplete or codetip.
+                        dim as long nPos, nChar
+                        hEdit = pDoc->hWndActiveScintilla
+                        nPos  = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0 ) - 1
+                        nChar = SciExec( hEdit, SCI_GETCHARAT, nPos, 0 )
+                        select case chr(nChar)
+                            case ".", ">"    '  Show autocomplete list for TYPE variables
+                                ' dot "." or ">"  part of a pointer
+                                ' Need to PostMessage in order to give time for notification to complete. The "."
+                                ' is also used as a character that selects and closes the popup list. If no
+                                ' PostMessage then the "." will automatically select the first entry in the list
+                                ' and close.
+                        pDoc->AutoCTriggerStartPos = nPos
+                                pDoc->AutoCompleteType = AUTOCOMPLETE_NONE
+                                PostMessage( HWND_FRMMAIN, MSG_USER_SHOWAUTOCOMPLETE, nChar, 0 )
+                        end select 
+                    end if
                 end if
             end if
             return true
@@ -1803,41 +1803,6 @@ function frmMain_WndProc( _
                 SciExec( hEdit, SCI_SETSEL, nPos, nPos)
             end if   
                 
-
-        '-------------------------------------------------------------------------------
-        '                        Scrollbar Handler
-        '-------------------------------------------------------------------------------
-        case WM_VSCROLL
-            dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-            if pDoc = 0 then return 0
-
-'         dim as long OldPos = pDoc->ScrInfo.nPos
-
-'         select case loword(wParam)
-'            case SB_THUMBTRACK
-'               GetScrollInfo(pDoc->hScrollbar, SB_CTL, @pDoc->ScrInfo)
-'               pDoc->ScrInfo.nPos = pDoc->ScrInfo.nTrackPos
-'            case SB_LINEDOWN:   pDoc->ScrInfo.nPos += 1
-'            case SB_LINEUP:     pDoc->ScrInfo.nPos -= 1
-'            case SB_PAGEDOWN:   pDoc->ScrInfo.nPos += pDoc->ScrInfo.nPage - 1  
-'            case SB_PAGEUP:     pDoc->ScrInfo.nPos -= pDoc->ScrInfo.nPage - 1  
-'         end select  
-            
-'         ' if the current position hasn't changed, do nothing.
-'         if pDoc->ScrInfo.nPos = oldPos then return true
-
-'         ' Don't exceed range boundries
-'         if pDoc->ScrInfo.nPos < pDoc->ScrInfo.nMin then
-'            pDoc->ScrInfo.nPos = pDoc->ScrInfo.nMin         
-'         end if
-'         if pDoc->ScrInfo.nPos > pDoc->ScrInfo.nMax - pDoc->ScrInfo.nPage + 1 then
-'            pDoc->ScrInfo.nPos = pDoc->ScrInfo.nMax - pDoc->ScrInfo.nPage + 1        
-'         end if
-
-'         dim as long lParm = pDoc->ScrInfo.nPos - oldPos        ' Amount/direction to V scroll
-'         SciExec(pDoc->hWindow(0), SCI_LINESCROLL, 0, lParm)
-'         SetScrollInfo(pDoc->hScrollbar, SB_CTL, @pDoc->ScrInfo, true)
-
     end select 
 
     ' for messages that we don't deal with

@@ -27,6 +27,8 @@ function frmEditorVScroll_calcVThumbRect( byval pDoc as clsDocument ptr ) as boo
     if pDoc = 0 then exit function
     dim as RECT rc
 
+    dim as integer minThumb = pWindow->ScaleY(SCROLLBAR_MINTHUMBSIZE)
+    
     ' calculate the vertical scrollbars in client coordinates
     for i as long = lbound(pDoc->hWindow) to ubound(pDoc->hWindow)
         rc = AfxGetWindowRect(pDoc->hWindow(i))
@@ -37,17 +39,15 @@ function frmEditorVScroll_calcVThumbRect( byval pDoc as clsDocument ptr ) as boo
         dim as long iScrollbarWidth = AfxGetWindowWidth(HWND_FRMEDITOR_VSCROLLBAR(i)) 
         dim as long minThumbHeight = pWindow->ScaleY(SCROLLBAR_MINTHUMBSIZE)
         SetRectEmpty( @gEditorVScroll(i).rc )
+
         with gEditorVScroll(i)
             .linesPerPage = pDoc->linesPerPage(i)
             .numLines = pDoc->GetLineCount + 1
-            .thumbHeight = (.linesPerPage / .numLines) * clientHeight
-            ' If the thumb height is less than the minimum default then adjust parameters so
-            ' that the viewport can compensate for the adjustments.
-            .thumbRatio = 1
-            'if .thumbHeight < minThumbHeight then
-            '   .thumbRatio = 1 + (minThumbHeight-.thumbHeight) /.thumbHeight
-            '   .thumbHeight = minThumbHeight
-            'end if
+
+            dim as double ratio = .linesPerPage / .numLines
+            .thumbHeight = int(ratio * clientHeight)
+            if .thumbHeight < minThumb then .thumbHeight = minThumb
+
             .rc.left = 0
             .rc.right = .rc.left + iScrollbarWidth
             .rc.top = ((firstVisibleLine / .numLines) * clientHeight)
@@ -113,9 +113,9 @@ function frmEditorVScroll_WndProc( _
                 dim as point pt: GetCursorPos( @pt )
                 if pt.y <> prev_pt.y then 
                     dim as long delta = pt.y - prev_pt.y 
-                    ' convert to client coordinates for ease of use
+
+'                    ' convert to client coordinates for ease of use
                     dim as RECT rc: GetClientRect( HWND_FRMEDITOR_VSCROLLBAR(idxWindow), @rc )
-                    rc.bottom = rc.bottom * gEditorVScroll(idxWindow).thumbRatio
                     gEditorVScroll(idxWindow).rc.top = max(0, gEditorVScroll(idxWindow).rc.top + delta)
                     gEditorVScroll(idxWindow).rc.top = min(gEditorVScroll(idxWindow).rc.top, rc.bottom - gEditorVScroll(idxWindow).thumbHeight)
                     gEditorVScroll(idxWindow).rc.bottom = gEditorVScroll(idxWindow).rc.top + gEditorVScroll(idxWindow).thumbHeight
@@ -125,12 +125,18 @@ function frmEditorVScroll_WndProc( _
                     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
                     if pDoc then
                         dim as long nPrevTopLine = SendMessage( pDoc->hWindow(idxWindow), SCI_GETFIRSTVISIBLELINE, 0, 0 ) 
-                        dim as long nTopLine = (gEditorVScroll(idxWindow).rc.top / rc.bottom) * gEditorVScroll(idxWindow).numLines
+                        dim as rect rc = AfxGetWindowRect(pDoc->hWindow(idxWindow))
+                        MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 ) 
+                        dim as long clientHeight = rc.bottom - rc.top
+                        if clientHeight = 0 then exit function
+                        dim as double scrollRatio = gEditorVScroll(idxWindow).rc.top / (clientHeight - gEditorVScroll(idxWindow).thumbHeight)
+                        dim as long nTopLine = int(scrollRatio * (gEditorVScroll(idxWindow).numLines - gEditorVScroll(idxWindow).linesPerPage))
                         if nTopLine <> nPrevTopLine then
                             SendMessage( pDoc->hWindow(idxWindow), SCI_SETFIRSTVISIBLELINE, nTopLine, 0 ) 
                         end if   
                     end if
                     AfxRedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(idxWindow) )
+
                 end if
             end if
             
