@@ -185,8 +185,9 @@ function frmExplorer_OnMeasureItem( _
             byval lpmis as MEASUREITEMSTRUCT ptr _
             ) as long
     ' Set the height of the list box items. 
+    dim as long nHeight = iif(gConfig.CompactMenus, EXPLORERITEM_HEIGHT_COMPACT, EXPLORERITEM_HEIGHT)
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND)
-    lpmis->itemHeight = pWindow->ScaleY(EXPLORERITEM_HEIGHT)
+    lpmis->itemHeight = pWindow->ScaleY(nHeight)
         
     function = 0
 end function
@@ -615,7 +616,6 @@ function frmExplorer_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = New CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMEXPLORER = pWindow->Create( hWndParent, "Explorer Window", @frmExplorer_WndProc, _
         0, 0, 0, 0, _

@@ -198,7 +198,7 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     frmKeyBoard_AddKeyBinding( "Compile", IDM_COMMANDLINE, "IDM_COMMANDLINE", "Command line", "", "", false )
     
     '' HELP MENU
-    frmKeyBoard_AddKeyBinding( "Help", IDM_HELP, "IDM_HELP", "FreeBasic Help (context sensitive help)", "F1", "", false )
+    frmKeyBoard_AddKeyBinding( "Help", IDM_HELP_FB, "IDM_HELP_FB", "FreeBasic Help (context sensitive help)", "F1", "", false )
     
     ' Load the keybindings settings file. This will update the gKeys array with any
     ' user defined key mappings.

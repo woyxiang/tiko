@@ -181,8 +181,9 @@ function frmFunctions_OnMeasureItem( _
             byval lpmis as MEASUREITEMSTRUCT ptr _
             ) as long
     ' Set the height of the list box items. 
+    dim as long nHeight = iif(gConfig.CompactMenus, EXPLORERITEM_HEIGHT_COMPACT, EXPLORERITEM_HEIGHT)
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    lpmis->itemHeight = pWindow->ScaleY(EXPLORERITEM_HEIGHT)
+    lpmis->itemHeight = pWindow->ScaleY(nHeight)
         
     function = 0
 end function

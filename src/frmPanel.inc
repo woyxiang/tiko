@@ -120,7 +120,7 @@ function frmPanel_PositionWindows() as LRESULT
     dim as long ActionButtonWidth = 24
     dim as long ActionButtonHeight = 22
     with gPanel.rcActionMenu
-        .left = rc.right - pWindow->ScaleX(ActionButtonWidth+10)
+        .left = rc.right - pWindow->ScaleX(ActionButtonWidth + 10)
         .top = pWindow->ScaleY(7)
         .right = .left + pWindow->ScaleX(ActionButtonWidth)
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)

@@ -39,6 +39,7 @@ constructor clsConfig
     FBKeywordsDefaultFilename = exe_path & "settings\keywords\freebasic_keywords_default.txt" 
     FBCodetipsFilename        = exe_path & "settings\keywords\codetips.ini" 
     WinAPICodetipsFilename    = exe_path & "settings\keywords\codetips_winapi.ini" 
+    TikoHelpFile              = exe_path & "settings\help\tiko_help.txt" 
 end constructor
 
 ''
@@ -327,6 +328,7 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine "RestoreSession="        & this.RestoreSession
     if this.RestoreSession = 0 then this.wszLastActiveSession = ""
     pStream.WriteLine "LastActiveSessionFile=" & ProcessToCurdriveApp(this.wszLastActiveSession)
+    pStream.WriteLine "CompactMenus="          & this.CompactMenus
     pStream.WriteLine "MultipleInstances="     & this.MultipleInstances    
     pStream.WriteLine "CompileAutosave="       & this.CompileAutosave      
     pStream.WriteLine "SyntaxHighlighting="    & this.SyntaxHighlighting   
@@ -711,6 +713,7 @@ function clsConfig.LoadConfigFile() as long
             case "AutoSaveInterval":       this.AutoSaveInterval      = nData
             case "RestoreSession":         this.RestoreSession        = nData
             case "LastActiveSessionFile":  this.wszLastActiveSession  = ProcessFromCurdriveApp(wData)
+            case "CompactMenus":           this.CompactMenus          = nData
             case "MultipleInstances":      this.MultipleInstances     = nData
             case "CompileAutosave":        this.CompileAutosave       = nData
             case "SyntaxHighlighting":     this.SyntaxHighlighting    = nData

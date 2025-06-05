@@ -107,7 +107,7 @@ enum
     
     '' HELP
     IDM_HELP_START
-    IDM_HELP, IDM_ABOUT
+    IDM_HELP_FB, IDM_HELP_TIKO, IDM_ABOUT
     IDM_HELP_END
     
     '' OTHER
@@ -233,11 +233,16 @@ dim shared ghBrushMainBackground as HBRUSH
 dim shared as HWND ghWndActiveMenuBarButton
 dim shared as long gMenuLastCurSel = -1
 dim shared as boolean gPrevent_WM_NCACTIVATE = false
+
 const MENUITEM_HEIGHT = 24
 const EXPLORERITEM_HEIGHT = 22
-const FUNCTIONLISTITEM_HEIGHT = 22
 const MENUBAR_HEIGHT = 30
 const TOPTABS_HEIGHT = 36
+
+const MENUITEM_HEIGHT_COMPACT = 20
+const EXPLORERITEM_HEIGHT_COMPACT = 19 
+const MENUBAR_HEIGHT_COMPACT = 28 
+
 const STATUSBAR_HEIGHT = 22
 const SCROLLBAR_WIDTH_PANEL = 10
 const SCROLLBAR_WIDTH_EDITOR = 12

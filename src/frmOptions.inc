@@ -32,6 +32,7 @@ private function frmOptions_SaveEditorOptions() as long
     
     dim hwnd as HWND 
     dim wText as wstring * MAX_PATH  
+    dim bChangesNextRun as boolean
     
     ' GENERAL OPTIONS   
     hwnd = HWND_FRMOPTIONSGENERAL
@@ -39,6 +40,10 @@ private function frmOptions_SaveEditorOptions() as long
     gConfig.CompileAutosave      = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE) )
     gConfig.AskExit              = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT) )
     gConfig.RestoreSession       = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION) )
+    
+    dim as long CompactMenus     = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS) )
+    if (gConfig.CompactMenus <> CompactMenus) then bChangesNextRun = true
+    gConfig.CompactMenus = CompactMenus
 
 
     ' EDITOR OPTIONS   
@@ -77,10 +82,7 @@ private function frmOptions_SaveEditorOptions() as long
     hwnd = HWND_FRMOPTIONSLOCAL
     wText = AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION) )
     if (ucase(wText) <> ucase(gConfig.LocalizationFile)) orelse (gLocalPhrasesEdit = true) then
-        MessageBox( HWND_FRMMAIN, _
-                    L(108,"Localization changes will be applied the next time the application is run."), _
-                    L(109,"Warning"), _
-                    MB_OK or MB_ICONINFORMATION or MB_DEFBUTTON1 or MB_APPLMODAL )
+        bChangesNextRun = true
     end if
     gConfig.LocalizationFile = wText
     
@@ -138,7 +140,14 @@ private function frmOptions_SaveEditorOptions() as long
     if pDoc then
         frmMain_HighlightWord( pDoc, "" )
     end if
-
+    
+    if bChangesNextRun then
+        MessageBox( HWND_FRMMAIN, _
+                L(108,"Changes will be applied the next time the application is run."), _
+                L(109,"Warning"), _
+                MB_OK or MB_ICONINFORMATION or MB_DEFBUTTON1 or MB_APPLMODAL )
+    end if
+    
     function = 0
 End function
 

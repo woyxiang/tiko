@@ -800,7 +800,6 @@ function frmTopTabs_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMMAIN_TOPTABS = pWindow->Create( hwndParent, "", @frmTopTabs_WndProc, _
         0, 0, 0, TOPTABS_HEIGHT, _
@@ -813,7 +812,6 @@ function frmTopTabs_Show( byval hwndParent as HWND ) as LRESULT
     ' create semi-transparent window offset under our tabcontrol in order to simulate a shadow.
     if gApp.isWineActive = false then
         pWindow = New CWindow
-        pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
         HWND_FRMMAIN_TOPTABS_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
             @frmTopTabsShadow_WndProc, 0, 0, 0, pWindow->ScaleY(1), _
             WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )

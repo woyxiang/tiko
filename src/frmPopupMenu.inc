@@ -183,8 +183,9 @@ function frmPopupMenu_OnMeasureItem( _
                 byval lpmis as MEASUREITEMSTRUCT ptr _
                 ) as Long
     ' Set the height of the menuitem list box items. 
+    dim as long nHeight = iif(gConfig.CompactMenus, MENUITEM_HEIGHT_COMPACT, MENUITEM_HEIGHT)
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    lpmis->itemHeight = pWindow->ScaleY(MENUITEM_HEIGHT)
+    lpmis->itemHeight = pWindow->ScaleY(nHeight)
         
     function = 0
 end function
@@ -354,14 +355,9 @@ function frmPopupMenu_WndProc( _
 
         case WM_DESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-            select case hwnd
-            case HWND_MENU(0)
-                DestroyWindow(HWND_SHADOW(0))
-                Delete pWindow
-            case HWND_MENU(1)
-                DestroyWindow(HWND_SHADOW(1))
-                Delete pWindow
-            end select
+            if hwnd = HWND_MENU(0) then DestroyWindow(HWND_SHADOW(0))
+            if hwnd = HWND_MENU(1) then DestroyWindow(HWND_SHADOW(1))
+            if pWindow then delete pWindow
             
         ' prevent this popup menu from stealing focus from main app
         ' This message is reveive before WM_NCACTIVATE for the main form is processed
@@ -557,7 +553,8 @@ function frmPopupMenu_Show( _
         nCtrlID = gTopMenu(nIdx).nID
         ListBox_GetItemRect( hParent, nItemID, @rc )
         MapWindowPoints( hParent, HWND_DESKTOP, cast(point ptr, @rc), 2 )
-        nMenuLeft = rc.right: nMenuTop = rc.top
+        nMenuLeft = rc.right
+        nMenuTop = rc.top
 
         ' if the popup already exists and is being shown for this nCtrlID
         ' then simply exit, otherwise the menu will just be destroyed and
@@ -591,7 +588,6 @@ function frmPopupMenu_Show( _
     
     '  Popup menus are non-modal (modeless) windows
     pWindow = New CWindow
-    pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
     nMenuLeft = pWindow->UnScaleX(nMenuLeft)
     nMenuTop = pWindow->UnScaleY(nMenuTop)
 
@@ -641,10 +637,11 @@ function frmPopupMenu_Show( _
     ' calculate final size of the popup menu based on margins/padding and the embedded listbox
     dim as long nLeft, nTop, nWidth, nHeight
     
+    nHeight = iif(gConfig.CompactMenus, MENUITEM_HEIGHT_COMPACT, MENUITEM_HEIGHT)
     nLeft = 2
     nTop = 10
     nWidth = nMenuWidth - (nLeft * 2)
-    nHeight = (ListBox_GetCount(hPopupListBox) * MENUITEM_HEIGHT)
+    nHeight = (ListBox_GetCount(hPopupListBox) * nHeight)
 
     SetWindowPos( hPopupListBox, 0, _
                     pWindow->ScaleX(nLeft), pWindow->ScaleY(nTop), _
@@ -667,11 +664,12 @@ function frmPopupMenu_Show( _
     end if      
     
     
-    ' create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
+
+    ' Create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
+    ' We don't do this for compact windows because of the dimensions.
     pWindow = new CWindow
-    pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
     dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, "", _
-        @frmPopupMenuShadow_WndProc, nMenuLeft - 1, nMenuTop + 4, nMenuWidth + 3, nMenuHeight, _
+        @frmPopupMenuShadow_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
     pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT)   ' black background
     SetLayeredWindowAttributes( hPopupShadow, 0, 20, LWA_ALPHA ) 
@@ -679,13 +677,14 @@ function frmPopupMenu_Show( _
     if nPopupType = ID_POPUP and IsWindowVisible(HWND_MENU(1)) then killPopupSubMenus()
     if IsWindow(prevPopup) then DestroyWindow(prevPopup)
 
-    SetWindowPos( hPopupShadow, HWND_TOP, 0, 0, 0, 0, _
-                    SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW)
+    SetWindowPos( hPopupShadow, HWND_TOP, _
+                    pWindow->ScaleX(nMenuLeft + 4), pWindow->ScaleY(nMenuTop + 4), _
+                    pWindow->ScaleX(nMenuWidth), pWindow->ScaleY(nMenuHeight), _
+                    SWP_NOACTIVATE or SWP_SHOWWINDOW)
 
     SetWindowPos( hPopupMenu, HWND_TOP, 0, 0, _
                     pWindow->ScaleX(nMenuWidth), pWindow->ScaleY(nMenuHeight), _
                     SWP_NOACTIVATE or SWP_NOMOVE or SWP_SHOWWINDOW)
-
     gPrevent_WM_NCACTIVATE = false
     
     HWND_MENU(nPopupType) = hPopupMenu

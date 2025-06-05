@@ -242,9 +242,20 @@ function frmMain_OnCommand( _
 
 
         ''   HELP MENU
-        case IDM_HELP
+        case IDM_HELP_FB
             ShowContextHelp(id) 
     
+        case IDM_HELP_TIKO    
+            dim pDoc as clsDocument ptr
+            pDoc = frmMain_OpenFileSafely( _
+                        HWND_FRMMAIN, _
+                        false, _    ' bIsNewFile
+                        false, _    ' bIsTemplate
+                        true, _     ' bShowInTab
+                        false, _    ' bIsInclude
+                        gConfig.TikoHelpFile, _   ' wszFileName
+                        0 )         ' pDocIn
+
         case IDM_ABOUT
             DisableAllModeless()
             frmAbout_Show( hwnd )

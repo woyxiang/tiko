@@ -159,7 +159,8 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_RUNEXE: wszText = L(67,"Run Executable")
         case IDM_COMMANDLINE: wszText = L(68,"Command Line") & "..."
 
-        case IDM_HELP: wszText = "FreeBASIC " & L(73,"Help")
+        case IDM_HELP_FB: wszText = "FreeBASIC " & L(73,"Help")
+        case IDM_HELP_TIKO: wszText = "Tiko Editor " & L(73,"Help")
         case IDM_ABOUT: wszText = L(74,"About")
 
         case else
@@ -350,7 +351,8 @@ function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_COMPILE, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_COMPILE, IDM_COMMANDLINE, 0, false, false )
 
-    setTopMenuItem( IDC_MENUBAR_HELP, IDM_HELP, 0, false, false )
+    setTopMenuItem( IDC_MENUBAR_HELP, IDM_HELP_FB, 0, false, false )
+    setTopMenuItem( IDC_MENUBAR_HELP, IDM_HELP_TIKO, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_HELP, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_HELP, IDM_ABOUT, 0, false, false )
     

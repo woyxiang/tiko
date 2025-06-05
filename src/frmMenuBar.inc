@@ -251,10 +251,11 @@ function frmMenuBar_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
+
+    dim as long nHeight = iif(gConfig.CompactMenus, MENUBAR_HEIGHT_COMPACT, MENUBAR_HEIGHT)
 
     HWND_FRMMAIN_MENUBAR = pWindow->Create( hWndParent, "", @frmMenuBar_WndProc, _
-        0, 0, 0, MENUBAR_HEIGHT, _
+        0, 0, 0, nHeight, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 

@@ -37,7 +37,7 @@ public function ShowContextHelp( byval id as long ) as long
     gConfig.CompilerHelpFile = ProcessFromCurdriveApp( gConfig.CompilerHelpFile ) 
 
     select case id
-        case IDM_HELP
+        case IDM_HELP_FB
             wszLabel = "FreeBASIC "
             ' Convert relative path to absolute path if needed.
             if AfxPathIsRelative(gConfig.CompilerHelpFile) then

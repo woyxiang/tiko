@@ -75,6 +75,7 @@ type clsConfig
         FBKeywordsDefaultFilename as CWSTR 
         FBCodetipsFilename        as CWSTR
         WinAPICodetipsFilename    as CWSTR 
+        TikoHelpFile              as CWSTR 
         
         DateFileTime              as FILETIME
         
@@ -95,6 +96,7 @@ type clsConfig
         idAutoSaveTimer           as long = 999           ' id of Autosave timer
         RestoreSession            as long = false
         wszLastActiveSession      as CWSTR
+        CompactMenus              as long = false
         ShowPanel                 as long = true
         ShowPanelWidth            as long = 250
         SyntaxHighlighting        as long = true
