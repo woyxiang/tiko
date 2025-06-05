@@ -928,7 +928,7 @@ function frmMain_PositionWindows() as LRESULT
                         rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                         pDoc->SplitY - rcDoc.top - iHScrollbarHeight, _ 
                         lStyle )
- '           RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+            RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
             ' Position the TOP view horizontal scroll bar
             if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
@@ -958,7 +958,7 @@ function frmMain_PositionWindows() as LRESULT
                     rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                     rcDoc.bottom - nTop - iHScrollbarHeight, _
                     lStyle )
-   '     RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+        RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
         ' Position the MAIN view horizontal scroll bar
         if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then

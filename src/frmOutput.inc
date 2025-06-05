@@ -173,6 +173,7 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     end select
     
     SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )    
+    RedrawWindow( hCtrl, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
             
     function = 0
 end function
