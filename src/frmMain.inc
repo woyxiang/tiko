@@ -778,14 +778,14 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
                 rc.top = rc.bottom
                 if IsWindowVisible( HWND_FRMEDITOR_HSCROLLBAR(1) ) then
                     rc.top = rc.top + AfxGetWindowHeight( HWND_FRMEDITOR_HSCROLLBAR(1) )
-            end if   
-            rc.bottom = rc.top + pWindow->ScaleY(SPLITSIZE)
-            rc.right = rc.right + pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR)
-            MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
-            pDoc->rcSplitButton = rc
-            dim as HBRUSH hBackBrush = CreateSolidBrush( ghEditor.Divider )
-            FillRect( hDC, @rc, hBackBrush )
-            DeleteObject( hBackBrush )
+                end if   
+                rc.bottom = rc.top + pWindow->ScaleY(SPLITSIZE)
+                rc.right = rc.right + pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR)
+                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
+                pDoc->rcSplitButton = rc
+                dim as HBRUSH hBackBrush = CreateSolidBrush( ghEditor.Divider )
+                FillRect( hDC, @rc, hBackBrush )
+                DeleteObject( hBackBrush )
             end if
         end if
     end if
@@ -818,7 +818,7 @@ function frmMain_PositionWindows() as LRESULT
 
     dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
     if pWindow = 0 then exit function
-    
+
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     
     ' Get the entire client area
@@ -904,11 +904,10 @@ function frmMain_PositionWindows() as LRESULT
         dim as long lStyle = SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or _
                             SWP_NOACTIVATE or SWP_NOCOPYBITS
         
-        dim as long nShowVScrollBars = SW_SHOW
         ' Only hide vertical scrollbars because hiding the horizontal could
         ' result in endless loop during mouseover test in modMsgPump.
-        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), nShowVScrollBars )
-        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), nShowVScrollBars )
+        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
+        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
         
         dim as long nSplitSize = pWindow->ScaleY(SPLITSIZE)
         dim as long iVScrollbarWidth = AfxGetWindowWidth(HWND_FRMEDITOR_VSCROLLBAR(0)) 
@@ -929,7 +928,7 @@ function frmMain_PositionWindows() as LRESULT
                         rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                         pDoc->SplitY - rcDoc.top - iHScrollbarHeight, _ 
                         lStyle )
-            RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
+ '           RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
             ' Position the TOP view horizontal scroll bar
             if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
@@ -937,7 +936,6 @@ function frmMain_PositionWindows() as LRESULT
                                 rcDoc.left, pDoc->SplitY - iHScrollbarHeight, _
                                 rcDoc.right - rcDoc.left - iVScrollbarWidth, iHScrollbarHeight, _
                                 SWP_NOZORDER )
-                RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
             end if
             
             ' Position the TOP view vertical scroll bar
@@ -947,7 +945,6 @@ function frmMain_PositionWindows() as LRESULT
                                 rcDoc.right - iVScrollbarWidth, rcDoc.top, _
                                 iVScrollbarWidth, pDoc->SplitY - rcDoc.top, _ 
                                 lStyle )
-                RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
             end if
         end if
             
@@ -961,7 +958,7 @@ function frmMain_PositionWindows() as LRESULT
                     rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                     rcDoc.bottom - nTop - iHScrollbarHeight, _
                     lStyle )
-        RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
+   '     RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
         ' Position the MAIN view horizontal scroll bar
         if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then
@@ -969,7 +966,6 @@ function frmMain_PositionWindows() as LRESULT
                         rcDoc.left, rcDoc.bottom - iHScrollbarHeight, _
                         rcDoc.right - rcDoc.left - iVScrollbarWidth, iHScrollbarHeight, _
                         SWP_NOZORDER )
-            RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
         end if
 
         ' Position the MAIN view vertical scroll bar
@@ -980,7 +976,6 @@ function frmMain_PositionWindows() as LRESULT
                         iVScrollbarWidth, _
                         rcDoc.bottom - nTop, _ 
                         lStyle )
-            RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
         else
             ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
         end if

@@ -43,7 +43,7 @@ end function
 
 function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     if (gApp.IsProjectLoading) orelse (gApp.IsFileLoading) then return false
-    
+
     ' Determine if the mouse has moved over (or away from) a window that should invoke
     ' showing or hiding our custom Panel VScroll or Editor HScroll.
     if (uMsg.message = WM_MOUSEMOVE) orelse (uMsg.message = WM_NCMOUSEMOVE) then

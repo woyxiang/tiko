@@ -114,7 +114,7 @@ function frmEditorVScroll_WndProc( _
                 if pt.y <> prev_pt.y then 
                     dim as long delta = pt.y - prev_pt.y 
 
-'                    ' convert to client coordinates for ease of use
+                    ' convert to client coordinates for ease of use
                     dim as RECT rc: GetClientRect( HWND_FRMEDITOR_VSCROLLBAR(idxWindow), @rc )
                     gEditorVScroll(idxWindow).rc.top = max(0, gEditorVScroll(idxWindow).rc.top + delta)
                     gEditorVScroll(idxWindow).rc.top = min(gEditorVScroll(idxWindow).rc.top, rc.bottom - gEditorVScroll(idxWindow).thumbHeight)
@@ -186,7 +186,6 @@ function frmEditorVScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     for i as long = 0 to 1
         pWindow = new CWindow
-        pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
         HWND_FRMEDITOR_VSCROLLBAR(i) = pWindow->Create( hWndParent, _
             "", @frmEditorVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR + 1, 0, _
             WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_NOACTIVATE )

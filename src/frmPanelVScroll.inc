@@ -251,7 +251,6 @@ function frmPanelVScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     dim as long ExStyles = WS_EX_NOACTIVATE
     if gApp.isWineActive = false then

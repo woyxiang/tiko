@@ -152,7 +152,6 @@ function frmEditorHScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     for i as long = 0 to 1
         pWindow = new CWindow
-        pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
         HWND_FRMEDITOR_HSCROLLBAR(i) = pWindow->Create( hWndParent, _
             "", @frmEditorHScroll_WndProc, 0, 0, 0, SCROLLBAR_HEIGHT, _
             WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_NOACTIVATE )

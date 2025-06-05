@@ -33,7 +33,7 @@ end function
 ' ========================================================================================
 function frmOutput_ShowNotes() as long 
 
-    dim HCTL as HWND = GETDLGITEM(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES)
+    dim hCtl as HWND = GETDLGITEM(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES)
 
     if gApp.IsProjectActive then
         AfxSetWindowText(hCtl, gApp.ProjectNotes)
@@ -173,7 +173,6 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     end select
     
     SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )    
-    SetFocus( hCtrl )
             
     function = 0
 end function
