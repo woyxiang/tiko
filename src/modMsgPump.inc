@@ -115,7 +115,7 @@ function handleAltKeyMenuBar( byval uMsg as MSG ) as boolean
     ' being selected/deselected.
     
 '   ' single ALT key pressed, activate the first top menubar button
-'   if (uMsg.message = WM_SYSKEYDOWN) and (uMsg.wParam = VK_MENU) then
+'    if (uMsg.message = WM_SYSKEYDOWN) and (uMsg.wParam = VK_MENU) then
 '      killPopupSubMenus()
 '      killPopupMenus()
 '      ' if active menubar exists then simply toggle it off and exit

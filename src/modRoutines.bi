@@ -36,7 +36,6 @@ declare function ShowContextHelp( byval id as long ) as long
 declare function isMouseOverRECT( byval hWin as HWND, byval rc as RECT ) as boolean
 declare function isMouseOverWindow( byval hChild as HWND ) as boolean
 declare function GetTextWidthPixels( byval hWin as HWND, byref wszText as wstring ) as long
-declare function JulianDateNow() as long
 declare function DisableAllModeless() as long
 declare function EnableAllModeless() as long
 declare function GetTemporaryFilename( byref wszFolder as wstring, byref wszExtension as wstring) as string

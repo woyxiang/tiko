@@ -89,6 +89,7 @@ enum
     '' VIEW
     IDM_VIEW_START
     IDM_VIEW, IDM_VIEWEXPLORER, IDM_VIEWOUTPUT, IDM_FUNCTIONLIST, IDM_BOOKMARKSLIST
+    IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
     IDM_ZOOMIN, IDM_ZOOMOUT, IDM_FOLDTOGGLE, IDM_FOLDBELOW, IDM_FOLDALL, IDM_UNFOLDALL
     IDM_VIEWTODO, IDM_VIEWNOTES, IDM_RESTOREMAIN, IDM_EXPLORERPOSITION
     IDM_VIEW_END
@@ -250,6 +251,12 @@ const SCROLLBAR_HEIGHT = 10
 const SCROLLBAR_MINTHUMBSIZE = 30
 const SPLITSIZE = 4
 
+enum SPLIT_MODE
+    SplitNone
+    SplitLeftRight
+    SplitTopBottom
+end enum
+
 
 ' array that holds the names of all fonts on the target system
 dim shared gFontNames( any ) as CWSTR
@@ -279,7 +286,7 @@ dim shared as wstring * 10 _
     wszDocumentIcon, wszUpArrow, wszDownArrow, wszSelection, wszCheckmark, _
     wszClose, wszDirty, wszCompileResultIcon, wszMatchCase, wszWholeWord, _
     wszPreserveCase, wszReplace, wszReplaceAll, wszMoreActions, _
-    wszTriangleDown, wszTriangleUp, wszSplitEditor, wszAddFileButton
+    wszTriangleDown, wszTriangleUp, wszAddFileButton
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 if isWineActive() then
@@ -304,7 +311,8 @@ if isWineActive() then
     wszReplace = !"\u2631"             ' replace
     wszReplaceAll = !"\u2637"          ' replace all
     wszMoreActions = !"\u2630"         ' ...
-    wszSplitEditor = !"\u229F"         ' squared minus
+'    wszSplitTopBottom = !"\u229F"      ' squared minus
+'    wszSplitLeftRight = !"\u2385"      ' squared vertical line
     wszAddFileButton = "+"             ' plus sign
 else
     wszClose = !"\u2715"               ' light X  
@@ -327,6 +335,7 @@ else
     wszReplace = !"\uE297"             ' replace
     wszReplaceAll = !"\uE299"          ' replace all
     wszMoreActions = !"\u22EF"         ' ...
-    wszSplitEditor = !"\u229F"         ' squared minus
+'    wszSplitTopBottom = !"\u229F"      ' squared minus
+'    wszSplitLeftRight = !"\u2385"      ' squared vertical line
     wszAddFileButton = !"\u002B"       ' plus sign
 end if

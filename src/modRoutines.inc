@@ -161,14 +161,6 @@ end function
 
 
 ' ========================================================================================
-' Calculate the Julian date for today's date. Used by CheckForUpdates.
-' ========================================================================================
-function JulianDateNow() as long
-    function = AfxGregorianToJulian( AfxSystemDay, AfxSystemMonth, AfxSystemYear )
-end function
-
-
-' ========================================================================================
 ' Disable all modeless windows belonging to frmMain so that the popup modal is truly modal.
 ' ========================================================================================
 function DisableAllModeless() as long

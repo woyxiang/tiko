@@ -1099,7 +1099,7 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
                 
                 ' Set the saved positions
                 pDoc->SplitY = nSplitPosition
-                if pDoc->SplitY then pDoc->bEditorIsSplit = true
+                if pDoc->SplitY then pDoc->EditorSplitMode = SplitTopBottom
                 SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
                 SciExec( pDoc->hWindow(0), SCI_GOTOPOS, nPosition, 0) 
                 SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, nFirstLine1, 0) 
@@ -1149,7 +1149,7 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
     
     pDoc = gTTabCtl.GetActiveDocumentPtr()
     if pDoc then 
-        if pDoc->bEditorIsSplit then AfxRedrawWindow( HWND_FRMMAIN )
+        if pDoc->EditorSplitMode <> SplitNone then AfxRedrawWindow( HWND_FRMMAIN )
     end if
 
     UpdateMRUSessionList(wszSessionFile)
@@ -1414,7 +1414,7 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
 
         ' Set the saved positions
         pDoc->SplitY = docData(i).nSplitPosition
-        if pDoc->SplitY then pDoc->bEditorIsSplit = true
+        if pDoc->SplitY then pDoc->EditorSplitMode = SplitTopBottom
         SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
         SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
         SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 

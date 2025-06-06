@@ -118,26 +118,24 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_BOOKMARKPREV: wszText = L(52,"Previous Bookmark")
         case IDM_BOOKMARKCLEARALL: wszText = L(53,"Clear Bookmarks")
 
+        case IDM_VIEWEXPLORER: wszText = L(250,"View Explorer Window")
+        case IDM_VIEWOUTPUT: wszText = L(251,"View Output Window")
+        case IDM_FUNCTIONLIST: wszText = L(221,"View Function List")
+        case IDM_BOOKMARKSLIST: wszText = L(443,"View Bookmarks List")
+        case IDM_EXPLORERPOSITION:
+            wszText = L(87,"Move Explorer Window") & " " & _
+            iif(gConfig.ExplorerPositionRight, L(88, "Left"), L(89, "Right"))
+        case IDM_SPLITLEFTRIGHT: wszText = L(69,"Toggle Split Editor Left/Right")
+        case IDM_SPLITTOPBOTTOM: wszText = L(70,"Toggle Split Editor Top/Bottom")
+        case IDM_ZOOMIN: wszText = L(59,"Zoom In")
+        case IDM_ZOOMOUT: wszText = L(60,"Zoom Out")
         case IDM_FOLDTOGGLE: wszText = L(55,"Toggle Current Fold Point")
         case IDM_FOLDBELOW: wszText = L(56,"Toggle Current And All Below")
         case IDM_FOLDALL: wszText = L(57,"Fold All")
         case IDM_UNFOLDALL: wszText = L(58,"Unfold All")
-        case IDM_ZOOMIN: wszText = L(59,"Zoom In")
-        case IDM_ZOOMOUT: wszText = L(60,"Zoom Out")
-        case IDM_BOOKMARKSLIST: wszText = L(443,"View Bookmarks List")
-        case IDM_FUNCTIONLIST: wszText = L(221,"View Function List")
-        case IDM_VIEWEXPLORER: wszText = L(250,"View Explorer Window")
-        case IDM_VIEWOUTPUT: wszText = L(251,"View Output Window")
+        case IDM_RESTOREMAIN: wszText = L(61,"Restore Main Window Size")
         case IDM_VIEWTODO: wszText = L(263,"TODO")
         case IDM_VIEWNOTES: wszText = L(264,"Notes")
-        case IDM_RESTOREMAIN: wszText = L(61,"Restore Main Window Size")
-        case IDM_EXPLORERPOSITION
-            wszText = L(87,"Move Explorer Window")
-            if gConfig.ExplorerPositionRight then
-                wszText = wszText & " " & L(88, "Left")
-            else   
-                wszText = wszText & " " & L(89, "Right")
-            end if
 
         case IDM_PROJECTNEW: wszText = L(180,"New Project")
         case IDM_PROJECTOPEN: wszText = L(182,"Open Project") & "..." 
@@ -318,6 +316,9 @@ function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_VIEW, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_ZOOMIN, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_ZOOMOUT, 0, false, false )
+    setTopMenuItem( IDC_MENUBAR_VIEW, 0, 0, false, true )
+    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_SPLITLEFTRIGHT, 0, false, false )
+    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_SPLITTOPBOTTOM, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_VIEW, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_FOLDTOGGLE, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_FOLDBELOW, 0, false, false )

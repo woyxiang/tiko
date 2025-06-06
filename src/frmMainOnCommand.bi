@@ -66,6 +66,8 @@ declare function OnCommand_ViewExplorer() as LRESULT
 declare function OnCommand_ViewOutput() as LRESULT
 declare function OnCommand_ViewFold( byval id as long, byval pDoc as clsDocument ptr ) as LRESULT
 declare function OnCommand_ViewZoom( byval id as long, byval pDoc as clsDocument ptr ) as LRESULT
+declare function OnCommand_ViewSplit( byval id as long, byval pDoc as clsDocument ptr ) as LRESULT
+declare function OnCommand_ViewToggleFocus( byval pDoc as clsDocument ptr ) as LRESULT
 declare function OnCommand_ViewToDo() as LRESULT
 declare function OnCommand_ViewNotes() as LRESULT
 declare function OnCommand_ViewRestoreMain() as LRESULT

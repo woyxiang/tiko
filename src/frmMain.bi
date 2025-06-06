@@ -26,6 +26,7 @@ end type
 
 dim shared gLastPosition as LASTPOSITION_TYPE
 
+declare function frmMain_CalcSplitRect( byval pDoc as clsDocument ptr ) as long
 declare function frmMain_GotoFile( byval pDoc as clsDocument ptr, byval nMenuId as long ) as long
 declare function frmMain_GotoLastPosition() as long
 declare function frmMain_GotoDefinition( byval pDoc as clsDocument Ptr ) as long

@@ -155,8 +155,6 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     ' The following are non-visual (no topmenu item)
     frmKeyBoard_AddKeyBinding( "Search", IDM_GOTONEXTTAB, "IDM_GOTONEXTTAB", "Goto next open editor tab", "Ctrl+Tab", "", false )
     frmKeyBoard_AddKeyBinding( "Search", IDM_GOTOPREVTAB, "IDM_GOTOPREVTAB", "Goto previous open editor tab", "Ctrl+Shift+Tab", "", false )
-    frmKeyBoard_AddKeyBinding( "Search", IDM_GOTONEXTCOMPILEERROR, "IDM_GOTONEXTCOMPILEERROR", "Goto next compile error", "Ctrl+\", "", false )
-    frmKeyBoard_AddKeyBinding( "Search", IDM_GOTOPREVCOMPILEERROR, "IDM_GOTOPREVCOMPILEERROR", "Goto previous compile error", "Ctrl+Shift+\", "", false)
 
     '' VIEW MENU
     frmKeyBoard_AddKeyBinding( "View", IDM_VIEWEXPLORER, "IDM_VIEWEXPLORER", "View Explorer window", "F9", "", false )
@@ -165,6 +163,8 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     frmKeyBoard_AddKeyBinding( "View", IDM_BOOKMARKSLIST, "IDM_BOOKMARKSLIST", "View Bookmarks List", "Shift+F4", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_ZOOMIN, "IDM_ZOOMIN", "Zoom in", "Ctrl+Plus", "", false )     ' VK_OEM_PLUS
     frmKeyBoard_AddKeyBinding( "View", IDM_ZOOMOUT, "IDM_ZOOMOUT", "Zoom out", "Ctrl+Minus", "", false )   ' VK_OEM_MINUS
+    frmKeyBoard_AddKeyBinding( "View", IDM_SPLITLEFTRIGHT, "IDM_SPLITLEFTRIGHT", "Toggle Split Editor Left/Right", "Ctrl+\", "", false )
+    frmKeyBoard_AddKeyBinding( "View", IDM_SPLITTOPBOTTOM, "IDM_SPLITTOPBOTTOM", "Toggle Split Editor Top/Bottom", "Ctrl+Shift+\", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_FOLDTOGGLE, "IDM_FOLDTOGGLE", "Toggle current fold point", "F8", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_FOLDBELOW, "IDM_FOLDBELOW", "Fold current line and all below", "Ctrl+F8", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_FOLDALL, "IDM_FOLDALL", "Fold all lines", "Shift+F8", "", false )

@@ -254,7 +254,6 @@ private function frmOptionsLocal_OnCommand( byval hwnd as HWND, _
                 
                 ' Display the Save File Dialog
                 dim wzFilename as wstring * MAX_PATH 
-                wzFilename = "*.lang"
                 dim pwszName as wstring ptr = AfxIFileSaveDialog(hwnd, @wzFilename, @wstr("lang"), id)
                 if pwszName then
                     wzFilename = *pwszName

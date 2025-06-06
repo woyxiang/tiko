@@ -83,8 +83,8 @@ type clsDocument
         docData               as PROJECT_FILELOAD_DATA    ' loaded from project files
         
         ' 2 Scintilla controls to accommodate split editing
-        ' hWindow(0) is our MAIN control (bottom)
-        ' hWindow(1) is our split control (top)
+        ' hWindow(0) is our MAIN control (main bottom)
+        ' hWindow(1) is our split control (top or left)
         hWindow(1)            as HWND   ' Scintilla split edit windows 
         
         ' Code document related
@@ -109,9 +109,9 @@ type clsDocument
         LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
 
         ' Following used for split edit views
-        rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window
+        rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
         SplitY                as long               ' Y coordinate of vertical splitter
-        bEditorIsSplit        as boolean
+        EditorSplitMode       as SPLIT_MODE = SplitNone
         bSizing               as boolean
         ptPrev                as POINT
         

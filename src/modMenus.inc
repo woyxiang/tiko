@@ -172,10 +172,10 @@ function frmMain_ViewTopMenuStates() as long
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
     
-    EnableTopMenuItem( IDM_functionLIST, true )
+    EnableTopMenuItem( IDM_FUNCTIONLIST, true )
     EnableTopMenuItem( IDM_BOOKMARKSLIST, true )
 
-    for idMenu as long = IDM_ZOOMIN to IDM_RESTOREMAIN
+    for idMenu as long = IDM_SPLITLEFTRIGHT to IDM_RESTOREMAIN
         EnableTopMenuItem( idMenu, true )
     next
 

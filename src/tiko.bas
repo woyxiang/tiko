@@ -107,6 +107,7 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmFindReplace.inc"
 #include once "frmProjectOptions.inc"
 #include once "frmMainOnCommand.inc"
+#include once "frmMainOnNotify.inc"
 #include once "frmUserTools.inc"
 #include once "modMsgPump.inc"
 #include once "frmMainFile.inc"
@@ -167,17 +168,19 @@ function WinMain( _
     wszLocalizationFile = AfxGetExePathName + "settings\languages\" + gConfig.LocalizationFile
     if LoadLocalizationFile(wszLocalizationFile, false) = false then
         MessageBox( 0, _
-                    "Localization file could not be loaded. Aborting application." + vbcrlf + _
+                    "Localization file could not be loaded." + vbcrlf + _
                     wszLocalizationFile, _
                     "Error", _
                     MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
-        Return 1
+        return 1
     end if
+
 
     ' Load default Explorer Categories should none exist. Need to do it here
     ' rather than from within Config because the localization file must be 
     ' loaded first.
     gConfig.SetCategoryDefaults()
+
 
     ' Check for previous instance 
     if gConfig.MultipleInstances = false Then
@@ -204,7 +207,6 @@ function WinMain( _
 
     ' Load codetip files 
     if gConfig.Codetips then gConfig.LoadCodetips
-
 
     ' Show the main form
     function = frmMain_Show( 0 )

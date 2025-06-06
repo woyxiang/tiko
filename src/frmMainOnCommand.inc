@@ -103,7 +103,6 @@ function frmMain_OnCommand( _
             frmMain_PositionWindows()
             
         case IDM_OPENINCLUDE:           OpenSelectedDocument( gApp.IncludeFilename )
-        case IDM_SETFOCUSEDITOR:        frmMain_SetFocusToCurrentCodeWindow()   
         case IDM_EXPLORER_EXPANDALL:    frmExplorer_ExpandAll()   
         case IDM_EXPLORER_COLLAPSEALL:  frmExplorer_CollapseAll()   
         case IDM_FUNCTIONS_EXPANDALL:   frmFunctions_ExpandAll()   
@@ -214,6 +213,13 @@ function frmMain_OnCommand( _
         case IDM_ZOOMIN, IDM_ZOOMOUT
             OnCommand_ViewZoom( id, pDoc )
 
+        case IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
+            OnCommand_ViewSplit( id, pDoc )
+        
+        case IDM_SETFOCUSEDITOR:
+            ' Default is Ctrl+tilde
+            OnCommand_ViewToggleFocus( pDoc )
+
         
         ''  PROJECT MENU
         case IDM_PROJECTNEW:            OnCommand_ProjectNew( hwnd )
@@ -245,16 +251,8 @@ function frmMain_OnCommand( _
         case IDM_HELP_FB
             ShowContextHelp(id) 
     
-        case IDM_HELP_TIKO    
-            dim pDoc as clsDocument ptr
-            pDoc = frmMain_OpenFileSafely( _
-                        HWND_FRMMAIN, _
-                        false, _    ' bIsNewFile
-                        false, _    ' bIsTemplate
-                        true, _     ' bShowInTab
-                        false, _    ' bIsInclude
-                        gConfig.TikoHelpFile, _   ' wszFileName
-                        0 )         ' pDocIn
+        case IDM_HELP_TIKO
+            OpenSelectedDocument(gConfig.TikoHelpFile)
 
         case IDM_ABOUT
             DisableAllModeless()

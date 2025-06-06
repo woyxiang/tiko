@@ -50,6 +50,81 @@ function OnCommand_ViewZoom( _
     function = 0
 end function
 
+' ========================================================================================
+' View toggle split editor
+' ========================================================================================
+function OnCommand_ViewSplit( _
+            byval id as long, _
+            byval pDoc as clsDocument ptr _
+            ) as LRESULT
+
+    select case id
+        case IDM_SPLITLEFTRIGHT
+            ' If already left/right then toggle it closed
+
+        case IDM_SPLITTOPBOTTOM
+            ' If already top/bottom then toggle it closed
+            if pDoc->EditorSplitMode = SplitTopBottom then
+                pDoc->SplitY = 0
+                pDoc->EditorSplitMode = SplitNone
+                ' Get the number of visible lines in the Top split and then
+                ' set the MAIN document's first top line to be the current
+                ' MAIN editing line numebr less thhe top split number. This 
+                ' makes it less visibly jarring. Switch the active scintilla
+                ' to ensure that GetCurrentLineNumber gets the value from the
+                ' correct document.
+                pDoc->hWndActiveScintilla = pDoc->hWindow(0)
+                dim as long nLines =  pDoc->LinesPerPage(1)
+                dim as long nCurLine =  pDoc->GetCurrentLineNumber()
+                SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, nCurLine - nLines, 0) 
+            else    
+                dim as RECT rc = AfxGetWindowRect(pDoc->hWindow(0))
+                MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
+                pDoc->SplitY = (rc.bottom - rc.top) / 2
+                pDoc->EditorSplitMode = SplitTopBottom 
+                dim as long nLines =  pDoc->LinesPerPage(0) / 2 - 3
+                dim as long nCurLine =  pDoc->GetCurrentLineNumber()
+                SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, nCurLine - nLines, 0) 
+                SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, nCurLine, 0) 
+            end if
+    end select
+    
+    frmMain_PositionWindows()
+    frmMain_SetFocusToCurrentCodeWindow()
+            
+    function = 0
+end function
+
+
+' ========================================================================================
+' Toggle editing focus amongst open windows depending whether spilt in effect
+' ========================================================================================
+function OnCommand_ViewToggleFocus( byval pDoc as clsDocument ptr ) as LRESULT
+    if pDoc = 0 then exit function
+    
+    dim hCurrent as HWND = pDoc->hWndActiveScintilla
+    dim hFindCtl as HWND = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )
+    if IsWindowVisible(HWND_FRMFINDREPLACE) = false then hFindCtl = 0
+        
+    dim idx as long
+    
+    dim hWin(2) as HWND
+    hWin(0) = pDoc->hWindow(0): if GetFocus() = hWin(0) then idx = 0
+    hWin(1) = pDoc->hWindow(1): if GetFocus() = hWin(1) then idx = 1
+    hWin(2) = hFindCtl: if GetFocus() = hWin(2) then idx = 2
+    
+    do
+        idx += 1
+        if idx > ubound(hWin) then idx = lbound(hWin)
+        hCurrent = hWin(idx)
+    loop until IsWindowVisible(hCurrent)
+
+    SetFocus(hCurrent)
+    frmMain_SetStatusbar
+    
+    function = 0
+end function
+
 
 ' ========================================================================================
 ' View FunctionList, Explorer, Output, Bookmarks windows

@@ -97,7 +97,7 @@ function frmTopTabs_PositionWindows() as LRESULT
     dim as long rcIconWidth = 20 
     dim as long rightBorderWidth = 2
     dim as long hmargin = 3
-    dim as long ActionPanelWidth = 114
+    dim as long ActionPanelWidth = 96
     dim as long ActionButtonWidth = 24
     dim as long ActionButtonHeight = 22
     dim as long PrevTabsButtonWidth = 20
@@ -121,15 +121,9 @@ function frmTopTabs_PositionWindows() as LRESULT
     gTTabCtl.rcNextTabs.bottom = gTTabCtl.rcNextTabs.top + pWindow->ScaleY( PrevTabsButtonHeight )
     gTTabCtl.rcNextTabs.right = gTTabCtl.rcNextTabs.left + pWindow->ScaleX( PrevTabsButtonWidth )
 
-    ' calculate the split editor button
-    gTTabCtl.rcSplitEditor.left = gTTabCtl.rcNextTabs.right + pWindow->ScaleX( hmargin )
-    gTTabCtl.rcSplitEditor.top = rc.top + pWindow->ScaleY(vmargin)
-    gTTabCtl.rcSplitEditor.bottom = gTTabCtl.rcSplitEditor.top + pWindow->ScaleY( PrevTabsButtonHeight )
-    gTTabCtl.rcSplitEditor.right = gTTabCtl.rcSplitEditor.left + pWindow->ScaleX( PrevTabsButtonWidth )
-
     ' calculate the actual more actions "..." button itself
     vmargin = (TabHeight - ActionButtonHeight) / 2
-    gTTabCtl.rcActionButton.left = gTTabCtl.rcSplitEditor.right + pWindow->ScaleX( hmargin )
+    gTTabCtl.rcActionButton.left = gTTabCtl.rcNextTabs.right + pWindow->ScaleX( hmargin )
     gTTabCtl.rcActionButton.top = rc.top + pWindow->ScaleY(vmargin)
     gTTabCtl.rcActionButton.bottom = gTTabCtl.rcActionButton.top + pWindow->ScaleY( ActionButtonHeight )
     gTTabCtl.rcActionButton.right = gTTabCtl.rcActionButton.left + pWindow->ScaleY( ActionButtonWidth )
@@ -352,16 +346,6 @@ function isNextTabsHitTest( byval hWin as HWND ) as boolean
 end function
 
 ' ========================================================================================
-' Do hit test to determine if SplitEditor button in action Area was clicked
-' ========================================================================================
-function isSplitEditorHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcSplitEditor, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
 ' Do hit test if over the Action Panel (no action but prevents other tooltips)
 ' ========================================================================================
 function isActionPanelHitTest( byval hWin as HWND ) as boolean
@@ -454,8 +438,6 @@ function frmTopTabs_WndProc( _
             wszTooltip  = L(431, "Scroll Tabs Left")
         elseif isNextTabsHitTest( hwnd ) then
             wszTooltip  = L(432, "Scroll Tabs Right")
-        elseif isSplitEditorHitTest( hwnd ) then
-            wszTooltip  = L(447, "Split Editor")
         elseif isActionButtonHitTest( hwnd ) then
             wszTooltip  = L(430, "Tab List")
         elseif isAddFileButtonHitTest( hwnd ) then
@@ -476,7 +458,6 @@ function frmTopTabs_WndProc( _
     case WM_RBUTTONDOWN
         if isPrevTabsHitTest( hwnd ) then
         elseif isNextTabsHitTest( hwnd ) then
-        elseif isSplitEditorHitTest( hwnd ) then
         elseif isActionButtonHitTest( hwnd ) then
         elseif isActionPanelHitTest( hwnd ) then
         elseif isAddFileButtonHitTest( hwnd ) then
@@ -496,7 +477,6 @@ function frmTopTabs_WndProc( _
     case WM_LBUTTONDOWN
         if isPrevTabsHitTest( hwnd ) then
         elseif isNextTabsHitTest( hwnd ) then
-        elseif isSplitEditorHitTest( hwnd ) then
         elseif isActionButtonHitTest( hwnd ) then
         elseif isActionPanelHitTest( hwnd ) then
         elseif isAddFileButtonHitTest( hwnd ) then
@@ -542,20 +522,6 @@ function frmTopTabs_WndProc( _
             if nFound = -1 then nFound = gTTabCtl.GetItemCount - 1
             gTTabCtl.SetFocusTab(nFound)
 
-        elseif isSplitEditorHitTest( hwnd ) then
-            dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr
-            if pDoc then
-            pDoc->bEditorIsSplit = not pDoc->bEditorIsSplit
-            if pDoc->bEditorIsSplit then
-                dim as RECT rc = AfxGetWindowRect(pDoc->hWindow(0))
-                MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
-                pDoc->SplitY = (rc.bottom - rc.top) / 2
-            else
-                pDoc->SplitY = 0
-            end if      
-            frmMain_PositionWindows()
-            end if
-            
         elseif isActionButtonHitTest( hwnd ) then
             dim as HMENU hPopupMenu = CreateTopTabsActionButtonContextMenu()
             ' Popup the menu to the bottom of the Action Button (right aligned)
@@ -742,21 +708,6 @@ function frmTopTabs_WndProc( _
             SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rc), wsStyle )
             
-            ' Draw the SplitEditor button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
-            SetBkColor( memDC, ghTopTabs.BackColor )
-            SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isSplitEditorHitTest( hwnd ) then
-                SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-            end if
-            rc = gTTabCtl.rcSplitEditor
-            selectPen( memDC, hPenNull )
-            RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 'or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszSplitEditor, -1, cast(lpRect, @rc), wsStyle )
-
             ' Draw the Action buttom "..."
             SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
