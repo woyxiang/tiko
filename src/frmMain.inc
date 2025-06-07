@@ -1322,26 +1322,26 @@ function frmMain_OnLButtonUp( _
             ReleaseCapture
             ' if we try to split before the top of the code window then simply
             ' stop the splitting altogether.
-            if pDoc->EditorSplitMode = SplitTopBottom then
-                dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(1) )
-                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
-                if pDoc->SplitY <= rc.top then
-                    pDoc->SplitY = 0
-                    pDoc->EditorSplitMode = SplitNone
-                    frmMain_PositionWindows()
-                end if   
-            end if    
+'            if pDoc->EditorSplitMode = SplitTopBottom then
+'                dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(1) )
+'                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
+'                if pDoc->SplitY <= rc.top then
+'                    pDoc->SplitY = 0
+'                    pDoc->EditorSplitMode = SplitNone
+'                    frmMain_PositionWindows()
+'                end if   
+'            end if    
             ' if we try to split before the left of the code window then simply
             ' stop the splitting altogether.
-            if pDoc->EditorSplitMode = SplitLeftRight then
-                dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(0) )
-                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
-                if pDoc->SplitX <= rc.left then
-                    pDoc->SplitX = 0
-                    pDoc->EditorSplitMode = SplitNone
-                    frmMain_PositionWindows()
-                end if   
-            end if    
+'            if pDoc->EditorSplitMode = SplitLeftRight then
+'                dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(0) )
+'                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
+'                if pDoc->SplitX <= rc.left then
+'                    pDoc->SplitX = 0
+'                    pDoc->EditorSplitMode = SplitNone
+'                    frmMain_PositionWindows()
+'                end if   
+'            end if    
         end if
     end if   
     SetCursor( LoadCursor( null, IDC_ARROW ))
