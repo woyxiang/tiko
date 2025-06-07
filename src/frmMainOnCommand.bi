@@ -60,6 +60,7 @@ declare function OnCommand_SearchGotoCompileError( byval bMoveNext as boolean ) 
 declare function OnCommand_SearchGotoFile( byval id as long, byval pDoc as clsDocument ptr ) as LRESULT
 declare function OnCommand_SearchBookmarks( byval id as long, byval pDoc as clsDocument ptr ) as LRESULT
 
+declare function OnCommand_ViewSidePanel() as LRESULT
 declare function OnCommand_ViewFunctionList() as LRESULT
 declare function OnCommand_ViewBookmarksList() as LRESULT
 declare function OnCommand_ViewExplorer() as LRESULT

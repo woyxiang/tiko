@@ -118,6 +118,7 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_BOOKMARKPREV: wszText = L(52,"Previous Bookmark")
         case IDM_BOOKMARKCLEARALL: wszText = L(53,"Clear Bookmarks")
 
+        case IDM_VIEWSIDEPANEL: wszText = L(246,"View Side Panel")
         case IDM_VIEWEXPLORER: wszText = L(250,"View Explorer Window")
         case IDM_VIEWOUTPUT: wszText = L(251,"View Output Window")
         case IDM_FUNCTIONLIST: wszText = L(221,"View Function List")
@@ -307,6 +308,7 @@ function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_SEARCH, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_SEARCH, IDM_GOTO, 0, false, false )
 
+    setTopMenuItem( IDC_MENUBAR_VIEW, IDM_VIEWSIDEPANEL, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_VIEWEXPLORER, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_VIEWOUTPUT, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_VIEW, IDM_FUNCTIONLIST, 0, false, false )

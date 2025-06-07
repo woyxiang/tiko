@@ -58,14 +58,33 @@ function OnCommand_ViewSplit( _
             byval pDoc as clsDocument ptr _
             ) as LRESULT
 
+    pDoc->SplitX = 0
+    pDoc->SplitY = 0
+
     select case id
         case IDM_SPLITLEFTRIGHT
             ' If already left/right then toggle it closed
+            if pDoc->EditorSplitMode = SplitLeftRight then
+                pDoc->EditorSplitMode = SplitNone
+                pDoc->hWndActiveScintilla = pDoc->hWindow(0)
+            else    
+                ' If already split then make sure to cancel the current split and
+                ' reposition windows before engaging new split in order to ensure 
+                ' that window sizes are calculated correctly.
+                pDoc->EditorSplitMode = SplitLeftRight
+                frmMain_PositionWindows()
+                dim as RECT rc = AfxGetWindowRect(pDoc->hWindow(0))
+                MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
+                pDoc->SplitX = rc.left + (rc.right - rc.left) / 2
+                dim as long nTopLine = SciExec( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0)  
+                SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, nTopLine, 0) 
+                dim as long currPos  = SciExec( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)
+                SciExec( pDoc->hWindow(1), SCI_GOTOPOS, currPos, 0) 
+            end if
 
         case IDM_SPLITTOPBOTTOM
             ' If already top/bottom then toggle it closed
             if pDoc->EditorSplitMode = SplitTopBottom then
-                pDoc->SplitY = 0
                 pDoc->EditorSplitMode = SplitNone
                 ' Get the number of visible lines in the Top split and then
                 ' set the MAIN document's first top line to be the current
@@ -78,13 +97,19 @@ function OnCommand_ViewSplit( _
                 dim as long nCurLine =  pDoc->GetCurrentLineNumber()
                 SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, nCurLine - nLines, 0) 
             else    
+                ' If already split then make sure to cancel the current split and
+                ' reposition windows before engaging new split in order to ensure 
+                ' that window sizes are calculated correctly.
+                pDoc->EditorSplitMode = SplitTopBottom 
+                frmMain_PositionWindows()
                 dim as RECT rc = AfxGetWindowRect(pDoc->hWindow(0))
                 MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
                 pDoc->SplitY = (rc.bottom - rc.top) / 2
-                pDoc->EditorSplitMode = SplitTopBottom 
                 dim as long nLines =  pDoc->LinesPerPage(0) / 2 - 3
                 dim as long nCurLine =  pDoc->GetCurrentLineNumber()
                 SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, nCurLine - nLines, 0) 
+                dim as long currPos  = SciExec( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)
+                SciExec( pDoc->hWindow(1), SCI_GOTOPOS, currPos, 0) 
                 SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, nCurLine, 0) 
             end if
     end select
@@ -127,8 +152,32 @@ end function
 
 
 ' ========================================================================================
-' View FunctionList, Explorer, Output, Bookmarks windows
+' View SidePanelFunctionList, Explorer, Output, Bookmarks windows
 ' ========================================================================================
+function OnCommand_ViewSidePanel() as LRESULT
+    dim as long nPanelWidth = AfxGetWindowWidth(HWND_FRMPANEL)
+    
+    if IsWindowVisible(HWND_FRMPANEL) then
+        ShowWindow( HWND_FRMPANEL, SW_HIDE )
+        nPanelWidth = -nPanelWidth / 2
+    else    
+        ShowWindow( HWND_FRMPANEL, SW_SHOW )
+        nPanelWidth = nPanelWidth / 2
+    end if
+
+    ' If document if left/right split then we adjust the SplitX
+    ' position and redraw to update document widths.
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
+        if pDoc->EditorSplitMode = SplitLeftRight then
+            pDoc->SplitX = pDoc->SplitX + nPanelWidth
+        end if
+    end if
+    
+    frmMain_PositionWindows
+    function = 0
+end function
+
 function OnCommand_ViewFunctionList() as LRESULT
     ShowWindow( HWND_FRMPANEL, SW_SHOW )
     gPanel.hActiveChild = HWND_FRMFUNCTIONS

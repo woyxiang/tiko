@@ -88,8 +88,8 @@ enum
     
     '' VIEW
     IDM_VIEW_START
-    IDM_VIEW, IDM_VIEWEXPLORER, IDM_VIEWOUTPUT, IDM_FUNCTIONLIST, IDM_BOOKMARKSLIST
-    IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
+    IDM_VIEW, IDM_VIEWSIDEPANEL, IDM_VIEWEXPLORER, IDM_VIEWOUTPUT, IDM_FUNCTIONLIST
+    IDM_BOOKMARKSLIST, IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
     IDM_ZOOMIN, IDM_ZOOMOUT, IDM_FOLDTOGGLE, IDM_FOLDBELOW, IDM_FOLDALL, IDM_UNFOLDALL
     IDM_VIEWTODO, IDM_VIEWNOTES, IDM_RESTOREMAIN, IDM_EXPLORERPOSITION
     IDM_VIEW_END
@@ -311,8 +311,6 @@ if isWineActive() then
     wszReplace = !"\u2631"             ' replace
     wszReplaceAll = !"\u2637"          ' replace all
     wszMoreActions = !"\u2630"         ' ...
-'    wszSplitTopBottom = !"\u229F"      ' squared minus
-'    wszSplitLeftRight = !"\u2385"      ' squared vertical line
     wszAddFileButton = "+"             ' plus sign
 else
     wszClose = !"\u2715"               ' light X  
@@ -335,7 +333,5 @@ else
     wszReplace = !"\uE297"             ' replace
     wszReplaceAll = !"\uE299"          ' replace all
     wszMoreActions = !"\u22EF"         ' ...
-'    wszSplitTopBottom = !"\u229F"      ' squared minus
-'    wszSplitLeftRight = !"\u2385"      ' squared vertical line
     wszAddFileButton = !"\u002B"       ' plus sign
 end if

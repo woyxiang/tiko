@@ -158,11 +158,13 @@ function frmMain_ViewTopMenuStates() as long
         EnableTopMenuItem( idMenu, false )
     next
 
+    EnableTopMenuItem( IDM_VIEWSIDEPANEL, true )
     EnableTopMenuItem( IDM_VIEWEXPLORER, true )
     EnableTopMenuItem( IDM_VIEWOUTPUT, true )
     EnableTopMenuItem( IDM_RESTOREMAIN, true )
     EnableTopMenuItem( IDM_EXPLORERPOSITION, true )
 
+    CheckMarkTopMenuItem( IDM_VIEWSIDEPANEL, iif( IsWindowVisible(HWND_FRMPANEL), true, false ))
     CheckMarkTopMenuItem( IDM_VIEWEXPLORER, iif( IsWindowVisible(HWND_FRMEXPLORER), true, false ))
     CheckMarkTopMenuItem( IDM_VIEWOUTPUT, iif( IsWindowVisible(HWND_FRMOUTPUT), true, false ))
     CheckMarkTopMenuItem( IDM_functionLIST, iif( IsWindowVisible(HWND_FRMfunctionS), true, false ))

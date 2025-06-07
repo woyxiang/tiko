@@ -110,7 +110,8 @@ type clsDocument
 
         ' Following used for split edit views
         rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
-        SplitY                as long               ' Y coordinate of vertical splitter
+        SplitY                as long               ' Y coordinate of top/bottom splitter
+        SplitX                as long               ' X coordinate of left/right splitter
         EditorSplitMode       as SPLIT_MODE = SplitNone
         bSizing               as boolean
         ptPrev                as POINT

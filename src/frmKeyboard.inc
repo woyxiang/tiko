@@ -157,6 +157,7 @@ function frmKeyboard_CreateDefaultKeyBindings() as long
     frmKeyBoard_AddKeyBinding( "Search", IDM_GOTOPREVTAB, "IDM_GOTOPREVTAB", "Goto previous open editor tab", "Ctrl+Shift+Tab", "", false )
 
     '' VIEW MENU
+    frmKeyBoard_AddKeyBinding( "View", IDM_VIEWSIDEPANEL, "IDM_VIEWSIDEPANEL", "View Side Panel", "Ctrl+B", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_VIEWEXPLORER, "IDM_VIEWEXPLORER", "View Explorer window", "F9", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_VIEWOUTPUT, "IDM_VIEWOUTPUT", "View Output window", "Ctrl+F9", "", false )
     frmKeyBoard_AddKeyBinding( "View", IDM_FUNCTIONLIST, "IDM_FUNCTIONLIST", "View function List", "F4", "", false )

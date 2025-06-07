@@ -156,11 +156,20 @@ function Scintilla_OnNotify( _
                 if pDoc->IsValidScintillaID( pNSC->hdr.idFrom ) then
                     frmMain_SetStatusbar
                                     
+                    ' Update the vertical scrollbars because mousewheel may have been
+                    ' used to scroll a split window without keyboard focus.
+                    if pDoc->EditorSplitMode <> SplitNone then
+                        frmEditorVScroll_calcVThumbRect(pDoc)
+                        AfxRedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(0) )
+                        AfxRedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(1) )
+                    end if    
+
                     '// Has the caret changed position
                     var caretPos = SciExec( pDoc->hWndActiveScintilla, SCI_GETCURRENTPOS, 0, 0)
 
                     if pDoc->lastCaretPos <> caretPos then
                         pDoc->lastCaretPos = caretPos
+
                         
                         '// If the xOffset has changed then we need to update the horizontal scrollbar
                         dim as long GetXOffset = SciExec( pDoc->hWndActiveScintilla, SCI_GETXOFFSET, 0, 0 )
@@ -169,7 +178,7 @@ function Scintilla_OnNotify( _
                             AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0) )
                             AfxRedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1) )
                         end if
-                    
+
                         '// Update any occurrence highlights
                         if gConfig.OccurrenceHighlight then
                             static as string sCurWord, sPrevWord

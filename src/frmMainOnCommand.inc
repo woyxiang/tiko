@@ -198,6 +198,7 @@ function frmMain_OnCommand( _
         
         
         ''  VIEW MENU
+        case IDM_VIEWSIDEPANEL:      OnCommand_ViewSidePanel():
         case IDM_VIEWEXPLORER:       OnCommand_ViewExplorer():
         case IDM_VIEWOUTPUT:         OnCommand_ViewOutput():
         case IDM_FUNCTIONLIST:       OnCommand_ViewFunctionList():
