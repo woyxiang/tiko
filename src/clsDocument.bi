@@ -115,6 +115,7 @@ type clsDocument
         EditorSplitMode       as SPLIT_MODE = SplitNone
         bSizing               as boolean
         ptPrev                as POINT
+        rcDocSplitArea        as rect               ' entire rc client area for one or both edit windows + scrollbars
         
         static NextFileNum as long
         

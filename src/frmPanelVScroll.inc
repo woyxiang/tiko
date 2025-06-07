@@ -53,54 +53,6 @@ end function
 
     
 ' ========================================================================================
-' Update the VScrollBar UI via UpdateLayeredWindow
-' ========================================================================================
-function frmPanelVScroll_UpdateUI() as LRESULT
-    dim as long nWidth = AfxGetWindowWidth( HWND_FRMPANEL_VSCROLLBAR )
-    dim as long nHeight = AfxGetWindowHeight( HWND_FRMPANEL_VSCROLLBAR )
-    
-    '// Make mem DC + mem  bitmap
-    dim as HDC hdcScreen = GetDC(null)
-    dim as HDC hDC = CreateCompatibleDC(hdcScreen)
-    dim as HBITMAP hBmp = CreateCompatibleBitmap(hdcScreen, nWidth, nHeight)
-    dim as HBITMAP hBmpOld = SelectObject(hDC, hBmp)
-
-    FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
-
-    '// Call UpdateLayeredWindow
-    dim as BLENDfunction blend
-    blend.BlendOp = AC_SRC_OVER
-    blend.SourceConstantAlpha = 200  '255
-    blend.AlphaFormat = AC_SRC_ALPHA
-
-    dim as point ptPos
-    dim as RECT rc = AfxGetWindowRect( HWND_FRMPANEL_VSCROLLBAR )
-    ptPos.x = rc.left
-    ptPos.y = rc.top
-    dim as SIZE sizeWnd = (nWidth, nHeight)
-    dim as point ptSrc = (0, 0)
-
-    UpdateLayeredWindow ( _
-            HWND_FRMPANEL_VSCROLLBAR, _  ' A handle to a layered window
-            hdcScreen, _    ' A handle to a DC for the screen
-            @ptPos, _       ' New screen position. pptDst can be NULL if not changing
-            @sizeWnd, _     ' New size. psize can be NULL if not changing
-            hDC, _          ' Handle to DC of layered window from CreateCompatibleDC
-            @ptSrc, _       ' The location of the layer in the device context
-            0, _            ' COLORREF color key to be used when composing the layered window
-            @blend, _       ' pointer to BLENDfunction structure
-            ULW_ALPHA )     ' Use pblend as the blend function
-
-    SelectObject( hDC, hBmpOld )
-    DeleteObject( hBmp )
-    DeleteDC( hDC )
-    ReleaseDC( null, hdcScreen )
-
-    function = 0
-end function
-
-
-' ========================================================================================
 ' Position the VScrollBar over the Explorer listbox
 ' ========================================================================================
 function frmPanelVScroll_PositionWindows( byval nShowState as long ) as LRESULT
@@ -124,12 +76,8 @@ function frmPanelVScroll_PositionWindows( byval nShowState as long ) as LRESULT
     ShowWindow( HWND_FRMPANEL_VSCROLLBAR, nShowState )
     if nShowState = SW_HIDE then exit function
 
-    if gApp.isWineActive then
-        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-    else   
-        frmPanelVScroll_UpdateUI()
-    end if
-        
+    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+
     function = 0
 end function
 
@@ -163,22 +111,14 @@ function frmPanelVScroll_WndProc( _
                     nTopIndex = max( nTopIndex - gPanelVScroll.itemsPerPage, 0 )
                     SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
                     frmPanelVScroll_calcVThumbRect()   ' in client coordinates
-                    if gApp.isWineActive then
-                        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-                    else
-                        frmPanelVScroll_UpdateUI()
-                    end if   
+                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
                     AfxRedrawWindow( gPanelVScroll.hListBox )
                 elseif pt.y > rc.bottom then
                     dim as long nMaxTopIndex = gPanelVScroll.numItems - gPanelVScroll.itemsPerPage
                     nTopIndex = min( nTopIndex + gPanelVScroll.itemsPerPage, nMaxTopIndex )
                     SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
                     frmPanelVScroll_calcVThumbRect()   ' in client coordinates
-                    if gApp.isWineActive then
-                        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-                    else
-                        frmPanelVScroll_UpdateUI()
-                    end if   
+                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
                     AfxRedrawWindow( gPanelVScroll.hListBox )
                 end if
             end if
@@ -204,12 +144,7 @@ function frmPanelVScroll_WndProc( _
                         SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
                         AfxRedrawWindow( gPanelVScroll.hListBox )
                     end if   
-
-                    if gApp.isWineActive then
-                        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
-                    else
-                        frmPanelVScroll_UpdateUI()
-                    end if   
+                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
                 end if
             end if
             
@@ -221,20 +156,16 @@ function frmPanelVScroll_WndProc( _
             
         
         case WM_ERASEBKGND
-            if gApp.isWineActive then
-                return true
-            end if
+            return true
             
         case WM_PAINT
-            if gApp.isWineActive then
-                Dim As PAINTSTRUCT ps
-                Dim As HDC hDC
-                hDC = BeginPaint( hWnd, @ps )
-                FillRect( hDC, @ps.rcPaint, ghPanel.hBackBrushScrollBar )
-                FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
-                EndPaint hWnd, @ps
-                exit function
-            end if      
+            Dim As PAINTSTRUCT ps
+            Dim As HDC hDC
+            hDC = BeginPaint( hWnd, @ps )
+            FillRect( hDC, @ps.rcPaint, ghPanel.hBackBrushScrollBar )
+            FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
+            EndPaint hWnd, @ps
+            exit function
 
     end select
 
@@ -252,15 +183,10 @@ function frmPanelVScroll_Show( byval hWndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
 
-    dim as long ExStyles = WS_EX_NOACTIVATE
-    if gApp.isWineActive = false then
-        ExStyles = ExStyles or WS_EX_LAYERED
-    end if
-    
     HWND_FRMPANEL_VSCROLLBAR = pWindow->Create( hWndParent, _
         "", @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0, _
         WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        ExStyles )
+        WS_EX_NOACTIVATE )
     pWindow->Brush = ghPanel.hBackBrushScrollBar
 
     function = 0

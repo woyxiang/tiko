@@ -383,12 +383,8 @@ function frmMain_CalcSplitRect( byval pDoc as clsDocument ptr ) as long
         dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
         ' Calculate the full RECT if the TOP or LEFT document window is displaying
         if IsWindowVisible( pDoc->hWindow(1) ) then 
-            dim as RECT rc
-            GetWindowRect( pDoc->hWindow(1), @rc )
+            dim as RECT rc = AfxGetWindowRect(pDoc->hWindow(1))
             rc.top = rc.bottom
-            if IsWindowVisible( HWND_FRMEDITOR_HSCROLLBAR(1) ) then
-                rc.top = rc.top + AfxGetWindowHeight( HWND_FRMEDITOR_HSCROLLBAR(1) )
-            end if   
             rc.bottom = rc.top + pWindow->ScaleY(SPLITSIZE)
             rc.right = rc.right + pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR)
             MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast( point ptr, @rc), 2 )
@@ -462,19 +458,21 @@ function frmMain_PositionSplitDocLeft( byval pDoc as clsDocument ptr, byval rcDo
 
     ' Position the document window
     dim as long nWidth = pDoc->SplitX - rcDoc.left - iVScrollbarWidth
-    dim as long nHeight = rcDoc.bottom - rcDoc.top
+    dim as long nHeight = rcDoc.bottom - rcDoc.top - iHScrollbarHeight
     SetWindowPos( pDoc->hWindow(1), 0, _
                 rcDoc.left, rcDoc.top, _
                 nWidth, nHeight, _
                 SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
     RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
-    SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(1), 0, _ 
-                    rcDoc.left, rcDoc.bottom - iHScrollbarHeight, _
-                    nWidth, iHScrollbarHeight, _
-                    SWP_NOZORDER or SWP_NOREDRAW )
-    RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
-
+    if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
+        SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(1), 0, _ 
+                        rcDoc.left, rcDoc.bottom - iHScrollbarHeight, _
+                        nWidth, iHScrollbarHeight, _
+                        SWP_NOZORDER or SWP_NOREDRAW )
+        RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+    end if
+    
     ' Position the VScrollBar if necessary
     if iVScrollbarWidth then
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(1), 0, _ 
@@ -543,19 +541,21 @@ function frmMain_PositionMainDocRight( byval pDoc as clsDocument ptr, byval rcDo
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) = 0 then iHScrollbarHeight = 0
 
     dim as long nWidth = rcDoc.right - nLeft - iVScrollbarWidth
-    dim as long nHeight = rcDoc.bottom - rcDoc.top
+    dim as long nHeight = rcDoc.bottom - rcDoc.top - iHScrollbarHeight
     SetWindowPos( pDoc->hWindow(0), 0, _
                 nLeft, rcDoc.top, _
                 nWidth, nHeight, _
                 SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
     RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
-    SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(0), 0, _ 
-                    nLeft, rcDoc.bottom - iHScrollbarHeight, _
-                    nWidth, iHScrollbarHeight, _
-                    SWP_NOZORDER or SWP_NOREDRAW )
-    RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
-
+    if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then
+        SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(0), 0, _ 
+                        nLeft, rcDoc.bottom - iHScrollbarHeight, _
+                        nWidth, iHScrollbarHeight, _
+                        SWP_NOZORDER or SWP_NOREDRAW )
+        RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+    end if
+    
     if iVScrollbarWidth then 
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(0), 0, _ 
                     nLeft + nWidth, rcDoc.top, _
@@ -707,12 +707,8 @@ function frmMain_PositionWindows() as LRESULT
         rcDoc.right  = rc.right
         rcDoc.bottom = rc.bottom - nHeightStatusBar - nHeightOutput
         if gConfig.ExplorerPositionRight then rcDoc.right = rc.right - nWidthPanel
-        
-        ' Only hide vertical scrollbars because hiding the horizontal could
-        ' result in endless loop during mouseover test in modMsgPump.
-'        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
-'        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
-        
+        pDoc->rcDocSplitArea = rcDoc
+
         if pDoc->EditorSplitMode = SplitNone then 
             ShowWindow( pDoc->hWindow(1), SW_HIDE )      
             ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
@@ -1227,30 +1223,29 @@ function frmMain_OnMouseMove( _
         dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
         if pWindow = 0 then exit function
         
-        dim as RECT rcDoc
-        GetClientRect( pDoc->hWindow(0), @rcDoc )
-    
         dim as Rect rc
         dim as point pt = (x, y)
         if pDoc->bSizing then
+            dim as long nSplitSize = pWindow->ScaleY(SPLITSIZE)
+            dim as long nSscrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR)
+            dim as long maxLeft = pDoc->rcDocSplitArea.left + nSscrollWidth
+            dim as long maxTop = pDoc->rcDocSplitArea.top 
+            dim as long maxRight = pDoc->rcDocSplitArea.right - nSscrollWidth - nSplitSize
+            dim as long maxBottom = pDoc->rcDocSplitArea.bottom - nSplitSize
             if (pDoc->EditorSplitMode = SplitTopBottom) andalso (pt.y <> pDoc->ptPrev.y) then
                 pDoc->SplitY = pDoc->SplitY + (pt.y - pDoc->ptPrev.y)
-                ' Don't let the split go all the way to the bottom of the edit window
-                'if pDoc->SplitY + pWindow->ScaleY(20) >= rcDoc.bottom then 
-                'else
-                    frmMain_PositionWindows
-                    pDoc->ptPrev.y = pt.y
-                'end if   
+                ' Don't let the split go past the top or bottom of the edit area
+                if pDoc->SplitY <= maxTop then pDoc->SplitY = maxTop
+                if pDoc->SplitY >= maxBottom then pDoc->SplitY = maxBottom
             end if   
             if (pDoc->EditorSplitMode = SplitLeftRight) andalso (pt.x <> pDoc->ptPrev.x) then
                 pDoc->SplitX = pDoc->SplitX + (pt.x - pDoc->ptPrev.x)
-                ' Don't let the split go all the way to the right of the edit window
-                'if pDoc->SplitX + pWindow->ScaleX(20) >= rcDoc.left then 
-                'else
-                    frmMain_PositionWindows
-                    pDoc->ptPrev.x = pt.x
-                'end if   
+                ' Don't let the split go past the left or right of the edit area
+                if pDoc->SplitX <= maxLeft then pDoc->SplitX = maxLeft
+                if pDoc->SplitX >= maxRight then pDoc->SplitX = maxRight
             end if   
+            frmMain_PositionWindows
+            pDoc->ptPrev = pt
         else
             frmMain_CalcSplitRect(pDoc)
             if PtInRect(@pDoc->rcSplitButton, pt) then 
@@ -1320,28 +1315,10 @@ function frmMain_OnLButtonUp( _
         if pDoc->bSizing then
             pDoc->bSizing = false
             ReleaseCapture
-            ' if we try to split before the top of the code window then simply
-            ' stop the splitting altogether.
-'            if pDoc->EditorSplitMode = SplitTopBottom then
-'                dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(1) )
-'                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
-'                if pDoc->SplitY <= rc.top then
-'                    pDoc->SplitY = 0
-'                    pDoc->EditorSplitMode = SplitNone
-'                    frmMain_PositionWindows()
-'                end if   
-'            end if    
-            ' if we try to split before the left of the code window then simply
-            ' stop the splitting altogether.
-'            if pDoc->EditorSplitMode = SplitLeftRight then
-'                dim as RECT rc = AfxGetWindowRect( pDoc->hWindow(0) )
-'                MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 )
-'                if pDoc->SplitX <= rc.left then
-'                    pDoc->SplitX = 0
-'                    pDoc->EditorSplitMode = SplitNone
-'                    frmMain_PositionWindows()
-'                end if   
-'            end if    
+            pDoc->SplitX = 0
+            pDoc->SplitY = 0
+            pDoc->EditorSplitMode = SplitNone
+            frmMain_PositionWindows()
         end if
     end if   
     SetCursor( LoadCursor( null, IDC_ARROW ))

@@ -76,8 +76,6 @@ function clsTopTabCtl.InsertTab( byval pDoc as clsDocument ptr, byval insertIdx 
         idx = insertIdx + 1
     end if
 
-print "LastTab: "; gTTabCtl.LastDisplayTab, "insertIdx: "; insertIdx, "Idx: "; idx
-        
     this.tabs(idx).pDoc = pDoc
     this.SetTabText(idx)
 
