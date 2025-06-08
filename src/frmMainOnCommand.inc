@@ -253,7 +253,9 @@ function frmMain_OnCommand( _
             ShowContextHelp(id) 
     
         case IDM_HELP_TIKO
-            OpenSelectedDocument(gConfig.TikoHelpFile)
+            dim pDoc as clsDocument ptr = _
+                OpenSelectedDocument(gConfig.TikoHelpFile)
+            if pDoc then pDoc->bIsHelpFile = true    
 
         case IDM_ABOUT
             DisableAllModeless()

@@ -1186,6 +1186,8 @@ function clsConfig.ProjectSaveToFile() as boolean
     for i = 0 To nCount - 1
         if gTTabCtl.IsSafeIndex(i) = false then continue for
         pDoc = gTTabCtl.tabs(i).pDoc
+        if pDoc->bIsHelpFile then continue for
+        
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
             wszText = pDoc->DiskFilename
@@ -1214,7 +1216,7 @@ function clsConfig.ProjectSaveToFile() as boolean
     pDoc = gApp.pDocList
     do until pDoc = 0
         ' Only deal with files that are no longer "new"
-        if pDoc->IsNewFlag = false then 
+        if (pDoc->IsNewFlag = false) andalso (pDoc->bIsHelpFile = false) then 
             if gTTabCtl.GetTabIndexByDocumentPtr(pDoc) = -1 then
                 wszText = pDoc->DiskFilename
                 cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)

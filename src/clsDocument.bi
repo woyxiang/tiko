@@ -107,7 +107,8 @@ type clsDocument
         lastCaretPos          as long               ' used for checking in SCN_UPDATEUI
         lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
         LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
-
+        bIsHelpFile           as boolean = false
+        
         ' Following used for split edit views
         rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
         SplitY                as long               ' Y coordinate of top/bottom splitter

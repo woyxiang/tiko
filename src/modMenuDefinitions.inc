@@ -120,9 +120,9 @@ Function getMenuText( byval idMenu as long ) As CWSTR
 
         case IDM_VIEWSIDEPANEL: wszText = L(246,"View Side Panel")
         case IDM_VIEWEXPLORER: wszText = L(250,"View Explorer Window")
-        case IDM_VIEWOUTPUT: wszText = L(251,"View Output Window")
         case IDM_FUNCTIONLIST: wszText = L(221,"View Function List")
         case IDM_BOOKMARKSLIST: wszText = L(443,"View Bookmarks List")
+        case IDM_VIEWOUTPUT: wszText = L(251,"View Output Window")
         case IDM_EXPLORERPOSITION:
             wszText = L(87,"Move Explorer Window") & " " & _
             iif(gConfig.ExplorerPositionRight, L(88, "Left"), L(89, "Right"))
@@ -230,7 +230,6 @@ public function getTopMenuPtr( byval nID as long ) as TOPMENU_TYPE ptr
     next
     return @dummy
 end function
-
 
 
 function buildTopMenuDefinitions() as long
