@@ -639,11 +639,13 @@ function frmMain_PositionWindows() as LRESULT
     SetWindowPos( HWND_FRMMAIN_MENUBAR, 0, _
                     0, 0, rc.right - rc.left, nHeightMenuBar, _
                     SWP_NOZORDER or SWP_SHOWWINDOW ) 
+    RedrawWindow( HWND_FRMMAIN_MENUBAR, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
     ' Set the statusbar into place 
     SetWindowPos( HWND_FRMMAIN_STATUSBAR, 0, _
                     0, rc.bottom - nHeightStatusBar, rc.right - rc.left, nHeightStatusBar, _
                     SWP_NOZORDER or SWP_SHOWWINDOW ) 
+    RedrawWindow( HWND_FRMMAIN_STATUSBAR, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
     
     nLeft = rc.Left 
     nTop = rc.top + nHeightMenuBar
@@ -801,7 +803,6 @@ function frmMain_OpenFileSafely( _
             byval bIsInclude  as boolean, _
             byref wszName     as wstring, _
             byval pDocIn      as clsDocument ptr, _
-            byval bIsDesigner as boolean = false, _
             byval wszFileType as CWSTR = FILETYPE_UNDEFINED _
             ) as clsDocument ptr
         
@@ -819,7 +820,11 @@ function frmMain_OpenFileSafely( _
         ' Create a new pDoc 
         pDoc = gApp.AddNewDocument() 
         if bIsNewFile then
-            pDoc->CreateCodeWindow( hwnd, true )  ' Create the new Scintilla window
+            pDoc->CreateCodeWindow( _
+                    hwnd, _
+                    true, _    ' IsNewFile
+                    bIsTemplate, _
+                    iif(bIsTemplate, wszName, wstr(""))) 
         else
             wszName = OnCommand_FileAutoSaveFileCheck( wszName )
             pDoc->CreateCodeWindow( hwnd, false, bIsTemplate, wszName )
@@ -1120,8 +1125,7 @@ function frmMain_OnDropFiles( _
                                                 true,  _    ' bShowInTab
                                                 false, _    ' bIsInclude
                                                 wszPath, _  ' wszName
-                                                pDocIn, _   ' pDocIn
-                                                false _
+                                                pDocIn _   ' pDocIn
                                                 )
                                                 
                         ' Give this document a default project type depending on its file extension

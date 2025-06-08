@@ -1092,7 +1092,6 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
                         false, _    ' bIsInclude
                         wszFilename, _  ' wszName
                         0, _            ' pDocIn
-                        false, _    ' bIsDesigner
                         wszFileType )
     
                 iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
@@ -1407,7 +1406,6 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
                     false, _    ' bIsInclude
                     docData(i).wszFilename, _  ' wszName
                     0, _        ' pDocIn
-                    false, _    ' bIsDesigner
                     docData(i).wszFileType )
 
         if docData(i).bLoadInTab then

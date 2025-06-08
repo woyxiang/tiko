@@ -37,7 +37,6 @@ function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisplayTab a
         dim as long idx = gTTabCtl.InsertTab( pDocNew, gTTabCtl.LastDisplayTab )  ' Add the new document to the top tabcontrol
         frmTopTabs_PositionWindows()
         gTTabCtl.SetFocusTab(idx)
-'        frmMain_PositionWindows
         frmMain_SetFocusToCurrentCodeWindow
     end if
     
@@ -50,7 +49,8 @@ end function
 ' ========================================================================================
 function OnCommand_FileOpen( _
             byval hwnd as HWND, _
-            byval bShowInTab as boolean = true _
+            byval bShowInTab as boolean = true, _
+            byval bIsTemplate as boolean = false _
             ) as LRESULT
 
     dim pDoc as clsDocument ptr
@@ -80,39 +80,40 @@ function OnCommand_FileOpen( _
         if pItem then
             pItem->lpVtbl->GetDisplayName(pItem, SIGDN_FILESYSPATH, @pwszName)
             if pwszName then 
-            ' Save the folder where this file was opened from into the gApp.wszLastOpenFolder
-            ' variable so that subsequent uses of the File Open dialog will default to 
-            ' this folder.
-            gApp.wszLastOpenFolder = AfxStrPathName( "PATH", *pwszName )
+                ' Save the folder where this file was opened from into the gApp.wszLastOpenFolder
+                ' variable so that subsequent uses of the File Open dialog will default to 
+                ' this folder.
+                gApp.wszLastOpenFolder = AfxStrPathName( "PATH", *pwszName )
 
-            ' Test to see if the file is already loaded in the editor. if it is, then
-            ' bypass loading it again thereby creating multiple ghost instances.
-            pDoc = gApp.GetDocumentPtrByFilename(*pwszName) 
-            if pDoc then
-                if pDoc->GetActiveScintillaPtr = 0 then pDocIn = pDoc
-            end if   
-            if (pDoc = 0) orelse (pDocIn <> 0) then 
-                pDoc = frmMain_OpenFileSafely(HWnd, _
-                                                false, _     ' bIsNewFile
-                                                false, _     ' bIsTemplate
-                                                false, _     ' bShowInTab
-                                                false, _     ' bIsInclude
-                                                *pwszName, _ ' pwszName
-                                                pDocIn, _    ' pDocIn
-                                                false _
-                                                )     
-            end if
-
-            ' Give this document a default project type depending on its file extension
-            if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
-                if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
-                    gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
+                ' Test to see if the file is already loaded in the editor. if it is, then
+                ' bypass loading it again thereby creating multiple ghost instances.
+                pDoc = gApp.GetDocumentPtrByFilename(*pwszName) 
+                if pDoc then
+                    if pDoc->GetActiveScintillaPtr = 0 then pDocIn = pDoc
                 end if   
-            end if
-            
-            if bShowInTab then pDocTabs(i) = pDoc
-            CoTaskMemFree(pwszName)
-            pwszName = null
+                if (pDoc = 0) orelse (pDocIn <> 0) then
+                    dim as boolean bIsNewFile = bIsTemplate
+                    pDoc = frmMain_OpenFileSafely( _
+                                hwnd, _
+                                bIsNewFile, _  ' bIsNewFile
+                                bIsTemplate, _ ' bIsTemplate
+                                false, _       ' bShowInTab
+                                false, _       ' bIsInclude
+                                *pwszName, _   ' pwszName
+                                pDocIn _       ' pDocIn
+                                )     
+                end if
+
+                ' Give this document a default project type depending on its file extension
+                if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
+                    if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
+                        gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
+                    end if   
+                end if
+                
+                if bShowInTab then pDocTabs(i) = pDoc
+                CoTaskMemFree(pwszName)
+                pwszName = null
             end if
             pItem->lpVtbl->Release(pItem)
             pItem = null
@@ -250,11 +251,7 @@ function OnCommand_FileClose( _
     dim as long nCurSel 
     ' if the incoming nTabNum is -1 then we want to close the current
     ' active document, otherwise close the specified tab.
-    if nTabNum = -1 then 
-        nCurSel = gTTabCtl.CurSel
-    else
-        nCurSel = nTabNum   
-    end if
+    nCurSel = iif(nTabNum = -1, gTTabCtl.CurSel, nTabNum)
 
     dim as long nCount = gTTabCtl.GetItemCount
 
@@ -493,10 +490,6 @@ end function
 ' Enable/Disable File auto save features
 ' ========================================================================================
 function OnCommand_FileAutoSave( byval hwnd as HWND ) as LRESULT
-    ' Toggle the AutoSave state (when the menuitem is clicked)
-    gConfig.AutoSaveFiles = not gConfig.AutoSaveFiles
-    gConfig.SaveConfigFile
-
     ' if AutoSave is enabled then start timer that checks for AutoSave conditions
     if gConfig.AutoSaveFiles then 
         ' any files that were dirty prior to Autosave being enabled should

@@ -126,9 +126,9 @@ function frmPanel_PositionWindows() as LRESULT
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)
     end with
     
-    AfxRedrawWindow( gPanelVScroll.hListBox )
-    AfxRedrawWindow( HWND_FRMPANEL )
-    
+    RedrawWindow( gPanelVScroll.hListBox, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+    RedrawWindow( HWND_FRMPANEL, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+
     function = 0
 end function
 

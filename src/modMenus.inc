@@ -51,6 +51,7 @@ function frmMain_FileTopMenuStates() as long
     ' Items that will always be enabled.
     EnableTopMenuItem( IDM_FILENEW, true )
     EnableTopMenuItem( IDM_FILEOPEN, true )
+    EnableTopMenuItem( IDM_FILEOPENASTEMPLATE, true )
     EnableTopMenuItem( IDM_MRU, true )
     EnableTopMenuItem( IDM_LOADSESSION, true )
     EnableTopMenuItem( IDM_MRUSESSION, true )
@@ -60,9 +61,7 @@ function frmMain_FileTopMenuStates() as long
     EnableTopMenuItem( IDM_OPTIONS, true )
     EnableTopMenuItem( IDM_OPTIONSDIALOG, true )
     EnableTopMenuItem( IDM_BUILDCONFIG, true )
-    EnableTopMenuItem( IDM_exit, true )
-    EnableTopMenuItem( IDM_AUTOSAVE, true )
-    CheckMarkTopMenuItem( IDM_AUTOSAVE, iif( gConfig.AutoSaveFiles, true, false ))
+    EnableTopMenuItem( IDM_EXIT, true )
 
     if gTTabCtl.GetItemCount() then
         for idMenu as long = IDM_FILECLOSE to IDM_MRUSESSION

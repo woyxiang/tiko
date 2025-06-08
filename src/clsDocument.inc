@@ -143,12 +143,12 @@ function clsDocument.CreateCodeWindow( _
             ' a window is destroyed then the pointer would be as well causing other existing
             ' windows to GPF.
             if i = 0 then
-            ' Load the FB lexer from Lexilla and feed it into Scintilla
-            dim as any ptr pLexer = gApp.pfnCreateLexerfn( "winfbe" )
-            SendMessage( this.hWindow(i), SCI_SETILEXER, 0, cast(LPARAM, pLexer) )
+                ' Load the FB lexer from Lexilla and feed it into Scintilla
+                dim as any ptr pLexer = gApp.pfnCreateLexerfn( "winfbe" )
+                SendMessage( this.hWindow(i), SCI_SETILEXER, 0, cast(LPARAM, pLexer) )
             end if
             if SciMsg = 0 then
-            SciMsg = cast( Scintilla_Directfunction, SendMessage( this.hWindow(0), SCI_GETDIRECTFUNCTION, 0, 0 ) )
+                SciMsg = cast( Scintilla_Directfunction, SendMessage( this.hWindow(0), SCI_GETDIRECTFUNCTION, 0, 0 ) )
             end if
             ' Call the direct function for speed purposes rather than relying on the traditional SendMessage method.
             m_pSci(i) = cast(any ptr, SendMessage( this.hWindow(i), SCI_GETDIRECTPOINTER, 0, 0 )) 
@@ -165,16 +165,7 @@ function clsDocument.CreateCodeWindow( _
     dim as any ptr pDoc = cast(any ptr, SciMsg(m_pSci(0), SCI_GETDOCPOINTER, 0, 0))
     if pDoc then SciMsg( m_pSci(1), SCI_SETDOCPOINTER, 0, cast(LPARAM, pDoc)) 
     
-    dim nResult as long = IS_TEXT_UNICODE_SIGNATURE
-        
     ' if a disk file was specified then open it and load it into the editor
-    this.IsNewFlag = IsNewFile
-    if IsNewFile then
-        this.nextFileNum = this.nextFileNum + 1
-        this.DiskFilename = "Untitled" & this.nextFileNum
-    end if
-    this.ProjectFileType = FILETYPE_UNDEFINED
-
     if len(wszFile) then   
         ' do not use Dir() > "" here b/c if incoming file originated from a Do/loop 
         ' of files using Dir() then there will be problems.
@@ -217,12 +208,29 @@ function clsDocument.CreateCodeWindow( _
             this.AutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszFile)
             ' Update the most recently used file list (only for non-IsNewFlag files)
             ' Only add file to MRU list if it is not part of an active Project.
-            if gApp.IsProjectActive = false then 
+            if (gApp.IsProjectActive = false) andalso (IsTemplate = false) then 
                 UpdateMRUList(wszFile)
             end if
         end if   
     end if
 
+    ' Set the IsNewFlag after the above load file code. This is because the load
+    ' code could load a file as template but is then still considered a "new file"/
+    this.IsNewFlag = IsNewFile
+    if IsNewFile then
+        this.nextFileNum = this.nextFileNum + 1
+        this.DiskFilename = "Untitled" & this.nextFileNum
+    end if
+    this.ProjectFileType = FILETYPE_UNDEFINED
+    
+    ' All newly opened files have dirty modified buffer status set to false
+    ' unless this is a template being opened whereby the user will need to save
+    ' it under a new name.
+    if IsTemplate then
+        this.UserModified = IsTemplate
+        this.AutoSaveRequired = false
+    end if
+        
     ' Apply code editor properties to the edit window
     this.ApplyProperties
 

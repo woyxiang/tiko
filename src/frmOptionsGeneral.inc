@@ -59,6 +59,9 @@ public function frmOptionsGeneral_Show( byval hwndParent as HWND ) as LRESULT
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS, L(133,"Use Compact Menu Interface"), 0, 84, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKAUTOSAVE, L(427,"Auto Save files while editing"), 0, 105, 400, 20, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     dim as long idx = 0
     dim as hwnd HWND = HWND_FRMOPTIONSGENERAL
@@ -68,6 +71,7 @@ public function frmOptionsGeneral_Show( byval hwndParent as HWND ) as LRESULT
     Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT),            gConfig.AskExit)
     Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION),     gConfig.RestoreSession)
     Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS),       gConfig.CompactMenus)
+    Button_SetCheck( GetDlgItem( hwnd, IDC_FRMOPTIONSGENERAL_CHKAUTOSAVE),           gConfig.AutoSaveFiles)
 
     function = 0
     

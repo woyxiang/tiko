@@ -70,115 +70,115 @@ end type
 
 type clsDocument
     private:
-        ' 2 Scintilla direct pointers to accommodate split editing
-        m_pSci(1)             as any ptr      
-        m_hWndActiveScintilla as HWND
-        m_UserModified        as boolean               ' user manually changes state outside of Scintilla changes
+    ' 2 Scintilla direct pointers to accommodate split editing
+    m_pSci(1)             as any ptr      
+    m_hWndActiveScintilla as HWND
+    m_UserModified        as boolean               ' user manually changes state outside of Scintilla changes
         
     public:
-        pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
-        IsNewFlag             as boolean
-        LoadingFromFile       as boolean
-        
-        docData               as PROJECT_FILELOAD_DATA    ' loaded from project files
-        
-        ' 2 Scintilla controls to accommodate split editing
-        ' hWindow(0) is our MAIN control (main bottom)
-        ' hWindow(1) is our split control (top or left)
-        hWindow(1)            as HWND   ' Scintilla split edit windows 
-        
-        ' Code document related
-        ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
-        DiskFilename          as wstring * MAX_PATH
-        AutoSaveFilename      as wstring * MAX_PATH    '#filename#
-        AutoSaveRequired      as boolean
-        DateFileTime          as FILETIME  
-        bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
-        bFunctionsExpanded    as boolean = true     ' Functions list expand/collapse state
-        bHasFunctions         as boolean = false    ' FunctionList to determine if click will display the File
-        FileEncoding          as long = FILE_ENCODING_ANSI       
-        bNeedsParsing         as boolean            ' Document requires to be parsed due to changes.
-        DeletedButKeep        as boolean            ' file no longer exists but keep open anyway
-        DocumentBuild         as string             ' specific build configuration to use for this document
-        sMatchWord            as string             ' for the incremental autocomplete search
-        AutoCompletetype      as long               ' AUTOC_DIMAS, AUTOC_TYPE
-        AutoCStartPos         as long
-        AutoCTriggerStartPos  as long
-        lastCaretPos          as long               ' used for checking in SCN_UPDATEUI
-        lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
-        LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
-        bIsHelpFile           as boolean = false
-        
-        ' Following used for split edit views
-        rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
-        SplitY                as long               ' Y coordinate of top/bottom splitter
-        SplitX                as long               ' X coordinate of left/right splitter
-        EditorSplitMode       as SPLIT_MODE = SplitNone
-        bSizing               as boolean
-        ptPrev                as POINT
-        rcDocSplitArea        as rect               ' entire rc client area for one or both edit windows + scrollbars
-        
-        static NextFileNum as long
-        
-        declare property hWndActiveScintilla() as hwnd
-        declare property hWndActiveScintilla(byval hWindow as hwnd)
-        
-        declare property UserModified() as boolean
-        declare property UserModified( byval nModified as boolean )
-        
-        declare function ParseDocument() as boolean
-        declare function IsValidScintillaID( byval idScintilla as long ) as boolean
-        declare function GetActiveScintillaPtr() as any ptr
-        declare function CreateCodeWindow( byval hWndParent as HWnd, byval IsNewFile as boolean, byval IsTemplate as boolean = False, byref wszFileName as wstring = "") as HWnd
-        declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long
-        declare function InsertFile() as boolean
-        declare function SaveFile(byval bSaveAs as boolean = False, byval bAutoSaveOnly as boolean = false) as boolean
-        declare function ApplyProperties() as long
-        declare function GetTextRange( byval cpMin as long, byval cpMax as long) as string
-        declare function ChangeSelectionCase( byval fCase as long) as long 
-        declare function GetCurrentLineNumber() as long
-        declare function SelectLine( byval nLineNum as long ) as long
-        declare function GetLine( byval nLine as long) as string
-        declare function IsFunctionLine( byval lineNum as long ) as long
-        declare function GotoNextFunction() as long
-        declare function GotoPrevFunction() as long
-        declare function GetLineCount() as long
-        declare function GetSelText() as string
-        declare function GetText() as string
-        declare function SetText( byref sText as const string ) as long 
-        declare function SetLine( byval nLineNum as long, byval sNewText as string) as long
-        declare function AppendText( byref sText as const string ) as long 
-        declare function CenterCurrentLine() as long 
-        declare function GetSelectedLineRange( byref startLine as long, byref endLine as long, byref startPos as long, byref endPos as long ) as long 
-        declare function BlockComment( byval flagBlock as boolean ) as long
-        declare function CurrentLineUp() as long
-        declare function CurrentLineDown() as long
-        declare function MoveCurrentLines( byval flagMoveDown as boolean ) as long
-        declare function NewLineBelowCurrent() as long
-        declare function ToggleBookmark( byval nLine as long ) as long
-        declare function NextBookmark() as long 
-        declare function PrevBookmark() as long 
-        declare function FoldToggle( byval nLine as long ) as long
-        declare function FoldAll() as long
-        declare function UnFoldAll() as long
-        declare function FoldToggleOnwards( byval nLine as long) as long
-        declare function ConvertEOL( byval nMode as long) as long
-        declare function TabsToSpaces() as long
-        declare function GetWord( byval curPos as long = -1 ) as string
-        declare function GetBookmarks() as string
-        declare function SetBookmarks( byval sBookmarks as string ) as long
-        declare function GetFoldPoints() as string
-        declare function SetFoldPoints( byval sFoldPoints as string ) as long
-        declare function GetCurrentFunctionName( byref sFunctionName as string, byref nGetSet as ClassProperty ) as long
-        declare function LineDuplicate() as long
-        declare function SetMarkerHighlight() as long
-        declare function RemoveMarkerHighlight() as long
-        declare function IsMultiLineSelection() as boolean
-        declare function HasMarkerHighlight() as boolean
-        declare function FirstMarkerHighlight() as long
-        declare function LastMarkerHighlight() as long
-        declare function LinesPerPage( byval idxWindow as long ) as long
-        declare function CompileDirectives( Directives() as COMPILE_DIRECTIVES) as long
-        declare destructor
+    pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
+    IsNewFlag             as boolean
+    LoadingFromFile       as boolean
+    
+    docData               as PROJECT_FILELOAD_DATA    ' loaded from project files
+    
+    ' 2 Scintilla controls to accommodate split editing
+    ' hWindow(0) is our MAIN control (main bottom)
+    ' hWindow(1) is our split control (top or left)
+    hWindow(1)            as HWND   ' Scintilla split edit windows 
+    
+    ' Code document related
+    ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
+    DiskFilename          as wstring * MAX_PATH
+    AutoSaveFilename      as wstring * MAX_PATH    '#filename#
+    AutoSaveRequired      as boolean
+    DateFileTime          as FILETIME  
+    bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
+    bFunctionsExpanded    as boolean = true     ' Functions list expand/collapse state
+    bHasFunctions         as boolean = false    ' FunctionList to determine if click will display the File
+    FileEncoding          as long = FILE_ENCODING_ANSI       
+    bNeedsParsing         as boolean            ' Document requires to be parsed due to changes.
+    DeletedButKeep        as boolean            ' file no longer exists but keep open anyway
+    DocumentBuild         as string             ' specific build configuration to use for this document
+    sMatchWord            as string             ' for the incremental autocomplete search
+    AutoCompletetype      as long               ' AUTOC_DIMAS, AUTOC_TYPE
+    AutoCStartPos         as long
+    AutoCTriggerStartPos  as long
+    lastCaretPos          as long               ' used for checking in SCN_UPDATEUI
+    lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
+    LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
+    bIsHelpFile           as boolean = false
+    
+    ' Following used for split edit views
+    rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
+    SplitY                as long               ' Y coordinate of top/bottom splitter
+    SplitX                as long               ' X coordinate of left/right splitter
+    EditorSplitMode       as SPLIT_MODE = SplitNone
+    bSizing               as boolean
+    ptPrev                as POINT
+    rcDocSplitArea        as rect               ' entire rc client area for one or both edit windows + scrollbars
+    
+    static NextFileNum as long
+    
+    declare property hWndActiveScintilla() as hwnd
+    declare property hWndActiveScintilla(byval hWindow as hwnd)
+    
+    declare property UserModified() as boolean
+    declare property UserModified( byval nModified as boolean )
+    
+    declare function ParseDocument() as boolean
+    declare function IsValidScintillaID( byval idScintilla as long ) as boolean
+    declare function GetActiveScintillaPtr() as any ptr
+    declare function CreateCodeWindow( byval hWndParent as HWnd, byval IsNewFile as boolean, byval IsTemplate as boolean = False, byref wszFileName as wstring = "") as HWnd
+    declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long
+    declare function InsertFile() as boolean
+    declare function SaveFile(byval bSaveAs as boolean = False, byval bAutoSaveOnly as boolean = false) as boolean
+    declare function ApplyProperties() as long
+    declare function GetTextRange( byval cpMin as long, byval cpMax as long) as string
+    declare function ChangeSelectionCase( byval fCase as long) as long 
+    declare function GetCurrentLineNumber() as long
+    declare function SelectLine( byval nLineNum as long ) as long
+    declare function GetLine( byval nLine as long) as string
+    declare function IsFunctionLine( byval lineNum as long ) as long
+    declare function GotoNextFunction() as long
+    declare function GotoPrevFunction() as long
+    declare function GetLineCount() as long
+    declare function GetSelText() as string
+    declare function GetText() as string
+    declare function SetText( byref sText as const string ) as long 
+    declare function SetLine( byval nLineNum as long, byval sNewText as string) as long
+    declare function AppendText( byref sText as const string ) as long 
+    declare function CenterCurrentLine() as long 
+    declare function GetSelectedLineRange( byref startLine as long, byref endLine as long, byref startPos as long, byref endPos as long ) as long 
+    declare function BlockComment( byval flagBlock as boolean ) as long
+    declare function CurrentLineUp() as long
+    declare function CurrentLineDown() as long
+    declare function MoveCurrentLines( byval flagMoveDown as boolean ) as long
+    declare function NewLineBelowCurrent() as long
+    declare function ToggleBookmark( byval nLine as long ) as long
+    declare function NextBookmark() as long 
+    declare function PrevBookmark() as long 
+    declare function FoldToggle( byval nLine as long ) as long
+    declare function FoldAll() as long
+    declare function UnFoldAll() as long
+    declare function FoldToggleOnwards( byval nLine as long) as long
+    declare function ConvertEOL( byval nMode as long) as long
+    declare function TabsToSpaces() as long
+    declare function GetWord( byval curPos as long = -1 ) as string
+    declare function GetBookmarks() as string
+    declare function SetBookmarks( byval sBookmarks as string ) as long
+    declare function GetFoldPoints() as string
+    declare function SetFoldPoints( byval sFoldPoints as string ) as long
+    declare function GetCurrentFunctionName( byref sFunctionName as string, byref nGetSet as ClassProperty ) as long
+    declare function LineDuplicate() as long
+    declare function SetMarkerHighlight() as long
+    declare function RemoveMarkerHighlight() as long
+    declare function IsMultiLineSelection() as boolean
+    declare function HasMarkerHighlight() as boolean
+    declare function FirstMarkerHighlight() as long
+    declare function LastMarkerHighlight() as long
+    declare function LinesPerPage( byval idxWindow as long ) as long
+    declare function CompileDirectives( Directives() as COMPILE_DIRECTIVES) as long
+    declare destructor
 end type
 dim clsDocument.NextFileNum as long = 0

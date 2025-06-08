@@ -1,1 +1,279 @@
 TIKO HELP FILE
+
+Tiko Editor functions similar to just about any other code editor out there so
+what follows is a quick overview of some features and concepts particular to
+this editor.
+
+
+1. SETUP AND INSTALLATION
+-------------------------
+There is no dedicated installation program necessary. Simply unzip the files
+from the zip file into a folder on your hard drive. The files will already be
+organized into their proper folders. It is important that you do not change the
+folder structure or their names because the editor expects files to be these
+locations.
+    \toolchains
+    \settings
+    \settings\help
+    \settings\keywords
+    \settings\languages
+    \settings\themes
+    \settings\tools
+
+* This assumes that you are using the "tiko_suite.zip" file which contains both
+the editor -AND- the Freebasic compiler. This is the download that most users
+will want to use. The "tiko_suite.zip" can always be found from the Releases
+area of the Tiko Editor's Github page.
+
+
+2. SESSIONS
+-----------
+If you have a more involved coding project containing multiple files then the
+best route is to use Projects (discussed later), however, you can also use a
+Session to save the state of the editor and any open files.
+
+Once a Session is created, the editor will remember the names of the files 
+that were open and their current editing positions as well as what compiler
+was selected.
+
+If you select the option to "Restore previous session/project file on startup"
+(Preferences / Environment Options), then when you subsequently use the editor
+you will be able to pick up where you left off. Very convenient.
+
+
+3. PROJECTS
+-----------
+By far, using a Project is the best way to organize and control a number of 
+source files that compose your application. 
+
+When creating a new project, all related project information is stored in a
+simple settings text file with a .tiko file extension. Additionally, a 
+.tiko subfolder will be created automatically off your project folder to hold
+any temporary files created by your project during a compile process (for
+example, object files).
+
+The key concept to remember about Projects is that they are organized in a 
+very specific way organized in the Explorer as follows:
+    - Main
+        The can only be one file designated as the Main file (usually a .bas
+        file). This file will contain the main
+    - Resource
+        An optional resource file (.rc).
+    - Header
+        Usually files with a .bi extension.
+    - Module
+        Usually .bas files that are separately compiled and combined with the
+        main file to create the overall application. The editor automatically
+        compiles these module files and combines them with the main file and
+        and resource making the process extremely easy to use. This is the 
+        traditional style of compiling that C/C++ has always used.
+    - Normal
+        These can also be .bas files but more commonly are .inc files. These
+        contain code that can be #Include into the Main file to create the 
+        application (this is usually referred to as a "unity build" type of
+        coding architecture).
+
+It is your responsibility to specify your files into these different categories.
+There is two primary ways to this designation:
+    1. Right click on the file and select the category from the popup menu.
+    2. In the status bar, click on the current category name and then select
+       the new category name from the popup menu.
+
+Additionally, you can select multiple files in the Explorer by holding down the 
+Ctrl key (or the Shift key) and clicking on each file of interest. Then you can
+right click to display the popup menu and select the file type that will be
+applied to all of the selected files.
+
+Using the Explorer you can -not- drag and drop the files between the categories.
+
+
+4. COMPILER SETUP
+-----------------
+The editor allows you to use one or multiple versions of the Freebasic compile.
+Each version is stored in the special subfolder off the "settings\toolchains"
+folder. If you download the Freebasic compiler separately, then ensure that
+you place the files within the toolchains folder otherwise the editor will have
+no way to find it.
+
+Using Preferences / Environment Options / Compiler Setup, you will see the list
+of available toolchains and be able to select amongst them. If you installed
+the editor using the "tiko_suite.zip" file, then you will already have a default
+compiler toolchain installed.
+
+The Compiler Setup also has fields that allow you to specify additional switches
+used by the compiler during compilation. The final list of compiler switches is
+composed from several locations depending on whether a project is active.
+
+    - Project is active:
+        - Switches from the currently selected Build Configuration
+        - Switches from the Compiler Setup dialog.
+    
+    - Project is NOT active:
+        - Switches from the currently selected Build Configuration
+        - Switches from the Project's setup dialog depending on which version of
+          the compiler is used (32-bit or 64-bit).
+
+Essentially, project settings take precedence over switch settings specified in
+the Compiler Setup dialog.
+
+
+5. BUILD CONFIGURATIONS
+-----------------------
+The editor allows you to select and customize how you want to invoke Freebasic 
+to compile your code. Various default configurations are already available to
+you in both 32-bit and 64-bit variants.
+
+You can switch between the various configurations vian the Build Configurations
+popup dialog accessed by:
+    - The Preferences / Build Configurations menu option.
+    - The F7 keyboard shortcut.
+    - Clicking the area in the bottom status bar that shows the current active
+      build configuration for the code being edited.
+      
+Sessions and Projects will save whatever Build Configuration that you have 
+specified and automatically set the state of the editor to use that build
+configuration when your Session/Project is loaded.
+
+Non Session/Project files simply use whatever Build Configuration that you have
+specified as the Default (by checking the "Set as default" checkbox for the
+particular build configuration).      
+
+
+6. KEYBOARD SHORTCUTS
+---------------------
+Like all editors, Tiko's functionality and efficiency can be greatly improved if
+you learn and emply keyboard shortcuts (also known as key bindings). You should
+learn to invoke common tasks via a keyboard shortcut rather than having to move
+your hand to a mouse to perform the action.
+
+There are standard built in default key bindings for many actions. You can see 
+these listed in the Keyboard Shortcuts dialog under (default keys). Each listed
+keyboard shortcut can be changed and replaced by a key combination of your choice.
+
+The editor will warn you if you try to assign the same keyboard shortcut to more
+than one action.
+
+Here are some common keyboard shortcuts that you should use regularly as they 
+will make using the editor easier:'
+    New File                Ctrl+N
+    Open File               Ctrl+O
+    Save File               Ctrl+S
+
+    Cut/Copy/Paste/Undo/Redo
+    Delete Line             Ctrl+Y
+    Delete Next Word        Ctrl+Delete
+    Delete Previous Word    Ctrl+Backspace
+    
+    Comment Line/Block      Ctrl+/
+    Uncomment Line/Block    Ctrl+Shift+/
+    
+    Environment Options     Ctrl+F7
+    Build Configurations    F7
+
+    Duplicate Line          Ctrl+D
+    Move Line Up            Ctrl+Shift+UpArrow
+    Move Line Down          Ctrl+Shift+DownArrow
+    
+    Compile                 Ctrl+F5
+    Build and Execute       F5
+    
+When using split editing windows, you can quickly navigate back and forth 
+between them using Ctrl+~ (tilde). If the Find/Replace dialog is open then 
+using the Ctrl+~ shortcut will also include that dialog in the cycle of
+windows.
+    
+While not technically a keyboard shortcut, if you regularly use the same project
+or session when you start the editor, it would be beneficial for you to select
+the the option to "Restore previous session/project file on startup"
+(Preferences / Environment Options).
+
+
+7. USER TOOLS
+-------------
+A User Tool is simply an external application that you can invoke by any of the
+following means:
+    - When selected by the user via the User Tools menu or keyboard shortcut.
+    - Automatically prior to the start of compiling your code.
+    - Automatically after the end of compiling your code.
+    - Immediately as the editor loads during startup.
+
+It is important that your User Tool be located in \settings\tools.
+
+Parameters can be passed to your User Tool similar to how parameters are passed
+to any application via the command line. However, you can also embed in your
+parameter any of the lists replaceable parameters (<P>,<S>,<W>,<E>). The value
+of the particular parameter is expanded and inserted into the command line when
+the user Tool is invoked.   
+
+
+8. THEMES
+---------
+The editor comes with both a light theme and a dark theme. You can easily switch
+between the two via Preferences / Environment Options / Themes and Fonts.
+
+Themes themselves are physically located in the \settings\themes subfolder and 
+have .theme file extensions.
+
+You can create you own custom themes via this process:
+    - Create new file or copy existing .theme file.
+    - Ensure that the new theme file is in the \settings\themes subfolder.
+    - The theme file is a simple text file that can be edited using any standard
+      text editor include Tiko.
+
+
+9. LOCALIZATION
+---------------
+The editor comes with standard English text supplied from a localization file 
+named "english.lang" located in the \settings\languages subfolder. Unlike themes,
+language localization files are edited directly in the settings dialog:
+Preferences / Environment Options / Localization. However, you can also manually 
+edit the localization file using a standard text editor should you find that 
+approach easier.
+
+Creating a new language file entails simply cloning a copy of the english.lang
+file, changing its file name (eg. german.lang), and then adding the new language
+translation that corresponds to its English counterpart.
+
+
+10. DIRECTIVES
+--------------
+Directives are simply code identifiers within you code that tell the editor to
+perform a specific task or action.
+
+Directives are mostly useful in non-projects. Projects already have facilities
+available to the user to accomplish the functionality of Directives.
+
+A Directive -must- start with the comment character ' (single quote) and then 
+followed by the Directive name itself. 
+
+Examples:
+
+'#RESOURCE "filename.rc"
+'#CONSOLE ON
+'#CONSOLE OFF
+'#LINKMODULES "module1.bas" "module2.bas"    
+
+#RESOURCE <filename>
+Specify the filename of a resource file that will be compiled along with the
+current source file that is being compiled.
+
+#CONSOLE ON
+#CONSOLE OFF
+Adds the compiler flag, -s console, which will display a console window when 
+your application is run. This Directive is useful because it ensures that 
+if you have a Build Configuration selected that prohibits a console window,
+-s gui, the directive it will override it with, -s console, and ensure that the
+application runs hidden and must be closed via the Windows Task Manager (via
+End Task). 
+
+#LINKMODULES <filenames>
+Specified files (with .bas extensions) will be added to the compiler's command
+line and compiled along with the current source file being compiled. You can
+have multiple #LINKMODULE directives in a source file which is useful because
+the number of filenames on a line can become quite long especially if the 
+filename includes a full path specification.
+
+
+- END OF HELP FILE -
+
+

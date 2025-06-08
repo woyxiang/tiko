@@ -217,11 +217,12 @@ function OnCommand_ProjectRemove( _
     if pDoc = 0 then exit function
     if gTTabCtl.SetTabIndexByDocumentPtr( pDoc ) <> -1 then
         if OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT ) = false then exit function
+        ' OnCommand_FileClose will also remove the doc from the project
+        ' linked list and database if project is active.
+    else    
+        gdb2.dbDelete( pDoc->DiskFilename )
+        gApp.RemoveDocument( pDoc )
     end if  
-
-    ' File close succeeded. Remove this document from the project collection
-    gdb2.dbDelete( pDoc->DiskFilename )
-    gApp.RemoveDocument( pDoc )
 
     LoadExplorerFiles()
 

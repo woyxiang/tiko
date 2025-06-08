@@ -153,7 +153,7 @@ function frmEditorVScroll_WndProc( _
         case WM_PAINT
             dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
             Dim As PAINTSTRUCT ps
-            Dim As HDC hDc
+            Dim As HDC hDC
 
             hDC = BeginPaint( hWnd, @ps )
             SaveDC( hDC )

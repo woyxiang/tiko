@@ -41,6 +41,13 @@ private function frmOptions_SaveEditorOptions() as long
     gConfig.AskExit              = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT) )
     gConfig.RestoreSession       = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION) )
     
+    
+    dim as long AutoSaveFiles    = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKAUTOSAVE) )
+    if AutoSaveFiles <> gConfig.AutoSaveFiles then
+        gConfig.AutoSaveFiles = AutoSaveFiles
+        OnCommand_FileAutoSave(HWND_FRMMAIN)
+    end if
+    
     dim as long CompactMenus     = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS) )
     if (gConfig.CompactMenus <> CompactMenus) then bChangesNextRun = true
     gConfig.CompactMenus = CompactMenus
@@ -198,6 +205,7 @@ function frmOptions_OnCommand( _
                 
                 ' Reposition main windows in case hide toolbar/statusbar selected
                 frmMain_PositionWindows
+                
                 ' Apply the newly saved options to all open Scintilla windows
                 dim pFrame as CWindow ptr
                 dim pDoc as clsDocument Ptr = gApp.pDocList

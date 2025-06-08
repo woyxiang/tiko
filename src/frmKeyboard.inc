@@ -93,15 +93,16 @@ end function
 ' ' Create the default keyboard bindings / shortcut mappings
 ' ========================================================================================
 function frmKeyboard_CreateDefaultKeyBindings() as long
+    redim gKeys(any) as KEYBINDINGS_TYPE
     '' FILE MENU
     frmKeyBoard_AddKeyBinding( "File", IDM_FILENEW, "IDM_FILENEW", "New file", "Ctrl+N", "", false )
-    frmKeyBoard_AddKeyBinding( "File", IDM_FILEOPEN, "IDM_FILEOPEN", "Open one or more files", "Ctrl+O", "", false )
+    frmKeyBoard_AddKeyBinding( "File", IDM_FILEOPEN, "IDM_FILEOPEN", "Open file(s)", "Ctrl+O", "", false )
+    frmKeyBoard_AddKeyBinding( "File", IDM_FILEOPENASTEMPLATE, "IDM_FILEOPENASTEMPLATE", "Open file(s) as template", "", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_FILECLOSE, "IDM_FILECLOSE", "Close file", "Ctrl+W", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_FILECLOSEALL, "IDM_FILECLOSEALL", "Close all files", "Ctrl+Shift+W", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_FILESAVE, "IDM_FILESAVE", "Save file", "Ctrl+S", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_FILESAVEAS, "IDM_FILESAVEAS", "Save file as a different name", "", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_FILESAVEALL, "IDM_FILESAVEALL", "Save all files", "Ctrl+Shift+S", "", false )
-    frmKeyBoard_AddKeyBinding( "File", IDM_AUTOSAVE, "IDM_AUTOSAVE", "Toggle Auto Save", "", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_LOADSESSION, "IDM_LOADSESSION", "Load session", "", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_SAVESESSION, "IDM_SAVESESSION", "Save session", "", "", false )
     frmKeyBoard_AddKeyBinding( "File", IDM_KEYBOARDSHORTCUTS, "IDM_KEYBOARDSHORTCUTS", "Keyboard shortcuts", "Ctrl+K", "", false )
@@ -554,7 +555,7 @@ end function
 function frmKeyboard_OnClose( byval hwnd as HWND ) as LRESULT
     dim as CWSTR wszFilename = AfxGetExePathName & "settings\keybindings.ini" 
     frmKeyboard_SaveKeyBindings( wszFilename )
-    frmKeyboard_BuildAcceleratorTable
+    frmKeyboard_BuildAcceleratorTable()
 
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()

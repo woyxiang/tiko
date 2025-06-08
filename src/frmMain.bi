@@ -34,7 +34,7 @@ declare function frmMain_SetStatusbar() as long
 declare function frmMain_SetFocusToCurrentCodeWindow() as long
 declare function frmMain_OpenFileSafely( byval hwnd as HWND, byval bIsNewFile as boolean, byval bIsTemplate as boolean, _
         byval bShowInTab as BOOLEAN, byval bIsInclude as BOOLEAN, Byref wszName as WString, byval pDocIn as clsDocument Ptr, _
-        byval bIsDesigner as Boolean = false, byval wszFileType as CWSTR = FILETYPE_UNDEFINED ) as clsDocument ptr
+        byval wszFileType as CWSTR = FILETYPE_UNDEFINED ) as clsDocument ptr
 declare function frmMain_OpenProjectSafely( byval HWnd as HWnd, byref wszProjectFileName as const WString ) as Boolean
 declare function frmMain_PositionWindows() as LRESULT
 declare function frmMain_HighlightWord( byval pDoc as clsDocument ptr, byref text as string ) as long

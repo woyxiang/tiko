@@ -53,6 +53,7 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDC_MENUBAR_HELP: wszText = L(73,"Help")
         case IDM_FILENEW: wszText = L(3,"New")
         case IDM_FILEOPEN: wszText = L(4,"Open") & "..." 
+        case IDM_FILEOPENASTEMPLATE: wszText = L(12,"Open File As Template") & "..." 
         case IDM_MRU: return L(10,"Open Recent")
         case IDM_MRUBASE to IDM_MRUBASE + 9
             return gConfig.MRU( idMenu - IDM_MRUBASE )
@@ -64,7 +65,6 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_FILESAVEAS: wszText = L(8,"Save As") & "..."
         case IDM_FILESAVEAS: wszText = L(8,"Save As") & "..."
         case IDM_FILESAVEALL: wszText = L(9,"Save All")
-        case IDM_AUTOSAVE: wszText = L(427,"Auto Save") 
         case IDM_SAVESESSION: wszText = L(425,"Save Session") & "..."
         case IDM_LOADSESSION: wszText = L(426,"Load Session") & "..."
         case IDM_CLOSESESSION: wszText = L(436,"Close Session")
@@ -235,6 +235,7 @@ end function
 function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_FILENEW, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_FILEOPEN, 0, false, false )
+    setTopMenuItem( IDC_MENUBAR_FILE, IDM_FILEOPENASTEMPLATE, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_MRU, IDM_MRUFILES, false, false )
 
     updateMRUFilesItems()
@@ -246,7 +247,6 @@ function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_FILESAVE, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_FILESAVEAS, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_FILESAVEALL, 0, false, false )
-    setTopMenuItem( IDC_MENUBAR_FILE, IDM_AUTOSAVE, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_LOADSESSION, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_SAVESESSION, 0, false, false )
