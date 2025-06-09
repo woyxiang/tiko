@@ -208,7 +208,7 @@ function clsDocument.CreateCodeWindow( _
             this.AutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszFile)
             ' Update the most recently used file list (only for non-IsNewFlag files)
             ' Only add file to MRU list if it is not part of an active Project.
-            if (gApp.IsProjectActive = false) andalso (IsTemplate = false) then 
+            if gApp.IsProjectActive = false then 
                 UpdateMRUList(wszFile)
             end if
         end if   
