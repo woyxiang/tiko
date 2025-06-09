@@ -212,9 +212,15 @@ end function
 ' View Restore Main window size
 ' ========================================================================================
 function OnCommand_ViewRestoreMain() as LRESULT
-    dim rc as Rect
+    dim as long lrmargin = AfxScaleX(10)
+    dim as long tbmargin = AfxScaleY(10)
+    dim as rect rc
     SystemParametersInfo( SPI_GETWORKAREA, 0, @rc, 0 )
-    MoveWindow( HWND_FRMMAIN, 0, 0, rc.Right - rc.Left, rc.Bottom - rc.Top, CTRUE )
+    MoveWindow( HWND_FRMMAIN, _
+                lrmargin, tbmargin, _
+                rc.right - rc.left - (lrmargin * 2), _
+                rc.bottom - rc.top - (tbmargin * 2), _
+                true )
     function = 0
 end function
 
