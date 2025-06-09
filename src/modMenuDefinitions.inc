@@ -256,7 +256,6 @@ function buildTopMenuDefinitions() as long
     updateMRUSessionFilesItems()
 
     setTopMenuItem( IDC_MENUBAR_FILE, 0, 0, false, true )
-    setTopMenuItem( IDC_MENUBAR_FILE, IDM_KEYBOARDSHORTCUTS, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_USERTOOLS, IDM_USERTOOLSLIST, false, false )
 
     updateUserToolsMenuItems()
@@ -264,6 +263,7 @@ function buildTopMenuDefinitions() as long
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_OPTIONS, IDM_OPTIONSDIALOG, false, false )
     setTopMenuItem( IDM_OPTIONS, IDM_OPTIONSDIALOG, 0, false, false )
     setTopMenuItem( IDM_OPTIONS, IDM_BUILDCONFIG, 0, false, false )
+    setTopMenuItem( IDM_OPTIONS, IDM_KEYBOARDSHORTCUTS, 0, false, false )
     setTopMenuItem( IDC_MENUBAR_FILE, 0, 0, false, true )
     setTopMenuItem( IDC_MENUBAR_FILE, IDM_EXIT, 0, false, false )
     
