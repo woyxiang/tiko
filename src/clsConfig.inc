@@ -261,25 +261,14 @@ function doFontSanityCheck() as long
 
     'print "Defined font not found. Finding an alternative..."
     
-    ' Test if we are running under wine
-    if gApp.isWineActive then
-        'print "Linux Wine is active"
-        ' Test valid Linux fonts   
-        if isFontNameExist( "DejaVu Sans Mono" ) then gConfig.EditorFontname = "DejaVu Sans Mono": return false
-        if isFontNameExist( "Ubuntu Mono" ) then gConfig.EditorFontname = "Ubuntu Mono": return false
-        if isFontNameExist( "Victor Mono" ) then gConfig.EditorFontname = "Victor Mono": return false
-        if isFontNameExist( "Inconsolata" ) then gConfig.EditorFontname = "Inconsolata": return false
-        if isFontNameExist( "Fira Code" ) then gConfig.EditorFontname = "Fira Code": return false
-    else
-        ' Test other valid Windows fonts   
-        if isFontNameExist( "Consolas" ) then gConfig.EditorFontname = "Consolas": return false
-        if isFontNameExist( "MonoLisa" ) then gConfig.EditorFontname = "MonoLisa": return false
-        if isFontNameExist( "Apercu Mono" ) then gConfig.EditorFontname = "Apercu Mono": return false
-        if isFontNameExist( "Fira Code" ) then gConfig.EditorFontname = "Fira Code": return false
-        if isFontNameExist( "Dank Mono" ) then gConfig.EditorFontname = "Dank Mono": return false
-        if isFontNameExist( "Hack" ) then gConfig.EditorFontname = "Hack": return false
-        if isFontNameExist( "Courier New" ) then gConfig.EditorFontname = "Courier New": return false
-    end if
+    ' Test other valid Windows fonts   
+    if isFontNameExist( "Consolas" ) then gConfig.EditorFontname = "Consolas": return false
+    if isFontNameExist( "MonoLisa" ) then gConfig.EditorFontname = "MonoLisa": return false
+    if isFontNameExist( "Apercu Mono" ) then gConfig.EditorFontname = "Apercu Mono": return false
+    if isFontNameExist( "Fira Code" ) then gConfig.EditorFontname = "Fira Code": return false
+    if isFontNameExist( "Dank Mono" ) then gConfig.EditorFontname = "Dank Mono": return false
+    if isFontNameExist( "Hack" ) then gConfig.EditorFontname = "Hack": return false
+    if isFontNameExist( "Courier New" ) then gConfig.EditorFontname = "Courier New": return false
 
     function = false
 end function

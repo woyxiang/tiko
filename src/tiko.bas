@@ -29,7 +29,6 @@
 #include once "Afx\AfxRichEdit.inc"
 #include once "Afx\AfxGdiplus.inc"
 #include once "Afx\AfxCom.inc" 
-#include once "Afx\CXpButton.inc"
 #include once "Afx\CImageCtx.inc"
 
 using Afx
@@ -118,19 +117,6 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmMainCompile.inc"
 #include once "frmMain.inc"
 
-' ========================================================================================
-' Check if running under Linux Wine
-' ========================================================================================
-function isWineActive() as boolean
-    dim hLib as HMODULE = LoadLibraryW("NtDll.dll")
-    if hLib = null then exit function
-    dim pwine as function() as long
-    pwine = cast(any ptr, GetProcAddress(hLib, "wine_get_version"))
-    function = iif( pwine, true, false )
-    FreeLibrary hLib
-end function
-' ========================================================================================
-
 
 ' ========================================================================================
 ' WinMain
@@ -141,8 +127,6 @@ function WinMain( _
             byval szCmdLine     as zstring ptr, _
             byval nCmdShow      as long _
             ) as long
-
-    gApp.isWineActive = isWineActive()
 
     ' Load configuration files 
     gConfig.LoadConfigFile()

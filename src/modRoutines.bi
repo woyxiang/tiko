@@ -35,21 +35,12 @@ dim shared as any ptr gpHelpLib
 declare function ShowContextHelp( byval id as long ) as long
 declare function isMouseOverRECT( byval hWin as HWND, byval rc as RECT ) as boolean
 declare function isMouseOverWindow( byval hChild as HWND ) as boolean
-declare function GetTextWidthPixels( byval hWin as HWND, byref wszText as wstring ) as long
 declare function DisableAllModeless() as long
 declare function EnableAllModeless() as long
 declare function GetTemporaryFilename( byref wszFolder as wstring, byref wszExtension as wstring) as string
-declare function ComboBox_ReplaceString (byval hComboBox as HWND, byval index as long, byval pwszNewText as wstring ptr, byval pNewData as long_PTR = 0) as long
 declare function GetFontCharSetID(byref wzCharsetName as CWSTR ) as long
-declare function RemoveDuplicateSpaces( byref sText as const string) as string
-declare function ConvertCase( byval sText as string) as string
-declare function Utf8ToAscii(byref strUtf8 as string) as string
-declare function AnsiToUtf8(byref sAnsi as string) as string
-declare function Utf8ToUnicode(byref ansiStr as const string) as string
 declare function UnicodeToUtf8(byval wzUnicode as CWSTR) as string
-declare function GetStringToArray( byref txtBuffer as string, txtArray() as string ) as long
 declare function GetFileToString( byref wszFilename as const wstring, byref txtBuffer as string, byval pDoc as clsDocument ptr ) as boolean
-declare function ConvertTextBuffer( byval pDoc as clsDocument ptr, byval FileEncoding as long ) as long
 declare function IsCurrentLineIncludeFilename() as boolean
 declare function OpenSelectedDocument( byref wszFilename as wstring, byref wszFunctionName as wstring = "", byval nLineNumber as long = -1 ) as clsDocument ptr
 declare function ProcessToCurdriveProject( byval wzFilename as CWSTR ) as CWSTR
@@ -64,13 +55,10 @@ declare function FF_Toolbar_DisableButton (byval hToolBar as HWND, byval idButto
 Declare function FF_ListView_InsertItem( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval lParam as LPARAM = 0 ) as boolean
 Declare function FF_ListView_GetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as boolean
 Declare function FF_ListView_SetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as long
-Declare function FF_ListView_GetlParam( byval hWndControl as HWND, byval iRow as long ) as LPARAM
-Declare function FF_ListView_SetlParam( byval hWndControl as HWND, byval iRow as long, byval ilParam as LPARAM ) as long
 Declare function LoadLocalizationFile( byref wszFileName as CWSTR, byval IsEnglish as boolean = false ) as boolean
 Declare function GetProcessImageName( byval pe32w as PROCESSENTRY32W ptr, byval pwszExeName as wstring ptr ) as long
 Declare function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
 Declare function GetRunExecutableFilename() as CWSTR
-Declare function LoadPNGfromRes(byval hInstance as HINSTANCE, byref wszImageName as wstring) as any ptr
 declare function GetListBoxEmptyClientArea( byval hListBox as HWND, byval nLineHeight as long ) as RECT
                                             
 

@@ -562,13 +562,14 @@ function ParseLogForError( _
             end if
             
             gCompile.wszOutputMsg = _   ' this gets output to the Output window
-            L(228,"Successful Compile")  & " (" & _
-                L(193,"Errors")        & " " & NumErrors & " " & _
-                L(192,"Warnings")      & " " & NumWarnings & ")" & vbcrlf & vbcrlf & _
-            L(194,"Primary Source:")     & " " & gCompile.MainFilename & vbCrLf & _
-            L(195,"Target Compilation:") & " " & gCompile.OutputFilename & " (" & _
-                rtrim(AfxStrFormatKBSize(nFileSize)) & ", " & nFileSize & " " & L(199,"bytes") & ")" & vbcrlf & _
-            L(196,"Compile Time:")       & " " & format(gCompile.EndTime-gCompile.StartTime, "###0.0") & _
+                L(228,"Successful Compile")  & " (" & _
+                L(193,"Errors")              & " " & NumErrors & " " & _
+                L(192,"Warnings")            & " " & NumWarnings & ")" & vbcrlf & vbcrlf & _
+                L(194,"Primary Source:")     & " " & gCompile.MainFilename & vbCrLf & _
+                L(195,"Target Compilation:") & " " & gCompile.OutputFilename & " (" & _
+                                        rtrim(AfxStrFormatKBSize(nFileSize)) & ", " & _
+                                        nFileSize & " " & L(199,"bytes") & ")" & vbcrlf & _
+                L(196,"Compile Time:")       & " " & format(gCompile.EndTime-gCompile.StartTime, "###0.0") & _
                                         " " & L(198,"seconds") & " (" & _
                                         AfxSystemTimeToDateStr( gCompile.SystemTime, "yyyy-MM-dd" ) & " " & _
                                         AfxSystemTimeToTimeStr( gCompile.SystemTime, "hh:mm:ss" ) & ")" & vbcrlf

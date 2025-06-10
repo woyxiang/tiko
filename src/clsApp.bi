@@ -19,7 +19,6 @@ type clsApp
         
     public:
         pDocList                   as clsDocument ptr   ' Single linked list of loaded files
-        isWineActive               as boolean
         pfnCreateLexerfn           as CreateLexerFn
         IsWindowIncludes           as boolean           ' T/F that Windows includes have already been loaded
         PreventActivateApp         as boolean           ' temporarily suppress WM_ACTIVATEAPP (used in 3.02 form file upgrade)

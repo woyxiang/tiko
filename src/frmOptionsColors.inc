@@ -31,12 +31,6 @@ function frmOptionsColors_EnumFontName( _
             ) as long
 
     static wszPrevText as CWSTR
-    if gApp.isWineActive then
-        ' Wine doesn't display the WYSIWYG version of the font. It will just be duplicate names
-        ' so ensure that only one version of the font name displays.
-        if lf.lfFaceName = wszPrevText then return true
-        wszPrevText = lf.lfFaceName
-    end if
     
     if (FontType and trueTYPE_FONTTYPE) then                      ' // true type fonts
         ComboBox_AddString( hwnd, @lf.lfFaceName )
@@ -104,12 +98,8 @@ function frmOptionsColors_DrawFontCombo( _
             ' Get item's text (fontname), create font and draw text
             wText = AfxGetComboBoxText(HWnd, lpdis->itemID)
             if len(wText) then
-                if gApp.isWineActive then
-                    selectObject(lpdis->hDC, pWindow->Font)
-                else
-                    hFont = pWindow->CreateFont( wText, 10 ) 
-                    if hFont then hFont = selectObject(lpdis->hDC, hFont)
-                end if
+                hFont = pWindow->CreateFont( wText, 10 ) 
+                if hFont then hFont = selectObject(lpdis->hDC, hFont)
             end if
             DrawTextW lpdis->hDC, @wText, len(wText), @lpdis->rcItem, DT_SINGLELINE or DT_LEFT or DT_VCENTER
             if hFont then DeleteObject selectObject(lpdis->hDC, hFont)

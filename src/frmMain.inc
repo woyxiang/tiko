@@ -102,16 +102,11 @@ function frmMain_SetStatusbar() as long
         ' PANEL (5) File Encoding (Ansi, UTF-8, UTF-16)
         wszText = ""
         select case pDoc->FileEncoding
-            case FILE_ENCODING_UTF8_BOM
-                wszText = "UTF-8 (BOM)"   
-                SciExec( hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
-            case FILE_ENCODING_UTF16_BOM
-                wszText = "UTF-16 (BOM)"   
-                SciExec( hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
-            case else
-                wszText = "ANSI"  
-                SciExec( hEdit, SCI_SETCODEPAGE, 0, 0 )
+            case FILE_ENCODING_UTF8_BOM:   wszText = "UTF-8 (BOM)"   
+            case FILE_ENCODING_UTF16_BOM:  wszText = "UTF-16 (BOM)"   
+            case else:                     wszText = "UTF-8"  
         end select 
+        SciExec( hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
         gSBPanels(5).wszText = wszText
 
         ' PANEL (6) Line Endings

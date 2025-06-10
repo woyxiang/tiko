@@ -167,14 +167,14 @@ function frmMain_OnCommand( _
         case IDM_REPLACENEXT, IDM_REPLACEPREV, IDM_REPLACEALL
             OnCommand_EditReplaceActions( id, pDoc )
 
-        case IDM_ANSI, IDM_UTF8BOM, IDM_UTF16BOM
+        case IDM_UTF8, IDM_UTF8BOM, IDM_UTF16BOM
             OnCommand_EditEncoding( id, pDoc )
 
         case IDM_DELETELINE,     IDM_INSERTFILE,     IDM_COMMENTBLOCK, _
             IDM_UNCOMMENTBLOCK, IDM_DUPLICATELINE,  IDM_MOVELINEUP, _
             IDM_MOVELINEDOWN,   IDM_TOUPPERCASE,    IDM_NEWLINEBELOWCURRENT, _
             IDM_TOLOWERCASE,    IDM_TOMIXEDCASE,    IDM_EOLTOCRLF, _
-            IDM_EOLTOCR,        IDM_EOLTOLF,        IDM_TABSTOSPACES, _
+            IDM_EOLTOLF,        IDM_TABSTOSPACES, _
             IDM_SELECTLINE,     IDM_REDO,           IDM_UNDO, _
             WM_UNDO
             OnCommand_EditCommon( id, pDoc )

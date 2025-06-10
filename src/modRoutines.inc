@@ -131,8 +131,6 @@ end function
 function isMouseOverWindow( byval hChild as HWND ) as boolean
     dim as point pt
     GetCursorPos( @pt )
-    'dim as RECT rc = AfxGetWindowRect(hChild)
-    'if PtInRect( @rc, pt ) then return true
     if WindowFrompoint( pt ) = hChild then return true
 end function
 
@@ -145,20 +143,6 @@ function isMouseOverRECT( byval hWin as HWND, byval rc as RECT ) as boolean
     MapWindowpoints( hWin, HWND_DESKTOP, cast( point ptr, @rc), 2 )
     if PtInRect( @rc, pt ) then return true
 end function
-
-' ========================================================================================
-' return the pixel width of the incoming text string
-' ========================================================================================
-function GetTextWidthPixels( byval hWin as HWND, byref wszText as wstring ) as long
-    dim as HDC _hdc = GetDC(hWin)
-    dim as SIZE _size 
-    dim as HFONT oldfont = selectObject( _hdc, AfxGetWindowFont(hWin) )
-    GetTextExtentpoint32( _hdc, wszText, len(wszText), @_size)
-    selectObject( _hdc, oldfont )
-    ReleaseDC( hWin, _hdc )
-    function = _size.cx 
-end function
-
 
 ' ========================================================================================
 ' Disable all modeless windows belonging to frmMain so that the popup modal is truly modal.
@@ -204,27 +188,6 @@ end function
 
 
 ' ========================================================================================
-' Replace a string in a combobox
-' ========================================================================================
-function ComboBox_Replacestring( _
-            byval hComboBox as HWND, _
-            byval index as long, _
-            byval pwszNewText as wstring ptr, _
-            byval pNewData as long_PTR = 0 _
-            ) as long
-    ' Delete the string
-    dim lRes as LRESULT = SendMessage(hComboBox, CB_DELETEstring, index, 0)
-    if lRes = LB_ERR then return lRes
-    ' Insert the new string
-    index = SendMessage(hComboBox, CB_INSERTstring, index, cast(LPARAM, pwszNewText))
-    if index = LB_ERR or index = LB_ERRSPACE then return index
-    lRes = SendMessage(hComboBox, CB_SETITEMDATA, index, cast(LPARAM, pNewData))
-    if lRes = LB_ERR then return lRes
-    function = SendMessage(hComboBox, CB_SETCURSEL, index, 0)
-end function
-
-
-' ========================================================================================
 ' Get the Scintilla value for a character sets
 ' ========================================================================================
 function GetFontCharSetID(byref wzCharsetName as CWSTR ) as long
@@ -257,151 +220,6 @@ end function
 
 
 ' ========================================================================================
-' Remove duplicate spaces from the incoming line.
-' ========================================================================================
-function RemoveDuplicateSpaces( byref sText as const string) as string
-    dim as string st = sText
-    do until instr(st, "  ") = 0
-        st = AfxStrReplace(st, "  ", " ")
-    loop   
-    function = st
-end function
-
-
-' ========================================================================================
-' Convert incoming text to proper case based on config setting. Used for autocomplete.
-' ========================================================================================
-function ConvertCase( byval sText as string) as string
-
-    select case gConfig.KeywordCase
-        case 0:  return lcase(sText)
-        case 1:  return ucase(sText)
-        case 2   ' Mixed case
-            ' loop through each character. if the previous character was an alphabet letter
-            ' then make the character lowercase otherwise make it uppercase.
-            dim as string sChar, sPrevChar
-            for i as long = 1 To len(sText)
-                sChar = mid(sText, i, 1)
-                sPrevChar = mid(sText, i-1, 1)
-                if (sPrevChar = " ") orelse (sPrevChar = "") then
-                    mid(sText, i, 1) = ucase(sChar)
-                else   
-                    mid(sText, i, 1) = lcase(sChar)
-                end if   
-            next
-            return sText   
-    end select            
-end function
-
-
-' ========================================================================================
-' Maps UTF-8 string to Ansi string.
-' ========================================================================================
-function Utf8ToAscii(byref strUtf8 as string) as string
-
-    dim i as long                ' // loop counter
-    dim strAscii as string       ' // Ascii string
-    dim idx as long              ' // Position in the string
-    dim c as long                ' // ASCII code
-    dim b2 as long               ' // Second byte
-    dim fSkipChar as boolean     ' // Flag
-
-    if len(strUtf8) = 0 then exit function
-    
-    ' // The maximum length of the translated string will be
-    ' // the same as the length of the original string.
-    ' // We are pre-allocating the buffer for faster operation
-    ' // than concatenating each character one by one.
-    strAscii = space(len(strUtf8))
-
-    ' // Intialize index position in the string buffer
-    ' // used to store the converted Ascii string
-    idx = 1
-    
-    ' // Examine the contents of each character in the UTF-8 encoded string
-    for i = 1 TO len(strUtf8)
-        ' // if fSkipChar is set we have to skip this character
-        if fSkipChar then
-            fSkipChar = 0
-            continue FOR
-        end if
-        ' // Get the Ascii code of the character
-        c = asc(mid(strUtf8, i, 1))
-        ' // if it is betwen 0 and 127...
-        if c < 128 then 
-            ' // ...we simply copy it to the string buffer...
-            mid(strAscii, idx, 1) = mid(strUtf8, idx, 1)
-            ' // ...and increase the position by 1.
-            idx = idx + 1
-        elseif c < 224 then
-            ' // We need to join this byte and the next byte.
-            b2 = asc(mid(strUtf8, i + 1, 1))
-            if b2 > 127 then
-            c = (c - 192) * 64 + (b2 - 128)
-            mid(strAscii, idx, 1) = chr(c)
-            ' // Set the flag to skip the next character
-            fSkipChar = true
-            ' // Increase the position by 1.
-            idx = idx + 1
-            end if
-        end if
-    next
-
-    ' // return the string
-    function = left(strAscii, idx - 1)
-
-end function
-
-
-' ========================================================================================
-' Maps Ansi character string to a UTF-8 string.
-' ========================================================================================
-function AnsiToUtf8( byref sAnsi as string ) as string
-    dim sUnicode as string
-    dim sUtf8    as string
-
-    'Maps Ansi character string to a UTF-8 string.
-
-    'Step one, convert to UNICODE
-    sUnicode = string(len(sAnsi) * 2, 0)
-    MultiByteToWideChar(CP_ACP, _                  'System default Windows ANSI code page
-                        MB_PRECOMPOSED, _          'Conversion type
-                        cast(LPCSTR, strptr(sAnsi)), _     'ANSI string to convert
-                        len(sAnsi), _              'Lenght of ANSI string
-                        cast(LPWSTR, strptr(sUnicode)), _  'Unicode string
-                        len(sUnicode))             'Lenght of Unicode buffer
-
-    'Step two, convert to UTF-8
-    sUtf8 = string(len(sAnsi), 0)
-    WideCharToMultiByte(CP_UTF8, _                 'Set to UTF-8
-                        0, _                       'Conversion type
-                        cast(LPCWSTR, strptr(sUnicode)), _  'Unicode string to convert
-                        len(sUnicode) / 2, _       'Lenght of Unicode string
-                        cast(LPSTR, strptr(sUtf8)), _     'UTF-8 string
-                        len(sUtf8), _              'Length of UTF-8 buffer
-                        byval 0, _                 'Invalid character replacement
-                        byval 0)                   'Replacement was used flag
-    function = sUtf8
-
-end function
-
-
-' ========================================================================================
-' Maps UTF-8 string to Unicode character string 
-' ========================================================================================
-function Utf8ToUnicode( byref ansiStr as const string ) as string
-'*** This conversion does not appear to be reliable.
-'*** Better using the CWSTR.Utf8 method instead.
-    dim dwLen as DWORD = MultiByteToWideChar(CP_UTF8, 0, strptr(ansiStr), len(ansiStr), null, 0)
-    if dwLen then
-        dim s as string = space(dwLen * 2)
-        dwLen = MultiByteToWideChar(CP_UTF8, 0, strptr(ansiStr), len(ansiStr), cast(wstring ptr, strptr(s)), dwLen * 2)
-        if dwLen then return s
-    end if
-end function
-
-    
-' ========================================================================================
 ' Maps Unicode character string to a UTF-8 string.
 ' ========================================================================================
 function UnicodeToUtf8( byval wzUnicode as CWSTR ) as string
@@ -423,37 +241,6 @@ function UnicodeToUtf8( byval wzUnicode as CWSTR ) as string
 
     function = left(sUtf8, bytesWritten)
 
-end function
-
-' ========================================================================================
-' Parse a string to a string array and return the number of lines.
-' ========================================================================================
-function GetstringToArray( _
-            byref txtBuffer as string, _
-            txtArray() as string _
-            ) as long
-
-    ' Load the lines into the string array. This is MUCH faster than having
-    ' to use AfxStrParse to retrieve each line.
-    dim as string st
-    dim as long iLineStart = 1
-    dim as long iLineEnd, nnextLine
-    dim as long nnextBufferArrayLine = 1
-
-    ' Convert the string into an array that can be parsed.
-    do until iLineStart >= len( txtBuffer )
-        iLineend = instr(iLineStart, txtBuffer, vbcrlf)
-        if iLineend = 0 then iLineend = len( txtBuffer )  ' cr/lf not found
-        st = mid( txtBuffer, iLineStart, iLineend - iLineStart )
-        iLineStart = iLineStart + len(st) + len(vbcrlf)
-        if nnextBufferArrayLine >= ubound(txtArray) then
-            redim preserve txtArray( ubound(txtArray) + 5000 )
-        end if
-        txtArray(nnextBufferArrayLine) = st   
-        nnextBufferArrayLine = nnextBufferArrayLine + 1
-    loop
-
-    function = nnextBufferArrayLine - 1
 end function
 
 
@@ -490,11 +277,11 @@ function GetFileTostring( _
         pDoc->FileEncoding = FILE_ENCODING_UTF16_BOM 
         txtBuffer = mid(txtBuffer, 3)   ' bypass the BOM
     else
-        pDoc->FileEncoding = FILE_ENCODING_ANSI
+        pDoc->FileEncoding = FILE_ENCODING_UTF8
     end if
 
     select case pDoc->FileEncoding
-        case FILE_ENCODING_ANSI 
+        case FILE_ENCODING_UTF8
             ' No conversion needed. clsDocument ApplyProperties will *not*
             ' set the editor to UTF8 code.
         
@@ -513,58 +300,6 @@ function GetFileTostring( _
         
     function = false
 end function
-
-
-' ========================================================================================
-' Convert the current text buffer to the specified encoding and redisplay the text.
-' ========================================================================================
-function ConvertTextBuffer( _
-            byval pDoc as clsDocument ptr, _
-            byval FileEncoding as long _
-            ) as long
-                            
-    if pDoc = 0 then exit function
-
-    dim as hwnd hEdit = pDoc->hwndActiveScintilla
-    ' Save the current file position and first visible line
-    dim nFirstLine as long = SciExec( hEdit, SCI_GETFIRSTVISIBLELINE, 0, 0) 
-    dim nPos as long = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0)
-
-    pDoc->FileEncoding = FileEncoding
-    dim as zstring ptr psz = cast( zstring ptr, SciExec(hEdit, SCI_GETCHARACTERpointER, 0, 0) )
-    dim as long sciCodePage = SciExec(hEdit, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
-    dim as string txtBuffer 
-    
-    ' Convert buffer to specified file encoding
-    select case FileEncoding
-        case FILE_ENCODING_ANSI
-            if sciCodePage = 0 then  ' already in ANSI format  
-                exit function
-            else   
-                ' need to convert from UTF8 to ANSI
-                txtBuffer = Utf8ToAscii(*psz)
-                SciExec(hEdit, SCI_SETCODEPAGE, 0, 0 )
-            end if    
-
-        case FILE_ENCODING_UTF8_BOM, FILE_ENCODING_UTF16_BOM
-            if sciCodePage = SC_CP_UTF8 then  ' already in unicode format
-                exit function
-            else
-                ' need to convert from ANSI to UTF8
-                txtBuffer = AnsiToUtf8(*psz)
-                SciExec(hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
-            end if    
-
-    end select
-    
-    ' Set the new buffer
-    pDoc->SetText(txtBuffer)
-    
-    SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
-    SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
-    
-    function = 0
-end function   
 
 
 ' ========================================================================================
@@ -1219,41 +954,6 @@ end function
 
 
 ' ========================================================================================
-' Retrieve the lParam value from a Listview line
-' ========================================================================================
-function FF_ListView_GetlParam( _
-            byval hwndControl as HWND, _
-            byval iRow as long _
-            ) as LPARAM
-
-    dim li as LV_ITEM
-    li.mask       = LVIF_PARAM
-    li.iItem      = iRow
-    li.iSubItem   = 0 
-    if SendMessage( hwndControl, LVM_GETITEM, 0, cast(LPARAM, @li) ) then
-        function = li.lParam
-    end if   
-end function
-
-
-' ========================================================================================
-' Set the lParam value for a Listview line
-' ========================================================================================
-function FF_ListView_SetlParam( _
-            byval hwndControl as HWND, _
-            byval iRow as long, _
-            byval ilParam as LPARAM _
-            ) as long
-    dim li as LV_ITEM
-    li.mask       = LVIF_PARAM
-    li.iItem      = iRow
-    li.iSubItem   = 0
-    li.lParam     = ilParam
-    function = SendMessage( hwndControl, LVM_SETITEM, 0, cast(LPARAM, @li) ) 
-end function
-
-
-' ========================================================================================
 ' Load a .lang localization file from disk and populate the localization array
 ' The IsEnglish parameter is used when we want to populate the gLangEnglish global
 ' array that is used in the editor startup code.
@@ -1475,71 +1175,6 @@ function GetRunExecutableFilename() as CWSTR
 
     return wszFilename
 
-end function
-
-
-
-' ========================================================================================
-' Loads an image from a resource, converts it to an icon or bitmap and returns a pointer
-' to the raw PNG pixels. This is needed by the scintilla autocomplete popup.
-' Memory is ALLOCATE so it needs to be DEALLOCATE.
-' Parameters:
-' - hInstance     = [in] A handle to the module whose portable executable file or an accompanying
-'                   MUI file contains the resource. if this parameter is null, the function searches
-'                   the module used to create the current process.
-' - wszImageName  = [in] Name of the image in the resource file (.RES). if the image resource uses
-'                   an integral identifier, wszImage should begin with a number symbol (#)
-'                   followed by the identifier in an ASCII format, e.g., "#998". Otherwise,
-'                   use the text identifier name for the image. Only images embedded as raw data
-'                   (type RCDATA) are valid. These must be icons in format .png, .jpg, .gif, .tiff.
-' ========================================================================================
-TYPE MYBITMAPINFO
-    bmiHeader as BITMAPINFOHEADER
-    bmiColors(256) as RGBQUAD 
-end TYPE
-                
-
-' ========================================================================================
-' Get a raw PNG from the Resource - needed to load images into Scintilla popup list.
-' ========================================================================================
-function LoadPNGfromRes( _
-            byval hInstance as HINSTANCE, _
-            byref wszImageName as wstring _
-            ) as any ptr
-
-    dim as HBITMAP hBitmap = AfxGdipImageFromRes(hInstance, wszImageName, 0, false, IMAGE_BITMAP) 
-        
-    dim bi as MYBITMAPINFO
-    dim bm as BITMAP
-    dim dwp as DWORD ptr
-    dim as HDC hIC, hDC 
-    dim as any ptr pPixel
-    
-    if hBitmap then
-        hIC = GetWindowDC(0)
-        hDC = CreateCompatibleDC(hIC)
-        selectObject(hDC, hBitmap)
-
-        GetObject(hBitmap, sizeof(bm), @bm)
-        bi.bmiHeader.biSize        = sizeof(bi.bmiHeader)
-        bi.bmiHeader.biWidth       = bm.bmWidth
-        bi.bmiHeader.biHeight      = -bm.bmHeight ' Put top in TOP instead on bottom!
-        bi.bmiHeader.biPlanes      = 1
-        bi.bmiHeader.biBitCount    = 32
-        bi.bmiHeader.biCompression = BI_RGB
-                        
-        pPixel = allocate((bm.bmWidth * bm.bmHeight) * sizeof(DWORD))
-        dwp = cast(dword ptr, pPixel)
-        GetDIBits( hDC, hBitmap, 0, bm.bmHeight, _
-                        byval dwp, cast(LPBITMAPINFO, @bi), DIB_RGB_COLORS)
-        
-        DeleteDC(hIC)
-        DeleteDC(hDC)
-    end if
-
-    ' // return the handle to the PNG raw pixels
-    DeleteObject(hBitmap)
-    return pPixel
 end function
 
 

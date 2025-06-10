@@ -351,7 +351,6 @@ function clsDocument.SaveFile( _
     ' Save text buffer to disk by directly accessing buffer rather
     ' saving it to an intermediary string variable first.
     dim as zstring ptr psz = cast( zstring ptr, SciExec(this.hWindow(0), SCI_GETCHARACTERPOINTER, 0, 0) )
-    dim as long sciCodePage = SciMsg(pSci, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
     
     dim as CWSTR wszSaveFilename
     if bAutoSaveOnly then 
@@ -370,43 +369,24 @@ function clsDocument.SaveFile( _
     if pStream.Open(wszSaveFilename, STGM_CREATE or STGM_WRITE) = S_OK then
         dim as string st
         select case this.FileEncoding
-            case FILE_ENCODING_ANSI
-                if sciCodePage = 0 then    
-                    pStream.Write psz, len(*psz)     ' no conversion necessary
-                else
-                    ' need to convert
-                    st = Utf8ToAscii(*psz)
-                    pStream.Write strptr(st), len(st) 
-                end if    
+            case FILE_ENCODING_UTF8
+                pStream.Write psz, len(*psz)     ' no conversion necessary
 
             case FILE_ENCODING_UTF8_BOM
                 ' Output the BOM first
                 st = chr(&HEF, &HBB, &HBF)
                 pStream.Write strptr(st), len(st)
-                if sciCodePage = SC_CP_UTF8 then    
-                    ' no conversion necessary
-                    pStream.Write psz, len(*psz)     ' no conversion necessary
-                else
-                    ' need to convert
-                    st = AnsiToUtf8(*psz)
-                    pStream.Write strptr(st), len(st)
-                end if    
+                pStream.Write psz, len(*psz)     ' no conversion necessary
 
             case FILE_ENCODING_UTF16_BOM
                 ' Output the BOM first
                 st = chr(&HFF, &HFE)
                 pStream.Write strptr(st), len(st)
-                if sciCodePage = SC_CP_UTF8 then    
-                    ' convert utf8 to utf16
-                    wst.Utf8 = *psz  ' convert the utf *psz from Utf8
-                    pStream.Write wst.m_pBuffer, wst.m_BufferLen
-                else
-                    ' need to convert ansi to unicode
-                    dim as CWSTR wst = Wstr(*psz)
-                    pStream.Write wst.m_pBuffer, wst.m_BufferLen
-                end if    
+                ' convert utf8 to utf16
+                wst.Utf8 = *psz  ' convert the utf *psz from Utf8
+                pStream.Write wst.m_pBuffer, wst.m_BufferLen
             
-        end SELECT
+        end select
     end if
     pStream.Close
 
@@ -1439,12 +1419,8 @@ function clsDocument.ApplyProperties() as long
         SciMsg( m_pSci(i), SCI_SETWORDCHARS, 0, cast(LPARAM, @"~_\abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") )
 
         ''  UNICODE (UTF-8 encoding)
-        if this.FileEncoding = FILE_ENCODING_ANSI then
-            SciMsg( m_pSci(i), SCI_SETCODEPAGE, 0, 0 )
-        else
-            ' UTF8 or UTF16 would have been converted to UTF8 in order to display in the editor.
-            SciMsg( m_pSci(i), SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
-        end if
+        ' UTF8 or UTF16 would have been converted to UTF8 in order to display in the editor.
+        SciMsg( m_pSci(i), SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
     
         '' RIGHT EDGE COLUMN
         SciMsg( m_pSci(i), SCI_SETEDGEMODE, iif(gConfig.RightEdge, EDGE_LINE, EDGE_NONE), 0 )
@@ -1461,8 +1437,7 @@ function clsDocument.ApplyProperties() as long
         wFileExt = ucase(wFileExt)
 
         if cbool(wFileExt = ".BAS") orelse cbool(wFileExt = ".INC") _
-            orelse cbool(wFileExt = ".BI") orelse (this.IsNewFlag = true) _
-            orelse cbool(wFileExt = ".FBTPL") then
+            orelse cbool(wFileExt = ".BI") orelse (this.IsNewFlag = true) then
 
             bitsNeeded = SciMsg( m_pSci(i), SCI_GETSTYLEBITSNEEDED, 0, 0)
             SciMsg( m_pSci(i), SCI_SETSTYLEBITS, bitsNeeded, 0 )

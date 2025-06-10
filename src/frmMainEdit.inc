@@ -185,26 +185,9 @@ function OnCommand_EditEncoding( _
             ) as LRESULT
 
     select case id      
-        case IDM_ANSI
-            if pDoc->FileEncoding <> FILE_ENCODING_ANSI then 
-                pDoc->UserModified = true
-                ' Convert buffer to ANSI and redisplay the text in the editor
-                ConvertTextBuffer(pDoc, FILE_ENCODING_ANSI)
-            end if   
-            pDoc->FileEncoding = FILE_ENCODING_ANSI 
-        
-        case IDM_UTF8BOM
-            if pDoc->FileEncoding <> FILE_ENCODING_UTF8_BOM then 
-                pDoc->UserModified = true
-                ConvertTextBuffer(pDoc, FILE_ENCODING_UTF8_BOM)
-            end if   
-            pDoc->FileEncoding = FILE_ENCODING_UTF8_BOM 
-        
-        case IDM_UTF16BOM
-            if pDoc->FileEncoding <> FILE_ENCODING_UTF16_BOM then 
-                pDoc->UserModified = true
-                ConvertTextBuffer(pDoc, FILE_ENCODING_UTF16_BOM)
-            end if   
+        case IDM_UTF8:     pDoc->FileEncoding = FILE_ENCODING_UTF8
+        case IDM_UTF8BOM:  pDoc->FileEncoding = FILE_ENCODING_UTF8_BOM 
+        case IDM_UTF16BOM: pDoc->FileEncoding = FILE_ENCODING_UTF16_BOM 
     end select
     
     frmMain_SetStatusbar
@@ -378,7 +361,6 @@ function OnCommand_EditCommon( _
         case IDM_TOLOWERCASE:         pDoc->ChangeSelectionCase(2)
         case IDM_TOMIXEDCASE:         pDoc->ChangeSelectionCase(3)
         case IDM_EOLTOCRLF:           pDoc->ConvertEOL(SC_EOL_CRLF)
-        case IDM_EOLTOCR:             pDoc->ConvertEOL(SC_EOL_CR)
         case IDM_EOLTOLF:             pDoc->ConvertEOL(SC_EOL_LF)
         case IDM_TABSTOSPACES:        pDoc->TabsToSpaces()
         case IDM_SELECTLINE:          pDoc->SelectLine(-1)

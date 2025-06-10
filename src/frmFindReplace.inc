@@ -1097,16 +1097,14 @@ function frmFindReplace_Show( _
         SendMessage( hCtlReplace, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
         
         ' create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
-        if gApp.isWineActive = false then
-            pWindow = New CWindow
-            pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
-            HWND_FRMFINDREPLACE_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
-                @frmFindReplaceShadow_WndProc, 0, 0, 0, 0, _
-                WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED )
-            pWindow->ClassStyle = CS_DBLCLKS
-            pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
-            SetLayeredWindowAttributes( HWND_FRMFINDREPLACE_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 80, LWA_ALPHA ) 
-        end if
+        pWindow = New CWindow
+        pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
+        HWND_FRMFINDREPLACE_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
+            @frmFindReplaceShadow_WndProc, 0, 0, 0, 0, _
+            WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED )
+        pWindow->ClassStyle = CS_DBLCLKS
+        pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
+        SetLayeredWindowAttributes( HWND_FRMFINDREPLACE_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 80, LWA_ALPHA ) 
     end if
 
     ' Fills the search box with the selected word.

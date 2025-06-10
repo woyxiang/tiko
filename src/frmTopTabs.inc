@@ -761,16 +761,14 @@ function frmTopTabs_Show( byval hwndParent as HWND ) as LRESULT
     pWindow->ClassStyle = CS_DBLCLKS
 
     ' create semi-transparent window offset under our tabcontrol in order to simulate a shadow.
-    if gApp.isWineActive = false then
-        pWindow = New CWindow
-        HWND_FRMMAIN_TOPTABS_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
-            @frmTopTabsShadow_WndProc, 0, 0, 0, pWindow->ScaleY(1), _
-            WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
-        pWindow->ClassStyle = CS_DBLCLKS
-        pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
-        ' 0 totally transparent, 255 totally opaque
-        SetLayeredWindowAttributes( HWND_FRMMAIN_TOPTABS_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 100, LWA_ALPHA ) 
-    end if
+    pWindow = New CWindow
+    HWND_FRMMAIN_TOPTABS_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
+        @frmTopTabsShadow_WndProc, 0, 0, 0, pWindow->ScaleY(1), _
+        WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
+    pWindow->ClassStyle = CS_DBLCLKS
+    pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
+    ' 0 totally transparent, 255 totally opaque
+    SetLayeredWindowAttributes( HWND_FRMMAIN_TOPTABS_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 100, LWA_ALPHA ) 
     
     frmTopTabs_PositionWindows()
     function = 0
