@@ -86,7 +86,7 @@ type clsConfig
         BuildsTemp(any)           as TYPE_BUILDS  
         Cat(any)                  as TYPE_CATEGORIES
         CatTemp(any)              as TYPE_CATEGORIES
-        ExplorerPositionRight     as long = true
+        ExplorerPositionRight     as long = false
         FBKeywords                as string
         WinApiKeywords            as string
         bKeywordsDirty            as boolean = true       ' not saved to file

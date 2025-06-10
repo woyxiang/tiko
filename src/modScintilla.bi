@@ -26,9 +26,7 @@
 
 #Pragma Once
 
-#Include Once "Windows.bi"
-
-#Define SCLEX_VB                                   8      ' // Visual Basic lexer
+#Define SCLEX_TIKO                                 8      ' // Visual Basic lexer
 #Define SCE_B_DEFAULT                              0
 #Define SCE_B_COMMENT                              1
 #Define SCE_B_NUMBER                               2
@@ -51,7 +49,7 @@
 #Define SCE_B_MULTILINECOMMENT                     19
 
 '// Define the default Lexilla shared library name for each platform
-#define LEXILLA_LIB "lexilla"
+#define LEXILLA "lexilla64"
 #define LEXILLA_EXTENSION ".dll"
 
 '// On Win32 use the stdcall calling convention otherwise use the standard calling convention

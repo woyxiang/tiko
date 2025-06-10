@@ -143,8 +143,8 @@ function clsDocument.CreateCodeWindow( _
             ' a window is destroyed then the pointer would be as well causing other existing
             ' windows to GPF.
             if i = 0 then
-                ' Load the FB lexer from Lexilla and feed it into Scintilla
-                dim as any ptr pLexer = gApp.pfnCreateLexerfn( "winfbe" )
+                ' Load my custom Tiko lexer based on VB lexer from Lexilla and feed it into Scintilla
+                dim as any ptr pLexer = gApp.pfnCreateLexerfn( "tiko" )
                 SendMessage( this.hWindow(i), SCI_SETILEXER, 0, cast(LPARAM, pLexer) )
             end if
             if SciMsg = 0 then
@@ -1237,7 +1237,7 @@ function clsDocument.IsMultiLineSelection() as boolean
     if endLine <> startLine then return true
 end function
 
-
+ 
 ''
 ''
 function clsDocument.ApplyProperties() as long

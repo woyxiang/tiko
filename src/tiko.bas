@@ -17,6 +17,7 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
+
 #define UNICODE
 #define _WIN32_WINNT &h0602  
 
@@ -185,6 +186,7 @@ function WinMain( _
     dim as any ptr pLibLexilla = dylibload("Lexilla64.dll")
     dim as any ptr pLibScintilla = dylibload("Scintilla64.dll")
     gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
+
 
     ' Load the HTML help library for displaying FreeBASIC help *.chm file
     gpHelpLib = dylibload( "hhctrl.ocx" )
