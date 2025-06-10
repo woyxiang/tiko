@@ -164,7 +164,8 @@ function clsDocument.CreateCodeWindow( _
     ' Get the document pointer from our main control and assign it to the other split windows
     dim as any ptr pDoc = cast(any ptr, SciMsg(m_pSci(0), SCI_GETDOCPOINTER, 0, 0))
     if pDoc then SciMsg( m_pSci(1), SCI_SETDOCPOINTER, 0, cast(LPARAM, pDoc)) 
-    
+            
+
     ' if a disk file was specified then open it and load it into the editor
     if len(wszFile) then   
         ' do not use Dir() > "" here b/c if incoming file originated from a Do/loop 
@@ -199,6 +200,7 @@ function clsDocument.CreateCodeWindow( _
             else
                 print "Error opening: "; wszFile
             end if
+            
 
             this.LoadingFromFile = false
             SciMsg( m_pSci(0), SCI_SETSAVEPOINT, 0, 0)

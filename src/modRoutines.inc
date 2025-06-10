@@ -245,6 +245,39 @@ end function
 
 
 ' ========================================================================================
+' Maps Ansi character string to a UTF-8 string.
+' ========================================================================================
+function AnsiToUtf8( byref sAnsi as string ) as string
+    dim sUnicode as string
+    dim sUtf8    as string
+
+    'Maps Ansi character string to a UTF-8 string.
+
+    'Step one, convert to UNICODE
+    sUnicode = string(len(sAnsi) * 2, 0)
+    MultiByteToWideChar(CP_ACP, _                  'System default Windows ANSI code page
+                     MB_PRECOMPOSED, _          'Conversion type
+                     cast(LPCSTR, strptr(sAnsi)), _     'ANSI string to convert
+                     len(sAnsi), _              'Lenght of ANSI string
+                     cast(LPWSTR, strptr(sUnicode)), _  'Unicode string
+                     len(sUnicode))             'Lenght of Unicode buffer
+
+    'Step two, convert to UTF-8
+    sUtf8 = string(len(sAnsi), 0)
+    WideCharToMultiByte(CP_UTF8, _                 'Set to UTF-8
+                     0, _                       'Conversion type
+                     cast(LPCWSTR, strptr(sUnicode)), _  'Unicode string to convert
+                     len(sUnicode) / 2, _       'Lenght of Unicode string
+                     cast(LPSTR, strptr(sUtf8)), _     'UTF-8 string
+                     len(sUtf8), _              'Length of UTF-8 buffer
+                     byval 0, _                 'Invalid character replacement
+                     byval 0)                   'Replacement was used flag
+    function = sUtf8
+
+end function
+
+
+' ========================================================================================
 ' Open a disk file and read it into a string (ANSI or UTF8)
 ' ========================================================================================
 function GetFileTostring( _
@@ -282,8 +315,10 @@ function GetFileTostring( _
 
     select case pDoc->FileEncoding
         case FILE_ENCODING_UTF8
-            ' No conversion needed. clsDocument ApplyProperties will *not*
-            ' set the editor to UTF8 code.
+            ' Ensure that any ansi text is in UTF-8 format.
+            txtBuffer = AnsiToUtf8(txtBuffer)
+            ' No conversion needed. clsDocument ApplyProperties will set
+            ' the editor to UTF8 code.
         
         case FILE_ENCODING_UTF8_BOM   
             ' No conversion needed. clsDocument ApplyProperties will set
@@ -358,6 +393,17 @@ function IsCurrentLineIncludeFilename() as boolean
             gApp.IncludeFilename = AfxGetExePathName & sFilename
         elseif AfxFileExists(str(wszCompilerPath) & "\" & sFilename) then 
             gApp.IncludeFilename = str(wszCompilerPath) & "\" & sFilename
+        else
+            ' Iterate the optional semi colon separated list of compiler include paths
+            dim as CWSTR includePath
+            dim as long numpaths = AfxStrParseCount(gConfig.CompilerIncludes, ";")
+            for i as long = 1 to numpaths
+                includePath = rtrim(AfxStrParse(gConfig.CompilerIncludes, i, ";")) & "\" & sFilename
+                if AfxFileExists(includePath) then
+                    gApp.IncludeFilename = includePath
+                    exit for
+                end if
+            next
         end if
         gApp.IncludeFilename = AfxStrReplace(gApp.IncludeFilename, "/", "\")
         gApp.IncludeFilename = AfxStrReplace(gApp.IncludeFilename, "\\", "\")
