@@ -17,9 +17,10 @@
 #define IDC_SCINTILLA              100
 
 ' File encodings
-#define FILE_ENCODING_UTF8         0
-#define FILE_ENCODING_UTF8_BOM     1
-#define FILE_ENCODING_UTF16_BOM    2
+#define FILE_ENCODING_ANSI         0
+#define FILE_ENCODING_UTF8         1
+#define FILE_ENCODING_UTF8_BOM     2
+#define FILE_ENCODING_UTF16_BOM    3
 
 #define FILETYPE_UNDEFINED        "0"
 #define FILETYPE_MAIN             "1"

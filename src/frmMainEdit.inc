@@ -185,6 +185,7 @@ function OnCommand_EditEncoding( _
             ) as LRESULT
 
     select case id      
+        case IDM_ANSI:     pDoc->FileEncoding = FILE_ENCODING_ANSI
         case IDM_UTF8:     pDoc->FileEncoding = FILE_ENCODING_UTF8
         case IDM_UTF8BOM:  pDoc->FileEncoding = FILE_ENCODING_UTF8_BOM 
         case IDM_UTF16BOM: pDoc->FileEncoding = FILE_ENCODING_UTF16_BOM 

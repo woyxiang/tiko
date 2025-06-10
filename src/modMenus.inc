@@ -355,17 +355,19 @@ function CreateStatusBarFileEncodingContextMenu() as HMENU
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc then
         hPopUpMenu = CreatePopupMenu
+        AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_ANSI, "ANSI"
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_UTF8, "UTF-8"
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_UTF8BOM, "UTF-8 (BOM)"
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, IDM_UTF16BOM, "UTF-16 (BOM)"
 
         dim nEncoding as long
         select case pDoc->FileEncoding
+            case FILE_ENCODING_ANSI:      nEncoding = IDM_ANSI
             case FILE_ENCODING_UTF8:      nEncoding = IDM_UTF8
             case FILE_ENCODING_UTF8_BOM:  nEncoding = IDM_UTF8BOM
             case FILE_ENCODING_UTF16_BOM: nEncoding = IDM_UTF16BOM
         end select
-        CheckMenuRadioItem( hPopupMenu, IDM_UTF8, IDM_UTF16BOM, nEncoding, MF_BYCOMMAND )
+        CheckMenuRadioItem( hPopupMenu, IDM_ANSI, IDM_UTF16BOM, nEncoding, MF_BYCOMMAND )
     end if
 
     function = hPopupMenu
