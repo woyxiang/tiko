@@ -185,12 +185,35 @@ function OnCommand_EditEncoding( _
             ) as LRESULT
 
     select case id      
-        case IDM_ANSI:     pDoc->FileEncoding = FILE_ENCODING_ANSI
-        case IDM_UTF8:     pDoc->FileEncoding = FILE_ENCODING_UTF8
-        case IDM_UTF8BOM:  pDoc->FileEncoding = FILE_ENCODING_UTF8_BOM 
-        case IDM_UTF16BOM: pDoc->FileEncoding = FILE_ENCODING_UTF16_BOM 
+        case IDM_ANSI
+            if pDoc->FileEncoding <> FILE_ENCODING_ANSI THEN 
+                pDoc->UserModified = true
+                ' Convert buffer to ANSI and redisplay the text in the editor
+                ConvertTextBuffer(pDoc, FILE_ENCODING_ANSI)
+            end if   
+            pDoc->FileEncoding = FILE_ENCODING_ANSI 
+      
+      case IDM_UTF8
+         if pDoc->FileEncoding <> FILE_ENCODING_UTF8 THEN 
+            pDoc->UserModified = true
+            ConvertTextBuffer(pDoc, FILE_ENCODING_UTF8)
+         end if   
+         pDoc->FileEncoding = FILE_ENCODING_UTF8
+
+      case IDM_UTF8BOM
+         if pDoc->FileEncoding <> FILE_ENCODING_UTF8_BOM THEN 
+            pDoc->UserModified = true
+            ConvertTextBuffer(pDoc, FILE_ENCODING_UTF8_BOM)
+         end if   
+         pDoc->FileEncoding = FILE_ENCODING_UTF8_BOM 
+      
+      case IDM_UTF16BOM
+        if pDoc->FileEncoding <> FILE_ENCODING_UTF16_BOM THEN 
+            pDoc->UserModified = true
+            ConvertTextBuffer(pDoc, FILE_ENCODING_UTF16_BOM)
+        end if   
     end select
-    
+   
     frmMain_SetStatusbar
 
     function = 0

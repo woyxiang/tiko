@@ -220,6 +220,117 @@ end function
 
 
 ' ========================================================================================
+' Convert the current text buffer to the specified encoding and redisplay the text.
+' ========================================================================================
+function ConvertTextBuffer( _
+            byval pDoc as clsDocument ptr, _
+            byval FileEncoding as long _
+            ) as Long
+                            
+   if pDoc = 0 then exit function
+
+   dim as hwnd hEdit = pDoc->hWndActiveScintilla
+   ' Save the current file position and first visible line
+   dim nFirstLine as long = SciExec( hEdit, SCI_GETFIRSTVISIBLELINE, 0, 0) 
+   Dim nPos As Long = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0)
+
+   pDoc->FileEncoding = FileEncoding
+   Dim As ZString Ptr psz = Cast( ZString Ptr, SciExec(hEdit, SCI_GETCHARACTERPOINTER, 0, 0) )
+   dim as long sciCodePage = SciExec(hEdit, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
+   dim as string txtBuffer 
+   
+   ' Convert buffer to specified file encoding
+   select CASE FileEncoding
+      case FILE_ENCODING_ANSI
+         if sciCodePage = 0 THEN  ' already in ANSI format  
+            exit function
+         else   
+            ' need to convert from UTF8 to ANSI
+            txtBuffer = Utf8ToAnsi(*psz)
+            SciExec(hEdit, SCI_SETCODEPAGE, 0, 0 )
+         end if    
+
+      case FILE_ENCODING_UTF8_BOM, FILE_ENCODING_UTF16_BOM
+         if sciCodePage = SC_CP_UTF8 THEN  ' already in unicode format
+            exit function
+         else
+            ' need to convert from ANSI to UTF8
+            txtBuffer = AnsiToUtf8(*psz)
+            SciExec(hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
+         end if    
+
+   END SELECT
+   
+   ' Set the new buffer
+   pDoc->SetText(txtBuffer)
+    
+   SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
+   SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
+   
+   function = 0
+end function   
+
+
+' ========================================================================================
+' Maps UTF-8 string to Ansi string.
+' ========================================================================================
+FUNCTION Utf8ToAnsi(byref strUtf8 AS STRING) AS STRING
+
+   dim i AS LONG                ' // Loop counter
+   dim strAscii AS STRING       ' // Ascii string
+   dim idx AS LONG              ' // Position in the string
+   dim c AS LONG                ' // ASCII code
+   dim b2 AS LONG               ' // Second byte
+   dim fSkipChar AS boolean     ' // Flag
+
+   IF LEN(strUtf8) = 0 THEN EXIT FUNCTION
+   
+   ' // The maximum length of the translated string will be
+   ' // the same as the length of the original string.
+   ' // We are pre-allocating the buffer for faster operation
+   ' // than concatenating each character one by one.
+   strAscii = SPACE(LEN(strUtf8))
+
+   ' // Intialize index position in the string buffer
+   ' // used to store the converted Ascii string
+   idx = 1
+   
+   ' // Examine the contents of each character in the UTF-8 encoded string
+   FOR i = 1 TO LEN(strUtf8)
+      ' // If fSkipChar is set we have to skip this character
+      IF fSkipChar THEN
+         fSkipChar = 0
+         continue FOR
+      END IF
+      ' // Get the Ascii code of the character
+      c = ASC(MID(strUtf8, i, 1))
+      ' // If it is betwen 0 and 127...
+      IF c < 128 THEN 
+         ' // ...we simply copy it to the string buffer...
+         MID(strAscii, idx, 1) = MID(strUtf8, idx, 1)
+         ' // ...and increase the position by 1.
+         idx = idx + 1
+      ELSEIF c < 224 THEN
+         ' // We need to join this byte and the next byte.
+         b2 = ASC(MID(strUtf8, i + 1, 1))
+         IF b2 > 127 THEN
+            c = (c - 192) * 64 + (b2 - 128)
+            MID(strAscii, idx, 1) = CHR(c)
+            ' // Set the flag to skip the next character
+            fSkipChar = TRUE
+            ' // Increase the position by 1.
+            idx = idx + 1
+         END IF
+      END IF
+   NEXT
+
+   ' // Return the string
+   FUNCTION = LEFT(strAscii, idx - 1)
+
+END FUNCTION
+
+
+' ========================================================================================
 ' Maps Unicode character string to a UTF-8 string.
 ' ========================================================================================
 function UnicodeToUtf8( byval wzUnicode as CWSTR ) as string
@@ -278,9 +389,46 @@ end function
 
 
 ' ========================================================================================
+' Determine if a string is UTF-8 encoded
+' ========================================================================================
+function isUTF8encoded(byref s as string) as boolean
+    dim as integer i = 0, n = len(s)
+    dim as ubyte ch
+
+    while i < n
+        ch = s[i]
+        
+        if ch <= &h7F then
+            ' ascii character (1 byte)
+            i += 1
+        elseif ch >= &hC2 andalso ch <= &hDF then
+            ' 2-byte sequence
+            if i + 1 >= n then return false
+            if (s[i + 1] and &hC0) <> &h80 then return false
+            i += 2
+        elseif ch >= &hE0 andalso ch <= &hEF then
+            ' 3-byte sequence
+            if i + 2 >= n then return false
+            if (s[i + 1] and &hC0) <> &h80 orelse (s[i + 2] and &hC0) <> &h80 then return false
+            i += 3
+        elseif ch >= &hF0 andalso ch <= &hF4 then
+            ' 4-byte sequence
+            if i + 3 >= n then return false
+            if (s[i + 1] and &hC0) <> &h80 orelse (s[i + 2] and &hC0) <> &h80 orelse (s[i + 3] and &hC0) <> &h80 then return false
+            i += 4
+        else
+            return false
+        end if
+    wend
+
+    return true
+end function
+
+
+' ========================================================================================
 ' Open a disk file and read it into a string (ANSI or UTF8)
 ' ========================================================================================
-function GetFileTostring( _
+function GetFileToString( _
             byref wszFilename as const wstring, _
             byref txtBuffer as string, _
             byval pDoc as clsDocument ptr _
@@ -300,6 +448,8 @@ function GetFileTostring( _
     CloseHandle(hFile)
     if bSuccess = false then return true
 
+    pDoc->FileEncoding = FILE_ENCODING_ANSI
+
     ' Check for BOM signatures
     if left(txtBuffer, 3) = chr(&HEF, &HBB, &HBF) then
         ' UTF8 BOM encoded 
@@ -310,28 +460,29 @@ function GetFileTostring( _
         pDoc->FileEncoding = FILE_ENCODING_UTF16_BOM 
         txtBuffer = mid(txtBuffer, 3)   ' bypass the BOM
     else
-        pDoc->FileEncoding = FILE_ENCODING_UTF8
+        if isUTF8encoded(txtBuffer) then
+            pDoc->FileEncoding = FILE_ENCODING_UTF8
+        end if
     end if
 
-    select case pDoc->FileEncoding
-        case FILE_ENCODING_UTF8
-            ' Ensure that any ansi text is in UTF-8 format.
-            txtBuffer = AnsiToUtf8(txtBuffer)
-            ' No conversion needed. clsDocument ApplyProperties will set
-            ' the editor to UTF8 code.
-        
-        case FILE_ENCODING_UTF8_BOM   
-            ' No conversion needed. clsDocument ApplyProperties will set
-            ' the editor to UTF8 code.
-            
-        case FILE_ENCODING_UTF16_BOM
-            ' Convert the whole buffer to UTF-16 unicode string
-            dim as CWSTR wszText = string(len(txtBuffer),0)
-            MemCpy( cast(any ptr, wszText.m_pBuffer), strptr(txtBuffer), len(txtBuffer))
-            ' Convert to UTF8 so it can display in the editor
-            txtBuffer = UnicodeToUtf8(wszText)
+   select case pDoc->FileEncoding
+      case FILE_ENCODING_ANSI 
+         ' No conversion needed. clsDocument ApplyProperties will *not*
+         ' set the editor to UTF8 code.
+      
+      case FILE_ENCODING_UTF8, FILE_ENCODING_UTF8_BOM   
+         ' No conversion needed. clsDocument ApplyProperties will set
+         ' the editor to UTF8 code.
+         
+      case FILE_ENCODING_UTF16_BOM
+         ' Convert the whole buffer to UTF-16 unicode string
+         dim as CWSTR wszText = string(len(txtBuffer),0)
+         MemCpy( CAST(any PTR, wszText.m_pBuffer), strptr(txtBuffer), len(txtBuffer))
 
-    end select
+         ' Convert to UTF8 so it can display in the editor
+         txtBuffer = UnicodeToUtf8(wszText)
+
+   end select
         
     function = false
 end function
