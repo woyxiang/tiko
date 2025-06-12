@@ -483,18 +483,18 @@ function frmTopTabs_WndProc( _
         else ' regular tab
             curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
-            if (isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot) andalso (curr_idxHot <> gTTabCtl.CurSel) then
-            ' we are mouse down on an "X" close on a tab that is not currently the active tab. We
-            ' will simply close that tab rather than bring it into focus and then delete.
-            ' allow the mouse message to eventually bubble up WM_LBUTTONUP where we do the close.
-            else
-            ' we have clicked on tab so bring it into focus
-            gTTabCtl.SetFocusTab( curr_idxHot )
-            if (wParam and MK_SHIFT) then
-                gApp.bDragTabActive = true
-                SetCursor( LoadCursor(0, MAKEINTRESOURCE(OCR_SIZEALL)) )
-            end if
-            AfxRedrawWindow( hwnd )
+                if (isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot) andalso (curr_idxHot <> gTTabCtl.CurSel) then
+                ' we are mouse down on an "X" close on a tab that is not currently the active tab. We
+                ' will simply close that tab rather than bring it into focus and then delete.
+                ' allow the mouse message to eventually bubble up WM_LBUTTONUP where we do the close.
+                else
+                ' we have clicked on tab so bring it into focus
+                gTTabCtl.SetFocusTab( curr_idxHot )
+                if (wParam and MK_SHIFT) then
+                    gApp.bDragTabActive = true
+                    SetCursor( LoadCursor(0, MAKEINTRESOURCE(OCR_SIZEALL)) )
+                end if
+                AfxRedrawWindow( hwnd )
             end if
             SetCapture(hwnd)
         end if

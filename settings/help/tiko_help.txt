@@ -128,7 +128,11 @@ popup dialog accessed by:
     - The Preferences / Build Configurations menu option.
     - The F7 keyboard shortcut.
     - Clicking the area in the bottom status bar that shows the current active
-      build configuration for the code being edited.
+      build configuration for the code being edited. This will display a quick
+      select popup menu that lets you quickly between configurations.
+    - Clicking the "+" button in the status bar to the left of the current
+      active build configuration will display Build Configurations popup
+      dialog giving you full control over specifying build options.
       
 Sessions and Projects will save whatever Build Configuration that you have 
 specified and automatically set the state of the editor to use that build

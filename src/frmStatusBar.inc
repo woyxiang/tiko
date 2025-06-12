@@ -11,6 +11,16 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
+enum IDPANEL
+    GOTO_PANEL           = 0
+    CRLF_PANEL           = 7
+    UTF_PANEL            = 6
+    SPACES_PANEL         = 5
+    FILETYPE_PANEL       = 4
+    BUILD_POPUP_PANEL    = 3
+    BUILD_DIALOG_PANEL   = 2
+    COMPILE_STATUS_PANEL = 1
+end enum
 
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
@@ -32,7 +42,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     ' function to determine proper sizing and placement.
     
     '''' LEFT ALIGNED STATUSBAR PANELS ''''
-    i = 0  ' Ln 23, Col 20
+    i = GOTO_PANEL  ' Ln 23, Col 20
     gSBPanels(i).rc.Left   = nLeft
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nLeft + _
@@ -46,7 +56,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     grcGripper.top = (rc.bottom-rc.top) / 2
     grcGripper.left = rc.right - (nSpacer * 4)
     
-    i = 6  ' CRLF
+    i = CRLF_PANEL  ' CRLF 
     dim as long nRight = grcGripper.left
     gSBPanels(i).rc.Left   = nRight - _
         pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
@@ -56,7 +66,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).nID       = IDM_LINEENDINGS
     nRight = gSBPanels(i).rc.left - nSpacer
 
-    i -= 1  ' UTF-8
+    i = UTF_PANEL  ' UTF-8
     gSBPanels(i).rc.Left   = nRight - _
         pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
     gSBPanels(i).rc.top    = rc.top
@@ -65,7 +75,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).nID       = IDM_FILEENCODING
     nRight = gSBPanels(i).rc.left - nSpacer
 
-    i -= 1  ' Spaces: 3
+    i = SPACES_PANEL  ' Spaces: 3
     gSBPanels(i).rc.Left   = nRight - _
         pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
     gSBPanels(i).rc.top    = rc.top
@@ -74,7 +84,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).nID       = IDM_SPACES
     nRight = gSBPanels(i).rc.left - nSpacer
 
-    i -= 1  ' Main/Resource/Module/Normal
+    i = FILETYPE_PANEL  ' Main/Resource/Module/Normal
     if gApp.IsProjectActive then
         gSBPanels(i).rc.Left   = nRight - _
             pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
@@ -87,7 +97,16 @@ function frmStatusBar_PositionWindows() as LRESULT
         SetRectEmpty( @gSBPanels(i).rc )
     end if
     
-    i -= 1  ' Build Configuration
+    i = BUILD_POPUP_PANEL  ' Build Configuration
+    gSBPanels(i).rc.Left   = nRight - _
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+    gSBPanels(i).rc.top    = rc.top
+    gSBPanels(i).rc.right  = nRight
+    gSBPanels(i).rc.bottom = rc.bottom
+    gSBPanels(i).nID       = IDM_BUILDCONFIG_POPUP
+    nRight = gSBPanels(i).rc.left - nSpacer
+
+    i = BUILD_DIALOG_PANEL  ' Build Configuration dialog
     gSBPanels(i).rc.Left   = nRight - _
         pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
     gSBPanels(i).rc.top    = rc.top
@@ -97,7 +116,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     nRight = gSBPanels(i).rc.left - nSpacer
 
     '''' THE MESSAGES PANEL FILLS THE REMAINING AVAILABLE SPACE ''''
-    i = 1  ' Compile status and error messages
+    i = COMPILE_STATUS_PANEL  ' Compile status and error messages
     gSBPanels(i).rc.Left   = gSBPanels(0).rc.right
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = gSBPanels(2).rc.Left
@@ -139,6 +158,8 @@ function frmStatusBar_WndProc( _
     static as long curr_idxHot = -1
     static as boolean resizing
     static as point prev_pt
+    static as HWND hTooltip 
+
     
     Select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmStatusBar_OnSize)
@@ -168,9 +189,10 @@ function frmStatusBar_WndProc( _
         tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
+        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
+        
         dim as point pt: GetCursorPos( @pt )
         MapWindowPoints( HWND_DESKTOP, hwnd, cast( point ptr, @pt ), 1 )
-        
         ' Are we over the resize gripper
 '      if PtInRect( @grcGripper, pt ) then
 '         SetCursor LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZENWSE), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )
@@ -211,6 +233,8 @@ function frmStatusBar_WndProc( _
         next
         prev_idxHot = -1
         curr_idxHot = -1
+        AfxdeleteTooltip( hTooltip, hwnd )
+        hTooltip = 0
         AfxRedrawWindow( hwnd )
 
     case WM_LBUTTONUP
@@ -226,6 +250,16 @@ function frmStatusBar_WndProc( _
                 exit for
             end if
         next   
+
+    case WM_MOUSEHOVER
+        dim as point pt: GetCursorPos( @pt )
+        MapWindowpoints( HWND_DESKTOP, hwnd, cast( point ptr, @pt ), 1 )
+        if PtInRect( @gSBPanels(BUILD_DIALOG_PANEL).rc, pt ) then 
+            dim as CWSTR wszTooltip = L(277,"Build Configurations") & "..."
+            ' Display the tooltip
+            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+            AfxRedrawWindow( hwnd )
+        end if
 
     case WM_PAINT
         dim as PAINTSTRUCT ps
@@ -262,21 +296,21 @@ function frmStatusBar_WndProc( _
             DrawText( memDC, gSBPanels(i).wszText.sptr, -1, cast(lpRect, @gSBPanels(i).rc), wsStyle )
             
             ' if this is the compile result panel then display the green/success or red/failure "icon"
-            if i = 1 then
-            if (gApp.IsProjectLoading = false) andalso (gApp.IsFileLoading = false) then
-                dim as COLORREF clr = ghStatusBar.BackColor
-                if gApp.hIconPanel = ghIconGood then clr = ghGeneral.iconsuccess
-                if gApp.hIconPanel = ghIconBad then clr = ghGeneral.iconfail
-                dim as long txtWidth = getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 0 ) 
-                SetTextColor( memDC, clr )
-                dim as RECT rcBitmap = gSBPanels(i).rc
-                dim as long halfWidth = (rcBitmap.right-rcBitmap.left) / 2
-                rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
-                rcBitmap.left = rcBitmap.right - pWindow->ScaleX(16)
+            if i = COMPILE_STATUS_PANEL then
+                if (gApp.IsProjectLoading = false) andalso (gApp.IsFileLoading = false) then
+                    dim as COLORREF clr = ghStatusBar.BackColor
+                    if gApp.hIconPanel = ghIconGood then clr = ghGeneral.iconsuccess
+                    if gApp.hIconPanel = ghIconBad then clr = ghGeneral.iconfail
+                    dim as long txtWidth = getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 0 ) 
+                    SetTextColor( memDC, clr )
+                    dim as RECT rcBitmap = gSBPanels(i).rc
+                    dim as long halfWidth = (rcBitmap.right-rcBitmap.left) / 2
+                    rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
+                    rcBitmap.left = rcBitmap.right - pWindow->ScaleX(16)
 
-                dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
-            end if
+                    dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+                    DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
+                end if
             end if   
         next
 
@@ -305,7 +339,6 @@ function frmStatusBar_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = New CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMMAIN_STATUSBAR = pWindow->Create( hwndParent, "", @frmStatusBar_WndProc, _
         0, 0, 0, STATUSBAR_HEIGHT, _

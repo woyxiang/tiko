@@ -80,12 +80,15 @@ function frmMain_SetStatusbar() as long
         ' PANEL (0) Line/Col/Sel -or- VD coordinates
         gSBPanels(0).wszText = wszText
 
-        ' PANEL (2) Build Configuration
+        ' PANEL (2) Build Configuration dialog
+        gSBPanels(2).wszText = " " & wszAddFileButton & " "
+
+        ' PANEL (3) Build Configuration
         if gApp.GetDocumentCount then
-            gSBPanels(2).wszText = frmBuildConfig_GetSelectedBuildDescription()
+            gSBPanels(3).wszText = frmBuildConfig_GetSelectedBuildDescription()
         end if
         
-        ' PANEL (3) Filetype (Normal/Main/Resource/Module)
+        ' PANEL (4) Filetype (Normal/Main/Resource/Module)
         wszText = ""
         select case pDoc->ProjectFileType
             case FILETYPE_HEADER:    wszText = L(175,"Header") 
@@ -94,12 +97,12 @@ function frmMain_SetStatusbar() as long
             case FILETYPE_MAIN:      wszText = L(212,"Main")
             case FILETYPE_RESOURCE:  wszText = L(213,"Resource")
         end select 
-        gSBPanels(3).wszText = wszText
+        gSBPanels(4).wszText = wszText
         
-        ' PANEL (4) Spacing
-        gSBPanels(4).wszText = "Spaces: " & gConfig.TabSize
+        ' PANEL (5) Spacing
+        gSBPanels(5).wszText = "Spaces: " & gConfig.TabSize
         
-        ' PANEL (5) File Encoding (Ansi, UTF-8, UTF-16)
+        ' PANEL (6) File Encoding (Ansi, UTF-8, UTF-16)
         wszText = ""
         select case pDoc->FileEncoding
             case FILE_ENCODING_UTF8
@@ -115,20 +118,20 @@ function frmMain_SetStatusbar() as long
                 wszText = "ANSI"  
                 SciExec( hEdit, SCI_SETCODEPAGE, 0, 0 )
         end select 
-         gSBPanels(5).wszText = wszText
+         gSBPanels(6).wszText = wszText
 
-        ' PANEL (6) Line Endings
+        ' PANEL (7) Line Endings
         select case SciExec( hEdit, SCI_GETEOLMODE, 0, 0 )
             case SC_EOL_CRLF: wszText = "CRLF"  '(0)
             case SC_EOL_CR:   wszText = "CR"    '(1)
             case SC_EOL_LF:   wszText = "LF"    '(2)
         end select 
-        gSBPanels(6).wszText = wszText
+        gSBPanels(7).wszText = wszText
         
         if SciExec( hEdit, SCI_GETREADONLY, 0, 0 ) then
             gSBPanels(1).wszText = L(222,"Read Only")
         end if
-
+        
     end if
     
 

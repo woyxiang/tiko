@@ -15,6 +15,7 @@
 
 declare function frmMain_BuildAcceleratorTable( byval pWindow as CWindow ptr ) as long
 declare function frmMain_ChangeTopMenuStates() as long
+declare function CreateStatusBarBuildConfigContextMenu() as HMENU
 declare function CreateStatusBarFileTypeContextMenu() as HMENU
 declare function CreateStatusBarFileEncodingContextMenu() as HMENU
 declare function CreateTopTabCtlContextMenu( byval idx as long ) as HMENU

@@ -64,6 +64,30 @@ function frmMain_OnCommand( _
             SendMessage( hCtrl, WM_LBUTTONDOWN, 0, 0)     
             setNextMenuItemTabIndex(false)
 
+        case IDM_BUILDCONFIG_POPUP
+            dim as HMENU hPopupMenu = CreateStatusBarBuildConfigContextMenu()
+            dim as point pt: GetCursorPos @pt
+            dim as long idMenu = TrackPopupMenu(hPopUpMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, byval null)
+            DestroyMenu hPopUpMenu
+            if (idMenu >= IDM_BUILDCONFIG_POPUP) andalso _
+                (idMenu <= IDM_BUILDCONFIG_POPUP + ubound(gConfig.Builds)) then
+                ' Set the active project or the active document to the selected build
+                dim as long nCurSel = idMenu - IDM_BUILDCONFIG_POPUP
+                if nCurSel > -1 then 
+                    If gApp.IsProjectActive then
+                        gApp.ProjectBuild = gConfig.Builds(nCurSel).Id
+                    else
+                        dim pDocMain as clsDocument Ptr 
+                        pDocMain = gTTabCtl.GetActiveDocumentPtr()
+                        if pDocMain then pDocMain->DocumentBuild = gConfig.Builds(nCurSel).Id
+                        gConfig.CompilerBuild = gConfig.Builds(nCurSel).Id
+                    end if
+                    frmMain_SetStatusbar
+                    gConfig.SaveConfigFile
+                end if
+            end if
+            return 0   
+
         case IDM_PROJECTFILETYPE
             dim as HMENU hPopupMenu = CreateStatusBarFileTypeContextMenu()
             dim as point pt: GetCursorPos @pt
@@ -95,7 +119,8 @@ function frmMain_OnCommand( _
                 do until pDoc = 0
                     pDoc->ApplyProperties
                     pDoc = pDoc->pDocNext
-                loop   
+                loop
+                return 0   
             end if
     
         case IDM_CLOSEPANEL

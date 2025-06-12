@@ -68,12 +68,18 @@ private function CanCompleteBlockStatement( byval pDoc as clsDocument ptr, _
             
             ' If this is a FUNCTION = statement then ignore counting the line
             dim as integer ii = instr(sLine, "(")
-            if ii then sLine = left(sLine, ii-1)
+            if ii then sLine = left(sLine, ii - 1)
             if instr(sLine, "=") then continue for
         end if
         
         ' Basic detection (not perfect parsing, but fast)
         if left(sLine, len(sStartMatch)) = sStartMatch then
+            ' If processing an IF statement then only count the starting IF for
+            ' multiline If statements, not single line. The end of the line must
+            ' be THEN for it not to be single line.
+            if idBlockType = BLOCK_STATEMENT_IF then
+                if right(rtrim(sLine), 5) = " THEN" then continue for
+            end if
             startCount += 1
         elseif left(sLine, len(sEndMatch)) = sEndMatch then
             endCount += 1

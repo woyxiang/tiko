@@ -349,6 +349,29 @@ end function
 
 ''
 ''
+function CreateStatusBarBuildConfigContextMenu() as HMENU
+    dim hPopUpMenu as HMENU
+    
+    dim as long curSelected
+    dim as CWSTR wszCurrentBuild = frmBuildConfig_GetSelectedBuildDescription()
+    
+    hPopUpMenu = CreatePopupMenu
+    for i as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
+        dim as long idMenu = IDM_BUILDCONFIG_POPUP + i
+        dim as CWSTR wszCaption = gConfig.Builds(i).wszDescription
+        if wszCaption = wszCurrentBuild then curSelected = idMenu
+        AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, idMenu, wszCaption
+    next
+
+    CheckMenuRadioItem( hPopupMenu, IDM_BUILDCONFIG_POPUP, _
+            IDM_BUILDCONFIG_POPUP + ubound(gConfig.Builds), curSelected, MF_BYCOMMAND )
+
+    function = hPopupMenu
+end function
+
+
+''
+''
 function CreateStatusBarFileEncodingContextMenu() as HMENU
     dim hPopUpMenu as HMENU
     

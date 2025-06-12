@@ -748,7 +748,7 @@ public function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     redim gConfig.BuildsTemp(ubound(gConfig.Builds))
     for i as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
         gConfig.BuildsTemp(i) = gConfig.Builds(i)   
-    NEXT
+    next
     frmBuildConfig_LoadBuildListBox(hForm)
     
     ' Load the Compiler Options Listbox
