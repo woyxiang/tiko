@@ -129,7 +129,10 @@ popup dialog accessed by:
     - The F7 keyboard shortcut.
     - Clicking the area in the bottom status bar that shows the current active
       build configuration for the code being edited. This will display a quick
-      select popup menu that lets you quickly between configurations.
+      select popup menu that lets you quickly between configurations. You can
+      exclude less frequently used builds from this popup list (just check the
+      "Exclude build from status bar popup menu" setting for the particuklar 
+      build in the Build Configurations dialog box).
     - Clicking the "+" button in the status bar to the left of the current
       active build configuration will display Build Configurations popup
       dialog giving you full control over specifying build options.
@@ -159,27 +162,32 @@ than one action.
 
 Here are some common keyboard shortcuts that you should use regularly as they 
 will make using the editor easier:'
-    New File                Ctrl+N
-    Open File               Ctrl+O
-    Save File               Ctrl+S
+    New File                  Ctrl+N
+    Open File                 Ctrl+O
+    Save File                 Ctrl+S
 
     Cut/Copy/Paste/Undo/Redo
-    Delete Line             Ctrl+Y
-    Delete Next Word        Ctrl+Delete
-    Delete Previous Word    Ctrl+Backspace
+    Delete Line               Ctrl+Y
+    Delete Next Word          Ctrl+Delete
+    Delete Previous Word      Ctrl+Backspace
     
-    Comment Line/Block      Ctrl+/
-    Uncomment Line/Block    Ctrl+Shift+/
+    Comment Line/Block        Ctrl+/
+    Uncomment Line/Block      Ctrl+Shift+/
     
-    Environment Options     Ctrl+F7
-    Build Configurations    F7
+    Environment Options       Ctrl+F7
+    Build Configurations      F7
 
-    Duplicate Line          Ctrl+D
-    Move Line Up            Ctrl+Shift+UpArrow
-    Move Line Down          Ctrl+Shift+DownArrow
+    Duplicate Line            Ctrl+D
+    Move Line Up              Ctrl+Shift+UpArrow
+    Move Line Down            Ctrl+Shift+DownArrow
     
-    Compile                 Ctrl+F5
-    Build and Execute       F5
+    Compile                   Ctrl+F5
+    Build and Execute         F5
+    
+    Column Selection          Alt+LeftMouse             
+    
+    Split Editor Top/Bottom   Ctrl+Shift+\
+    Split Editor Left/Right   Ctrl+\
     
 When using split editing windows, you can quickly navigate back and forth 
 between them using Ctrl+~ (tilde). If the Find/Replace dialog is open then 

@@ -11,16 +11,8 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
-enum IDPANEL
-    GOTO_PANEL           = 0
-    CRLF_PANEL           = 7
-    UTF_PANEL            = 6
-    SPACES_PANEL         = 5
-    FILETYPE_PANEL       = 4
-    BUILD_POPUP_PANEL    = 3
-    BUILD_DIALOG_PANEL   = 2
-    COMPILE_STATUS_PANEL = 1
-end enum
+#include once "frmStatusBar.bi"
+
 
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
@@ -75,7 +67,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).nID       = IDM_FILEENCODING
     nRight = gSBPanels(i).rc.left - nSpacer
 
-    i = SPACES_PANEL  ' Spaces: 3
+    i = SPACES_PANEL  ' Spaces
     gSBPanels(i).rc.Left   = nRight - _
         pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
     gSBPanels(i).rc.top    = rc.top

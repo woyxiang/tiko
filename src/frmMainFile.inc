@@ -195,9 +195,9 @@ function OnCommand_FileSave( _
             ' Apply document properties to this file because the file extension may have
             ' changed. for example from Untitled to *.bas
             if pDoc->DiskFilename <> wszFilename then
-            if gApp.IsProjectActive then
-                gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
-            end if
+                if gApp.IsProjectActive then
+                    gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
+                end if
             end if
         end if
 
@@ -205,6 +205,54 @@ function OnCommand_FileSave( _
         gTTabCtl.SetTabText(-1)
     next
     
+    LoadExplorerFiles()
+    LoadFunctionsFiles()
+
+    frmMain_SetFocusToCurrentCodeWindow
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' Rename the incoming pDoc file to disk
+' ========================================================================================
+function OnCommand_FileRename( _
+            byval hwnd as HWND, _
+            byval pDoc as clsDocument ptr _
+            ) as LRESULT
+
+    dim wszFilename_original  as wstring * MAX_PATH
+    dim wszFilename_AutoSave  as wstring * MAX_PATH
+    dim wszFilename  as wstring * MAX_PATH
+    dim wszExtension as wstring * MAX_PATH
+
+    ' Display the Rename Dialog (Save File Dialog)
+    wszFilename_original = pDoc->DiskFilename
+    dim pwszName as wstring ptr = AfxIFileSaveDialog(HWND_FRMMAIN, @wszFilename_original, @wszExtension, IDM_FILERENAME)
+    if pwszName then
+        wszFilename = *pwszName
+        ' Apply document properties to this file because the file extension may have
+        ' changed. for example from Untitled to *.bas
+        if pDoc->DiskFilename <> wszFilename then
+            if gApp.IsProjectActive then
+                gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
+            end if
+        end if
+        if AfxRenameFile( wszFilename_original, wszFilename ) then
+            pDoc->DiskFilename = wszFilename
+            ' Rename any existing autosave file
+            wszFilename_AutoSave = OnCommand_FileAutoSaveGenerateFilename(wszFilename)
+            AfxRenameFile( pDoc->AutoSaveFilename, wszFilename_AutoSave) 
+            pDoc->AutoSaveFilename = wszFilename_AutoSave
+        end if    
+
+        CoTaskMemFree(pwszName)
+
+    else
+        return false
+    end if
+
     LoadExplorerFiles()
     LoadFunctionsFiles()
 

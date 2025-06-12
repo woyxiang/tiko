@@ -433,7 +433,8 @@ function clsConfig.SaveConfigFile() as long
         pStream.Write this.Builds(i).wszOptions & "|-|" 
         pStream.Write this.Builds(i).IsDefault & "|-|"  
         pStream.Write this.Builds(i).Is32bit & "|-|"  
-        pStream.WriteLine this.Builds(i).Is64bit
+        pStream.Write this.Builds(i).Is64bit & "|-|"  
+        pStream.WriteLine this.Builds(i).ExcludeInPopup
     next
 
     
@@ -666,6 +667,7 @@ function clsConfig.LoadConfigFile() as long
                 this.Builds(i).IsDefault      = val(AfxStrParse(wData, 4, "|-|"))
                 this.Builds(i).Is32bit        = val(AfxStrParse(wData, 5, "|-|"))
                 this.Builds(i).Is64bit        = val(AfxStrParse(wData, 6, "|-|"))
+                this.Builds(i).ExcludeInPopup    = val(AfxStrParse(wData, 7, "|-|"))
                 continue do
             end If
             end If
@@ -812,12 +814,14 @@ function clsConfig.LoadConfigFile() as long
         this.Builds(0).wszOptions = "-s gui"
         this.Builds(0).Is32bit = 1
         this.Builds(0).Is64bit = 0
+        this.Builds(0).ExcludeInPopup = 0
         
         this.Builds(1).id = AfxGuidText(AfxGuid())
         this.Builds(1).wszDescription = "Win32 GUI (Debug)"
         this.Builds(1).wszOptions = "-g -exx -s gui"
         this.Builds(1).Is32bit = 1
         this.Builds(1).Is64bit = 0
+        this.Builds(1).ExcludeInPopup = 1
         
         this.Builds(2).id = AfxGuidText(AfxGuid())
         this.Builds(2).wszDescription = "Win32 Console (Release)"
@@ -825,60 +829,70 @@ function clsConfig.LoadConfigFile() as long
         this.Builds(2).IsDefault = 1
         this.Builds(2).Is32bit = 1
         this.Builds(2).Is64bit = 0
+        this.Builds(2).ExcludeInPopup = 0
         
         this.Builds(3).id = AfxGuidText(AfxGuid())
         this.Builds(3).wszDescription = "Win32 Console (Debug)"
         this.Builds(3).wszOptions = "-g -exx -s console"
         this.Builds(3).Is32bit = 1
         this.Builds(3).Is64bit = 0
-        
+        this.Builds(3).ExcludeInPopup = 1
+
         this.Builds(4).id = AfxGuidText(AfxGuid())
         this.Builds(4).wszDescription = "Win32 Windows DLL"
         this.Builds(4).wszOptions = "-s gui -dll -export"
         this.Builds(4).Is32bit = 1
         this.Builds(4).Is64bit = 0
+        this.Builds(4).ExcludeInPopup = 1
 
         this.Builds(5).id = AfxGuidText(AfxGuid())
         this.Builds(5).wszDescription = "Win32 Static Library"
         this.Builds(5).wszOptions = "-lib"
         this.Builds(5).Is32bit = 1
         this.Builds(5).Is64bit = 0
+        this.Builds(5).ExcludeInPopup = 1
 
         this.Builds(6).id = AfxGuidText(AfxGuid())
         this.Builds(6).wszDescription = "Win64 GUI (Release)"
         this.Builds(6).wszOptions = "-s gui -gen gas64"
         this.Builds(6).Is32bit = 0
         this.Builds(6).Is64bit = 1
+        this.Builds(6).ExcludeInPopup = 0
         
         this.Builds(7).id = AfxGuidText(AfxGuid())
         this.Builds(7).wszDescription = "Win64 GUI (Debug)"
         this.Builds(7).wszOptions = "-g -exx -s gui -gen gcc"
         this.Builds(7).Is32bit = 0
         this.Builds(7).Is64bit = 1
+        this.Builds(7).ExcludeInPopup = 1
         
         this.Builds(8).id = AfxGuidText(AfxGuid())
         this.Builds(8).wszDescription = "Win64 Console (Release)"
         this.Builds(8).wszOptions = "-s console -gen gas64"
         this.Builds(8).Is32bit = 0
         this.Builds(8).Is64bit = 1
-        
+        this.Builds(8).ExcludeInPopup = 0
+
         this.Builds(9).id = AfxGuidText(AfxGuid())
         this.Builds(9).wszDescription = "Win64 Console (Debug)"
         this.Builds(9).wszOptions = "-g -exx -s console -gen gcc"
         this.Builds(9).Is32bit = 0
         this.Builds(9).Is64bit = 1
+        this.Builds(9).ExcludeInPopup = 1
 
         this.Builds(10).id = AfxGuidText(AfxGuid())
         this.Builds(10).wszDescription = "Win64 Windows DLL"
         this.Builds(10).wszOptions = "-s gui -dll -export -gen gas64"
         this.Builds(10).Is32bit = 0
         this.Builds(10).Is64bit = 1
+        this.Builds(10).ExcludeInPopup = 1
 
         this.Builds(11).id = AfxGuidText(AfxGuid())
         this.Builds(11).wszDescription = "Win64 Static Library -gen gas64"
         this.Builds(11).wszOptions = "-lib"
         this.Builds(11).Is32bit = 0
         this.Builds(11).Is64bit = 1
+        this.Builds(11).ExcludeInPopup = 1
 
     end IF
 

@@ -20,7 +20,10 @@ type TYPE_BUILDS
     IsDefault      as long      ' 0:False, 1:True
     Is32bit        as long      ' 0:False, 1:True
     Is64bit        as long      ' 0:False, 1:True
+    ExcludeInPopup as long      ' 0:False, 1:True  (do not show in statusbar popup menu)
     wszOptions     as CWSTR     ' Compiler options (manual and selected from listbox)
+    idMenu         as long      ' Used to match selected build from statusbar popup menu 
+                                ' because some items can be excluded from the popup.
 end type
 
 type TYPE_TOOLS

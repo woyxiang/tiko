@@ -47,7 +47,7 @@ function frmMain_OnCommand( _
 
     ' Kill any currently displayed topmenu whenever a popup dialog is about to be activated
     select case id
-        case IDM_FILEOPEN, IDM_FILEOPENASTEMPLATE, IDM_FILESAVEAS, _
+        case IDM_FILEOPEN, IDM_FILEOPENASTEMPLATE, IDM_FILESAVEAS, IDM_FILERENAME, _
             IDM_SAVESESSION, IDM_LOADSESSION,  _
             IDM_KEYBOARDSHORTCUTS, IDM_USERTOOLSDIALOG, IDM_OPTIONSDIALOG, IDM_BUILDCONFIG, _
             IDM_FIND, IDM_FINDINFILES, IDM_PROJECTOPEN, IDM_PROJECTSAVEAS, _
@@ -72,19 +72,21 @@ function frmMain_OnCommand( _
             if (idMenu >= IDM_BUILDCONFIG_POPUP) andalso _
                 (idMenu <= IDM_BUILDCONFIG_POPUP + ubound(gConfig.Builds)) then
                 ' Set the active project or the active document to the selected build
-                dim as long nCurSel = idMenu - IDM_BUILDCONFIG_POPUP
-                if nCurSel > -1 then 
-                    If gApp.IsProjectActive then
-                        gApp.ProjectBuild = gConfig.Builds(nCurSel).Id
-                    else
-                        dim pDocMain as clsDocument Ptr 
-                        pDocMain = gTTabCtl.GetActiveDocumentPtr()
-                        if pDocMain then pDocMain->DocumentBuild = gConfig.Builds(nCurSel).Id
-                        gConfig.CompilerBuild = gConfig.Builds(nCurSel).Id
+                for i as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
+                    if gConfig.Builds(i).idMenu = idMenu then 
+                        If gApp.IsProjectActive then
+                            gApp.ProjectBuild = gConfig.Builds(i).Id
+                        else
+                            dim pDocMain as clsDocument Ptr 
+                            pDocMain = gTTabCtl.GetActiveDocumentPtr()
+                            if pDocMain then pDocMain->DocumentBuild = gConfig.Builds(i).Id
+                            gConfig.CompilerBuild = gConfig.Builds(i).Id
+                        end if
+                        frmMain_SetStatusbar
+                        gConfig.SaveConfigFile
+                        exit for
                     end if
-                    frmMain_SetStatusbar
-                    gConfig.SaveConfigFile
-                end if
+                next
             end if
             return 0   
 
@@ -145,6 +147,7 @@ function frmMain_OnCommand( _
         case IDM_FILEOPENASTEMPLATE: OnCommand_FileOpen( hwnd, true, true )
         case IDM_FILESAVE:           OnCommand_FileSave( hwnd, pDoc, false, false )
         case IDM_FILESAVEAS:         OnCommand_FileSave( hwnd, pDoc, true, false )
+        case IDM_FILERENAME:         OnCommand_FileRename( hwnd, pDoc )
         case IDM_FILECLOSE:          OnCommand_FileClose( hwnd, EFC_CLOSECURRENT )
         case IDM_FILESAVEALL:        OnCommand_FileSaveAll( hwnd ) 
         case IDM_LOADSESSION:        OnCommand_FileLoadSession( hwnd )   

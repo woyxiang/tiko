@@ -25,6 +25,7 @@ declare function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisp
 declare function OnCommand_FileOpen( byval hwnd as HWND, byval bShowInTab as boolean = true, byval bIsTemplate as boolean = false ) as LRESULT
 declare function OnCommand_FileSave( byval hwnd as HWND, byval pDoc as clsDocument ptr, _
         byval bSaveAs as boolean = false, byval bSaveAll as boolean = false ) as LRESULT
+declare function OnCommand_FileRename( byval hwnd as HWND, byval pDoc as clsDocument ptr ) as LRESULT
 declare function OnCommand_FileSaveDeclares( byval hwnd as HWND ) as LRESULT
 declare function OnCommand_FileSaveAll( byval hwnd as HWND ) as LRESULT
 declare function OnCommand_FileClose( byval hwnd as HWND, byval veFileClose as eFileClose, byval nTabNum as long = -1 ) as LRESULT

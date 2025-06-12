@@ -357,9 +357,11 @@ function CreateStatusBarBuildConfigContextMenu() as HMENU
     
     hPopUpMenu = CreatePopupMenu
     for i as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
+        if gConfig.Builds(i).ExcludeInPopup then continue for
         dim as long idMenu = IDM_BUILDCONFIG_POPUP + i
         dim as CWSTR wszCaption = gConfig.Builds(i).wszDescription
         if wszCaption = wszCurrentBuild then curSelected = idMenu
+        gConfig.Builds(i).idMenu = idMenu
         AppendMenu hPopUpMenu, MF_ENABLED or MFT_RADIOCHECK, idMenu, wszCaption
     next
 

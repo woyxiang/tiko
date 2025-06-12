@@ -18,6 +18,7 @@
 #include once "frmUserTools.bi"
 #include once "frmExplorer.bi"
 #include once "frmPanel.bi"
+#include once "frmStatusBar.bi"
 #include once "modMRU.bi"
 #include once "modAutoInsert.bi"
 #include once "modMenus.bi"
@@ -35,24 +36,26 @@ function frmMain_SetStatusbar() as long
     
     dim wszText as wstring * MAX_PATH
     
-    ' PANEL (0) Line/Col/Sel -or- VD coordinates
+    ' PANEL (0) Line/Col/Sel 
     ' PANEL (1) Compiling Results -or- Filename being parsed
-    ' PANEL (2) Build Configuration
-    ' PANEL (3) Filetype (Normal/Main/Resource/Module)
-    ' PANEL (4) Spacing
-    ' PANEL (5) File Encoding (Ansi, UTF-8, etc)
-    ' PANEL (6) Line Endings
+    ' PANEL (2) Build Configuration (dialog popup)
+    ' PANEL (3) Build Configuration (quick select)
+    ' PANEL (4) Filetype (Normal/Main/Resource/Module)
+    ' PANEL (5) Spacing
+    ' PANEL (6) File Encoding (Ansi, UTF-8, etc)
+    ' PANEL (7) Line Endings
 
     ' blank out the current statusbar values  
     for i as long = lbound(gSBPanels) to ubound(gSBPanels)
         gSBPanels(i).wszText = ""
     next
 
-    ' PANEL (1) Compiling Results -or- Filename being parsed
-    gSBPanels(1).wszText = gApp.wszPanelText
+    ' PANEL Compiling Results -or- Filename being parsed
+    gSBPanels(COMPILE_STATUS_PANEL).wszText = gApp.wszPanelText
 
     if (gApp.IsProjectLoading) orelse (gApp.IsFileLoading) then
-        gSBPanels(1).wszText = L(66,"Parsing") & ": (" & gApp.FileLoadingCount & ")  " & gApp.wszPanelText
+        gSBPanels(COMPILE_STATUS_PANEL).wszText = L(66,"Parsing") & _
+                ": (" & gApp.FileLoadingCount & ")  " & gApp.wszPanelText
         
     elseif pDoc <> 0 then
         dim as HWND hEdit = pDoc->hWndActiveScintilla
@@ -77,18 +80,18 @@ function frmMain_SetStatusbar() as long
         frmEditorVScroll_calcVThumbRect(pDoc)
         AfxRedrawWindow( iif( hEdit = pDoc->hWindow(0), HWND_FRMEDITOR_VSCROLLBAR(0), HWND_FRMEDITOR_VSCROLLBAR(1)) )
         
-        ' PANEL (0) Line/Col/Sel -or- VD coordinates
-        gSBPanels(0).wszText = wszText
+        ' PANEL Line/Col/Sel -or- VD coordinates
+        gSBPanels(GOTO_PANEL).wszText = wszText
 
-        ' PANEL (2) Build Configuration dialog
-        gSBPanels(2).wszText = " " & wszAddFileButton & " "
+        ' PANEL Build Configuration dialog
+        gSBPanels(BUILD_DIALOG_PANEL).wszText = " " & wszAddFileButton & " "
 
-        ' PANEL (3) Build Configuration
+        ' PANEL Build Configuration
         if gApp.GetDocumentCount then
-            gSBPanels(3).wszText = frmBuildConfig_GetSelectedBuildDescription()
+            gSBPanels(BUILD_POPUP_PANEL).wszText = frmBuildConfig_GetSelectedBuildDescription()
         end if
         
-        ' PANEL (4) Filetype (Normal/Main/Resource/Module)
+        ' PANEL Filetype (Normal/Main/Resource/Module)
         wszText = ""
         select case pDoc->ProjectFileType
             case FILETYPE_HEADER:    wszText = L(175,"Header") 
@@ -97,12 +100,12 @@ function frmMain_SetStatusbar() as long
             case FILETYPE_MAIN:      wszText = L(212,"Main")
             case FILETYPE_RESOURCE:  wszText = L(213,"Resource")
         end select 
-        gSBPanels(4).wszText = wszText
+        gSBPanels(FILETYPE_PANEL).wszText = wszText
         
-        ' PANEL (5) Spacing
-        gSBPanels(5).wszText = "Spaces: " & gConfig.TabSize
+        ' PANEL Spacing
+        gSBPanels(SPACES_PANEL).wszText = "Spaces: " & gConfig.TabSize
         
-        ' PANEL (6) File Encoding (Ansi, UTF-8, UTF-16)
+        ' PANEL File Encoding (Ansi, UTF-8, UTF-16)
         wszText = ""
         select case pDoc->FileEncoding
             case FILE_ENCODING_UTF8
@@ -118,18 +121,18 @@ function frmMain_SetStatusbar() as long
                 wszText = "ANSI"  
                 SciExec( hEdit, SCI_SETCODEPAGE, 0, 0 )
         end select 
-         gSBPanels(6).wszText = wszText
+         gSBPanels(UTF_PANEL).wszText = wszText
 
-        ' PANEL (7) Line Endings
+        ' PANEL Line Endings
         select case SciExec( hEdit, SCI_GETEOLMODE, 0, 0 )
             case SC_EOL_CRLF: wszText = "CRLF"  '(0)
             case SC_EOL_CR:   wszText = "CR"    '(1)
             case SC_EOL_LF:   wszText = "LF"    '(2)
         end select 
-        gSBPanels(7).wszText = wszText
+        gSBPanels(CRLF_PANEL).wszText = wszText
         
         if SciExec( hEdit, SCI_GETREADONLY, 0, 0 ) then
-            gSBPanels(1).wszText = L(222,"Read Only")
+            gSBPanels(COMPILE_STATUS_PANEL).wszText = L(222,"Read Only")
         end if
         
     end if

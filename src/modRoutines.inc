@@ -994,6 +994,13 @@ function AfxIFileSaveDialog( _
             ' // Set the title of the dialog
             hr = psfd->lpVtbl->SetTitle(psfd, L(425,"Save Session"))
 
+        case IDM_FILERENAME
+            rgFileTypes(1).pszName = @L(79,"All files")
+            rgFileTypes(1).pszSpec = @wstr("*.*")
+            psfd->lpVtbl->SetFileTypes(psfd, 1, @rgFileTypes(1))
+            ' // Set the title of the dialog
+            hr = psfd->lpVtbl->SetTitle(psfd, L(21,"Rename"))
+
         case IDC_FRMPROJECTOPTIONS_CMDSELECT, IDM_PROJECTSAVE, IDM_PROJECTSAVEAS
             rgFileTypes(1).pszName = @L(216,"Project files")
             rgFileTypes(1).pszSpec = @wstr("*" & APPEXTENSION)

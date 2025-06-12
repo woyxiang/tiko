@@ -74,12 +74,6 @@ private function CanCompleteBlockStatement( byval pDoc as clsDocument ptr, _
         
         ' Basic detection (not perfect parsing, but fast)
         if left(sLine, len(sStartMatch)) = sStartMatch then
-            ' If processing an IF statement then only count the starting IF for
-            ' multiline If statements, not single line. The end of the line must
-            ' be THEN for it not to be single line.
-            if idBlockType = BLOCK_STATEMENT_IF then
-                if right(rtrim(sLine), 5) = " THEN" then continue for
-            end if
             startCount += 1
         elseif left(sLine, len(sEndMatch)) = sEndMatch then
             endCount += 1
@@ -178,7 +172,6 @@ public function AttemptAutoInsert() as Long
     
     ' Normalize the previous line by removing double spaces and leading
     ' and trailing whitespace. This makes it easy to do comparisons.
-'    strPrevLine = trim(ucase(strPrevLine), any chr(32, 9))
     strPrevLine = ucase(AfxStrShrink(strPrevLine))
     
     if gConfig.AutoIndentation = 0 then
@@ -207,7 +200,7 @@ public function AttemptAutoInsert() as Long
     
     
     ''''''''''
-    ' else / elseIF
+    ' ELSE / ELSEIF
     '   Search backwards in the most recent IF/THEN line and use the 
     '   indentation of that line for the else or elseif statement.
     if gConfig.AutoIndentation then
@@ -280,7 +273,7 @@ public function AttemptAutoInsert() as Long
 
             
     '''''''''''''
-    ' FOR/next
+    ' FOR/NEXT
     if left(strPrevLine, 4) = "FOR " then
         strFill = FillString(space(nSpaces + IndentSize))
         dim as CWSTR wszLoopVar

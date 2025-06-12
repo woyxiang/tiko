@@ -149,6 +149,7 @@ private function frmBuildConfig_SetBuildConfigTextboxes() as long
     dim as HWND hText2 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)
     dim as HWND hOpt32 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32)
     dim as HWND hOpt64 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT64)
+    dim as HWND hExcl  = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP)
     
     dim as long nCurSel = ListBox_GetCurSel(hList1)
     if nCurSel < 0 then 
@@ -162,10 +163,12 @@ private function frmBuildConfig_SetBuildConfigTextboxes() as long
         EnableWindow(hOpt32, false)
         EnableWindow(hOpt64, false)
         EnableWindow(hList2, false)
+        EnableWindow(hExcl,  false)
     else
         AfxSetWindowText( hText1, gConfig.BuildsTemp(nCurSel).wszDescription)
         AfxSetWindowText( hText2, gConfig.BuildsTemp(nCurSel).wszOptions)
         Button_SetCheck( hCheck, gConfig.BuildsTemp(nCurSel).IsDefault)
+        Button_SetCheck( hExcl, gConfig.BuildsTemp(nCurSel).ExcludeInPopup)
         if gConfig.BuildsTemp(nCurSel).Is32bit then
             CheckRadioButton(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32, IDC_FRMBUILDCONFIG_OPT64, IDC_FRMBUILDCONFIG_OPT32)
         else   
@@ -177,6 +180,7 @@ private function frmBuildConfig_SetBuildConfigTextboxes() as long
         EnableWindow(hOpt32, true)
         EnableWindow(hOpt64, true)
         EnableWindow(hList2, true)
+        EnableWindow(hExcl,  true)
     end if
 
     ' Set the checkmarks in the OptionList Listbox by redrawing the Listbox
@@ -511,6 +515,14 @@ private function frmBuildConfig_OnCommand( byval hwnd as HWND, _
                 end if
             end if
 
+        case IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).ExcludeInPopup = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
         case IDC_FRMBUILDCONFIG_CMDUP
             if codeNotify = BN_CLICKED then
                 if nCurSel > 0 then
@@ -544,6 +556,7 @@ private function frmBuildConfig_OnCommand( byval hwnd as HWND, _
                 gConfig.BuildsTemp(nCurSel).IsDefault = 0
                 gConfig.BuildsTemp(nCurSel).Is32bit = 1
                 gConfig.BuildsTemp(nCurSel).Is64bit = 0
+                gConfig.BuildsTemp(nCurSel).ExcludeInPopup = 0
                 ' reload the listbox
                 frmBuildConfig_LoadBuildListBox(hwnd)
                 nCurSel = Min(nCurSel, ubound(gConfig.BuildsTemp))
@@ -708,11 +721,14 @@ public function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("TEXTBOX", , IDC_FRMBUILDCONFIG_TXTOPTIONS, "", 240, 103, 372, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("LISTBOX", , IDC_FRMBUILDCONFIG_LSTOPTIONS, "", 240, 129, 372, 243, _
+    pWindow->AddControl("LISTBOX", , IDC_FRMBUILDCONFIG_LSTOPTIONS, "", 240, 129, 372, 223, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or LBS_NOTIFY or _
         LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmBuildConfig_ListBox_SubclassProc), IDC_FRMBUILDCONFIG_LSTOPTIONS, cast(DWORD_PTR, @pWindow))
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP, L(284,"Exclude build from status bar popup menu"), 240, 355, 240, 20, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
 
     pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDINSERT, L(281, "Insert"), 8, 388, 74, 28, _
