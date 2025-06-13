@@ -91,7 +91,7 @@ type clsDocument
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
     DiskFilename          as wstring * MAX_PATH
-    AutoSaveFilename      as wstring * MAX_PATH    '#filename#
+    AutoSaveFilename      as wstring * MAX_PATH    ' #filename#
     AutoSaveRequired      as boolean
     DateFileTime          as FILETIME  
     bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state

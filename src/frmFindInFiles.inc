@@ -16,6 +16,34 @@
 #include once "clsDocument.bi"
 
 
+
+' ========================================================================================
+' Destroy the gReplaceResults structure
+' ========================================================================================
+function DestroyReplaceResults() as long
+    with gReplaceResults
+        .NumReplaced = 0
+        .FilesSearched = 0
+        .wszResults = ""
+        .wszFileText = ""
+    end with
+    if gReplaceResults.pDoc then delete(gReplaceResults.pDoc)
+    function = 0
+end function
+    
+' ========================================================================================
+' Initialize the gReplaceResults structure
+' ========================================================================================
+function InitializeReplaceResults() as long
+    DestroyReplaceResults()
+    gReplaceResults.pDoc = new clsDocument
+    gReplaceResults.pDoc->CreateCodeWindow(HWND_FRMMAIN, true, false, "")
+    gReplaceResults.pSci = gReplaceResults.pDoc->GetActiveScintillaPtr()
+    AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_LBLRESULTS), "")    
+    function = 0
+end function
+    
+
 ''
 ''
 function FindInFiles_ProcessFile( _
@@ -35,36 +63,31 @@ function FindInFiles_ProcessFile( _
     
     ' If doing a ReplaceAll then build the lines in a pDoc that will
     ' be written to disk if replacements have to be made to this file.
-    dim pDoc as clsDocument ptr 
-    dim as any ptr pSci 
-
     if SearchMode = ReplaceAll then
-        pDoc = new clsDocument
-        pDoc->CreateCodeWindow(HWND_FRMMAIN, true, false, "")
-        pSci = pDoc->GetActiveScintillaPtr()
         dim as string sText
         ' GetFileToString will set the pDoc encoding and bom
-        GetFileToString( wszFilename, sText, pDoc )
+        GetFileToString( wszFilename, sText, gReplaceResults.pDoc )
         ' Take this opportunity to determine the text line endings
         if instr(sText, chr(13,10)) then
-            pDoc->wszEOL = chr(13,10)
+            gReplaceResults.pDoc->wszEOL = chr(13,10)
         elseif instr(sText, chr(10)) then
-            pDoc->wszEOL = chr(10)
+            gReplaceResults.pDoc->wszEOL = chr(10)
         elseif instr(sText, chr(13)) then
-            pDoc->wszEOL = chr(13)
+            gReplaceResults.pDoc->wszEOL = chr(13)
         end if
         ' Update processing stats
         gReplaceResults.FilesSearched += 1
     end if
     
-    
+    ' Reset the text file append string for this file that holds the entire
+    ' file, line by line, with any changes applied.
+    gReplaceResults.wszFileText = ""
+    gReplaceResults.pDoc->DiskFilename = wszFilename
+
     ' Read and process the current file
     dim pStream as CTextStream  
 
-    if pStream.Open( wszFilename, IOMODE_FORREADING, false, bUnicode ) <> S_OK then 
-        if SearchMode = ReplaceAll then delete pDoc
-        return 1
-    end if
+    if pStream.Open( wszFilename, IOMODE_FORREADING, false, bUnicode ) <> S_OK then return 1
 
     dim as CWSTR wszLine, wszResult, wszLookLine
     
@@ -123,8 +146,8 @@ function FindInFiles_ProcessFile( _
         ' If doing a ReplaceAll then we need to add the line to the pDoc regardless
         ' of whether or not a change was made.
         if SearchMode = ReplaceAll then
-            wszLine = wszLine & pDoc->wszEOL
-            pDoc->AppendText(wszLine)
+            gReplaceResults.wszFileText = _
+                gReplaceResults.wszFileText & wszLine & gReplaceResults.pDoc->wszEOL
         end if
 
     loop                        
@@ -132,19 +155,14 @@ function FindInFiles_ProcessFile( _
 
     ' If we are doing a replace then we need to build the file in memory with all
     ' of the changes. When we finish reading the main file, if there has been replacements
-    ' then we:
-    '   (1) write out the changed file to disk under a temporary name
-    '   (2) verify that this new file gets created successfully
-    '   (3) rename the original file to a temporary name
-    '   (4) rename the new file containing the replaced text to the original file name
-    '   (5) if the renaming in step 4 is sucessfull then delete step 4 otherwise
-    '       rename it back to the original filename.
+    ' then we overwrite the existing file.
     if SearchMode = ReplaceAll then 
         if bSaveReplaceFile then
-            pDoc->IsNewFlag = false
-            pDoc->SaveFile(false, false)
+            gReplaceResults.pDoc->IsNewFlag = false
+            gReplaceResults.pDoc->SetText(gReplaceResults.wszFileText)
+            gReplaceResults.pDoc->SaveFile(false, false)
+            gReplaceResults.pDoc->SetText("")
         end if
-        delete pDoc
     end if
     
     function = 0
@@ -409,6 +427,8 @@ function frmFindInFiles_DoFindInFilesEx( byval SearchMode as SEARCH_MODE ) as lo
     dim as HCURSOR hCurSave = GetCursor()
     SetCursor( LoadCursor(0, IDC_WAIT) )
 
+    InitializeReplaceResults()
+
     ' Ensure that the text in the find textbox has been added to the combobox. Need to do
     ' this to ensure that manually typed in text has been captured.
     dim wszFindText As wstring * MAX_PATH
@@ -608,12 +628,14 @@ function frmFindInFiles_OnCommand( _
 
                     frmFindInFiles_DoFindInFilesEx( ReplaceAll )
 
-                    dim as CWSTR wszResults = _
-                        wstr(gReplaceResults.NumReplaced) & " replacements made in " & _
-                        wstr(gReplaceResults.FilesSearched) & " searched files."
+                    gReplaceResults.wszResults = _
+                            L(172,"Replace in Files") & ": " & _
+                            wstr(gReplaceResults.NumReplaced) & " " &_
+                            L(166,"occurrences were replaced.")
                         
-                    MessageBox( hwnd, wszResults, L(262,"Search Results"), MB_OK or MB_ICONINFORMATION ) 
-
+                    AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_LBLRESULTS), _
+                            gReplaceResults.wszResults)  
+                    MessageBeep(MB_OK)          
                 end if            
                 EnableWindow(hwndCtl, true)
                 exit function
@@ -824,6 +846,7 @@ function frmFindInFiles_OnCreate( _
     return true
 end function
 
+
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmFindInFiles
 ' ========================================================================================
@@ -841,6 +864,9 @@ function frmFindInFiles_OnDestroy( byval hwnd as HWND ) As LRESULT
     gFindInFiles.txtFiles = AfxGetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFILES))
     gFindInFiles.txtFolder = AfxGetWindowText( GetDlgItem(HWND_FRMFINDINFILES,IDC_FRMFINDINFILES_COMBOFOLDER))
 
+    ' Reset the gReplaceResults structure and pDoc
+    DestroyReplaceResults()
+    
     HWND_FRMFINDINFILES = 0
 
     PostQuitMessage(0)
@@ -877,7 +903,6 @@ end function
 function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     HWND_FRMFINDINFILES = _
     pWindow->Create(hwndParent, L(256,"Find In Files"), @frmFindInFiles_WndProc, 0, 0, 0, 0, _
@@ -928,7 +953,7 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
         
-    pWindow->AddControl("GROUPBOX", , IDC_FRMFINDINFILES_FRAMEOPTIONS, L(167,"Options"), 16, 130, 386, 102, _
+    pWindow->AddControl("GROUPBOX", , IDC_FRMFINDINFILES_FRAMEOPTIONS, L(167,"Options"), 16, 130, 386, 97, _
         WS_CHILD or WS_VISIBLE or BS_TEXT or BS_LEFT or BS_NOTIFY or BS_GROUPBOX, _
         WS_EX_TRANSPARENT or WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKWHOLEWORDS, L(162,"Match Whole Words"), 26, 150, 167, 20, _
@@ -949,6 +974,10 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
         WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKPROJECT, L(410,"Current Project"), 195, 190, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+
+    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LBLRESULTS, "", 16, 228, 400, 16, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 
     dim as long i, nCount, startPos, endPos, startLine, endLine

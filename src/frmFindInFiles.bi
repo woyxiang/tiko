@@ -35,6 +35,7 @@
 #define IDC_FRMFINDINFILES_LBLREPLACEWITH           1019
 #define IDC_FRMFINDINFILES_COMBOREPLACE             1020
 #define IDC_FRMFINDINFILES_CMDREPLACEALL            1021
+#define IDC_FRMFINDINFILES_LBLRESULTS               1022
 
 enum SEARCH_MODE
     FindOnly   = 1
@@ -44,6 +45,10 @@ end enum
 type REPLACE_RESULTS
     NumReplaced as integer
     FilesSearched as integer
+    wszResults as CWSTR
+    wszFileText as CWSTR
+    pDoc as clsDocument ptr
+    pSci as any ptr
 end type
 dim shared gReplaceResults as REPLACE_RESULTS
     
