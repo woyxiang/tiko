@@ -27,7 +27,10 @@ function DestroyReplaceResults() as long
         .wszResults = ""
         .wszFileText = ""
     end with
-    if gReplaceResults.pDoc then delete(gReplaceResults.pDoc)
+    if gReplaceResults.pDoc then 
+        delete(gReplaceResults.pDoc)
+        gReplaceResults.pDoc = 0
+    end if
     function = 0
 end function
     
@@ -439,6 +442,7 @@ function frmFindInFiles_DoFindInFilesEx( byval SearchMode as SEARCH_MODE ) as lo
     
     if len(wszFindText) = 0 then
         SetFocus( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND) )
+        SetCursor( hCurSave )
         exit function      
     end if
     
