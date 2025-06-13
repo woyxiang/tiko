@@ -49,6 +49,39 @@ end function
 
 ''
 ''
+function ReloadDocument( byref wszFilename as wstring ) as long
+    dim pDoc as clsDocument ptr
+    pDoc = gApp.GetDocumentPtrByFilename( wszFilename )
+
+    if pDoc then
+        pDoc->LoadingFromFile = true
+        
+        dim as string sText
+        if GetFileToString(wszFilename, sText, pDoc) = false then
+            pDoc->SetText( sText ) 
+            pDoc->DateFileTime = AfxGetFileLastWriteTime( wszFilename )
+        else
+            print "Error opening: "; wszFilename
+        end if
+        
+        pDoc->LoadingFromFile = false
+        SendMessage(pDoc->hWindow(0), SCI_SETSAVEPOINT, 0, 0)
+        SendMessage(pDoc->hWindow(0), SCI_EMPTYUNDOBUFFER, 0, 0)
+        pDoc->UserModified = false
+        pDoc->AutoSaveRequired = false
+        
+        ' If the document is also already displaying in an open tab then
+        ' we need to update the display.
+        AfxRedrawWindow( pDoc->hWindow(0))
+        AfxRedrawWindow( pDoc->hWindow(1))
+    end if
+    
+    function = 0
+end function
+
+    
+''
+''
 function FindInFiles_ProcessFile( _
             byref pStreamResults as CTextStream, _
             byref wszFindText as wstring, _
@@ -101,7 +134,6 @@ function FindInFiles_ProcessFile( _
 
         nLineNum = nLineNum + 1
         
-        if len(wszLine) < len(wszFindText) then continue do
         wszLookLine = iif(bMatchCase, wszLine, ucase(wszLine))
         nFoundPos = instr( 1, wszLookLine, wszFindText ) 
         
@@ -165,6 +197,8 @@ function FindInFiles_ProcessFile( _
             gReplaceResults.pDoc->SetText(gReplaceResults.wszFileText)
             gReplaceResults.pDoc->SaveFile(false, false)
             gReplaceResults.pDoc->SetText("")
+            ' If the file is loaded in the editor then needs to be updated.
+            ReloadDocument(gReplaceResults.pDoc->DiskFilename)
         end if
     end if
     
