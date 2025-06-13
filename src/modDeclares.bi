@@ -190,6 +190,7 @@ redim shared LL(any) as wstring * MAX_PATH
 ''  Save information related to Find/Replace and Find in Files operations
 ''
 type FINDREPLACE_TYPE
+    bFirstTimeInvoked   as boolean = true
     foundCount          as long 
     txtFind             as CWSTR
     txtReplace          as CWSTR

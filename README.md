@@ -13,7 +13,7 @@ This repository contains the code for the tiko editor itself. Check the releases
 
 
 **Requirements:**
-- Windows 10 or later operating system many newer API's are used in the source code.
+- Windows 10 or later operating system because many newer API's are used in the source code.
 - FreeBASIC Compiler http://www.freebasic.net/
 
 **NOTE:** If you get a popup warning message box from the operating system saying that "a DLL is not found and reinstalling the program may fix this problem", then it means that you are missing the Visual C++ redistributable package that is normally available on most Windows 10 and Windows 11 machines. Download and install it from this Microsoft page:  https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170   Here is the direct link to the file: https://aka.ms/vs/17/release/vc_redist.x86.exe  

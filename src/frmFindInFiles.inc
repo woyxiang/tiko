@@ -1012,9 +1012,14 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
     end if
     frmFindInFiles_AddToFolderCombo(sFolder)
     
-    if gApp.IsProjectActive then
-        gFindInFiles.nSearchProject = BST_CHECKED
-        frmFindInFiles_SetControlStates
+    ' If the Find dialog has not been previously invoked then default to
+    ' searching the active project if applicable.
+    if gFindInFiles.bFirstTimeInvoked then
+        if gApp.IsProjectActive then
+            gFindInFiles.nSearchProject = BST_CHECKED
+            frmFindInFiles_SetControlStates
+        end if
+        gFindInFiles.bFirstTimeInvoked = false
     end if
 
     AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND), gFindInFiles.txtFind )    
