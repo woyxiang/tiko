@@ -194,6 +194,7 @@ type FINDREPLACE_TYPE
     txtFind             as CWSTR
     txtReplace          as CWSTR
     txtFindCombo(10)    as CWSTR
+    txtReplaceCombo(10) as CWSTR
     txtFilesCombo(10)   as CWSTR
     txtFolderCombo(10)  as CWSTR
     txtLastFind         as CWSTR

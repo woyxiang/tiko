@@ -181,9 +181,6 @@ function clsDocument.CreateCodeWindow( _
             this.LoadingFromFile = true
             this.DiskFilename = wszFile   ' assign before GetFileTostring because needed for RelativeFile calculation.
             
-            ' GetFileTostring has a call to pDoc->ParseFormMetaData which will create/recreate the designer form.
-            ' We continue to use this function in post version 3.02 form file format in order to ensure
-            ' that older form files can be imported. 
             dim sText as string  ' this will be an UTF-8 encoded string
 
             if GetFileToString(wszFile, sText, @this) = false then

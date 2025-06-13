@@ -21,69 +21,130 @@
 function FindInFiles_ProcessFile( _
             byref pStreamResults as CTextStream, _
             byref wszFindText as wstring, _
+            byref wszReplaceText as wstring, _
             byref wszFilename as wstring, _
             byval bMatchCase  as boolean, _
-            byval bWholeWords as boolean _
+            byval bWholeWords as boolean, _
+            byval SearchMode as SEARCH_MODE _
             ) as long
 
     dim as long nLineNum = 0
     dim as long nFoundPos, nStartPos 
     dim as boolean bUnicode = AfxIsFileUnicode( wszFilename )
+    dim as boolean bSaveReplaceFile = false  ' set true if a replacement was made
     
+    ' If doing a ReplaceAll then build the lines in a pDoc that will
+    ' be written to disk if replacements have to be made to this file.
+    dim pDoc as clsDocument ptr 
+    dim as any ptr pSci 
+
+    if SearchMode = ReplaceAll then
+        pDoc = new clsDocument
+        pDoc->CreateCodeWindow(HWND_FRMMAIN, true, false, "")
+        pSci = pDoc->GetActiveScintillaPtr()
+        dim as string sText
+        ' GetFileToString will set the pDoc encoding and bom
+        GetFileToString( wszFilename, sText, pDoc )
+        ' Take this opportunity to determine the text line endings
+        if instr(sText, chr(13,10)) then
+            pDoc->wszEOL = chr(13,10)
+        elseif instr(sText, chr(10)) then
+            pDoc->wszEOL = chr(10)
+        elseif instr(sText, chr(13)) then
+            pDoc->wszEOL = chr(13)
+        end if
+        ' Update processing stats
+        gReplaceResults.FilesSearched += 1
+    end if
+    
+    
+    ' Read and process the current file
     dim pStream as CTextStream  
 
-    if pStream.Open( wszFilename, IOMODE_FORREADING, false, bUnicode ) = S_OK then
+    if pStream.Open( wszFilename, IOMODE_FORREADING, false, bUnicode ) <> S_OK then 
+        if SearchMode = ReplaceAll then delete pDoc
+        return 1
+    end if
+
+    dim as CWSTR wszLine, wszResult, wszLookLine
     
-        dim as CWSTR wszLine, wszResult, wszLookLine
-        
-        if bMatchCase = false then wszFindText = ucase(wszFindText)
-        
-        do until pStream.EOS
-            wszLine = pStream.ReadLine
+    if bMatchCase = false then wszFindText = ucase(wszFindText)
+    
+    do until pStream.EOS
+        wszLine = pStream.ReadLine
 
-            nLineNum = nLineNum + 1
-            
-            if len(wszLine) < len(wszFindText) then continue do
-            
-            wszLookLine = iif(bMatchCase, wszLine, ucase(wszLine))
-
-            nFoundPos = instr( 1, wszLookLine, wszFindText ) 
-            
-            do until nFoundPos = 0    
-                nStartPos = nFoundPos + len(wszFindText)
-                if bWholeWords then
-                    ' Only give a positive match if the character before and after the match
-                    ' position is not an alphanumeric or space.
-                    dim as long chLeftChar  = asc(wszLine, nFoundPos - 1)
-                    dim as long chRightChar = asc(wszLine, nFoundPos + len(wszFindText))
-                    
-                    ' If word is enclosed by spaces then it is okay. 
-                    if ( chLeftChar = 32 ) andalso ( chRightChar = 32 ) then 
-                        ' okay
-                    elseif IsCharAlphaNumeric( chLeftChar ) orelse _
-                            IsCharAlphaNumeric( chRightChar ) then _
-                        nFoundPos = 0
-                    end if   
-                end if
-            
-                ' If we still have a valid result after doing the bWholeWords test then
-                ' output the result to the results text file.
-                if nFoundPos > 0 then   
+        nLineNum = nLineNum + 1
+        
+        if len(wszLine) < len(wszFindText) then continue do
+        wszLookLine = iif(bMatchCase, wszLine, ucase(wszLine))
+        nFoundPos = instr( 1, wszLookLine, wszFindText ) 
+        
+        do until nFoundPos = 0    
+            nStartPos = nFoundPos + len(wszFindText)
+            if bWholeWords then
+                ' Only give a positive match if the character before and after the match
+                ' position is not an alphanumeric or space.
+                dim as long chLeftChar  = asc(wszLine, nFoundPos - 1)
+                dim as long chRightChar = asc(wszLine, nFoundPos + len(wszFindText))
+                
+                ' If word is enclosed by spaces then it is okay. 
+                if ( chLeftChar = 32 ) andalso ( chRightChar = 32 ) then 
+                    ' okay
+                elseif IsCharAlphaNumeric( chLeftChar ) orelse _
+                        IsCharAlphaNumeric( chRightChar ) then _
+                    nFoundPos = 0
+                end if   
+            end if
+        
+            ' If we still have a valid result after doing the bWholeWords test then
+            ' output the result to the results text file.
+            if nFoundPos > 0 then   
+                if SearchMode = FindOnly then
                     wszResult = wszFilename & ":" & nLineNum & ":" & wszLine
                     pStreamResults.WriteLine wszResult
                     ' We have found a match within the line. No need to continue searching
                     ' on this line because we don't want multiple copies outputted to the file.
                     exit do
-                end if   
+                end if    
+                if SearchMode = ReplaceAll then
+                    bSaveReplaceFile = true
+                    wszLine = mid(wszLine, 1, nFoundPos - 1) + _
+                                wszReplaceText + mid(wszLine, nFoundPos + len(wszFindText))
+                    wszLookLine = iif(bMatchCase, wszLine, ucase(wszLine))
+                    nStartPos = nFoundPos + len(wszReplaceText)
+                    ' Update processing stats
+                    gReplaceResults.NumReplaced += 1
+                end if
+            end if   
 
-                nFoundPos = instr( nStartPos, wszLookLine, wszFindText ) 
-            loop   
-            
-        loop                        
-        pStream.Close
+            nFoundPos = instr( nStartPos, wszLookLine, wszFindText ) 
+        loop   
+        
+        ' If doing a ReplaceAll then we need to add the line to the pDoc regardless
+        ' of whether or not a change was made.
+        if SearchMode = ReplaceAll then
+            wszLine = wszLine & pDoc->wszEOL
+            pDoc->AppendText(wszLine)
+        end if
 
-    else
-        ' ? "ERROR: "; wszFilename, bUnicode, pStream.GetErrorInfo
+    loop                        
+    pStream.Close
+
+    ' If we are doing a replace then we need to build the file in memory with all
+    ' of the changes. When we finish reading the main file, if there has been replacements
+    ' then we:
+    '   (1) write out the changed file to disk under a temporary name
+    '   (2) verify that this new file gets created successfully
+    '   (3) rename the original file to a temporary name
+    '   (4) rename the new file containing the replaced text to the original file name
+    '   (5) if the renaming in step 4 is sucessfull then delete step 4 otherwise
+    '       rename it back to the original filename.
+    if SearchMode = ReplaceAll then 
+        if bSaveReplaceFile then
+            pDoc->IsNewFlag = false
+            pDoc->SaveFile(false, false)
+        end if
+        delete pDoc
     end if
     
     function = 0
@@ -95,11 +156,13 @@ end function
 function FindInFiles_RecursiveFileSearch( _
             byref pStreamResults as CTextStream, _
             byref wszFindText as wstring, _
+            byref wszReplaceText as wstring, _
             byref wszFilePath as wstring, _
             wszFileSpecs() as CWSTR, _
             byval bSubFolders as boolean, _
             byval bMatchCase  as boolean, _
-            byval bWholeWords as boolean _
+            byval bWholeWords as boolean, _
+            byval SearchMode as SEARCH_MODE _
             ) as Long
                                 
     dim pFinder as CFindFile
@@ -113,11 +176,13 @@ function FindInFiles_RecursiveFileSearch( _
                     FindInFiles_RecursiveFileSearch( _
                                 pStreamResults, _
                                 wszFindText, _
+                                wszReplaceText, _
                                 pFinder.FilePath, _
                                 wszFileSpecs(), _ 
                                 bSubFolders, _
                                 bMatchCase, _
-                                bWholeWords _
+                                bWholeWords, _
+                                SearchMode _
                                 )
                 end if
             else
@@ -151,9 +216,11 @@ function FindInFiles_RecursiveFileSearch( _
                         FindInFiles_ProcessFile( _
                                         pStreamResults, _
                                         wszFindText, _
+                                        wszReplaceText, _
                                         pFinder.FilePath, _
                                         bMatchCase, _
-                                        bWholeWords _
+                                        bWholeWords, _
+                                        SearchMode _
                                         )
                         exit for
                     end if
@@ -240,6 +307,36 @@ end function
 
 
 ' ========================================================================================
+' Add a string to the Replace combobox (ensure no duplicates)
+' ========================================================================================
+function frmFindInFiles_AddToReplaceCombo( byref wszText as string ) as long
+    dim as long i
+    dim as long nFound = -1
+    
+    wszText = trim(wszText)
+    if len(wszText) = 0 then exit function
+    
+    ' See if the string already exists in the combobox
+    for i = 0 to ubound(gFindInFiles.txtReplaceCombo)
+        if gFindInFiles.txtReplaceCombo(i) = wszText then
+            nFound = i: exit for
+        end if
+    next
+
+    if nFound = -1 then  ' was not found
+        for i = ubound(gFindInFiles.txtReplaceCombo) to 1 step -1
+            gFindInFiles.txtReplaceCombo(i) = gFindInFiles.txtReplaceCombo(i-1)
+        next   
+        gFindInFiles.txtReplaceCombo(0) = wszText
+    end if
+    
+    gFindInFiles.txtReplace = wszText
+    
+    function = 0
+end function
+
+
+' ========================================================================================
 ' Add a string to the Files combobox (ensure no duplicates)
 ' ========================================================================================
 function frmFindInFiles_AddToFilesCombo( byref wszText as wstring ) as long
@@ -303,9 +400,9 @@ end function
 
 
 ' ========================================================================================
-' File search procedure (shell out to builtin Windows "findstr" utility
+' File search (and replace if applicable) procedure
 ' ========================================================================================
-function frmFindInFiles_DoFindInFilesEx() as long
+function frmFindInFiles_DoFindInFilesEx( byval SearchMode as SEARCH_MODE ) as long
     dim ShExecInfo as SHELLEXECUTEINFOW  
     dim as CWSTR DQ = wchr(34)
     
@@ -316,6 +413,9 @@ function frmFindInFiles_DoFindInFilesEx() as long
     ' this to ensure that manually typed in text has been captured.
     dim wszFindText As wstring * MAX_PATH
     wszFindText = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND))
+
+    dim wszReplaceText As wstring * MAX_PATH
+    wszReplaceText = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOREPLACE))
     
     if len(wszFindText) = 0 then
         SetFocus( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND) )
@@ -324,7 +424,15 @@ function frmFindInFiles_DoFindInFilesEx() as long
     
     gFindInFiles.txtFind = wszFindText
     frmFindInFiles_AddToFindCombo(gFindInFiles.txtFind)
-    
+
+    if SearchMode = ReplaceAll then
+        gFindInFiles.txtReplace = wszReplaceText
+        frmFindInFiles_AddToReplaceCombo(gFindInFiles.txtReplace)
+        ' Reset the stat tracking
+        gReplaceResults.NumReplaced = 0
+        gReplaceResults.FilesSearched = 0
+    end if
+
     ' What folder to start searching in
     gFindInFiles.txtFolder = trim(AfxGetWindowText( GetDlgItem(HWND_FRMFINDINFILES,IDC_FRMFINDINFILES_COMBOFOLDER) ))
     if len(gFindInFiles.txtFolder) = 0 then 
@@ -393,68 +501,72 @@ function frmFindInFiles_DoFindInFilesEx() as long
     end if
         
 
-    ' Create a results file to capture the results
+    ' Create a results file to capture the results (for Find only)
     dim pStreamResults as CTextStream  ' (create)(utf16)
-    dim as CWSTR wszSearchResults = AfxGetExePathName & "_searchresults.txt"
-    if pStreamResults.Create( wszSearchResults, true, true) = S_OK then 
+    dim as CWSTR wszSearchResults = AfxGetExePathName & "__searchresults.txt"
+    if SearchMode = FindOnly then
+        if pStreamResults.Create( wszSearchResults, true, true) <> S_OK then return 1
+    end if
 
-        dim as boolean bWholeWord  = iif( gFindInFiles.nWholeWord = BST_CHECKED, true, false )
-        dim as boolean bMatchCase  = iif( gFindInFiles.nMatchCase = BST_CHECKED, true, false )
-        dim as boolean bSubFolders = iif( gFindInFiles.nSearchSubFolders = BST_CHECKED, true, false )
-        
-        if (gFindInFiles.nSearchProject = BST_CHECKED) or _
-            (gFindInFiles.nSearchCurrentDoc = BST_CHECKED) or _
-            (gFindInFiles.nSearchAllOpenDocs = BST_CHECKED) then 
+    dim as boolean bWholeWord  = iif( gFindInFiles.nWholeWord = BST_CHECKED, true, false )
+    dim as boolean bMatchCase  = iif( gFindInFiles.nMatchCase = BST_CHECKED, true, false )
+    dim as boolean bSubFolders = iif( gFindInFiles.nSearchSubFolders = BST_CHECKED, true, false )
+    
+    if (gFindInFiles.nSearchProject = BST_CHECKED) or _
+        (gFindInFiles.nSearchCurrentDoc = BST_CHECKED) or _
+        (gFindInFiles.nSearchAllOpenDocs = BST_CHECKED) then 
 
-            dim pDoc as clsDocument ptr = gApp.pDocList
-            do until pDoc = 0
-                wszFilename = ""
-                
-                if gFindInFiles.nSearchProject = BST_CHECKED then
+        dim pDoc as clsDocument ptr = gApp.pDocList
+        do until pDoc = 0
+            wszFilename = ""
+            
+            if gFindInFiles.nSearchProject = BST_CHECKED then
+                wszFilename = pDoc->DiskFilename
+            end if   
+            
+            if gFindInFiles.nSearchAllOpenDocs = BST_CHECKED then 
+                if gTTabCtl.GetTabIndexFromFilename( pDoc->DiskFilename ) <> -1 then
                     wszFilename = pDoc->DiskFilename
                 end if   
+            end if
                 
-                if gFindInFiles.nSearchAllOpenDocs = BST_CHECKED then 
-                    if gTTabCtl.GetTabIndexFromFilename( pDoc->DiskFilename ) <> -1 then
-                        wszFilename = pDoc->DiskFilename
-                    end if   
+            if gFindInFiles.nSearchCurrentDoc = BST_CHECKED then
+                if pDoc = gTTabCtl.GetActiveDocumentPtr() then
+                    wszFilename = pDoc->DiskFilename
                 end if
-                
-                if gFindInFiles.nSearchCurrentDoc = BST_CHECKED then
-                    if pDoc = gTTabCtl.GetActiveDocumentPtr() then
-                        wszFilename = pDoc->DiskFilename
-                    end if
-                end if
+            end if
 
-                FindInFiles_ProcessFile( _
-                                pStreamResults, _
-                                gFindInFiles.txtFind, _
-                                wszFilename, _
-                                bMatchCase, _
-                                bWholeWord _
-                                )
-                        
-                pDoc = pDoc->pDocNext
-            loop   
+            FindInFiles_ProcessFile( _
+                            pStreamResults, _
+                            gFindInFiles.txtFind, _
+                            gFindInFiles.txtReplace, _
+                            wszFilename, _
+                            bMatchCase, _
+                            bWholeWord, _
+                            SearchMode _
+                            )
+            pDoc = pDoc->pDocNext
+        loop   
 
-        else
-            FindInFiles_RecursiveFileSearch( _
-                        pStreamResults, _
-                        gFindInFiles.txtFind, _
-                        gFindInFiles.txtFolder, _
-                        wszFileSpecs(), _
-                        bSubFolders, _      ' Search subfolders
-                        bMatchCase, _       ' Match case
-                        bWholeWord _        ' Whole words
-                        )
-        end if
-        
-        pStreamResults.Close
     else
-        ' ? "Error creating _FindResults.txt file."
-    end if   
 
-    frmOutput_UpdateSearchListview( wszSearchResults )
+        FindInFiles_RecursiveFileSearch( _
+                    pStreamResults, _
+                    gFindInFiles.txtFind, _
+                    gFindInFiles.txtReplace, _
+                    gFindInFiles.txtFolder, _
+                    wszFileSpecs(), _
+                    bSubFolders, _      ' Search subfolders
+                    bMatchCase, _       ' Match case
+                    bWholeWord, _       ' Whole words
+                    SearchMode _
+                    )
+    end if
+        
+    if SearchMode = FindOnly then   ' Find only
+        pStreamResults.Close
+        frmOutput_UpdateSearchListview( wszSearchResults )
+    end if
     
     SetCursor( hCurSave )
         
@@ -473,20 +585,40 @@ function frmFindInFiles_OnCommand( _
             ) as LRESULT
 
     select case id
-        case IDOK  ' Find Next
+        case IDOK  ' Find 
             if codeNotify = BN_CLICKED then
                 EnableWindow(hwndCtl, false)
-                frmFindInFiles_DoFindInFilesEx()
+                frmFindInFiles_DoFindInFilesEx( FindOnly )
                 EnableWindow(hwndCtl, true)
                 exit function
             end if  
-            
+
         case IDCANCEL  ' Close
             if codeNotify = BN_CLICKED then
                 SendMessage( HWnd, WM_CLOSE, 0, 0)
                 exit function
             end if
 
+        case IDC_FRMFINDINFILES_CMDREPLACEALL
+            if codeNotify = BN_CLICKED then
+                EnableWindow(hwndCtl, false)
+                if MessageBox( hwnd, _
+                            L(176,"Are you sure you want to replace all occurrences?"), L(276,"Confirm"), _
+                            MB_YESNO or MB_ICONQUESTION or MB_DEFBUTTON2 ) = IDYES then
+
+                    frmFindInFiles_DoFindInFilesEx( ReplaceAll )
+
+                    dim as CWSTR wszResults = _
+                        wstr(gReplaceResults.NumReplaced) & " replacements made in " & _
+                        wstr(gReplaceResults.FilesSearched) & " searched files."
+                        
+                    MessageBox( hwnd, wszResults, L(262,"Search Results"), MB_OK or MB_ICONINFORMATION ) 
+
+                end if            
+                EnableWindow(hwndCtl, true)
+                exit function
+            end if  
+            
         case IDC_FRMFINDINFILES_COMBOFIND
             ' Catch the dropdown of the Find combobox so we can populate it
             if codeNotify = CBN_DROPDOWN then
@@ -503,6 +635,26 @@ function frmFindInFiles_OnCommand( _
                     end if   
                 next
                 wszText = gFindInFiles.txtFind
+                i = ComboBox_FindStringExact( hwndCtl, -1, @wszText )
+                ComboBox_SetCurSel(hwndCtl, i)
+            end if
+
+        case IDC_FRMFINDINFILES_COMBOREPLACE
+            ' Catch the dropdown of the Replace combobox so we can populate it
+            if codeNotify = CBN_DROPDOWN then
+                ' Add any previous search terms to the combobox
+                dim as long i
+                dim wszText as wstring * MAX_PATH
+                wszText = AfxGetWindowText(hwndCtl)
+                frmFindInFiles_AddToReplaceCombo(str(wszText))
+                ComboBox_ResetContent(hwndCtl)
+                for i = 0 To ubound(gFindInFiles.txtReplaceCombo)
+                    if len(gFindInFiles.txtReplaceCombo(i)) then 
+                        wszText = gFindInFiles.txtReplaceCombo(i)
+                        ComboBox_AddString( hwndCtl, @wszText )
+                    end if   
+                next
+                wszText = gFindInFiles.txtReplace
                 i = ComboBox_FindStringExact( hwndCtl, -1, @wszText )
                 ComboBox_SetCurSel(hwndCtl, i)
             end if
@@ -685,6 +837,7 @@ function frmFindInFiles_OnDestroy( byval hwnd as HWND ) As LRESULT
     gFindInFiles.nSearchProject = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMFINDINFILES_CHKPROJECT) )
     gFindInFiles.txtFind = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND))
     gFindInFiles.txtLastFind = gFindInFiles.txtFind 
+    gFindInFiles.txtReplace = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOREPLACE))
     gFindInFiles.txtFiles = AfxGetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFILES))
     gFindInFiles.txtFolder = AfxGetWindowText( GetDlgItem(HWND_FRMFINDINFILES,IDC_FRMFINDINFILES_COMBOFOLDER))
 
@@ -730,59 +883,71 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->Create(hwndParent, L(256,"Find In Files"), @frmFindInFiles_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->SetClientSize(515, 222)
+    pWindow->SetClientSize(515, 247)
     pWindow->Center
     
-    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LBLFINDWHAT, L(159,"Find What") & ":", 7, 19, 70, 16, _
+    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LBLFINDWHAT, L(43,"Find") & ":", 7, 19, 70, 16, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LABEL1, L(259,"In Files") & ":", 7, 48, 70, 16, _
+    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LBLREPLACEWITH, L(46,"Replace") & ":", 7, 47, 70, 16, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LABEL1, L(260,"In Folder") & ":", 7, 78, 70, 16, _
+    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LABEL1, L(259,"In Files") & ":", 7, 76, 70, 16, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("LABEL", , IDC_FRMFINDINFILES_LABEL1, L(260,"In Folder") & ":", 7, 105, 70, 16, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+        
     pWindow->AddControl("COMBOBOX", , IDC_FRMFINDINFILES_COMBOFIND, "", 85, 17, 317, 22, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWN or CBS_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("COMBOBOX", , IDC_FRMFINDINFILES_COMBOFILES, "", 85, 46, 317, 21, _
+    pWindow->AddControl("COMBOBOX", , IDC_FRMFINDINFILES_COMBOREPLACE, "", 85, 46, 317, 22, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWN or CBS_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("COMBOBOX", , IDC_FRMFINDINFILES_COMBOFOLDER, "", 85, 75, 317, 21, _
+    pWindow->AddControl("COMBOBOX", , IDC_FRMFINDINFILES_COMBOFILES, "", 85, 75, 317, 21, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWN or CBS_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    pWindow->AddControl("COMBOBOX", , IDC_FRMFINDINFILES_COMBOFOLDER, "", 85, 104, 317, 21, _
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWN or CBS_AUTOHSCROLL, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+        
     pWindow->AddControl("BUTTON", , IDOK, L(158,"Find"), 414, 16, 90, 24, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_DEFPUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("BUTTON", , IDC_FRMFINDINFILES_CMDFILES, "...", 414, 45, 24, 24, _
+    pWindow->AddControl("BUTTON", , IDC_FRMFINDINFILES_CMDREPLACEALL, L(174,"Replace All"), 414, 45, 90, 24, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("BUTTON", , IDC_FRMFINDINFILES_CMDFOLDERS, "...", 414, 74, 24, 24, _
+    pWindow->AddControl("BUTTON", , IDC_FRMFINDINFILES_CMDFILES, "...", 414, 74, 24, 24, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("BUTTON", , IDCANCEL, L(161,"Close"), 414, 105, 90, 24, _
+    pWindow->AddControl("BUTTON", , IDC_FRMFINDINFILES_CMDFOLDERS, "...", 414, 103, 24, 24, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("BUTTON", , IDCANCEL, L(161,"Close"), 414, 132, 90, 24, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("GROUPBOX", , IDC_FRMFINDINFILES_FRAMEOPTIONS, L(167,"Options"), 16, 105, 386, 107, _
+        
+    pWindow->AddControl("GROUPBOX", , IDC_FRMFINDINFILES_FRAMEOPTIONS, L(167,"Options"), 16, 130, 386, 102, _
         WS_CHILD or WS_VISIBLE or BS_TEXT or BS_LEFT or BS_NOTIFY or BS_GROUPBOX, _
         WS_EX_TRANSPARENT or WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKWHOLEWORDS, L(162,"Match Whole Words"), 26, 123, 167, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKWHOLEWORDS, L(162,"Match Whole Words"), 26, 150, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKMATCHCASE, L(163,"Match Case"), 26, 143, 167, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKMATCHCASE, L(163,"Match Case"), 26, 170, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKSUBFOLDERS, L(258,"Search Subfolders"), 26, 163, 167, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKSUBFOLDERS, L(258,"Search Subfolders"), 26, 190, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 
-    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKCURRENTDOC, L(408,"Current Document"), 195, 123, 167, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKCURRENTDOC, L(408,"Current Document"), 195, 150, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKALLOPENDOCS, L(409,"All Open Documents"), 195, 143, 167, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKALLOPENDOCS, L(409,"All Open Documents"), 195, 170, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKPROJECT, L(410,"Current Project"), 195, 163, 167, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMFINDINFILES_CHKPROJECT, L(410,"Current Project"), 195, 190, 167, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 
@@ -824,6 +989,7 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
     end if
 
     AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND), gFindInFiles.txtFind )    
+    AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOREPLACE), gFindInFiles.txtReplace )    
     AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFILES), gFindInFiles.txtFiles )    
     AfxSetWindowText( GetDlgItem(HWND_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFOLDER), gFindInFiles.txtFolder )    
     EnableWindow( GetDlgItem(HWND_FRMFINDINFILES, IDOK), true )

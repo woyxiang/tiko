@@ -109,6 +109,7 @@ type clsDocument
     lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
     LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
     bIsHelpFile           as boolean = false
+    wszEOL                as CWSTR              ' used in replace in files when constructing each line of new file
     
     ' Following used for split edit views
     rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
