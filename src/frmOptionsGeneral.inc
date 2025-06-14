@@ -44,22 +44,28 @@ public function frmOptionsGeneral_Show( byval hwndParent as HWND ) as LRESULT
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
-    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES, L(119,"Allow multiple instances"), 0, 0, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKMULTIPLEINSTANCES, L(119,"Allow multiple instances"), _
+        0, 0, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE, L(121,"Autosave files before compiling"), 0, 21, 235, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPILEAUTOSAVE, L(121,"Autosave files before compiling"), _
+        0, 21, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKASKEXIT, L(274,"Ask before exiting the editor"), 0, 42, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKASKEXIT, L(274,"Ask before exiting the editor"), _
+        0, 42, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION, L(423,"Restore previous session/project files on startup"), 0, 63, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION, L(423,"Restore previous session/project files on startup"), _
+        0, 63, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS, L(133,"Use Compact Menu Interface"), 0, 84, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS, L(133,"Use Compact Menu Interface"), _
+        0, 84, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKAUTOSAVE, L(427,"Auto Save files while editing"), 0, 105, 400, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSGENERAL_CHKAUTOSAVE, L(427,"Auto Save files while editing"), _
+        0, 105, 400, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 

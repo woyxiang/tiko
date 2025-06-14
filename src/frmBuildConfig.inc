@@ -726,7 +726,8 @@ public function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
         LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmBuildConfig_ListBox_SubclassProc), IDC_FRMBUILDCONFIG_LSTOPTIONS, cast(DWORD_PTR, @pWindow))
-    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP, L(284,"Exclude build from status bar popup menu"), 240, 355, 240, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP, _
+        L(284,"Exclude build from status bar popup menu"), 240, 355, 372, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 

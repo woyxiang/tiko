@@ -1,2 +1,7 @@
+Version 1.0.1 (June 14, 2025)
+- Fixed GPF if "X" close button clicked when "New Project" dialog is showing.
+- Added "deutsch.lang" German language file (contributed by Joerg Buckel).
+- Make several labels wider so that translated languages will not display truncated.
+
 Version 1.0.0 (June 13, 2025)
 - Initial release.

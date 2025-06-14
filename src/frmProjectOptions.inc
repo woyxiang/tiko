@@ -134,7 +134,7 @@ function frmProjectOptions_OnCommand( _
             ) as LRESULT
 
     select case id
-        case IDC_FRMPROJECTOPTIONS_CMDselect
+        case IDC_FRMPROJECTOPTIONS_CMDSELECT
             if codeNotify = BN_CLICKED then
                 dim as CWSTR wszProjectName = ""
                 if gApp.IsNewProjectFlag = false then wszProjectName = gApp.ProjectName
@@ -221,6 +221,17 @@ function frmProjectOptions_WndProc( _
         HANDLE_MSG (hwnd, WM_CLOSE,    frmProjectOptions_OnClose)
         HANDLE_MSG (hwnd, WM_DESTROY,  frmProjectOptions_OnDestroy)
         HANDLE_MSG (hwnd, WM_COMMAND,  frmProjectOptions_OnCommand)
+
+        ' Handle the WM_SYSCOMMAND so we know that the dialog was closed through
+        ' clicking on the "X" button or Alt+F4. We ensure that IsNewProject is
+        ' set to false otherwise the OnCommand_ProjectNew() calling function
+        ' will GPF.
+        case WM_SYSCOMMAND
+            if (wParam and  &hFFF0) = SC_CLOSE then
+                ' User clicked the X or pressed Alt+F4
+                gApp.IsNewProjectFlag = false
+            end if
+
     end select
 
     function = DefWindowProc(hwnd, uMsg, wParam, lParam)
@@ -241,7 +252,6 @@ function frmProjectOptions_Show( _
     
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     dim as hwnd hForm = _
     pWindow->Create( hwndParent, "", @frmProjectOptions_WndProc, 0, 0, 0, 0, _
@@ -306,8 +316,6 @@ function frmProjectOptions_Show( _
 
     wszTitle = L(214,"Project Options")
 
-    ' gApp.IsNewProjectFlag is only used within frmProjectOptions in order to
-    ' keep the state when OK is pressed.
     gApp.IsNewProjectFlag = IsNewProject
     if IsNewProject then
         ' Set the default values for a new project

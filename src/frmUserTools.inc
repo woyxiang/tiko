@@ -734,18 +734,24 @@ public function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("TEXTBOX", , IDC_FRMUSERTOOLS_TXTKEY, "", 498, 201, 52, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKPROMPT, L(295,"Prompt for confirmation when Tool is invoked"), 334, 259, 347, 19, _
+        
+    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKPROMPT, L(295,"Prompt for confirmation when Tool is invoked"), _
+        250, 267, 420, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKMINIMIZED, L(296,"Run minimized"), 334, 281, 214, 19, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKMINIMIZED, L(296,"Run minimized"), _
+        250, 289, 420, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKWAIT, L(297,"Wait for Tool to complete before continuing"), 334, 303, 344, 19, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKWAIT, L(297,"Wait for Tool to complete before continuing"), _
+        250, 311, 420, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKDISPLAYMENU, L(299,"Display this item in the editor menu"), 334, 325, 344, 19, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKDISPLAYMENU, L(299,"Display this item in the editor menu"), _
+        250, 333, 420, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
+    
     pWindow->AddControl("COMBOBOX", , IDC_FRMUSERTOOLS_COMBOACTION, "", 334, 228, 308, 22, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)

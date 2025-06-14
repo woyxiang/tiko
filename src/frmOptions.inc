@@ -382,7 +382,6 @@ public function frmOptions_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     pWindow->Create( hWndParent, L(113,"Environment Options"), @frmOptions_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _

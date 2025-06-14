@@ -49,7 +49,11 @@ function frmFindReplace_PositionWindows() as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMFINDREPLACE )
     if pWindow = 0 then exit function
 
-    pWindow->SetClientSize( 420, iif(gFind.bExpanded, 66, 33) )
+    dim wszText as wstring * 100 = gFind.wszResults
+    dim as long nResultsWidth = _
+            getTextWidth(HWND_FRMFINDREPLACE, wszText, ghStatusBar.hFontStatusBar, 0) + 6
+            
+    pWindow->SetClientSize( 350 + max(70, nResultsWidth), iif(gFind.bExpanded, 66, 33) )
 
     ' find/replace is a popup window so we need to use screen coordinates. Place the 
     ' window just below the toptabs or the menubar if the toptabs are not showing.
@@ -110,7 +114,7 @@ function frmFindReplace_PositionWindows() as LRESULT
     ' Results from search eg. "1 of 10"
     gFind.rcResults.Left = gFind.rcWholeWord.right + hmargin + hmargin
     gFind.rcResults.top = nTop
-    gFind.rcResults.right = gFind.rcResults.Left + pWindow->ScaleX(70)
+    gFind.rcResults.right = gFind.rcResults.Left + pWindow->ScaleX(nResultsWidth)
     gFind.rcResults.bottom = gFind.rcResults.top + pWindow->ScaleY(24)
 
     ' UpArrow RECT
@@ -234,10 +238,12 @@ function frmFindReplace_NextSelection( _
             SciExec( hEdit, SCI_SETSEL, iPositions(mainIdx), iPositions(mainIdx) + lenFind)
         end if
         gFind.wszResults = mainIdx & " of " & gFind.foundCount
+        frmFindReplace_PositionWindows
         return true
     else
         SciExec( hEdit, SCI_SETSEL, startPos, startPos)
         gFind.wszResults = L(269, "No results")
+        frmFindReplace_PositionWindows
         return false
     end if
 end function
@@ -591,7 +597,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     end if
     SetBkColor( memDC, ghFindReplace.BackColor )
     SelectObject(memDC, ghStatusBar.hFontStatusBar)
-    wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
+    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
     DrawText( memDC, gFind.wszResults.sptr, -1, cast(lpRect, @gFind.rcResults), wsStyle )
     
     ' Paint the Up Arrow
@@ -1038,7 +1044,6 @@ function frmFindReplace_Show( _
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
@@ -1058,7 +1063,6 @@ function frmFindReplace_Show( _
         pWindow->Create(hWndParent, "FINDREPLACE", @frmFindReplace_WndProc, 0, 0, 0, 0, _
             WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _   
             WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR )
-        pWindow->SetClientSize( 420, iif(gFind.bExpanded, 66, 33) )
         pWindow->ClassStyle = CS_DBLCLKS
         
         ' we use RichEdit controls because regular Edit controls can not easily have
@@ -1111,7 +1115,9 @@ function frmFindReplace_Show( _
     ' if there are carriage returns or/and line feeds, this mean that
     ' there is a block selected.
 
+    gFind.wszResults = L(269, "No results")
     frmFindReplace_PositionWindows
+
     sFindText = pDoc->GetSelText
     if pDoc->IsMultilineSelection = false then
         hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )
