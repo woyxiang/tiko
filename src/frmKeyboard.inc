@@ -13,7 +13,7 @@
 
 #include once "clsConfig.bi"
 #include once "frmKeyboard.bi"
-
+#include once "modRoutines.bi"
 
 ' ========================================================================================
 ' Save the gKeys() keybinding array to disk file
@@ -532,7 +532,7 @@ function frmKeyboard_OnCommand( _
                 if nCurSel < 0 then exit function
                 gKeys(nCurSel).wszUserKeys = ""
                 dim wszText as wstring * MAX_PATH = gKeys(nCurSel).wszUserKeys
-                FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
+                LV_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
                 frmKeyboard_CheckForKeyConflict( "", nCurSel )
                 ListView_SelectItem( HWND_FRMKEYBOARD_LISTVIEW, nCurSel )
                 SetFocus( HWND_FRMKEYBOARD_LISTVIEW )
@@ -630,7 +630,7 @@ function frmKeyboard_WndProc( _
             dim as long nCurSel = ListView_GetSelection( HWND_FRMKEYBOARD_LISTVIEW )
             if nCurSel < 0 then return 0 
             dim wszText as wstring * MAX_PATH
-            FF_ListView_GetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 0, @wszText, MAX_PATH) 
+            LV_GetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 0, @wszText, MAX_PATH) 
             dim as long idx = val( wszText )
             if (idx >= lbound(gKeys)) and (idx <= ubound(gKeys)) then
                 gKeysEdit = gKeys(idx)
@@ -642,11 +642,11 @@ function frmKeyboard_WndProc( _
                 if gKeys(idx).bDefaultDisabled then
                     wszText = wszText & " (DISABLED)"
                 end if   
-                FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 4, wszText, MAX_PATH ) 
+                LV_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 4, wszText, MAX_PATH ) 
                 
                 ' Update the UserKeys column because it could have changed
                 wszText = gKeysEdit.wszUserKeys
-                FF_ListView_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
+                LV_SetItemText( HWND_FRMKEYBOARD_LISTVIEW, nCurSel, 5, wszText, MAX_PATH ) 
                 frmKeyboard_CheckForKeyConflict( wszText, nCurSel )
             end if
             ListView_SelectItem( HWND_FRMKEYBOARD_LISTVIEW, nCurSel )
@@ -720,16 +720,16 @@ function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Load the listview with these temp keys
     for i as long = lbound(gKeys) to ubound(gKeys)
-        FF_ListView_InsertItem( hLV, i, 0, str(i) )  ' array index (hidden column)
-        FF_ListView_InsertItem( hLV, i, 1, "" ) 
-        FF_ListView_InsertItem( hLV, i, 2, gKeys(i).wszCategory ) 
-        FF_ListView_InsertItem( hLV, i, 3, gKeys(i).wszDescription ) 
+        LV_InsertItem( hLV, i, 0, str(i) )  ' array index (hidden column)
+        LV_InsertItem( hLV, i, 1, "" ) 
+        LV_InsertItem( hLV, i, 2, gKeys(i).wszCategory ) 
+        LV_InsertItem( hLV, i, 3, gKeys(i).wszDescription ) 
         dim as CWSTR wszTemp = gKeys(i).wszDefaultKeys
         if gKeys(i).bDefaultDisabled then
             wszTemp = wszTemp & " (DISABLED)"
         end if
-        FF_ListView_InsertItem( hLV, i, 4, wszTemp ) 
-        FF_ListView_InsertItem( hLV, i, 5, gKeys(i).wszUserKeys ) 
+        LV_InsertItem( hLV, i, 4, wszTemp ) 
+        LV_InsertItem( hLV, i, 5, gKeys(i).wszUserKeys ) 
     next
 
     AfxSetWindowFont( hLV, ghStatusBar.hFontStatusBar, true )

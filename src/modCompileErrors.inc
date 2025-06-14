@@ -234,8 +234,8 @@ function SetDocumentErrorPosition( _
     dim pDoc as clsDocument ptr 
 
     ' Get the line number and filename of the selected item
-    FF_ListView_GetItemText(hLV, nCurSel, 1, @wszErrorLine, MAX_PATH)
-    FF_ListView_GetItemText(hLV, nCurSel, 2, @wszErrorFile, MAX_PATH)
+    LV_GetItemText(hLV, nCurSel, 1, @wszErrorLine, MAX_PATH)
+    LV_GetItemText(hLV, nCurSel, 2, @wszErrorFile, MAX_PATH)
     dim as long nLineNum = val(wszErrorLine) - 1   ' because visually the editor is one based line numbers
 
     ' if we are doing a QuickRun then it must be on the currently loaded
@@ -333,10 +333,10 @@ function ParseLogForError( _
         ' from a 32-bit operating system.
         if left(wst_ucase, 16) = "THIS VERSION OF " then
             fGoodCompile = false
-            FF_ListView_InsertItem( hLV, NumWarnings, 0, "" )
-            FF_ListView_InsertItem( hLV, NumWarnings, 1, "0" )
-            FF_ListView_InsertItem( hLV, NumWarnings, 2, "" ) 
-            FF_ListView_InsertItem( hLV, NumWarnings, 3, "compiling FAILED: Windows not 64-bit (refer to log file)" ) 
+            LV_InsertItem( hLV, NumWarnings, 0, "" )
+            LV_InsertItem( hLV, NumWarnings, 1, "0" )
+            LV_InsertItem( hLV, NumWarnings, 2, "" ) 
+            LV_InsertItem( hLV, NumWarnings, 3, "compiling FAILED: Windows not 64-bit (refer to log file)" ) 
             wszOutputMsg = wsLogSt: exit For
             exit for
         end if   
@@ -366,30 +366,30 @@ function ParseLogForError( _
         ' Check to see if linking failed
         if (left(wst_ucase, 6) = "ERROR!") or _
             (left(wst_ucase, 34) = "VERY SORRY, BUT GORC HAD A PROBLEM") then
-            FF_ListView_InsertItem( hLV, nListViewLine, 0, "" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 1, "0" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 2, "" ) 
-            FF_ListView_InsertItem( hLV, nListViewLine, 3, "compiling resource FAILED: Error Code 1 (refer to log file)" ) 
+            LV_InsertItem( hLV, nListViewLine, 0, "" )
+            LV_InsertItem( hLV, nListViewLine, 1, "0" )
+            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
+            LV_InsertItem( hLV, nListViewLine, 3, "compiling resource FAILED: Error Code 1 (refer to log file)" ) 
             NumErrors = NumErrors + 1
         elseif (left(wst_ucase, 5) = "ERROR") then
-            FF_ListView_InsertItem( hLV, nListViewLine, 0, "" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 1, "0" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 2, "" ) 
-            FF_ListView_InsertItem( hLV, nListViewLine, 3, "compiling FAILED: Error Code 1 (refer to log file)" ) 
+            LV_InsertItem( hLV, nListViewLine, 0, "" )
+            LV_InsertItem( hLV, nListViewLine, 1, "0" )
+            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
+            LV_InsertItem( hLV, nListViewLine, 3, "compiling FAILED: Error Code 1 (refer to log file)" ) 
             NumErrors = NumErrors + 1
         elseif (left(wst_ucase, 19) = "COMPILING C FAILED:") then
-            FF_ListView_InsertItem( hLV, nListViewLine, 0, "" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 1, "0" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 2, "" ) 
-            FF_ListView_InsertItem( hLV, nListViewLine, 3, "compiling C FAILED: Error Code 1 (refer to log file)" ) 
+            LV_InsertItem( hLV, nListViewLine, 0, "" )
+            LV_InsertItem( hLV, nListViewLine, 1, "0" )
+            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
+            LV_InsertItem( hLV, nListViewLine, 3, "compiling C FAILED: Error Code 1 (refer to log file)" ) 
             NumErrors = NumErrors + 1
         end if
         
         if instr(wst_ucase, "LINKING FAILED:") then 
-            FF_ListView_InsertItem( hLV, nListViewLine, 0, "" )
-            FF_ListView_InsertItem( hLV, nListViewLine, 1, "0" ) 
-            FF_ListView_InsertItem( hLV, nListViewLine, 2, "" ) 
-            FF_ListView_InsertItem( hLV, nListViewLine, 3, wst & " (refer to log file)" ) 
+            LV_InsertItem( hLV, nListViewLine, 0, "" )
+            LV_InsertItem( hLV, nListViewLine, 1, "0" ) 
+            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
+            LV_InsertItem( hLV, nListViewLine, 3, wst & " (refer to log file)" ) 
             NumErrors = NumErrors + 1
         end if
     
@@ -451,10 +451,10 @@ function ParseLogForError( _
                     wst2 = mid( wst, Parenthesis_Start + 1, Parenthesis_end - Parenthesis_Start - 1)  ' line# 
                     wst3 = mid( wst, Error_Start + 1)  ' error message
 
-                    FF_ListView_InsertItem( hLV, nListViewLine, 0, "" )
-                    FF_ListView_InsertItem( hLV, nListViewLine, 1, wst2 )  ' line#
-                    FF_ListView_InsertItem( hLV, nListViewLine, 2, wst1 )  ' filename
-                    FF_ListView_InsertItem( hLV, nListViewLine, 3, wst3 )  ' error message
+                    LV_InsertItem( hLV, nListViewLine, 0, "" )
+                    LV_InsertItem( hLV, nListViewLine, 1, wst2 )  ' line#
+                    LV_InsertItem( hLV, nListViewLine, 2, wst1 )  ' filename
+                    LV_InsertItem( hLV, nListViewLine, 3, wst3 )  ' error message
                     
                     if IsWarning then 
                         NumWarnings = NumWarnings + 1
@@ -468,10 +468,10 @@ function ParseLogForError( _
 
             else
                         
-                FF_ListView_InsertItem( hLV, nListViewLine, 0, "" )
-                FF_ListView_InsertItem( hLV, nListViewLine, 1, "" )  ' line#
-                FF_ListView_InsertItem( hLV, nListViewLine, 2, "" )  ' filename
-                FF_ListView_InsertItem( hLV, nListViewLine, 3, wst )  ' message
+                LV_InsertItem( hLV, nListViewLine, 0, "" )
+                LV_InsertItem( hLV, nListViewLine, 1, "" )  ' line#
+                LV_InsertItem( hLV, nListViewLine, 2, "" )  ' filename
+                LV_InsertItem( hLV, nListViewLine, 3, wst )  ' message
                 NumDirectives = NumDirectives + 1
             end if
 

@@ -1088,7 +1088,7 @@ end function
 ' ========================================================================================
 ' Inserts an item at a specific location in the ListView.
 ' ========================================================================================
-function FF_ListView_InsertItem( _
+function LV_InsertItem( _
             byval hwndControl as HWND, _
             byval iRow        as long, _         
             byval iColumn     as long, _
@@ -1114,7 +1114,7 @@ end function
 ' ========================================================================================
 ' Retrieves the text of a ListView item.
 ' ========================================================================================
-function FF_ListView_GetItemText( _
+function LV_GetItemText( _
             byval hwndControl as HWND, _
             byval iRow as long, _
             byval iColumn as long, _
@@ -1139,7 +1139,7 @@ end function
 ' ========================================================================================
 ' Set the text for the specified row and col item
 ' ========================================================================================
-function FF_ListView_SetItemText( _
+function LV_SetItemText( _
             byval hwndControl as HWND, _
             byval iRow as long, _
             byval iColumn as long, _

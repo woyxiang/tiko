@@ -231,7 +231,7 @@ private function frmRecent_Tree_SubclassProc ( _
                 TreeView_GetItemText( hTree, hItem, wzStr, MAX_PATH )
                 if AfxFileExists(wzStr) then
                     if Treeview_GetParent(hTree, hItem) = gApp.hRecentProjectsRootNode then 
-                        frmMain_OpenProjectSafely(HWND_FRMMAIN, wzStr) 
+                        OpenProjectSafely(HWND_FRMMAIN, wzStr) 
                     Elseif Treeview_GetParent(hTree, hItem) = gApp.hRecentFilesRootNode then 
                         frmMain_OpenFileSafely(HWND_FRMMAIN, _
                                                 false, _    ' bIsNewFile

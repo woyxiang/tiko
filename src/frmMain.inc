@@ -26,6 +26,133 @@
 
     
 ' ========================================================================================
+' Attempt to open specified project. 
+' ========================================================================================
+function frmMain_OpenProjectSafely( _
+            byval hwnd as HWND, _
+            byref wszProjectFileName as const wstring _
+            ) as boolean
+
+    ' if a Project is not active then we need to save the current non-project notes
+    ' when this file is closed. It is possible that this file is being closed and
+    ' a project is being opened.
+    if gApp.IsProjectActive = false then
+        gApp.NonProjectNotes = AfxGetWindowText(GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES))
+        gConfig.SaveConfigFile
+    end if
+
+    ' if a project is open then close any files that may be open in the editor. No need to
+    ' do this if a new project is being created/opened because that function has already
+    ' performed this operation. Doing so again will cause the Recent Files/Projects panel
+    ' to flash on the screen.
+    if gApp.IsNewProjectFlag = false then
+        if gApp.IsProjectActive then 
+            if OnCommand_ProjectClose(hwnd) = false then exit function
+        elseif gApp.IsSessionActive then
+            if gConfig.CloseSessionFile( gApp.SessionFilename) = false then exit function
+        else   
+            if OnCommand_FileClose(HWnd, EFC_CLOSEALL) = false then exit function
+        end if
+        ' Clear any previous info from the Output windows
+        frmOutput_ResetAllControls()
+    end if
+            
+    ' Open the project
+    if gConfig.ProjectLoadFromFile(wszProjectFileName) then
+        ' Update the most recently used project list 
+        UpdateMRUProjectList(wszProjectFileName)
+    end if
+    gApp.IsProjectActive = true
+    
+    ' Position all of the controls into place
+    frmPanel_PositionWindows
+    frmMain_PositionWindows
+
+    function = true
+end function
+
+
+' ========================================================================================
+' Attempt to open specified file. if it exists then position to Tab if applicable
+' ========================================================================================
+function frmMain_OpenFileSafely( _
+            byval hwnd        as HWND, _
+            byval bIsNewFile  as boolean, _ 
+            byval bIsTemplate as boolean, _
+            byval bShowInTab  as boolean, _
+            byval bIsInclude  as boolean, _
+            byref wszName     as wstring, _
+            byval pDocIn      as clsDocument ptr, _
+            byval wszFileType as CWSTR = FILETYPE_UNDEFINED _
+            ) as clsDocument ptr
+        
+    dim as long iTab = -1
+    dim pDoc as clsDocument ptr 
+
+    ' This function opens/creates various types of files depending on the situation. 
+    ' - New documents
+    ' - Open document from disk (after editor has been loaded)
+    ' - Display document that is already loaded and has valid Scintilla loaded control.
+    ' - Display document that is already loaded but does not have a valid Scintilla loaded control.
+
+    ' if the incoming pDocIn is null then we need to create a new pDoc and add it to the collection. 
+    if pDocIn = 0 then   
+        ' Create a new pDoc 
+        pDoc = gApp.AddNewDocument() 
+        if bIsNewFile then
+            pDoc->CreateCodeWindow( _
+                    hwnd, _
+                    true, _    ' IsNewFile
+                    bIsTemplate, _
+                    iif(bIsTemplate, wszName, wstr(""))) 
+        else
+            wszName = OnCommand_FileAutoSaveFileCheck( wszName )
+            pDoc->CreateCodeWindow( hwnd, false, bIsTemplate, wszName )
+            pDoc->bNeedsParsing = true
+            pDoc->ParseDocument()
+        end if
+        pDoc->ProjectFileType = wszFileType
+        if gApp.IsProjectLoading = false then 
+            LoadExplorerFiles()
+            LoadFunctionsFiles()
+        end if
+    else   
+        pDoc = pDocIn   
+    end if
+
+    ' Set the default build configuration for this document. If no IsDefault option
+    ' has been checked then we simply use whatever the current selected build is.
+    if pDoc->DocumentBuild = "" then 
+        pDoc->DocumentBuild = frmBuildConfig_GetDefaultBuildGUID()
+        if pDoc->DocumentBuild = "" then 
+            pDoc->DocumentBuild = frmBuildConfig_GetSelectedBuildGUID()
+        end if
+    end if      
+    
+    if bShowInTab then
+        if gApp.IsProjectLoading = false then 
+            ' if the document is already open and loaded then simply switch to
+            ' that document in the top tabcontrol, otherwise load the Explorer 
+            ' files list, create a new tab, and switch to it.
+            iTab = gTTabCtl.GetTabIndexFromFilename( pDoc->DiskFilename )
+            if iTab = -1 then 
+                LoadExplorerFiles()
+                iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
+            end if   
+            gTTabCtl.SetFocusTab(iTab)
+        end if
+    end if
+
+    if gApp.IsProjectLoading = false then 
+        frmMain_PositionWindows
+        frmMain_SetFocusToCurrentCodeWindow
+    end if
+    
+    function = pDoc
+end Function
+
+
+' ========================================================================================
 ' Update the main form statusbar. This is the only routine that updates
 ' the statusbar in the entire program.
 ' ========================================================================================
@@ -752,133 +879,6 @@ function frmMain_PositionWindows() as LRESULT
     
     function = 0
 end function
-
-
-' ========================================================================================
-' Attempt to open specified project. 
-' ========================================================================================
-function frmMain_OpenProjectSafely( _
-            byval hwnd as HWND, _
-            byref wszProjectFileName as const wstring _
-            ) as boolean
-
-    ' if a Project is not active then we need to save the current non-project notes
-    ' when this file is closed. It is possible that this file is being closed and
-    ' a project is being opened.
-    if gApp.IsProjectActive = false then
-        gApp.NonProjectNotes = AfxGetWindowText(GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES))
-        gConfig.SaveConfigFile
-    end if
-
-    ' if a project is open then close any files that may be open in the editor. No need to
-    ' do this if a new project is being created/opened because that function has already
-    ' performed this operation. Doing so again will cause the Recent Files/Projects panel
-    ' to flash on the screen.
-    if gApp.IsNewProjectFlag = false then
-        if gApp.IsProjectActive then 
-            if OnCommand_ProjectClose(hwnd) = false then exit function
-        elseif gApp.IsSessionActive then
-            if gConfig.CloseSessionFile( gApp.SessionFilename) = false then exit function
-        else   
-            if OnCommand_FileClose(HWnd, EFC_CLOSEALL) = false then exit function
-        end if
-        ' Clear any previous info from the Output windows
-        frmOutput_ResetAllControls()
-    end if
-            
-    ' Open the project
-    if gConfig.ProjectLoadFromFile(wszProjectFileName) then
-        ' Update the most recently used project list 
-        UpdateMRUProjectList(wszProjectFileName)
-    end if
-    gApp.IsProjectActive = true
-    
-    ' Position all of the controls into place
-    frmPanel_PositionWindows
-    frmMain_PositionWindows
-
-    function = true
-end function
-
-
-' ========================================================================================
-' Attempt to open specified file. if it exists then position to Tab if applicable
-' ========================================================================================
-function frmMain_OpenFileSafely( _
-            byval hwnd        as HWND, _
-            byval bIsNewFile  as boolean, _ 
-            byval bIsTemplate as boolean, _
-            byval bShowInTab  as boolean, _
-            byval bIsInclude  as boolean, _
-            byref wszName     as wstring, _
-            byval pDocIn      as clsDocument ptr, _
-            byval wszFileType as CWSTR = FILETYPE_UNDEFINED _
-            ) as clsDocument ptr
-        
-    dim as long iTab = -1
-    dim pDoc as clsDocument ptr 
-
-    ' This function opens/creates various types of files depending on the situation. 
-    ' - New documents
-    ' - Open document from disk (after editor has been loaded)
-    ' - Display document that is already loaded and has valid Scintilla loaded control.
-    ' - Display document that is already loaded but does not have a valid Scintilla loaded control.
-
-    ' if the incoming pDocIn is null then we need to create a new pDoc and add it to the collection. 
-    if pDocIn = 0 then   
-        ' Create a new pDoc 
-        pDoc = gApp.AddNewDocument() 
-        if bIsNewFile then
-            pDoc->CreateCodeWindow( _
-                    hwnd, _
-                    true, _    ' IsNewFile
-                    bIsTemplate, _
-                    iif(bIsTemplate, wszName, wstr(""))) 
-        else
-            wszName = OnCommand_FileAutoSaveFileCheck( wszName )
-            pDoc->CreateCodeWindow( hwnd, false, bIsTemplate, wszName )
-            pDoc->bNeedsParsing = true
-            pDoc->ParseDocument()
-        end if
-        pDoc->ProjectFileType = wszFileType
-        if gApp.IsProjectLoading = false then 
-            LoadExplorerFiles()
-            LoadFunctionsFiles()
-        end if
-    else   
-        pDoc = pDocIn   
-    end if
-
-    ' Set the default build configuration for this document. If no IsDefault option
-    ' has been checked then we simply use whatever the current selected build is.
-    if pDoc->DocumentBuild = "" then 
-        pDoc->DocumentBuild = frmBuildConfig_GetDefaultBuildGUID()
-        if pDoc->DocumentBuild = "" then 
-            pDoc->DocumentBuild = frmBuildConfig_GetSelectedBuildGUID()
-        end if
-    end if      
-    
-    if bShowInTab then
-        if gApp.IsProjectLoading = false then 
-            ' if the document is already open and loaded then simply switch to
-            ' that document in the top tabcontrol, otherwise load the Explorer 
-            ' files list, create a new tab, and switch to it.
-            iTab = gTTabCtl.GetTabIndexFromFilename( pDoc->DiskFilename )
-            if iTab = -1 then 
-                LoadExplorerFiles()
-                iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
-            end if   
-            gTTabCtl.SetFocusTab(iTab)
-        end if
-    end if
-
-    if gApp.IsProjectLoading = false then 
-        frmMain_PositionWindows
-        frmMain_SetFocusToCurrentCodeWindow
-    end if
-    
-    function = pDoc
-end Function
 
 
 ' ========================================================================================

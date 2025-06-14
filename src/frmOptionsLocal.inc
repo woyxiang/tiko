@@ -12,6 +12,7 @@
 '    GNU General Public License for more details.
 
 #include once "frmOptionsLocal.bi"
+#include once "modRoutines.bi"
 
 
 ' ========================================================================================
@@ -50,7 +51,7 @@ public function frmOptionsLocal_LocalEditCheck() as Long
         pStream.WriteLine(wszTemp) 
 
         for i as long = 0 to nCount - 1
-            FF_ListView_GetItemText(hLV, i, 0, @wszIndex, MAX_PATH )
+            LV_GetItemText(hLV, i, 0, @wszIndex, MAX_PATH )
             wszTemp = wspace(1024)
             wszPhrase = AfxStrRSet(wszIndex, 5, "0") + wstr(":") + gLocalPhrases(val(wszIndex))
             ' Use ** version of CWSTR on MID statements per the documentation.
@@ -200,8 +201,8 @@ private function frmOptionsLocal_UpdateTextBoxes( byval hwnd as HWND ) as LRESUL
     dim as HWND hLV = GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
     Dim as Long nCurSel = ListView_GetSelection(hLV)
     If nCurSel < 0 then exit function
-    FF_ListView_GetItemText(hLV, nCurSel, 0, @wszIndex, MAX_PATH )
-    FF_ListView_GetItemText(hLV, nCurSel, 1, @wszEnglish, MAX_PATH )
+    LV_GetItemText(hLV, nCurSel, 0, @wszIndex, MAX_PATH )
+    LV_GetItemText(hLV, nCurSel, 1, @wszEnglish, MAX_PATH )
     idx = val(wszIndex)
     if (idx >= lbound(gLocalPhrases)) andalso (idx <= ubound(gLocalPhrases)) then
         wszTranslate = gLocalPhrases(idx)
@@ -314,7 +315,7 @@ private function frmOptionsLocal_OnCommand( byval hwnd as HWND, _
                 dim as HWND hLV = GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
                 dim as long nCurSel = ListView_GetSelection(hLV)
                 if nCurSel >= 0 then 
-                    FF_ListView_GetItemText(hLV, nCurSel, 0, @wszIndex, MAX_PATH )
+                    LV_GetItemText(hLV, nCurSel, 0, @wszIndex, MAX_PATH )
                     dim as long idx = val(wszIndex)
                     if (idx >= lbound(gLocalPhrases)) andalso (idx <= ubound(gLocalPhrases)) then
                         gLocalPhrases(idx) = AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE) )
@@ -443,8 +444,8 @@ public function frmOptionsLocal_Show( byval hWndParent as HWND ) as LRESULT
     for i as long = lbound(gLangEnglish) to ubound(gLangEnglish)
         ' Add to the English phrase Listview
         dim as CWSTR wKey = AfxStrRset(str(i), 5, "0")
-        FF_ListView_InsertItem(hwndLV, nRow, 0, wKey, 0 )
-        FF_ListView_InsertItem(hwndLV, nRow, 1, gLangEnglish(i), 0 )
+        LV_InsertItem(hwndLV, nRow, 0, wKey, 0 )
+        LV_InsertItem(hwndLV, nRow, 1, gLangEnglish(i), 0 )
         nRow = nRow + 1
     next
     

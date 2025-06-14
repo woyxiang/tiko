@@ -26,16 +26,17 @@ end type
 
 dim shared gLastPosition as LASTPOSITION_TYPE
 
+
+declare function frmMain_OpenFileSafely( byval hwnd as HWND, byval bIsNewFile as boolean, byval bIsTemplate as boolean, _
+        byval bShowInTab as BOOLEAN, byval bIsInclude as BOOLEAN, Byref wszName as WString, byval pDocIn as clsDocument Ptr, _
+        byval wszFileType as CWSTR = FILETYPE_UNDEFINED ) as clsDocument ptr
+declare function frmMain_OpenProjectSafely( byval HWnd as HWnd, byref wszProjectFileName as const WString ) as Boolean
 declare function frmMain_CalcSplitRect( byval pDoc as clsDocument ptr ) as long
 declare function frmMain_GotoFile( byval pDoc as clsDocument ptr, byval nMenuId as long ) as long
 declare function frmMain_GotoLastPosition() as long
 declare function frmMain_GotoDefinition( byval pDoc as clsDocument Ptr ) as long
 declare function frmMain_SetStatusbar() as long
 declare function frmMain_SetFocusToCurrentCodeWindow() as long
-declare function frmMain_OpenFileSafely( byval hwnd as HWND, byval bIsNewFile as boolean, byval bIsTemplate as boolean, _
-        byval bShowInTab as BOOLEAN, byval bIsInclude as BOOLEAN, Byref wszName as WString, byval pDocIn as clsDocument Ptr, _
-        byval wszFileType as CWSTR = FILETYPE_UNDEFINED ) as clsDocument ptr
-declare function frmMain_OpenProjectSafely( byval HWnd as HWnd, byref wszProjectFileName as const WString ) as Boolean
 declare function frmMain_PositionWindows() as LRESULT
 declare function frmMain_HighlightWord( byval pDoc as clsDocument ptr, byref text as string ) as long
 declare function frmMain_Show( byval hWndParent as HWND ) as LRESULT

@@ -60,10 +60,10 @@ function frmOutput_UpdateToDoListview() as long
         pData = gdb2.dbGetNext
         if pData = 0 then exit do
         if pData->id <> DB2_TODO then continue do
-        FF_ListView_InsertItem( hLV, n, 0, "" ) 
-        FF_ListView_InsertItem( hLV, n, 1, ltrim(wstr(pData->nLineStart))) 
-        FF_ListView_InsertItem( hLV, n, 2, ltrim(wstr(pData->fileName)))
-        FF_ListView_InsertItem( hLV, n, 3, ltrim(wstr(pData->ElementData))) 
+        LV_InsertItem( hLV, n, 0, "" ) 
+        LV_InsertItem( hLV, n, 1, ltrim(wstr(pData->nLineStart))) 
+        LV_InsertItem( hLV, n, 2, ltrim(wstr(pData->fileName)))
+        LV_InsertItem( hLV, n, 3, ltrim(wstr(pData->ElementData))) 
         n = n + 1
     loop
 
@@ -103,10 +103,10 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
         if f2 > f1 then wszLinenum = mid(wst, f1 + 1, f2 - f1 - 1)
         if f2 then wszDescription = rtrim(mid(wst, f2 + 1))
 
-        FF_ListView_InsertItem( hLV, n, 0, "" ) 
-        FF_ListView_InsertItem( hLV, n, 1, wszLineNum ) 
-        FF_ListView_InsertItem( hLV, n, 2, wszFilename )
-        FF_ListView_InsertItem( hLV, n, 3, wszDescription ) 
+        LV_InsertItem( hLV, n, 0, "" ) 
+        LV_InsertItem( hLV, n, 1, wszLineNum ) 
+        LV_InsertItem( hLV, n, 2, wszFilename )
+        LV_InsertItem( hLV, n, 3, wszDescription ) 
         n = n + 1
 
     loop
