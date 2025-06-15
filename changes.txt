@@ -1,3 +1,7 @@
+Version 1.0.3 ()
+- Fixed Bookmark artifacts remaining in Bookmarks list after project closed and new file opened (caused GPF).
+- Fixed Lexilla (LexTiko.cxx) that prevented the Tiko [ ] brace matching from working correctly.
+
 Version 1.0.2 (June 14, 2025)
 - Package José Roca's new WinFBX2 (Afx2) framework/library with the FreeBasic compiler
 

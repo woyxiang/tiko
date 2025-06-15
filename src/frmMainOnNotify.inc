@@ -13,25 +13,9 @@
 
 #include once "frmMainOnNotify.bi"
 
-'#include once "frmOutput.bi"
 #include once "clsApp.bi"
 #include once "clsDocument.bi"
 #include once "frmMain.bi"
-'#include once "frmFunctions.bi"
-
-
-' ========================================================================================
-' Determine if the incoming character is a brace character
-' ========================================================================================
-function frmMain_IsBrace( byval c as integer ) as boolean
-
-    select case chr(c)
-        case "(", ")", "[", "]", "{", "}"
-            return true
-    end select        
-
-    return false
-end function
 
 
 ' ========================================================================================
@@ -133,6 +117,90 @@ end function
 
 
 ' ========================================================================================
+' This sub finds the position of a brace at the current caret position
+' and the position of its matching pair.
+' ========================================================================================
+sub frmMain_findMatchingBracePos( _
+            byval pDoc as clsDocument ptr, _
+            byref braceAtCaret as integer, _
+            byref braceOpposite as integer _
+            )
+    
+    dim as integer caretPos = SciExec( pDoc->hWndActiveScintilla, SCI_GETCURRENTPOS, 0, 0)
+
+    braceAtCaret = -1
+    braceOpposite = -1
+    dim as integer charBefore = 0
+
+    dim as integer lengthDoc = SciExec( pDoc->hWndActiveScintilla, SCI_GETLENGTH, 0, 0)
+
+    if (lengthDoc > 0) andalso (caretPos > 0) then
+        charBefore = SciExec( pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos - 1, 0)
+    end if
+
+    ' Priority goes to the character before the caret
+    if (charBefore <> 0) andalso instr("()[]{}", chr(charBefore)) then
+        braceAtCaret = caretPos - 1
+    end if
+
+    if (lengthDoc > 0) andalso (braceAtCaret < 0) then
+        ' No brace found, so check the character after the caret
+        dim as integer charAfter = SciExec( pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos, 0)
+        if (charAfter <> 0) andalso instr("()[]{}", chr(charAfter)) then
+            braceAtCaret = caretPos
+        end if
+    end if
+
+    if braceAtCaret >= 0 then
+        braceOpposite = SciExec( pDoc->hWndActiveScintilla, SCI_BRACEMATCH, braceAtCaret, 0)
+    end if
+
+end sub
+
+
+' ========================================================================================
+' This function performs brace matching and highlighting.
+' It returns true if a brace (matched or unmatched) is found near the caret.
+' ========================================================================================
+function frmMain_DoBraceMatching( byval pDoc as clsDocument ptr ) as boolean
+
+    if gConfig.BraceHighlight = false then
+        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
+        return false
+    end if         
+
+    dim as integer braceAtCaret = -1
+    dim as integer braceOpposite = -1
+
+    frmMain_findMatchingBracePos( pDoc, braceAtCaret, braceOpposite )
+
+    if (braceAtCaret <> -1) andalso (braceOpposite = -1) then
+        ' Found a brace, but it's unmatched
+        SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad )
+        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, braceAtCaret, 0 )
+        '_pEditView->execute(SCI_SETHIGHLIGHTGUIDE, 0)
+    else
+        ' Found a matched pair or no brace at all
+        SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
+        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, braceAtCaret, braceOpposite )
+
+'        if _pEditView->isShownIndentGuide() then
+'            dim columnAtCaret as integer ptr = _pEditView->execute(SCI_GETCOLUMN, braceAtCaret)
+'            dim columnOpposite as integer ptr = _pEditView->execute(SCI_GETCOLUMN, braceOpposite)
+'            _pEditView->execute(SCI_SETHIGHLIGHTGUIDE, iif(columnAtCaret < columnOpposite, columnAtCaret, columnOpposite))
+'        end if
+    end if
+
+'    const enable as boolean = (braceAtCaret <> -1) andalso (braceOpposite <> -1)
+'    enableCommand(IDM_SEARCH_GOTOMATCHINGBRACE, enable, MENU or TOOLBAR)
+'    enableCommand(IDM_SEARCH_SELECTMATCHINGBRACES, enable, MENU)
+
+    return (braceAtCaret <> -1)
+
+end function
+
+
+' ========================================================================================
 ' Process Scintilla Notifications
 ' ========================================================================================
 function Scintilla_OnNotify( _
@@ -170,7 +238,6 @@ function Scintilla_OnNotify( _
                     if pDoc->lastCaretPos <> caretPos then
                         pDoc->lastCaretPos = caretPos
 
-                        
                         '// If the xOffset has changed then we need to update the horizontal scrollbar
                         dim as long GetXOffset = SciExec( pDoc->hWndActiveScintilla, SCI_GETXOFFSET, 0, 0 )
                         if pDoc->lastXOffsetPos <> GetXOffset then
@@ -190,37 +257,8 @@ function Scintilla_OnNotify( _
                         end if
                         
                         '// Update any brace highlighting
-                        if gConfig.BraceHighlight then
-                            var bracePos1 = -1
-                            var bracePos2 = -1
-        
-                            '// Is there a brace to the left or right
-                            if (caretPos > 0) and ( frmMain_IsBrace(SciExec(pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos - 1, 0))) then
-                                bracePos1 = (caretPos - 1)
-                            elseif frmMain_IsBrace(SciExec(pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos, 0)) then
-                                bracePos1 = caretPos
-                            end if
-                            
-                            if bracePos1 >= 0 then
-                            '// Find the matching brace
-                                bracePos2 = SciExec( pDoc->hWndActiveScintilla, SCI_BRACEMATCH, bracePos1, 0)
-                                if bracePos2 = -1 then
-                                    SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad )
-                                    SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, bracePos1, 0 )
-                                else
-                                    SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
-                                    SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, bracePos1, bracePos2 )
-                                end if
-                                SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETOUTLINEALPHA, 9, 127 ) ' transparency of outline
-                                SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETALPHA, 9, 127 )        ' transparency of interior      
-                            else
-                                '// Turn off brace matching
-                                SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
-                            end if
-                            
-                        else
-                            SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
-                        end if         
+                        frmMain_DoBraceMatching( pDoc )
+
                     end if
                     
                 end if
