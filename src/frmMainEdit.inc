@@ -98,9 +98,11 @@ function OnCommand_EditIndentBlock( _
             byval hEdit as HWND _
             ) as LRESULT
 
-    ' If a TAB was pressed then manually terminate any active autocomplete.
+    ' If a TAB was pressed then manually terminate any active autocomplete
+    ' and eat the TAB character.
     if SciExec(hEdit, SCI_AUTOCACTIVE, 0, 0) then
-        SciExec(hEdit, SCI_AUTOCCOMPLETE, 0, 0) 
+        SciExec(hEdit, SCI_AUTOCCOMPLETE, 0, 0)
+        return 0 
     end if
     if GetFocus = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND) then
         if gFind.bExpanded then SetFocus GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE)

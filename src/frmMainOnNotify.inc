@@ -178,22 +178,11 @@ function frmMain_DoBraceMatching( byval pDoc as clsDocument ptr ) as boolean
         ' Found a brace, but it's unmatched
         SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad )
         SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, braceAtCaret, 0 )
-        '_pEditView->execute(SCI_SETHIGHLIGHTGUIDE, 0)
     else
         ' Found a matched pair or no brace at all
         SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
         SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, braceAtCaret, braceOpposite )
-
-'        if _pEditView->isShownIndentGuide() then
-'            dim columnAtCaret as integer ptr = _pEditView->execute(SCI_GETCOLUMN, braceAtCaret)
-'            dim columnOpposite as integer ptr = _pEditView->execute(SCI_GETCOLUMN, braceOpposite)
-'            _pEditView->execute(SCI_SETHIGHLIGHTGUIDE, iif(columnAtCaret < columnOpposite, columnAtCaret, columnOpposite))
-'        end if
     end if
-
-'    const enable as boolean = (braceAtCaret <> -1) andalso (braceOpposite <> -1)
-'    enableCommand(IDM_SEARCH_GOTOMATCHINGBRACE, enable, MENU or TOOLBAR)
-'    enableCommand(IDM_SEARCH_SELECTMATCHINGBRACES, enable, MENU)
 
     return (braceAtCaret <> -1)
 
@@ -447,7 +436,7 @@ function Scintilla_OnNotify( _
                 case chr(13)  ' ENTER KEY PRESSED
                     pDoc->AutoCompleteType = AUTOCOMPLETE_NONE
                     AttemptAutoInsert()
-        
+                    
                 case chr(32)  ' Space key pressed (Insert AutoComplete constructs if applicable)
                     pDoc->AutoCompleteType = AUTOCOMPLETE_NONE
                     if ShowAutocompleteList() then exit function
@@ -461,7 +450,7 @@ function Scintilla_OnNotify( _
 
     function = 0
 end Function
-
+         
 
 ' ========================================================================================
 ' Process WM_NOTIFY message for window/dialog: frmMain
