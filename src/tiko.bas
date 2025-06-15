@@ -186,6 +186,15 @@ function WinMain( _
     dim as any ptr pLibScintilla = dylibload("Scintilla64.dll")
     gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
 
+pLibScintilla = 0
+    if (pLibLexilla = 0) orelse (pLibScintilla = 0) then
+        MessageBox( 0, _
+                    "Error loading Scintilla DLL's. Ensure C++ redistributable is installed:" + vbcrlf + _
+                    "https://aka.ms/vs/17/release/vc_redist.x64.exe", _
+                    "Error", _
+                    MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
+        return 1
+    end if
 
     ' Load the HTML help library for displaying FreeBASIC help *.chm file
     gpHelpLib = dylibload( "hhctrl.ocx" )
