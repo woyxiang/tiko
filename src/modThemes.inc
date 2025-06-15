@@ -621,6 +621,8 @@ function LoadThemeFile() as boolean
         wszFontName = "Arial"
     end if
 
+'    if isFontNameExist("Segoe MDL2 Assets") then  ' Win10+
+'        wszSymbolFontName = "Segoe MDL2 Assets"
     if isFontNameExist("Segoe UI Symbol") then 
         wszSymbolFontName = "Segoe UI Symbol"
     elseif isFontNameExist("Noto Sans Symbols2") then 

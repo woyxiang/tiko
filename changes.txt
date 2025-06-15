@@ -1,3 +1,6 @@
+Version 1.0.2 (June 14, 2025)
+- Package José Roca's new WinFBX2 (Afx2) framework/library with the FreeBasic compiler
+
 Version 1.0.1 (June 14, 2025)
 - Fixed GPF if "X" close button clicked when "New Project" dialog is showing.
 - Added "deutsch.lang" German language file (contributed by Joerg Buckel).

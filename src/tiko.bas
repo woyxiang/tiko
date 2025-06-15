@@ -38,7 +38,7 @@ using Afx
 #define APPNAME        wstr("Tiko Editor")
 #define APPNAMESHORT   wstr("Tiko")
 #define APPCLASSNAME   wstr("tiko_editor_class")
-#define APPVERSION     wstr("1.0.1") 
+#define APPVERSION     wstr("1.0.2") 
 #define APPEXTENSION   wstr(".tiko") 
 #define APPBITS wstr(" (64-bit)")
 
@@ -159,7 +159,6 @@ function WinMain( _
                     MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
         return 1
     end if
-
 
     ' Load default Explorer Categories should none exist. Need to do it here
     ' rather than from within Config because the localization file must be 

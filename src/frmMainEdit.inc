@@ -258,18 +258,18 @@ function OnCommand_EditFindActions( _
     select case id
         case IDM_FINDPREV
             if (GetForeGroundWindow = HWND_FRMFINDREPLACE) then
-            if gFind.foundCount = 0 then exit function
-            dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) 
-            if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
-            AfxRedrawWindow( HWND_FRMFINDREPLACE )
+                if gFind.foundCount = 0 then exit function
+                dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) 
+                if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
+                AfxRedrawWindow( HWND_FRMFINDREPLACE )
             end if
 
         case IDM_FINDNEXT
             if (GetForeGroundWindow = HWND_FRMFINDREPLACE) then
-            if gFind.foundCount = 0 then exit function
-            dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
-            if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
-            AfxRedrawWindow( HWND_FRMFINDREPLACE )
+                if gFind.foundCount = 0 then exit function
+                dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+                if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
+                AfxRedrawWindow( HWND_FRMFINDREPLACE )
             end if
 
         case IDM_FINDNEXTACCEL, IDM_FINDPREVACCEL   ' F3/Shift+F3
