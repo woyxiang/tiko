@@ -274,13 +274,14 @@ function frmPopupMenu_OnDrawItem( _
             ' Handle caption, keyboard accelerator or submenu marker
             dim as CWSTR wszLeft = AfxStrParse(wszCaption, 1, chr(9))
             dim as CWSTR wszRight = AfxStrParse(wszCaption, 2, chr(9))
+            
             ' checkmark
             if pMenu->isChecked then
-            rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(30) 
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-            DrawText( memDC, wszCheckmark, -1, cast(lpRect, @rcBitmap), wsStyle )
-            SelectObject( memDC, oldFont )
+                rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(30) 
+                wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+                oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
+                DrawText( memDC, wszCheckmark, -1, cast(lpRect, @rcBitmap), wsStyle )
+                SelectObject( memDC, oldFont )
             end if
             oldFont = SelectObject( memDC, ghMenuBar.hFontMenuBar )
             rcText.left = rcText.left + pWindow->ScaleX(30) 
@@ -301,7 +302,8 @@ function frmPopupMenu_OnDrawItem( _
                 rcBitmap.Left = rcText.Right
                 rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(20) 
                 oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-                wsStyle = DT_NOPREFIX or DT_RIGHT or DT_TOP or DT_SINGLELINE
+                'wsStyle = DT_NOPREFIX or DT_RIGHT or DT_TOP or DT_SINGLELINE
+                wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
                 DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
                 SelectObject( memDC, oldFont )
             end if   

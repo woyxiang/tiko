@@ -271,7 +271,7 @@ function frmExplorer_OnDrawItem( _
         if isNodeHeader then
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20)
             SelectObject( memDC, ghMenuBar.hFontSymbol )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE  
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE
             if isIconDown then 
                 DrawText( memDC, wszChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
             else   
@@ -288,12 +288,12 @@ function frmExplorer_OnDrawItem( _
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20) 
 
             SelectObject( memDC, ghMenuBar.hFontSymbol )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE  
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             DrawText( memDC, wszDocumentIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
 
             rcText.left = rcBitmap.right
             SelectObject( memDC, ghMenuBar.hFontMenuBar )
-            wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE  
+            wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
             DrawText( memDC, wszCaption.sptr, -1, cast(lpRect, @rcText), wsStyle )
         end if
             

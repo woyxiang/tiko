@@ -90,8 +90,12 @@ function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
     ' If the compiler Output window is open then ensure that it is now hidden
     ShowWindow( HWND_FRMOUTPUT, SW_HIDE )   
     
-    frmExplorer_PositionWindows
-    frmMain_PositionWindows
+    ' Clear content from functions and bookmarks listboxes
+    LoadFilesAndFunctions()
+    LoadBookmarksFiles()
+    
+    ' Set Explorer as panel in view and then populate it.
+    OnCommand_ViewExplorer()
     LoadExplorerFiles()
     
     frmMain_SetStatusbar

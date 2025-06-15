@@ -602,34 +602,10 @@ function LoadThemeFile() as boolean
     ghOutput.hCloseBrushHot = CreateSolidBrush(pTheme->background)
     ghOutput.CloseBackColorHot = pTheme->background
 
-    ' try to set the default GUI font the application depending on Windows/Wine 
-    ' and use fallback options. Start with Windows options because sometimes
-    ' the user will have Windows fonts installed on their Linux system.
-    dim as CWSTR wszFontName, wszSymbolFontName
-    
-    ' Segue UI *may* exist on Wine/Linux but most likely Segui UI Symbol
-    ' will not, so set the regular gui and symbol fonts separately.
-    if isFontNameExist("Segoe UI") then 
-        wszFontName = "Segoe UI"
-    elseif isFontNameExist("Noto Sans") then 
-        wszFontName = "Noto Sans"
-    elseif isFontNameExist("Open Sans") then 
-        wszFontName = "Open Sans"
-    elseif isFontNameExist("Tahoma") then 
-        wszFontName = "Tahoma"
-    else 
-        wszFontName = "Arial"
-    end if
-
-'    if isFontNameExist("Segoe MDL2 Assets") then  ' Win10+
-'        wszSymbolFontName = "Segoe MDL2 Assets"
-    if isFontNameExist("Segoe UI Symbol") then 
-        wszSymbolFontName = "Segoe UI Symbol"
-    elseif isFontNameExist("Noto Sans Symbols2") then 
-        wszSymbolFontName = "Noto Sans Symbols2"
-    else 
-        wszSymbolFontName = wszFontName
-    end if
+    ' Set the default font names. The editor is only compatible with
+    ' Windows 10 and greater so we know the fonts that are present.
+    dim as CWSTR wszFontName = "Segoe UI"
+    dim as CWSTR wszSymbolFontName = "Segoe UI Symbol"   '"Segoe MDL2 Assets"  
     
     if ghMenuBar.hFontMenuBar = 0 then
         ghMenuBar.hFontMenuBar = pWindow->CreateFont(wszFontName, 10, FW_NORMAL, , , , DEFAULT_CHARSET)

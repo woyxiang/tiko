@@ -55,13 +55,12 @@ function OnCommand_FileOpen( _
 
     dim pDoc as clsDocument ptr
     dim pDocIn as clsDocument ptr
-    
+
     ' Display the Open File Dialog
     dim pItems as IShellItemArray ptr = AfxIFileOpenDialogMultiple(hwnd, IDM_FILEOPEN)
     if pItems = null then exit function
     dim dwItemCount as long, i as long, pItem as IShellItem ptr, pwszName as wstring ptr
     pItems->lpVtbl->GetCount(pItems, @dwItemCount)
-    
     ' Variable length array to hold sequence of TabCtrl tabs to open. We save the sequence
     ' here and open them only after all over documents have been loaded. This will look
     ' visually more appealing for those files that will display in the top Tab Control.

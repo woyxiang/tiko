@@ -289,9 +289,11 @@ dim shared as wstring * 10 _
     wszTriangleDown, wszTriangleUp, wszAddFileButton
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
+
+'"Segoe UI Symbol"
     wszClose             = !"\u2715"      ' light X  
     wszChevronLeft       = !"\uE09A"
-    wszChevronRight      = !"\uE097"
+    wszChevronRight      = !"\uE097" 
     wszChevronUp         = !"\uE098"
     wszChevronDown       = !"\uE099"
     wszTriangleDown      = !"\u23F7"     ' triangle down
@@ -309,4 +311,6 @@ dim shared as wstring * 10 _
     wszReplace           = !"\uE297"     ' replace
     wszReplaceAll        = !"\uE299"     ' replace all
     wszMoreActions       = !"\u22EF"     ' ...
-    wszAddFileButton     = !"\u002B"     ' plus sign
+'    wszAddFileButton     = !"\u002B"     ' plus sign
+    wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
+
