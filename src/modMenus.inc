@@ -519,7 +519,6 @@ function CreateScintillaContextMenu() as HMENU
 end function
 
 
-
 ''
 ''
 function CreateExplorerContextMenu(byval pDoc as clsDocument ptr ) as HMENU

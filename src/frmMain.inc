@@ -925,134 +925,89 @@ function frmMain_OnActivateApp( _
             byval dwThreadId as DWORD _
             ) as LRESULT
 
-    if gApp.PreventActivateApp then exit function
+    ' If app is losing focus then there is nothing we need to do
+    if fActivate = false then exit function
 
-    dim pDoc as clsDocument ptr
-    
+    if gApp.PreventActivateApp then exit function
+    if gApp.GetDocumentCount = 0 then exit function
+
+    ' Re-entry guard
     static bInActivateApp as boolean
     if bInActivateApp then exit function
+    bInActivateApp = true
+
+    ' App is gaining focus. 
+    ' (1) Check for files that may have been moved or delete.
+    ' (2) Check if files modified by external means.
     
-    ' if the application is gaining focus then determine if any of the loaded
-    ' documents have been modified by an external application. if yes, then ask
-    ' the user if wish to reload.
-    if fActivate = true then
-        if gApp.GetDocumentCount = 0 then exit function
-        
-        ' Search all loaded documents
-        dim as FILETIME ft
-        dim as long i, idx, nDocumentCount
-        dim as double nSerial
-        dim as string sText
-        
-        bInActivateApp = true
-        
-        ' Load all pDoc into array and then process. For each pDoc if the user chooses
-        ' not to reload or wants to bypass, then set the pDoc to zero until eventually
-        ' all pDocs are processed.
-        dim pDocs( gApp.GetDocumentCount - 1) as clsDocument ptr
-        idx = 0
+    
+    ' (1) Check for files that may have been moved or delete.
+    dim pDoc as clsDocument ptr = gApp.pDocList
+    dim pDocNext as clsDocument ptr
+    
+    do
         pDoc = gApp.pDocList
         do until pDoc = 0
-            if AfxFileExists(pDoc->DiskFilename) then
-                pDoc->DeletedButKeep = false
-            end if
-            pDocs(idx) = pDoc
-            idx = idx + 1
-            pDoc = pDoc->pDocNext
-        loop
-        
-        do
-            idx = -1
-            for i as long = lbound(pDocs) to ubound(pDocs)
-                if pDocs(i) then 
-                    idx = i: exit for
-                end if
-            next
-            if idx = -1 then exit do
-            pDoc = pDocs(idx)
-            
-            ' Bypass any 'new' untitled files.
-            if pDoc->IsNewFlag then 
-                pDocs(idx) = 0: continue do
-            end if
+            pDocNext = pDoc->pDocNext
 
-            ' Has the external file been deleted or is now not available
             if AfxFileExists(pDoc->DiskFilename) = false then
-                if pDoc->DeletedButKeep = false then
-                    ' Ensure that the file is open and displayed
-                    frmMain_OpenFileSafely(HWND_FRMMAIN, _
-                                            false, _    ' bIsNewFile
-                                            false, _    ' bIsTemplate
-                                            true,  _    ' bShowInTab
-                                            false, _    ' bIsInclude
-                                            "", _       ' wszName
-                                            pDoc )      ' pDocIn
-                    if MessageBox( HWND_FRMMAIN, _
-                                    pDoc->DiskFilename & vbCrLf & _ 
-                                    L(286, "This document has been deleted or is no longer available. Do you wish to keep the file open in the editor?"), _
-                                    L(267, "File Changed"), MB_ICONQUESTION or MB_YESNO) = IDYES then
-                        ' Keep the file open and simply mark it as dirty so it can be prompted to be saved.
-                        pDoc->UserModified = true                
-                    else
-                        ' No. Close the file.
-                        if gApp.IsProjectActive then 
-                            OnCommand_ProjectRemove( 0, pDoc )  ' the first param (id) is not used.
-                        else
-                            if OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT ) = false then continue do
-                        end if    
-                        pDocs(idx) = 0
-                        continue do
-                    end if
-                end if
-                pDoc->DeletedButKeep = true
+                ' Ensure that the file is open and displayed
+                frmMain_OpenFileSafely(HWND_FRMMAIN, _
+                                        false, _    ' bIsNewFile
+                                        false, _    ' bIsTemplate
+                                        true,  _    ' bShowInTab
+                                        false, _    ' bIsInclude
+                                        "", _       ' wszName
+                                        pDoc )      ' pDocIn
+                MessageBox( HWND_FRMMAIN, _
+                                pDoc->DiskFilename & vbCrLf & _ 
+                                L(286, "This document has been deleted or is no longer available."), _
+                                L(267, "File Changed"), MB_ICONINFORMATION or MB_OK)
+                ' Close the file or remove from project.
+                if gApp.IsProjectActive then 
+                    OnCommand_ProjectRemove( 0, pDoc )  ' the first param (id) is not used.
+                else
+                    ' This can not be an IsNew file so we don't have to worry about the pDoc
+                    ' becoming invalid during the FileClose.
+                    OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT )
+                end if    
+            end if    
 
-            else
-                ' Compare the disk file date time to the value currently
-                ' stored in document class.
-                ft = AfxGetFileLastWriteTime(pDoc->DiskFilename)
-                if AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(pDoc->DateFileTime) then
-                    OpenSelectedDocument( pDoc->DiskFilename, "" )
-                    dim as long res = MessageBox( HWND_FRMMAIN, _
-                                    pDoc->DiskFilename & vbCrLf & _ 
-                                    L(266, "File was changed by another application. Reload it?"), _
-                                    L(267, "File Changed"), MB_ICONQUESTION or MB_YESNOCANCEL) 
-                        
-                    if res = IDCANCEL then
-                        bInActivateApp = true
-                        exit function
-                    end if
-                    
-                    if res = IDYES then
-                        dim as CWSTR wszFilename = pDoc->DiskFilename
-                        dim as CWSTR wszFileType = pDoc->ProjectFileType
-                        
-                        ' Remove the current file and open the changed file.
-                        if gApp.IsProjectActive then 
-                            OnCommand_ProjectRemove( 0, pDoc )  ' the first param (id) is not used.
-                        else
-                            if OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT ) = false then continue do
-                        end if    
-                        
-                        ' Ensure that the file is open and displayed
-                        dim as clsDocument ptr pDocLoad = _
-                        frmMain_OpenFileSafely( HWND_FRMMAIN, _
-                                                false, _    ' bIsNewFile
-                                                false, _    ' bIsTemplate
-                                                true,  _    ' bShowInTab
-                                                false, _    ' bIsInclude
-                                                wszFilename, _ ' wszName
-                                                0 )         ' pDocIn
-                        
-                        pDocLoad->ProjectFileType = wszFileType
-                    end if                
-                end if
-                pDoc->DateFileTime = AfxGetFileLastWriteTime( pDoc->DiskFilename )
+            pDoc = pDocNext
+        loop
+    loop until pDoc = 0
+
+
+    ' (2) Check if files modified by external means.
+    pDoc = gApp.pDocList
+
+    do until pDoc = 0
+        ' Compare the disk file date time to the value currently stored in document class. 
+        ' Bypass any 'new' untitled files.
+        dim as FILETIME ft = AfxGetFileLastWriteTime(pDoc->DiskFilename)
+        
+        if (AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(pDoc->DateFileTime)) andalso _
+            (pDoc->IsNewFlag <> true) then
+            
+            OpenSelectedDocument( pDoc->DiskFilename, "" )
+            dim as long res = MessageBox( HWND_FRMMAIN, _
+                            pDoc->DiskFilename & vbCrLf & _ 
+                            L(266, "File was changed by another application. Reload it?"), _
+                            L(267, "File Changed"), MB_ICONQUESTION or MB_YESNOCANCEL) 
+                
+            if res = IDCANCEL then
+                bInActivateApp = false
+                exit function
+            end if
+            
+            if res = IDYES then
+                ReloadDocument(pDoc->DiskFilename)
             end if
 
-            pDocs(idx) = 0
-        loop      
-            
-    end if
+        end if
+        pDoc->DateFileTime = AfxGetFileLastWriteTime( pDoc->DiskFilename )
+        pDoc = pDoc->pDocNext
+    loop
 
     bInActivateApp = false
 

@@ -221,15 +221,17 @@ function OnCommand_ProjectRemove( _
     if pDoc = 0 then exit function
     if gTTabCtl.SetTabIndexByDocumentPtr( pDoc ) <> -1 then
         if OnCommand_FileClose( HWND_FRMMAIN, EFC_CLOSECURRENT ) = false then exit function
-        ' OnCommand_FileClose will also remove the doc from the project
-        ' linked list and database if project is active.
-    else    
-        gdb2.dbDelete( pDoc->DiskFilename )
-        gApp.RemoveDocument( pDoc )
+        ' The FileClose function will also remove any files with pDoc->IsNewFlag = true.
+        ' and invalidate the pDoc memory so check that pDoc is valid if proceeding further.
     end if  
 
-    LoadExplorerFiles()
-
+    ' If the pDoc is still valid the FileClose
+    if gApp.IsValidDocumentPointer(pDoc) then
+        gdb2.dbDelete( pDoc->DiskFilename )
+        gApp.RemoveDocument( pDoc )
+        LoadExplorerFiles()
+    end if
+    
     if gTTabCtl.IsSafeIndex(gTTabCtl.CurSel) then
         frmExplorer_SelectItemData( gTTabCtl.tabs(gTTabCtl.CurSel).pDoc )
     end if

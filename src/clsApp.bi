@@ -39,8 +39,6 @@ type clsApp
         wszCommandLine             as CWSTR             ' non-project commandline (not saved to file)
         wszLastOpenFolder          as CWSTR             ' remembers the last opened folder for the Open Dialog
         
-        hWndAutoCListBox           as hwnd              ' handle of popup autocomplete ListBox window
-            
         IsSessionActive            as boolean
         SessionName                as CWSTR
         SessionFilename            as CWSTR
@@ -53,14 +51,9 @@ type clsApp
         ProjectOther64             as CWSTR             ' compile flags 64 bit compiler
         ProjectNotes               as CWSTR             ' Save/Load from project file
         ProjectCommandLine         as CWSTR
-        ProjectDefaultFont         as CWSTR = "Segoe UI,9,400,0,0,0,1"
         ProjectManifest            as long              ' T/F create a generic resource and manifest file
 
-        ' Global string to track the last accessed property/event in the PropertyList. This allows the
-        ' user to quickly sqitch between controls that share common properties like 'Text'.
-        PreviousPropName           as CWSTR
-        PreviousEventName          as CWSTR
-
+        declare function IsValidDocumentPointer( byval pDocSearch as clsDocument ptr ) as boolean
         declare function AddQuickRunEXE( byref sFilename as wstring ) as long
         declare function CheckQuickRunEXE() as long
         declare function RemoveAllSelectionAttributes() as long

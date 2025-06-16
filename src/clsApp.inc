@@ -17,6 +17,18 @@
 
 ''
 ''
+function clsApp.IsValidDocumentPointer( byval pDocSearch as clsDocument ptr ) as boolean
+    dim pDoc as clsDocument ptr = this.pDocList
+    do until pDoc = 0
+        if pDoc = pDocSearch then return true
+        pDoc = pDoc->pDocNext
+    loop
+    function = false
+end function
+
+
+''
+''
 function clsApp.GetDocumentCount() as long
     dim pDoc as clsDocument ptr = this.pDocList
     dim nCount as long = 0

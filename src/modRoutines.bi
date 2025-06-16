@@ -32,6 +32,7 @@ END TYPE
 
 dim shared as any ptr gpHelpLib
 
+declare function ReloadDocument( byref wszFilename as wstring ) as long
 declare function ShowContextHelp( byval id as long ) as long
 declare function isMouseOverRECT( byval hWin as HWND, byval rc as RECT ) as boolean
 declare function isMouseOverWindow( byval hChild as HWND ) as boolean
@@ -53,14 +54,14 @@ declare function ProcessToCurdriveApp( byval wzFilename as CWSTR ) as CWSTR
 declare function ProcessFromCurdriveApp( byval wzFilename as CWSTR ) as CWSTR
 declare function AfxIFileOpenDialogW( byval hwndOwner as HWND, byval idButton as long) as wstring Ptr
 declare function AfxIFileOpenDialogMultiple( byval hwndOwner as HWND, byval idButton as long) as IShellItemArray ptr
-Declare function AfxIFileSaveDialog( byval hwndOwner as HWND, byval pwszFileName as wstring Ptr, byval pwszDefExt as wstring Ptr, byval id as long = 0, byval sigdnName as SIGDN = SIGDN_FILESYSPATH ) as wstring Ptr
-Declare function LV_InsertItem( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval lParam as LPARAM = 0 ) as boolean
-Declare function LV_GetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as boolean
-Declare function LV_SetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as long
-Declare function LoadLocalizationFile( byref wszFileName as CWSTR, byval IsEnglish as boolean = false ) as boolean
-Declare function GetProcessImageName( byval pe32w as PROCESSENTRY32W ptr, byval pwszExeName as wstring ptr ) as long
-Declare function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
-Declare function GetRunExecutableFilename() as CWSTR
+declare function AfxIFileSaveDialog( byval hwndOwner as HWND, byval pwszFileName as wstring Ptr, byval pwszDefExt as wstring Ptr, byval id as long = 0, byval sigdnName as SIGDN = SIGDN_FILESYSPATH ) as wstring Ptr
+declare function LV_InsertItem( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval lParam as LPARAM = 0 ) as boolean
+declare function LV_GetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as boolean
+declare function LV_SetItemText( byval hWndControl as HWND, byval iRow as long, byval iColumn as long, byval pwszText as wstring ptr, byval nTextMax as long ) as long
+declare function LoadLocalizationFile( byref wszFileName as CWSTR, byval IsEnglish as boolean = false ) as boolean
+declare function GetProcessImageName( byval pe32w as PROCESSENTRY32W ptr, byval pwszExeName as wstring ptr ) as long
+declare function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
+declare function GetRunExecutableFilename() as CWSTR
 declare function GetListBoxEmptyClientArea( byval hListBox as HWND, byval nLineHeight as long ) as RECT
                                             
 

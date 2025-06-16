@@ -99,7 +99,6 @@ type clsDocument
     bHasFunctions         as boolean = false    ' FunctionList to determine if click will display the File
     FileEncoding          as long = FILE_ENCODING_UTF8       
     bNeedsParsing         as boolean            ' Document requires to be parsed due to changes.
-    DeletedButKeep        as boolean            ' file no longer exists but keep open anyway
     DocumentBuild         as string             ' specific build configuration to use for this document
     sMatchWord            as string             ' for the incremental autocomplete search
     AutoCompletetype      as long               ' AUTOC_DIMAS, AUTOC_TYPE
