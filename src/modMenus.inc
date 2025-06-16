@@ -512,13 +512,7 @@ function CreateScintillaContextMenu() as HMENU
     AppendMenu hPopupMenu, MF_ENABLED, IDM_COMMENTBLOCK, L(25,"Block Comment") 
     AppendMenu hPopupMenu, MF_ENABLED, IDM_UNCOMMENTBLOCK, L(26,"Block Uncomment")
     AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
-    AppendMenu hPopupMenu, MF_ENABLED, IDM_selectALL, L(40,"select All")
-    
-    if (gApp.IsProjectActive = true) then
-        AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
-        AppendMenu hPopupMenu, MF_ENABLED, IDM_REMOVEFILEFROMPROJECT, L(190,"Remove from project")
-        AddProjectFileTypesToMenu(hPopUpMenu, pDoc, true, false)
-    end if
+    AppendMenu hPopupMenu, MF_ENABLED, IDM_selectALL, L(40,"Select All")
     
     function = hPopupMenu
 

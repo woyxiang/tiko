@@ -2,6 +2,8 @@ Version 1.0.3 ()
 - Fixed Bookmark artifacts remaining in Bookmarks list after project closed and new file opened (caused GPF).
 - Fixed Lexilla (LexTiko.cxx) that prevented the Tiko [ ] brace matching from working correctly.
 - Fixed TAB character is now eaten after it is used to select an item in autocomplete popup. 
+- Fixed Compile AutoSave now bypasses Save of New File with unmodified buffer.
+- Removed designating file types and remove from project from the popup right click editor window menu.
 
 Version 1.0.2 (June 14, 2025)
 - Package José Roca's new WinFBX2 (Afx2) framework/library with the FreeBasic compiler
