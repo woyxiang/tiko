@@ -300,7 +300,7 @@ function Scintilla_OnNotify( _
                                 ' is also used as a character that selects and closes the popup list. If no
                                 ' PostMessage then the "." will automatically select the first entry in the list
                                 ' and close.
-                        pDoc->AutoCTriggerStartPos = nPos
+                                pDoc->AutoCTriggerStartPos = nPos
                                 pDoc->AutoCompleteType = AUTOCOMPLETE_NONE
                                 PostMessage( HWND_FRMMAIN, MSG_USER_SHOWAUTOCOMPLETE, nChar, 0 )
                         end select 

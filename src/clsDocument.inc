@@ -337,7 +337,7 @@ function clsDocument.SaveFile( _
             CoTaskMemFree(pwszName)
             this.bNeedsParsing = true
         else
-            return false
+            return true  ' file save cancelled
         end if
     end if
 
@@ -365,57 +365,57 @@ function clsDocument.SaveFile( _
     end if   
         
 
-   dim pStream as CFileStream
-   if pStream.Open(wszSaveFilename, STGM_CREATE or STGM_WRITE) = S_OK then
-    dim as string st
-    select case this.FileEncoding
-        case FILE_ENCODING_ANSI
-            if sciCodePage = 0 then    
-               pStream.Write psz, len(*psz)     ' no conversion necessary
-            else
-               ' need to convert
-               st = Utf8ToAnsi(*psz)
-               pStream.Write strptr(st), len(st) 
-            end if    
-            
-        case FILE_ENCODING_UTF8
-            if sciCodePage = SC_CP_UTF8 then    
-               ' no conversion necessary
-               pStream.Write psz, len(*psz)     ' no conversion necessary
-            else
-               ' need to convert
-               st = AnsiToUtf8(*psz)
-               pStream.Write strptr(st), len(st)
-            end if    
+    dim pStream as CFileStream
+    if pStream.Open(wszSaveFilename, STGM_CREATE or STGM_WRITE) = S_OK then
+        dim as string st
+        select case this.FileEncoding
+            case FILE_ENCODING_ANSI
+                if sciCodePage = 0 then    
+                   pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                   ' need to convert
+                   st = Utf8ToAnsi(*psz)
+                   pStream.Write strptr(st), len(st) 
+                end if    
+                
+            case FILE_ENCODING_UTF8
+                if sciCodePage = SC_CP_UTF8 then    
+                   ' no conversion necessary
+                   pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                   ' need to convert
+                   st = AnsiToUtf8(*psz)
+                   pStream.Write strptr(st), len(st)
+                end if    
 
-        case FILE_ENCODING_UTF8_BOM
-            ' Output the BOM first
-            st = chr(&HEF, &HBB, &HBF)
-            pStream.Write strptr(st), len(st)
-            if sciCodePage = SC_CP_UTF8 then    
-               ' no conversion necessary
-               pStream.Write psz, len(*psz)     ' no conversion necessary
-            else
-               ' need to convert
-               st = AnsiToUtf8(*psz)
-               pStream.Write strptr(st), len(st)
-            end if    
+            case FILE_ENCODING_UTF8_BOM
+                ' Output the BOM first
+                st = chr(&HEF, &HBB, &HBF)
+                pStream.Write strptr(st), len(st)
+                if sciCodePage = SC_CP_UTF8 then    
+                   ' no conversion necessary
+                   pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                   ' need to convert
+                   st = AnsiToUtf8(*psz)
+                   pStream.Write strptr(st), len(st)
+                end if    
 
-        case FILE_ENCODING_UTF16_BOM
-            ' Output the BOM first
-            st = chr(&HFF, &HFE)
-            pStream.Write strptr(st), len(st)
-            if sciCodePage = SC_CP_UTF8 then    
-               ' convert utf8 to utf16
-               wst.Utf8 = *psz  ' convert the utf *psz from Utf8
-               pStream.Write wst.m_pBuffer, wst.m_BufferLen
-            else
-                ' need to convert ansi to unicode
-                dim as CWSTR wst = Wstr(*psz)
-                pStream.Write wst.m_pBuffer, wst.m_BufferLen
-            end if    
-            
-        end SELECT
+            case FILE_ENCODING_UTF16_BOM
+                ' Output the BOM first
+                st = chr(&HFF, &HFE)
+                pStream.Write strptr(st), len(st)
+                if sciCodePage = SC_CP_UTF8 then    
+                   ' convert utf8 to utf16
+                   wst.Utf8 = *psz  ' convert the utf *psz from Utf8
+                   pStream.Write wst.m_pBuffer, wst.m_BufferLen
+                else
+                    ' need to convert ansi to unicode
+                    dim as CWSTR wst = Wstr(*psz)
+                    pStream.Write wst.m_pBuffer, wst.m_BufferLen
+                end if    
+                
+        end select
     end if
     pStream.Close
     
@@ -440,7 +440,7 @@ function clsDocument.SaveFile( _
     
     bAutoSaveIsActive = false
     
-    function = true
+    function = false
 end function
 
 

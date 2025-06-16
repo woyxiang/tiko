@@ -311,6 +311,5 @@ dim shared as wstring * 10 _
     wszReplace           = !"\uE297"     ' replace
     wszReplaceAll        = !"\uE299"     ' replace all
     wszMoreActions       = !"\u22EF"     ' ...
-'    wszAddFileButton     = !"\u002B"     ' plus sign
     wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
 

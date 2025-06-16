@@ -68,14 +68,6 @@ function code_Compile( byval wID as long ) as boolean
     ' is not dirty and needs to be saved.
     if wID <> IDM_QUICKRUN then
         if gConfig.CompileAutosave then
-            ' if there any "New" files that have not been edited yet causing them to show 
-            ' as dirty then we will mark them now so that the FileSaveAll command will
-            ' ask to save it (otherwise a compile error will show).
-            dim pDoc as clsDocument ptr = gApp.pDocList
-            do until pDoc = 0
-                if pDoc->IsNewFlag then pDoc->UserModified = true
-                pDoc = pDoc->pDocNext
-            loop
             if OnCommand_FileSaveAll(HWND_FRMMAIN) then 
                 SetCompileStatusBarMessage( "", 0 )
                 return true  ' user cancelled save

@@ -163,7 +163,7 @@ function OnCommand_FileSave( _
             byval pDoc as clsDocument ptr, _
             byval bSaveAs as boolean, _
             byval bSaveAll as boolean _
-            ) as LRESULT
+            ) as boolean
 
     if gApp.GetDocumentCount = 0 then exit function
     
@@ -186,19 +186,24 @@ function OnCommand_FileSave( _
             if pDoc = 0 then continue for
         end if   
 
-        ' Do the actual saving to disk
-        dim wszFilename as CWSTR = pDoc->DiskFilename
-        if pDoc->SaveFile(bSaveAs) then
-            pDoc->ApplyProperties
-            pDoc->ParseDocument()
-            ' Apply document properties to this file because the file extension may have
-            ' changed. for example from Untitled to *.bas
-            if pDoc->DiskFilename <> wszFilename then
-                if gApp.IsProjectActive then
-                    gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
+        If (cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 ) <> 0)) orelse _
+           (pDoc->UserModified = true) orelse (bSaveAs = true) then   
+            ' Do the actual saving to disk
+            dim wszFilename as CWSTR = pDoc->DiskFilename
+            if pDoc->SaveFile(bSaveAs) = false then
+                pDoc->ApplyProperties
+                pDoc->ParseDocument()
+                ' Apply document properties to this file because the file extension may have
+                ' changed. for example from Untitled to *.bas
+                if pDoc->DiskFilename <> wszFilename then
+                    if gApp.IsProjectActive then
+                        gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
+                    end if
                 end if
+            else
+                return true   
             end if
-        end if
+        end if    
 
         ' Ensure that the Tab displays the correct filename in case it was changed
         gTTabCtl.SetTabText(-1)
@@ -209,7 +214,7 @@ function OnCommand_FileSave( _
 
     frmMain_SetFocusToCurrentCodeWindow
 
-    function = 0
+    function = false
 end function
 
 
@@ -264,13 +269,11 @@ end function
 ' ========================================================================================
 ' Save all open files to disk
 ' ========================================================================================
-function OnCommand_FileSaveAll( byval hwnd as HWND ) as LRESULT
+function OnCommand_FileSaveAll( byval hwnd as HWND ) as boolean
 
     if gTTabCtl.GetItemCount = 0 then exit function
                 
-    function = OnCommand_FileSave( HWnd, 0, false, true )
-
-    function = 0
+    return OnCommand_FileSave( hwnd, 0, false, true )
 end function
 
 
@@ -335,7 +338,7 @@ function OnCommand_FileClose( _
             if r = IDCANCEL then exit function
             if r = IDYES then 
                 r = pDoc->SaveFile()
-                if r = false then exit function   ' save was cancelled
+                if r = true then exit function   ' save was cancelled
                 elseif r = IDNO then
                 ' Delete any existing AutoSave file because at this point the user doesn't
                 ' care about any unsaved changes.
