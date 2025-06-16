@@ -178,14 +178,6 @@ function OnCommand_ViewSidePanel() as LRESULT
     function = 0
 end function
 
-function OnCommand_ViewFunctionList() as LRESULT
-    ShowWindow( HWND_FRMPANEL, SW_SHOW )
-    gPanel.hActiveChild = HWND_FRMFUNCTIONS
-    frmPanel_PositionWindows
-    frmMain_PositionWindows
-    function = 0
-end function
-
 function OnCommand_ViewExplorer() as LRESULT
     ShowWindow( HWND_FRMPANEL, SW_SHOW )
     gPanel.hActiveChild = HWND_FRMEXPLORER
@@ -194,7 +186,23 @@ function OnCommand_ViewExplorer() as LRESULT
     function = 0
 end function
 
+function OnCommand_ViewFunctionList() as LRESULT
+    ' If FunctionList is already active then toggle back to Explorer    
+    if gPanel.hActiveChild = HWND_FRMFUNCTIONS then
+        return OnCommand_ViewExplorer()
+    end if
+    ShowWindow( HWND_FRMPANEL, SW_SHOW )
+    gPanel.hActiveChild = HWND_FRMFUNCTIONS
+    frmPanel_PositionWindows
+    frmMain_PositionWindows
+    function = 0
+end function
+
 function OnCommand_ViewBookmarksList() as LRESULT
+    ' If BookmarksList is already active then toggle back to Explorer    
+    if gPanel.hActiveChild = HWND_FRMBOOKMARKS then
+        return OnCommand_ViewExplorer()
+    end if
     ShowWindow( HWND_FRMPANEL, SW_SHOW )
     gPanel.hActiveChild = HWND_FRMBOOKMARKS
     frmPanel_PositionWindows

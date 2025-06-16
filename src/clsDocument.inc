@@ -1317,13 +1317,18 @@ function clsDocument.ApplyProperties() as long
     
     for i as long = lbound(m_pSci) to ubound(m_pSci)
 
+		SciMsg( m_pSci(i), SCI_SETFONTQUALITY, SC_EFF_QUALITY_LCD_OPTIMIZED, 0)
+
         ' Add Brace Highlighting functionality:
+        ' We use indicators because the lexer can overwrite the colors set STYLE_BRACELIGHT and
+        ' STYLE_BRACEBAD once they are outputted to the screen.
         ' First, we set the style of the indicator number we want to use to the Box style
-        SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_STRAIGHTBOX )
+        'SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_BOX )
+        SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_PLAIN) 
         ' then, we make that indicator the current one
         SciMsg( m_pSci(i), SCI_SETINDICATORCURRENT, 9, 0 )
         ' Lastly, we apply the indicator (in this case), to a single char
-        SciMsg( m_pSci(i), SCI_BRACEHIGHLIGHTINDICATOR, 1, 9 )  ' use indicator for SCI_BRACEHIGHLIGHTINDICATOR...
+        SciMsg( m_pSci(i), SCI_BRACEHIGHLIGHTINDICATOR, 1, 9 )  ' use indicator for SCI_BRACEHIGHLIGHTINDICATOR
         SciMsg( m_pSci(i), SCI_BRACEBADLIGHTINDICATOR, 1, 9 )   ' and SCI_BRACEBADLIGHTINDICATOR
 
         SciMsg( m_pSci(i), SCI_STYLESETFONT, STYLE_DEFAULT, cast(LPARAM, strptr(strFontName)) )

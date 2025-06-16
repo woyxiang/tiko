@@ -25,10 +25,11 @@ end type
 dim shared gPanelButton(any) as PANEL_BUTTON_TYPE
 
 type PANEL_TYPE
-    hActiveChild as HWND
-    wszLabel     as CWSTR
-    rcLabel      as RECT
-    rcActionMenu as RECT
+    hActiveChild   as HWND
+    wszLabel       as CWSTR
+    rcLabel        as RECT     ' EXPLORER, FUNCTION LIST, BOOKMARKS
+    rcBuildExecute as RECT
+    rcActionMenu   as RECT
 end type
 dim shared gPanel as PANEL_TYPE
 

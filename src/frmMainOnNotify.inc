@@ -176,7 +176,7 @@ function frmMain_DoBraceMatching( byval pDoc as clsDocument ptr ) as boolean
 
     if (braceAtCaret <> -1) andalso (braceOpposite = -1) then
         ' Found a brace, but it's unmatched
-        SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad )
+        SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad ) 
         SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, braceAtCaret, 0 )
     else
         ' Found a matched pair or no brace at all
