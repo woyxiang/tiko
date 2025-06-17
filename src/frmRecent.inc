@@ -243,7 +243,7 @@ private function frmRecent_Tree_SubclassProc ( _
                     end if
                 end if
                 frmMain_PositionWindows
-                SetFocusScintilla
+                frmMain_SetFocusToCurrentCodeWindow
             end if   
             
         case WM_KEYUP

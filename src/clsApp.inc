@@ -344,8 +344,8 @@ end function
 ''
 ''
 function clsApp.GetDocumentPtrByWindow( byval hWindow as hwnd) as clsDocument ptr
-    ' Find the pDoc pointer based on all the available hWindow for the any loaded
-    ' document or visual designer.
+    ' Find the pDoc pointer based on all the available hWindow 
+    ' for any loaded document.
     dim pDoc as clsDocument ptr = this.pDocList
     if hWindow = null then exit function
     

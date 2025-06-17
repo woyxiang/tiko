@@ -1361,12 +1361,6 @@ function frmMain_WndProc( _
             frmFindReplace_PositionWindows
         
         case WM_NCACTIVATE
-            ' Ensure that the caption bar for any DesignerForm retains its active 
-            ' state. This looks better than having it lose and gain active colors. 
-            if wParam then
-                PostMessage hwnd, MSG_USER_SETFOCUS, 0, 0
-            end if
-            
             ' if wParam is false then the system wants to draw an inactive title bar. we
             ' will prevent this action if a popup menu from the menubar is active.
             if wParam = false then
@@ -1400,9 +1394,6 @@ function frmMain_WndProc( _
         case WM_CAPTURECHANGED
             gApp.bDragTabActive = false
             
-        case WM_SETFOCUS
-            frmMain_SetFocusToCurrentCodeWindow
-
         case WM_COPYDATA      ' used during processing of commandline
 '            dim pDataToGet as COPYDATASTRUCT ptr
 '            dim pwszArg as wstring ptr 
@@ -1451,6 +1442,9 @@ function frmMain_WndProc( _
             ' Set the focus to the Scintilla window. This will call frmMain_SetStatusbar.
             frmMain_SetFocusToCurrentCodeWindow()
             exit function
+
+        case WM_SETFOCUS
+            frmMain_SetFocusToCurrentCodeWindow
 
         case MSG_USER_SETFOCUS
             ' Set focus to current Scintilla window and update the document

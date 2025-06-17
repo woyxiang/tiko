@@ -58,8 +58,6 @@ type PROJECT_FILELOAD_DATA
     bLoadInTab     as boolean
     wszBookmarks   as CWSTR        ' pDoc->GetBookmarks()
     wszFoldPoints  as CWSTR        ' pDoc->GetFoldPoints()
-    IsDesigner     as boolean
-    IsDesignerView as long         
     nFirstLine     as long         ' first line of main view 
     nPosition      as long         ' current position of main view
     nFirstLine1    as long         ' first line of second view 

@@ -52,35 +52,18 @@ function frmFindReplace_PositionWindows() as LRESULT
     dim wszText as wstring * 100 = gFind.wszResults
     dim as long nResultsWidth = _
             getTextWidth(HWND_FRMFINDREPLACE, wszText, ghStatusBar.hFontStatusBar, 0) + 6
-            
+
     pWindow->SetClientSize( 350 + max(70, nResultsWidth), iif(gFind.bExpanded, 66, 33) )
-
-    ' find/replace is a popup window so we need to use screen coordinates. Place the 
-    ' window just below the toptabs or the menubar if the toptabs are not showing.
-    ' Place the window the width of 2 scrollbars from the right of the main window.
-    dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
-                                HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
-    dim as RECT rc = AfxGetWindowRect( hCtrl )
-    SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, HWND_TOP, _
-                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - _
-                        pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR*3) - pWindow->ScaleX(3), _
-                    rc.bottom, _
-                    AfxGetWindowWidth(HWND_FRMFINDREPLACE) + pWindow->ScaleY(6), _
-                    AfxGetWindowHeight(HWND_FRMFINDREPLACE) + pWindow->ScaleY(3), _
-                    SWP_SHOWWINDOW )
-    SetWindowPos( HWND_FRMFINDREPLACE, HWND_TOP, _
-                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR * 3), _
-                    rc.bottom, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE )
-
-    dim as long frmWidth   = AfxGetWindowWidth( HWND_FRMFINDREPLACE )
-    dim as long frmHeight  = AfxGetWindowHeight( HWND_FRMFINDREPLACE )
-    dim as long iconWidth  = pWindow->ScaleX(24)
-    dim as long iconHeight = pWindow->ScaleY(24)
+            
+    dim as long frmWidth      = AfxGetWindowWidth( HWND_FRMFINDREPLACE )
+    dim as long frmHeight     = AfxGetWindowHeight( HWND_FRMFINDREPLACE )
+    dim as long iconWidth     = pWindow->ScaleX(24)
+    dim as long iconHeight    = pWindow->ScaleY(24)
     dim as long textBoxHeight = pWindow->ScaleY(24)
-    dim as long hmargin    = pWindow->ScaleX(2)
-    dim as long vmargin    = pWindow->ScaleX(6)
-    dim as long nLeft      = pWindow->ScaleY(2)    ' account for the LeftEdge border
-    dim as long nTop       = 0
+    dim as long hmargin       = pWindow->ScaleX(2)
+    dim as long vmargin       = pWindow->ScaleX(6)
+    dim as long nLeft         = pWindow->ScaleY(2)    ' account for the LeftEdge border
+    dim as long nTop          = 0
 
     ' Set the RECT values for each element that we draw in the form. We use these RECTs for
     ' hot hittests and for clicking hittests.
@@ -96,7 +79,7 @@ function frmFindReplace_PositionWindows() as LRESULT
     nTop  = vmargin
     nLeft = gFind.rcExpand.Right + hmargin
     SetWindowPos( GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND), 0, _
-                    nLeft, nTop, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE )
+                    nLeft, nTop, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE or SWP_NOZORDER )
 
     ' Match Case RECT
     gFind.rcMatchCase.Left = nLeft + _
@@ -145,7 +128,7 @@ function frmFindReplace_PositionWindows() as LRESULT
     nTop  = vmargin + textBoxHeight + vmargin
     nLeft = gFind.rcExpand.Right + hmargin
     SetWindowPos( GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE), 0, _
-                    nLeft, nTop, 0, 0, iif(gFind.bExpanded, SWP_SHOWWINDOW, SWP_HIDEWINDOW) or SWP_NOSIZE )
+                    nLeft, nTop, 0, 0, iif(gFind.bExpanded, SWP_SHOWWINDOW, SWP_HIDEWINDOW) or SWP_NOSIZE or SWP_NOZORDER )
 
     ' Preserve Case RECT
     gFind.rcPreserve.Left = nleft + _
@@ -166,6 +149,8 @@ function frmFindReplace_PositionWindows() as LRESULT
     gFind.rcReplaceAll.right = gFind.rcReplaceAll.Left + iconWidth
     gFind.rcReplaceAll.bottom = gFind.rcReplaceAll.top + iconWidth
 
+    AfxRedrawWindow(HWND_FRMFINDREPLACE)
+    
     function = 0
 end function
 
@@ -190,7 +175,7 @@ function frmFindReplace_NextSelection( _
     lenFind = len(txtFind)
     endPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
     if endPos = 0 then exit function
-    
+ 
     ' Build an array holding all of the selection positions
     redim iPositions(100) as long
     
@@ -450,8 +435,6 @@ function frmFindReplace_OnCommand( _
             if (codeNotify = EN_CHANGE) then
                 gFind.txtFind = AfxGetWindowText(hwndCtl)
                 frmFindReplace_HighlightSearches( true )
-                SetFocus( hwndCtl )   ' in case search stole focus from textbox
-                AfxRedrawWindow( hwnd )
             elseif (codeNotify = EN_SETFOCUS) then
                 AfxRedrawWindow( hwnd )
             end if
@@ -764,7 +747,7 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc then 
         pDoc->RemoveMarkerHighlight
-        SetFocusScintilla
+        frmMain_SetFocusToCurrentCodeWindow
     end if
         
     HWND_FRMFINDREPLACE = 0
@@ -1116,7 +1099,26 @@ function frmFindReplace_Show( _
     ' there is a block selected.
 
     gFind.wszResults = L(269, "No results")
+
     frmFindReplace_PositionWindows
+    
+    ' find/replace is a popup window so we need to use screen coordinates. Place the 
+    ' window just below the toptabs or the menubar if the toptabs are not showing.
+    ' Place the window the width of 2 scrollbars from the right of the main window.
+    dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
+                                HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
+    dim as RECT rc = AfxGetWindowRect( hCtrl )
+    SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, 0, _
+                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - _
+                        pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR*3) - pWindow->ScaleX(3), _
+                    rc.bottom, _
+                    AfxGetWindowWidth(HWND_FRMFINDREPLACE) + pWindow->ScaleY(6), _
+                    AfxGetWindowHeight(HWND_FRMFINDREPLACE) + pWindow->ScaleY(3), _
+                    SWP_SHOWWINDOW or SWP_NOZORDER)
+    SetWindowPos( HWND_FRMFINDREPLACE, 0, _
+                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR * 3), _
+                    rc.bottom, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE or SWP_NOZORDER)
+
 
     sFindText = pDoc->GetSelText
     if pDoc->IsMultilineSelection = false then

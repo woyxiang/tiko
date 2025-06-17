@@ -244,7 +244,7 @@ end function
 ''
 ''
 function clsTopTabCtl.DisplayScintilla( byval idx as long, byval bShow as boolean ) as long
-    ' Show/Hide the Scintilla editing window (or visual designer window) for the incoming tab index
+    ' Show/Hide the Scintilla editing window for the incoming tab index
     dim pDocShow as clsDocument ptr
 
     if this.IsSafeIndex(idx) = false then exit function

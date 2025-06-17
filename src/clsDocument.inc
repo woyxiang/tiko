@@ -24,9 +24,9 @@
 ''
 ''
 destructor clsDocument
-    ' Delete any manually allocated CWindows in the designer
+    ' Delete any manually allocated scintilla edit windows in the editor
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
-        DestroyWindow this.hWindow(i)    ' destroy the scintilla/designer windows
+        DestroyWindow this.hWindow(i)
     next
 
     ' Repaint the main area because we don't want any splitter to show
@@ -175,9 +175,6 @@ function clsDocument.CreateCodeWindow( _
             dim as string st
             dim as long idx
             
-            ' Set a flag that we are loading code from a file. This is important because if the file
-            ' contains visual designer code then we only want to apply control properties after all of 
-            ' the file is read, otherwise it would get applied immediately after each call to CreateToolboxControl.
             this.LoadingFromFile = true
             this.DiskFilename = wszFile   ' assign before GetFileTostring because needed for RelativeFile calculation.
             
