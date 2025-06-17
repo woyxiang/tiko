@@ -287,7 +287,7 @@ function frmExplorer_OnDrawItem( _
             rcBitmap.left = rcText.left + pWindow->ScaleX(20)
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20) 
 
-            SelectObject( memDC, ghMenuBar.hFontSymbol )
+            SelectObject( memDC, ghMenuBar.hFontMenuBar )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             DrawText( memDC, wszDocumentIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
 

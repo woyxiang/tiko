@@ -320,7 +320,7 @@ dim shared as wstring * 10 _
     wszChevronRight      = !"\uE013" 
     wszChevronUp         = !"\uE014"
     wszChevronDown       = !"\uE015"
-    wszDocumentIcon      = !"\u22C5"     ' small dot
+    wszDocumentIcon      = !"\u00B7"     ' small dot (use the regular Segue UI font for this one)
     wszUpArrow           = !"\uF0AD"     ' up arrow
     wszDownArrow         = !"\uF0AE"     ' down arrow
     wszSelection         = !"\uE14C"     ' selection icon
