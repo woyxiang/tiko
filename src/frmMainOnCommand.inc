@@ -145,7 +145,7 @@ function frmMain_OnCommand( _
         case IDM_FILENEWLASTTAB:     OnCommand_FileNew( hwnd, true )
         case IDM_FILEOPEN:           OnCommand_FileOpen( hwnd, true )
         case IDM_FILEOPENASTEMPLATE: OnCommand_FileOpen( hwnd, true, true )
-        case IDM_FILESAVE:           OnCommand_FileSave( hwnd, pDoc, false, false )
+        case IDM_FILESAVE:           OnCommand_FileSave( hwnd, pDoc, pDoc->IsNewFlag, false )
         case IDM_FILESAVEAS:         OnCommand_FileSave( hwnd, pDoc, true, false )
         case IDM_FILERENAME:         OnCommand_FileRename( hwnd, pDoc )
         case IDM_FILECLOSE:          OnCommand_FileClose( hwnd, EFC_CLOSECURRENT )

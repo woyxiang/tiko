@@ -280,7 +280,7 @@ function frmStatusBar_WndProc( _
         
         ' paint the panels
         for i as long = lbound(gSBPanels) to ubound(gSBPanels)
-            if ghStatusBar.hFontStatusBar then SelectObject(memDC, ghStatusBar.hFontStatusBar)
+            SelectObject(memDC, ghStatusBar.hFontStatusBar)
             SetBkColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.BackColorHot, ghStatusBar.BackColor) )   
             SetTextColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.ForeColorHot, ghStatusBar.ForeColor) )
             FillRect( memDC, @gSBPanels(i).rc, iif( gSBPanels(i).isHot, ghStatusBar.hBackBrushHot, ghStatusBar.hBackBrush) )

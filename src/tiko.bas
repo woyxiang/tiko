@@ -85,6 +85,7 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmEditorHScroll.inc" 
 #include once "frmEditorVScroll.inc" 
 #include once "frmPanel.inc" 
+#include once "frmPanelMenu.inc" 
 #include once "frmExplorer.inc" 
 #include once "frmBookmarks.inc" 
 #include once "frmFunctions.inc" 

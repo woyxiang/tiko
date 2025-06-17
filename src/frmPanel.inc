@@ -17,9 +17,11 @@
 ''   
 
 #include once "frmPanel.bi"
+#include once "frmPanelMenu.bi"
 #include once "frmExplorer.bi"
 #include once "frmBookmarks.bi"
 #include once "frmFunctions.bi"
+
 
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
@@ -56,9 +58,21 @@ function frmPanel_PositionWindows() as LRESULT
     dim as long nLeft = 0
     if gConfig.ExplorerPositionRight then nLeft = pWindow->ScaleX(3)  ' allow for grab
     
-    dim as long nTop = rc.top  + pWindow->ScaleY(46)
-    dim as long nWidth = rc.right  - rc.Left - pWindow->ScaleX(3)   
-    dim as long nHeight = gPanelButton(0).rc.top - rc.top - nTop
+    dim as long nPanelMenuHeight = pWindow->ScaleY(TOPTABS_HEIGHT)
+    dim as long nPanelHeaderHeight = pWindow->ScaleY(46)
+    
+    dim as long nTop = 0
+    dim as long nWidth = rc.right  - rc.Left
+    dim as long nHeight = nPanelMenuHeight
+
+    ' Position the panel menu
+    SetWindowPos( HWND_FRMPANEL_MENU, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
+    frmPanelMenu_PositionWindows()
+'    
+    
+    nTop = rc.top + nPanelMenuHeight + nPanelHeaderHeight
+    nWidth = nWidth - pWindow->ScaleX(3)   
+    nHeight = gPanelButton(0).rc.top - nTop
 
     SetWindowPos( HWND_FRMEXPLORER, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
     SetWindowPos( HWND_FRMBOOKMARKS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
@@ -69,7 +83,7 @@ function frmPanel_PositionWindows() as LRESULT
             ShowWindow( HWND_FRMBOOKMARKS, SW_HIDE )
             ShowWindow( HWND_FRMFUNCTIONS, SW_HIDE )
 
-            gPanel.wszLabel = L(247,"EXPLORER")
+            gPanel.wszHeader = L(247,"EXPLORER")
             ShowWindow( HWND_FRMEXPLORER, SW_SHOW )
             gPanelVScroll.hListBox = HWND_FRMEXPLORER_LISTBOX
 
@@ -82,7 +96,7 @@ function frmPanel_PositionWindows() as LRESULT
             ShowWindow( HWND_FRMEXPLORER, SW_HIDE )
             ShowWindow( HWND_FRMFUNCTIONS, SW_HIDE )
 
-            gPanel.wszLabel = ucase( L(188,"Bookmarks") )
+            gPanel.wszHeader = ucase( L(188,"Bookmarks") )
             ShowWindow( HWND_FRMBOOKMARKS, SW_SHOW )
             gPanelVScroll.hListBox = HWND_FRMBOOKMARKS_LISTBOX
         
@@ -95,7 +109,7 @@ function frmPanel_PositionWindows() as LRESULT
             ShowWindow( HWND_FRMEXPLORER, SW_HIDE )
             ShowWindow( HWND_FRMBOOKMARKS, SW_HIDE )
 
-            gPanel.wszLabel = ucase( L(223,"Function List") )
+            gPanel.wszHeader = ucase( L(223,"Function List") )
             ShowWindow( HWND_FRMFUNCTIONS, SW_SHOW )
             gPanelVScroll.hListBox = HWND_FRMFUNCTIONS_LISTBOX
 
@@ -106,13 +120,13 @@ function frmPanel_PositionWindows() as LRESULT
     end select
 
     ' calculate the rect for the panel label (EXPLORER, FUNCTION LIST, BOOKMARKS)
-    with gPanel.rcLabel 
+    with gPanel.rcHeader 
         .left = pWindow->ScaleX( 10 )
-        .top = pWindow->ScaleY( 10 )
+        .top = nPanelMenuHeight + pWindow->ScaleY( 10 )
         .bottom = .top + pWindow->ScaleY( 20 )
         .right = .left + _
                 pWindow->ScaleX( _
-                    getTextWidth(HWND_FRMPANEL, gPanel.wszLabel, ghStatusBar.hFontStatusBar, 10) _
+                    getTextWidth(HWND_FRMPANEL, gPanel.wszHeader, ghStatusBar.hFontStatusBar, 10) _
                 )
     end with
 
@@ -121,26 +135,32 @@ function frmPanel_PositionWindows() as LRESULT
     dim as long ActionButtonHeight = 22
     with gPanel.rcActionMenu
         .left = rc.right - pWindow->ScaleX(ActionButtonWidth + 10)
-        .top = pWindow->ScaleY(7)
+        .top = nPanelMenuHeight + pWindow->ScaleY(7)
         .right = .left + pWindow->ScaleX(ActionButtonWidth)
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)
     end with
     
-    ' calculate the build/execute button
-    dim as long BuildExecuteButtonWidth = 22
-    dim as long BuildExecuteButtonHeight = 22
-    with gPanel.rcBuildExecute
-        .left = gPanel.rcActionMenu.left - pWindow->ScaleX(BuildExecuteButtonWidth)
-        .top = pWindow->ScaleY(7)
-        .right = .left + pWindow->ScaleX(BuildExecuteButtonWidth)
-        .bottom = .top + pWindow->ScaleY(BuildExecuteButtonHeight)
-    end with
-
     RedrawWindow( gPanelVScroll.hListBox, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
     RedrawWindow( HWND_FRMPANEL, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
     function = 0
 end function
+
+
+' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmPanel
+' ========================================================================================
+function frmPanel_OnDestroy( byval hwnd as HWND ) as LRESULT
+    ' Delete all the panel CWindow pointers because these child windows
+    ' are about to get destroyed.
+    dim pWindow as CWindow ptr 
+    pWindow = AfxCWindowPtr( HWND_FRMPANEL_MENU ): if pWindow then delete pWindow
+    pWindow = AfxCWindowPtr( HWND_FRMEXPLORER ): if pWindow then delete pWindow
+    pWindow = AfxCWindowPtr( HWND_FRMFUNCTIONS ): if pWindow then delete pWindow
+    pWindow = AfxCWindowPtr( HWND_FRMBOOKMARKS ): if pWindow then delete pWindow
+
+    function = 0
+end Function
 
 
 ' ========================================================================================
@@ -237,7 +257,7 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     oldFont = SelectObject( memDC, ghStatusBar.hFontStatusBar )
 
     dim as long wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE  
-    DrawText( memDC, gPanel.wszLabel.sptr, -1, cast(lpRect, @gPanel.rcLabel), wsStyle )
+    DrawText( memDC, gPanel.wszHeader.sptr, -1, cast(lpRect, @gPanel.rcHeader), wsStyle )
     SelectObject( memDC, oldFont )
     
     ' Draw the BuildExecute menu item only if there is currently an open file or
@@ -357,14 +377,15 @@ function frmPanel_WndProc( _
     static hTooltip as hwnd
 
     select case uMsg
-        HANDLE_MSG (hwnd, WM_SIZE,  frmPanel_OnSize)
-        HANDLE_MSG (hwnd, WM_PAINT, frmPanel_OnPaint)
-    
+        HANDLE_MSG (hwnd, WM_SIZE,    frmPanel_OnSize)
+        HANDLE_MSG (hwnd, WM_PAINT,   frmPanel_OnPaint)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmPanel_OnDestroy)
+
     case WM_ERASEBKGND
         return true
 
     case WM_MOUSEMOVE
-        dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMEXPLORER)
+        dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
         if pWindow = 0 then exit function
 
         dim tme as TrackMouseEvent
@@ -544,7 +565,6 @@ function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     ' Only make the Panel initially visible if it was already visible
     ' when the most previous instance of the program closed. Also, set the width of
@@ -558,7 +578,8 @@ function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
 
-    ' Create the Explorer child window
+    ' Create the child windows
+    frmPanelMenu_Show( HWND_FRMPANEL )
     frmExplorer_Show( HWND_FRMPANEL )
     frmBookmarks_Show( HWND_FRMPANEL )
     frmFunctions_Show( HWND_FRMPANEL )
