@@ -35,17 +35,20 @@ function frmPanel_PositionWindows() as LRESULT
     dim as Rect rc
     GetClientRect( HWND_FRMPANEL, @rc )
 
+    dim as long nPanelMenuHeight = pWindow->ScaleY(TOPTABS_HEIGHT)
+    dim as long nPanelHeaderHeight = pWindow->ScaleY(46)
+
     redim gPanelButton(1) as PANEL_BUTTON_TYPE
     
     gPanelButton(1).rc.left = rc.left
     gPanelButton(1).rc.right = rc.right
     gPanelButton(1).rc.bottom = rc.bottom
-    gPanelButton(1).rc.top = rc.bottom - pWindow->ScaleY(TOPTABS_HEIGHT)
-    
+    gPanelButton(1).rc.top = rc.bottom - nPanelMenuHeight
+
     gPanelButton(0).rc.left = rc.left
     gPanelButton(0).rc.right = rc.right
     gPanelButton(0).rc.bottom = gPanelButton(1).rc.top 
-    gPanelButton(0).rc.top = gPanelButton(1).rc.top - pWindow->ScaleY(TOPTABS_HEIGHT)
+    gPanelButton(0).rc.top = gPanelButton(1).rc.top - nPanelMenuHeight
 
     if gApp.GetDocumentCount = 0 then
         SetRectEmpty( @gPanelButton(0).rc )
@@ -53,13 +56,10 @@ function frmPanel_PositionWindows() as LRESULT
     end if
 
     ' show/hide of the child window is done separately in order to prevent blank client area from 
-    ' painting before the lists are loaded. Allow a 2 pixel right border between listbox and
+    ' painting before the lists are loaded. Allow a 3 pixel right border between listbox and
     ' form edge in order to allow for panel resizing. 
     dim as long nLeft = 0
     if gConfig.ExplorerPositionRight then nLeft = pWindow->ScaleX(3)  ' allow for grab
-    
-    dim as long nPanelMenuHeight = pWindow->ScaleY(TOPTABS_HEIGHT)
-    dim as long nPanelHeaderHeight = pWindow->ScaleY(46)
     
     dim as long nTop = 0
     dim as long nWidth = rc.right  - rc.Left
@@ -179,47 +179,7 @@ function frmPanel_OnSize( _
     function = 0
 end function
         
-' ========================================================================================
-' Do hit test to determine if BuildExecute button in action Area was clicked
-' ========================================================================================
-function isPanelBuildExecuteButtonHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gPanel.rcBuildExecute, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test to determine if "..." button in action Area was clicked
-' ========================================================================================
-function isPanelActionButtonHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gPanel.rcActionMenu, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test on Button0 
-' ========================================================================================
-function isPanelButton0HitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gPanelButton(0).rc, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test on Button1
-' ========================================================================================
-function isPanelButton1HitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gPanelButton(1).rc, pt ) then return true
-    function = false
-end function
-
-
+        
 ' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmPanel
 ' ========================================================================================
@@ -260,41 +220,9 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     DrawText( memDC, gPanel.wszHeader.sptr, -1, cast(lpRect, @gPanel.rcHeader), wsStyle )
     SelectObject( memDC, oldFont )
     
-    ' Draw the BuildExecute menu item only if there is currently an open file or
-    ' project is active.
-    dim as boolean bShowButton = false
-    if gApp.IsProjectActive then
-        if gApp.GetDocumentCount > 0 then bShowButton = true
-    else
-        if gTTabCtl.GetItemCount > 0 then bShowButton = true        
-    end if
-    if bShowButton then
-        SetTextColor( memDC, ghPanel.ForeColorHot )
-        if isPanelBuildExecuteButtonHitTest( hwnd ) then
-            oldBrush = SelectObject( memDC, ghPanel.hBackBrushHot )
-            SetBkColor( memDC, ghPanel.BackColorHot )
-        else
-            oldBrush = SelectObject( memDC, ghPanel.hPanelBrush )
-            SetBkColor( memDC, ghPanel.BackColor )
-        end if
-        rc = gPanel.rcBuildExecute
-
-        hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-        oldPen = SelectObject( memDC, hPenNull )
-        RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-        DeleteObject SelectObject( memDC, oldPen )
-        
-        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-        oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-        'rc.top += pWindow->ScaleY(2): rc.bottom -= pWindow->ScaleY(2): 
-        DrawText( memDC, wszBuildExecute, -1, cast(lpRect, @rc), wsStyle )
-        SelectObject( memDC, oldFont )
-        SelectObject( memDC, oldBrush )
-    end if
-
     ' Draw the "..." menu item
     SetTextColor( memDC, ghPanel.ForeColorHot )
-    if isPanelActionButtonHitTest( hwnd ) then
+    if isMouseOverRECT( hwnd, gPanel.rcActionMenu ) then
         oldBrush = SelectObject( memDC, ghPanel.hBackBrushHot )
         SetBkColor( memDC, ghPanel.BackColorHot )
     else
@@ -373,7 +301,7 @@ function frmPanel_WndProc( _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static as boolean isPrevHotBuildExecute, isPrevHotAction, isPrevHotButton0, isPrevHotButton1
+    static as boolean isPrevHotAction, isPrevHotButton0, isPrevHotButton1
     static hTooltip as hwnd
 
     select case uMsg
@@ -395,16 +323,10 @@ function frmPanel_WndProc( _
         TrackMouseEvent(@tme) 
 
         ' Repaint the gPanelMenuRect to ensure Hot highlighting
-        dim as boolean isHotBuildExecute, isHotAction, isHotButton0, isHotButton1 
-        isHotBuildExecute = isPanelBuildExecuteButtonHitTest( hwnd )
-        isHotAction = isPanelActionButtonHitTest( hwnd )
-        isHotButton0 = isPanelButton0HitTest( hwnd )
-        isHotButton1 = isPanelButton1HitTest( hwnd )
-
-        if isHotBuildExecute <> isPrevHotBuildExecute then   
-            AfxRedrawWindow( hwnd )
-            isPrevHotBuildExecute = isHotBuildExecute
-        end if   
+        dim as boolean isHotAction, isHotButton0, isHotButton1 
+        isHotAction = isMouseOverRECT( hwnd, gPanel.rcActionMenu )
+        isHotButton0 = isMouseOverRECT( hwnd, gPanelButton(0).rc )
+        isHotButton1 = isMouseOverRECT( hwnd, gPanelButton(1).rc )
 
         if isHotAction <> isPrevHotAction then   
             AfxRedrawWindow( hwnd )
@@ -492,12 +414,7 @@ function frmPanel_WndProc( _
             ReleaseCapture()
         end if
         
-        if isPanelBuildExecuteButtonHitTest( hwnd ) then
-            OnCommand_CompileCommon(IDM_BUILDEXECUTE)
-            AfxRedrawWindow(hwnd)
-        end if
-        
-        if isPanelActionButtonHitTest( hwnd ) then
+        if isMouseOverRECT( hwnd, gPanel.rcActionMenu ) then
             dim as HMENU hPopupMenu 
             select case gPanel.hActiveChild
             case HWND_FRMEXPLORER
@@ -516,19 +433,18 @@ function frmPanel_WndProc( _
             Return true   ' prevent further processing that leads to WM_CONTEXTMENU
         end if
         
-        if isPanelButton0HitTest( hwnd ) then
+        if isMouseOverRECT( hwnd, gPanelButton(0).rc ) then
             gPanel.hActiveChild = gPanelButton(0).hActionChild
             frmPanel_PositionWindows()
         end if
         
-        if isPanelButton1HitTest( hwnd ) then
+        if isMouseOverRECT( hwnd, gPanelButton(1).rc ) then
             gPanel.hActiveChild = gPanelButton(1).hActionChild
             frmPanel_PositionWindows()
         end if
 
 
     case WM_MOUSELEAVE
-        isPrevHotBuildExecute = false
         isPrevHotAction = false
         isPrevHotButton0 = false
         isPrevHotButton1 = false
@@ -540,10 +456,7 @@ function frmPanel_WndProc( _
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip 
         if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
-        if isPanelBuildExecuteButtonHitTest( hwnd ) then
-            wszTooltip  = L(65,"Build And Execute")
-        end if
-        if isPanelActionButtonHitTest( hwnd ) then
+        if isMouseOverRECT( hwnd, gPanel.rcActionMenu ) then
             wszTooltip  = L(440, "More Actions") & "..."
         end if
         ' Display the tooltip
@@ -579,12 +492,14 @@ function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
     pWindow->ClassStyle = CS_DBLCLKS
 
     ' Create the child windows
-    frmPanelMenu_Show( HWND_FRMPANEL )
+  '  frmPanelMenu_Show( HWND_FRMPANEL )
     frmExplorer_Show( HWND_FRMPANEL )
     frmBookmarks_Show( HWND_FRMPANEL )
     frmFunctions_Show( HWND_FRMPANEL )
     gPanel.hActiveChild = HWND_FRMEXPLORER
     
+    frmPanel_PositionWindows()
+
     function = 0
     
 end function

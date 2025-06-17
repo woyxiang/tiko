@@ -86,55 +86,53 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
 
     FillRect( memDC, @ps.rcPaint, GetSysColorBrush(COLOR_HOTLIGHT))    'ghPanel.hPanelBrush )
 
-    ' calculate the build/execute button
-    dim as long BuildExecuteButtonWidth = 22
-    dim as long BuildExecuteButtonHeight = 22
-    with gPanel.rcBuildExecute
-        .left = 0
-        .top = pWindow->ScaleY(7)
-        .right = .left + pWindow->ScaleX(BuildExecuteButtonWidth)
-        .bottom = .top + pWindow->ScaleY(BuildExecuteButtonHeight)
-    end with
+'    ' calculate the build/execute button
+'    dim as long BuildExecuteButtonWidth = 22
+'    dim as long BuildExecuteButtonHeight = 22
+'    with gPanel.rcBuildExecute
+'        .left = 0
+'        .top = pWindow->ScaleY(7)
+'        .right = .left + pWindow->ScaleX(BuildExecuteButtonWidth)
+'        .bottom = .top + pWindow->ScaleY(BuildExecuteButtonHeight)
+'    end with
 
     
-    ' Draw the BuildExecute menu item only if there is currently an open file or
-    ' project is active.
-    dim as boolean bShowButton = false
-    if gApp.IsProjectActive then
-        if gApp.GetDocumentCount > 0 then bShowButton = true
-    else
-        if gTTabCtl.GetItemCount > 0 then bShowButton = true        
-    end if
-    if bShowButton then
-        SetTextColor( memDC, ghPanel.ForeColorHot )
-        if isPanelBuildExecuteButtonHitTest( hwnd ) then
-            oldBrush = SelectObject( memDC, ghPanel.hBackBrushHot )
-            SetBkColor( memDC, ghPanel.BackColorHot )
-        else
-            oldBrush = SelectObject( memDC, ghPanel.hPanelBrush )
-            SetBkColor( memDC, ghPanel.BackColor )
-        end if
-        rc = gPanel.rcBuildExecute
+'    ' Draw the BuildExecute menu item only if there is currently an open file or
+'    ' project is active.
+'    dim as boolean bShowButton = false
+'    if gApp.IsProjectActive then
+'        if gApp.GetDocumentCount > 0 then bShowButton = true
+'    else
+'        if gTTabCtl.GetItemCount > 0 then bShowButton = true        
+'    end if
+'    if bShowButton then
+'        SetTextColor( memDC, ghPanel.ForeColorHot )
+'        if isMouseOverRECT( hwnd, gPanel.rcBuildExecute ) then
+'            oldBrush = SelectObject( memDC, ghPanel.hBackBrushHot )
+'            SetBkColor( memDC, ghPanel.BackColorHot )
+'        else
+'            oldBrush = SelectObject( memDC, ghPanel.hPanelBrush )
+'            SetBkColor( memDC, ghPanel.BackColor )
+'        end if
+'        rc = gPanel.rcBuildExecute
 
-        hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-        oldPen = SelectObject( memDC, hPenNull )
-        RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-        DeleteObject SelectObject( memDC, oldPen )
+'        hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
+'        oldPen = SelectObject( memDC, hPenNull )
+'        RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
+'        DeleteObject SelectObject( memDC, oldPen )
         
-        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-        oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-        'rc.top += pWindow->ScaleY(2): rc.bottom -= pWindow->ScaleY(2): 
-        DrawText( memDC, wszBuildExecute, -1, cast(lpRect, @rc), wsStyle )
-        SelectObject( memDC, oldFont )
-        SelectObject( memDC, oldBrush )
-    end if
+'        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+'        oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
+'        DrawText( memDC, wszBuildExecute, -1, cast(lpRect, @rc), wsStyle )
+'        SelectObject( memDC, oldFont )
+'        SelectObject( memDC, oldBrush )
+'    end if
 
 
     BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
     ' Cleanup
     DeleteObject SelectObject( memDC, oldPen )
-'    if hPenSolid then DeleteObject( hPenSolid )
     if hPenNull  then DeleteObject( hPenNull )
     if hbit  then DeleteObject( SelectObject(memDC, hbit) )
     if memDC then DeleteDC( memDC )
@@ -158,7 +156,7 @@ function frmPanelMenu_WndProc( _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static as boolean isPrevHotBuildExecute, isPrevHotAction, isPrevHotButton0, isPrevHotButton1
+    static as boolean isPrevHotBuildExecute
     static hTooltip as hwnd
 
     select case uMsg
@@ -207,7 +205,7 @@ function frmPanelMenu_WndProc( _
 
 
     case WM_LBUTTONDOWN
-        dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
+        dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL_MENU)
         if pWindow = 0 then exit function
 
         
@@ -257,9 +255,9 @@ function frmPanelMenu_Show( byval hwndParent as hwnd ) as LRESULT
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
 
-    HWND_FRMPANEL_MENU = pWindow->Create( hwndParent, "Panel Menu", @frmPanelmenu_WndProc, _
+    HWND_FRMPANEL_MENU = pWindow->Create( hwndParent, "Panel Menu", @frmPanelMenu_WndProc, _
         0, 0, 0, 0, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
