@@ -1323,8 +1323,8 @@ function clsDocument.ApplyProperties() as long
         ' We use indicators because the lexer can overwrite the colors set STYLE_BRACELIGHT and
         ' STYLE_BRACEBAD once they are outputted to the screen.
         ' First, we set the style of the indicator number we want to use to the Box style
-        'SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_BOX )
-        SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_PLAIN) 
+        SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_BOX )
+        'SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_PLAIN) 
         ' then, we make that indicator the current one
         SciMsg( m_pSci(i), SCI_SETINDICATORCURRENT, 9, 0 )
         ' Lastly, we apply the indicator (in this case), to a single char
@@ -1430,6 +1430,11 @@ function clsDocument.ApplyProperties() as long
         else
             SciMsg( m_pSci(i), SCI_SETCARETLINEVISIBLE, false, 0 )
         end if
+        
+        ''
+        ''  SET CARET WIDTH (1,2,3. Default is 1)
+        SciMsg( m_pSci(i), SCI_SETCARETWIDTH, 3, 0 )
+        
 
         ''
         ''  SELECTION COLORS

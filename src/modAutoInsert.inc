@@ -328,7 +328,6 @@ public function AttemptAutoInsert() as Long
         strTemp = strPrevLine
         i = instr(strTemp, "(")
         if i then strTemp = left(strTemp, i-1)
-        SciExec(hEdit, SCI_LINEDELETE, 0, 0)
         ' This is a FUNCTION = statement so just do the space fill
         if instr(strTemp, "=") then
             strFill = FillString(space(nSpaces))

@@ -1,3 +1,7 @@
+Version 1.0.4 ()
+- Changed: the editor caret width from 1 pixel to 3 pixel. 
+- Fixed: autoinsert after ENTER at end of Function line would not move existing code down one line.
+
 Version 1.0.3 (June 16, 2025)
 - Added a "Build and Execute" icon to the left side Panel.
 - Fixed Bookmark artifacts remaining in Bookmarks list after project closed and new file opened (caused GPF).
