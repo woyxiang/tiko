@@ -264,9 +264,9 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
         RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
         DeleteObject SelectObject( memDC, oldPen )
         
-        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER
+        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
         oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-        rc.top += pWindow->ScaleY(2): rc.bottom -= pWindow->ScaleY(2): 
+        'rc.top += pWindow->ScaleY(2): rc.bottom -= pWindow->ScaleY(2): 
         DrawText( memDC, wszBuildExecute, -1, cast(lpRect, @rc), wsStyle )
         SelectObject( memDC, oldFont )
         SelectObject( memDC, oldBrush )
@@ -288,7 +288,7 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     DeleteObject SelectObject( memDC, oldPen )
     
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER
+    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
     oldFont = SelectObject( memDC, ghMenuBar.hFontSymbolLargeBold )
     DrawText( memDC, wszMoreActions, -1, cast(lpRect, @rc), wsStyle )
     SelectObject( memDC, oldFont )

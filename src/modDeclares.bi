@@ -286,31 +286,53 @@ dim shared as wstring * 10 _
     wszDocumentIcon, wszUpArrow, wszDownArrow, wszSelection, wszCheckmark, _
     wszClose, wszDirty, wszCompileResultIcon, wszMatchCase, wszWholeWord, _
     wszPreserveCase, wszReplace, wszReplaceAll, wszMoreActions, _
-    wszTriangleDown, wszTriangleUp, wszAddFileButton, wszBuildExecute
+    wszAddFileButton, wszBuildExecute
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 
 '"Segoe UI Symbol"
-    wszClose             = !"\u2715"      ' light X  
-    wszChevronLeft       = !"\uE09A"
-    wszChevronRight      = !"\uE097" 
-    wszChevronUp         = !"\uE098"
-    wszChevronDown       = !"\uE099"
-    wszTriangleDown      = !"\u23F7"     ' triangle down
-    wszTriangleUp        = !"\u23F6"     ' triangle up
+'    wszClose             = !"\u2715"      ' light X  
+'    wszChevronLeft       = !"\uE09A"
+'    wszChevronRight      = !"\uE097" 
+'    wszChevronUp         = !"\uE098"
+'    wszChevronDown       = !"\uE099"
+'    wszTriangleDown      = !"\u23F7"     ' triangle down
+'    wszTriangleUp        = !"\u23F6"     ' triangle up
+'    wszDocumentIcon      = !"\u22C5"     ' small dot
+'    wszUpArrow           = !"\uE1FE"     ' up arrow
+'    wszDownArrow         = !"\uE1FC"     ' down arrow
+'    wszSelection         = !"\uE1EE"     ' selection icon
+'    wszCheckmark         = !"\u2713"     ' narrow checkmark
+'    wszDirty             = !"\u2981"     ' larger dot
+'    wszCompileResultIcon = !"\u25CF"     ' larger circle  
+'    wszMatchCase         = "Aa"          ' match case
+'    wszWholeWord         = "W"           ' whole word
+'    wszPreserveCase      = "AB"          ' preserve case
+'    wszReplace           = !"\uE297"     ' replace
+'    wszReplaceAll        = !"\uE299"     ' replace all
+'    wszMoreActions       = !"\u22EF"     ' ...
+'    wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
+'    wszBuildExecute      = !"\uE102"
+
+'"Segoe Fluent Icons"
+    wszClose             = !"\uE10A"      ' light X  
+    wszChevronLeft       = !"\uE012"
+    wszChevronRight      = !"\uE013" 
+    wszChevronUp         = !"\uE014"
+    wszChevronDown       = !"\uE015"
     wszDocumentIcon      = !"\u22C5"     ' small dot
-    wszUpArrow           = !"\uE1FE"     ' up arrow
-    wszDownArrow         = !"\uE1FC"     ' down arrow
-    wszSelection         = !"\uE1EE"     ' selection icon
-    wszCheckmark         = !"\u2713"     ' narrow checkmark
+    wszUpArrow           = !"\uF0AD"     ' up arrow
+    wszDownArrow         = !"\uF0AE"     ' down arrow
+    wszSelection         = !"\uE14C"     ' selection icon
+    wszCheckmark         = !"\uE001"     ' checkmark
     wszDirty             = !"\u2981"     ' larger dot
-    wszCompileResultIcon = !"\u25CF"     ' larger circle  
+    wszCompileResultIcon = !"\uECCC"     ' larger circle  
     wszMatchCase         = "Aa"          ' match case
     wszWholeWord         = "W"           ' whole word
     wszPreserveCase      = "AB"          ' preserve case
-    wszReplace           = !"\uE297"     ' replace
+    wszReplace           = !"\uE14B"     ' replace
     wszReplaceAll        = !"\uE299"     ' replace all
-    wszMoreActions       = !"\u22EF"     ' ...
+    wszMoreActions       = !"\uE10C"     ' ...
     wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
-    wszBuildExecute      = !"\uE102"
+    wszBuildExecute      = !"\uEDDA"
 

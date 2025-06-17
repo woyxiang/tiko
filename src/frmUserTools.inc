@@ -672,13 +672,13 @@ public function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
         WS_EX_LEFT or WS_EX_LTRREADING)
     
     hCtrl = _
-    pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDUP, wszTriangleUp, 166, 388, 28, 28, _
+    pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDUP, wszChevronUp, 166, 388, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghMenuBar.hFontSymbolLargeBold, false )     
 
     hCtrl = _
-    pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDDOWN, wszTriangleDown, 199, 388, 28, 28, _
+    pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDDOWN, wszChevronDown, 199, 388, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, ghMenuBar.hFontSymbolLargeBold, false )     

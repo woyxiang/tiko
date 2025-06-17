@@ -694,7 +694,7 @@ function frmTopTabs_WndProc( _
             rc = gTTabCtl.rcPrevTabs
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszChevronLeft, -1, cast(lpRect, @rc), wsStyle )
 
@@ -709,7 +709,7 @@ function frmTopTabs_WndProc( _
             rc = gTTabCtl.rcNextTabs
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP or DT_SINGLELINE
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rc), wsStyle )
             

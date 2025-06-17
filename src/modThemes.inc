@@ -605,7 +605,8 @@ function LoadThemeFile() as boolean
     ' Set the default font names. The editor is only compatible with
     ' Windows 10 and greater so we know the fonts that are present.
     dim as CWSTR wszFontName = "Segoe UI"
-    dim as CWSTR wszSymbolFontName = "Segoe UI Symbol"   '"Segoe MDL2 Assets"  
+'    dim as CWSTR wszSymbolFontName = "Segoe UI Symbol"   '"Segoe MDL2 Assets"  
+    dim as CWSTR wszSymbolFontName = "Segoe Fluent Icons" 
     
     if ghMenuBar.hFontMenuBar = 0 then
         ghMenuBar.hFontMenuBar = pWindow->CreateFont(wszFontName, 10, FW_NORMAL, , , , DEFAULT_CHARSET)

@@ -160,6 +160,19 @@ function WinMain( _
                     MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
         return 1
     end if
+    
+    
+    ' Load the Segoe Fluent Icons ttf file that is used for displaying the various
+    ' icons used within the editor.
+    dim as CWSTR wszFontFile = AfxGetExePathName + "SegoeFluentIcons.ttf"
+    if AddFontResourceEx(wszFontFile.vptr, FR_PRIVATE, NULL) = 0 then
+        MessageBox( 0, _
+                    "Unable to load application font 'SegoeFluentIcons.ttf'. Aborting application." , _
+                    "Error", _
+                    MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
+        return 1
+    end if
+
 
     ' Load default Explorer Categories should none exist. Need to do it here
     ' rather than from within Config because the localization file must be 

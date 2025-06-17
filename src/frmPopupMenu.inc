@@ -302,7 +302,6 @@ function frmPopupMenu_OnDrawItem( _
                 rcBitmap.Left = rcText.Right
                 rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(20) 
                 oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
-                'wsStyle = DT_NOPREFIX or DT_RIGHT or DT_TOP or DT_SINGLELINE
                 wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
                 DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
                 SelectObject( memDC, oldFont )

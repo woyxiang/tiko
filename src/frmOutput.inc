@@ -686,7 +686,7 @@ function frmOutputTabs_SubclassProc ( _
             next
 
             dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_TOP 
+            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             rc = gOutputCloseRect
             oldFont = selectObject( memDC, ghMenuBar.hFontSymbolSmall )
             SetTextColor( memDC, ghOutput.ForeColorHot )

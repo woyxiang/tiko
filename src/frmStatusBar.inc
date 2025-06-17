@@ -275,12 +275,12 @@ function frmStatusBar_WndProc( _
         SaveDC(memDC)
         SelectObject( memDC, hbit )
 
-        if ghStatusBar.hFontStatusBar then SelectObject(memDC, ghStatusBar.hFontStatusBar)
 
         FillRect( memDC, @ps.rcPaint, ghStatusBar.hPanelBrush )
         
         ' paint the panels
         for i as long = lbound(gSBPanels) to ubound(gSBPanels)
+            if ghStatusBar.hFontStatusBar then SelectObject(memDC, ghStatusBar.hFontStatusBar)
             SetBkColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.BackColorHot, ghStatusBar.BackColor) )   
             SetTextColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.ForeColorHot, ghStatusBar.ForeColor) )
             FillRect( memDC, @gSBPanels(i).rc, iif( gSBPanels(i).isHot, ghStatusBar.hBackBrushHot, ghStatusBar.hBackBrush) )
@@ -300,6 +300,7 @@ function frmStatusBar_WndProc( _
                     rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
                     rcBitmap.left = rcBitmap.right - pWindow->ScaleX(16)
 
+                    if ghMenuBar.hFontSymbol then SelectObject(memDC, ghMenuBar.hFontSymbol)
                     dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
                     DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
                 end if
