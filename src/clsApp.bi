@@ -24,6 +24,7 @@ type clsApp
         PreventActivateApp         as boolean           ' temporarily suppress WM_ACTIVATEAPP (used in 3.02 form file upgrade)
         SuppressNotify             as boolean           ' temporarily suppress Scintilla notifications
         bDragTabActive             as boolean           ' a tab in the top tabcontrol is being dragged
+        ptDragTabPrev              as POINT             ' used for comparing delta movement of sursor during tab dragging
         bDragActive                as boolean           ' splitter drag is currently active 
         hWndPanel                  as HWND              ' the panel being split left/right or up/down
         IncludeFilename            as CWSTR

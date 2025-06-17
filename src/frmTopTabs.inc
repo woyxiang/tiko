@@ -414,11 +414,17 @@ function frmTopTabs_WndProc( _
         
         if gApp.bDragTabActive then
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
-            SetCursor( LoadCursor(0, MAKEINTRESOURCE(OCR_SIZEALL)) )
-            ' Swap the two elements in the array
-            swap gTTabCtl.tabs(gTTabCtl.CurSel), gTTabCtl.tabs(curr_idxHot)
-            gTTabCtl.SetFocusTab( curr_idxHot )
-            frmTopTabs_PositionWindows()
+            ' Only activate tab drag if we have moved delta 5px xpos from original position
+            dim as point pt = (GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))
+            if abs(pt.x - gApp.ptDragTabPrev.x) >= 5 then
+                SetCursor( LoadCursor(0, MAKEINTRESOURCE(OCR_SIZEALL)) )
+                if gTTabCtl.CurSel <> curr_idxHot then
+                    ' Swap the two elements in the array
+                    swap gTTabCtl.tabs(gTTabCtl.CurSel), gTTabCtl.tabs(curr_idxHot)
+                    gTTabCtl.SetFocusTab( curr_idxHot )
+                    frmTopTabs_PositionWindows()
+                end if
+            end if    
         end if
         
         
@@ -483,17 +489,16 @@ function frmTopTabs_WndProc( _
         else ' regular tab
             curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
-                if (isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot) andalso (curr_idxHot <> gTTabCtl.CurSel) then
+            if (isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot) andalso (curr_idxHot <> gTTabCtl.CurSel) then
                 ' we are mouse down on an "X" close on a tab that is not currently the active tab. We
                 ' will simply close that tab rather than bring it into focus and then delete.
                 ' allow the mouse message to eventually bubble up WM_LBUTTONUP where we do the close.
-                else
+            else
                 ' we have clicked on tab so bring it into focus
                 gTTabCtl.SetFocusTab( curr_idxHot )
-                if (wParam and MK_SHIFT) then
-                    gApp.bDragTabActive = true
-                    SetCursor( LoadCursor(0, MAKEINTRESOURCE(OCR_SIZEALL)) )
-                end if
+                dim as point pt = (GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))
+                gApp.bDragTabActive = true
+                gApp.ptDragTabPrev = pt
                 AfxRedrawWindow( hwnd )
             end if
             SetCapture(hwnd)
