@@ -342,7 +342,7 @@ dim shared as wstring * 10 _
     wszIconCompile           = !"\uE74C"
     wszIconBuildExecute      = !"\uE768"  
     
-    wszIconSplitLeftRight    = !"\u25EB"   'Segoe UI Symbol
-    wszIconSplitTopBottom    = !"\u229F"   'Segoe UI Symbol
+    wszIconSplitLeftRight    = !"\uF57C"   'Segoe Fluent Icons
+    wszIconSplitTopBottom    = !"\uF16E"   'Segoe Fluent Icons
     wszIconSplitEditor       = wszIconSplitLeftRight
 

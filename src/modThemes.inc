@@ -133,7 +133,6 @@ type MENUBAR_HANDLES_TYPE
     ForeColorHot as COLORREF
     hFontMenuBar as HFONT
     hFontSymbol as HFONT
-    hFontSymbol2 as HFONT
     hFontSymbolSmall as HFONT
     hFontSymbolLarge as HFONT
 end type
@@ -607,7 +606,6 @@ function LoadThemeFile() as boolean
     ' Windows 10 and greater so we know the fonts that are present.
     dim as CWSTR wszFontName = "Segoe UI"
     dim as CWSTR wszSymbolFontName  = "Segoe Fluent Icons" 
-    dim as CWSTR wszSymbolFontName2 = "Segoe UI Symbol"   '"Segoe MDL2 Assets"  
     
     if ghMenuBar.hFontMenuBar = 0 then
         ghMenuBar.hFontMenuBar = pWindow->CreateFont(wszFontName, 10, FW_NORMAL, , , , DEFAULT_CHARSET)
@@ -620,9 +618,6 @@ function LoadThemeFile() as boolean
     end if
     if ghMenuBar.hFontSymbol = 0 then
         ghMenuBar.hFontSymbol = pWindow->CreateFont(wszSymbolFontName, 10, FW_NORMAL, , , , DEFAULT_CHARSET)
-    end if
-    if ghMenuBar.hFontSymbol2 = 0 then
-        ghMenuBar.hFontSymbol2 = pWindow->CreateFont(wszSymbolFontName2, 10, FW_NORMAL, , , , DEFAULT_CHARSET)
     end if
     if ghMenuBar.hFontSymbolSmall = 0 then
         ghMenuBar.hFontSymbolSmall = pWindow->CreateFont(wszSymbolFontName, 9, FW_NORMAL, , , , DEFAULT_CHARSET)

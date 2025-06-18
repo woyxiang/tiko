@@ -771,7 +771,7 @@ function frmTopTabs_WndProc( _
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol2)
+            SelectObject(memDC, ghMenuBar.hFontSymbol)
             DrawText( memDC, wszIconSplitEditor, -1, cast(lpRect, @rc), wsStyle )
             
             ' Draw the Action buttom "..."
