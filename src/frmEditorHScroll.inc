@@ -117,13 +117,16 @@ function frmEditorHScroll_WndProc( _
         case WM_PAINT
             dim as PAINTSTRUCT ps
             dim as HDC hDc
+            dim as RECT rc
+            
             hDC = BeginPaint( hwnd, @ps )
             SaveDC( hDC )
-            FillRect( hDC, @ps.rcPaint, ghEditor.hBackBrushScrollBar )
+            GetClientRect(hwnd, @rc)
+            FillRect( hDC, @rc, ghEditor.hBackBrushScrollBar )
             
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
-                dim as RECT rc: GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
+                GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
                 dim as long GetXOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
                 gEditorHScroll(idxWindow).rc = rc
                 gEditorHScroll(idxWindow).rc.left = GetXOffset

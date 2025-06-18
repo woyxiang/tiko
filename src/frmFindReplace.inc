@@ -459,7 +459,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     dim as HPEN hPen
     dim as HWND hCtl
     dim as HDC hDc
-    dim as Rect rc
+    dim as RECT rc
     
     dim as long wsStyle
     
@@ -470,8 +470,9 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
 
     SaveDC( hDC )
 
-    dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
-    dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
+    GetClientRect(hwnd, @rc)
+    dim as long nWidth = rc.right - rc.left
+    dim as long nHeight = rc.bottom - rc.top
 
     dim memDC as HDC      ' Double buffering
     dim hbit as HBITMAP   ' Double buffering
@@ -483,13 +484,13 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     SelectObject( memDC, ghFindReplace.hPanelBrush )
 
     ' Fill in the entire back panel width across the top of the screen
-    FillRect( memDC, @ps.rcPaint, ghFindReplace.hPanelBrush )
+    FillRect( memDC, @rc, ghFindReplace.hPanelBrush )
 
     ' Paint the left edge
     hPen = CreatePen( PS_SOLID, pWindow->ScaleY(2), ghFindReplace.leftedge ) 
     SelectPen( memDC, hPen )
     MoveToEx( memDC, 0, 0, null )
-    LineTo( memDC, 0, ps.rcPaint.bottom )   
+    LineTo( memDC, 0, rc.bottom )   
     DeletePen( hPen )
 
     ' Paint the Expand/Collapse button
@@ -834,9 +835,9 @@ function frmFindReplace_WndProc( _
         elseif isMouseOverRECT( hwnd, gFind.rcWholeWord ) then
             wszTooltip = L(162,"Match Whole Words")
         elseif isMouseOverRECT( hwnd, gFind.rcUpArrow ) then
-            wszTooltip = L(45,"Find Previous") & " (Shift+F3)"
+            wszTooltip = L(45,"Find Previous") & " (" & getMenuAccelText(IDM_FINDPREVACCEL) & ")"
         elseif isMouseOverRECT( hwnd, gFind.rcDownArrow ) then
-            wszTooltip = L(44,"Find next") & " (F3)"
+            wszTooltip = L(44,"Find next") & " (" & getMenuAccelText(IDM_FINDNEXTACCEL) & ")"
         elseif isMouseOverRECT( hwnd, gFind.rcSelection ) then
             wszTooltip = L(148,"Selection")
         elseif isMouseOverRECT( hwnd, gFind.rcPreserve ) then

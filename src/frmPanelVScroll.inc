@@ -159,12 +159,15 @@ function frmPanelVScroll_WndProc( _
             return true
             
         case WM_PAINT
-            Dim As PAINTSTRUCT ps
-            Dim As HDC hDC
-            hDC = BeginPaint( hWnd, @ps )
-            FillRect( hDC, @ps.rcPaint, ghPanel.hBackBrushScrollBar )
+            dim as PAINTSTRUCT ps
+            dim as HDC hDC
+            dim as RECT rc
+            
+            hDC = BeginPaint( hwnd, @ps )
+            GetClientRect(hwnd, @rc)
+            FillRect( hDC, @rc, ghPanel.hBackBrushScrollBar )
             FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
-            EndPaint hWnd, @ps
+            EndPaint hwnd, @ps
             exit function
 
     end select

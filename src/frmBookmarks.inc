@@ -106,12 +106,14 @@ end function
 function frmBookmarks_OnPaint( byval hwnd as HWND ) as LRESULT
 
     dim as PAINTSTRUCT ps
-    dim as HDC hDc
-
+    dim as HDC hDC
+    dim as RECT rc
+    
     hDC = BeginPaint(hwnd, @ps)
 
     SaveDC( hDC )
-    FillRect( hDC, @ps.rcPaint, ghPanel.hPanelBrush )
+    GetClientRect(hwnd, @rc)
+    FillRect( hDC, @rc, ghPanel.hPanelBrush )
     RestoreDC( hDC, -1 )
     EndPaint( hwnd, @ps )
 

@@ -152,19 +152,21 @@ function frmEditorVScroll_WndProc( _
 
         case WM_PAINT
             dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
-            Dim As PAINTSTRUCT ps
-            Dim As HDC hDC
+            dim as PAINTSTRUCT ps
+            dim as HDC hDC
+            dim as RECT rc
 
-            hDC = BeginPaint( hWnd, @ps )
+            hDC = BeginPaint( hwnd, @ps )
             SaveDC( hDC )
-            FillRect( hDC, @ps.rcPaint, ghEditor.hBackBrushScrollBar )
+            GetClientRect(hwnd, @rc)
+            FillRect( hDC, @rc, ghEditor.hBackBrushScrollBar )
             dim as long penWidth = pWindow->ScaleX(1)
             dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghEditor.Divider )
             SelectPen( hDC, hPenSolid )
-            MoveToEx( hDC, ps.rcPaint.left, ps.rcPaint.top, null )
-            LineTo( hDC, ps.rcPaint.left, ps.rcPaint.bottom )   
+            MoveToEx( hDC, rc.left, rc.top, null )
+            LineTo( hDC, rc.left, rc.bottom )   
             FillRect( hDC, @gEditorVScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
-            EndPaint( hWnd, @ps )
+            EndPaint( hwnd, @ps )
             RestoreDC( hDC, -1 )
             DeletePen( hPenSolid )
 

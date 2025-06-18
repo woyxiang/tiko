@@ -255,7 +255,8 @@ function frmStatusBar_WndProc( _
 
     case WM_PAINT
         dim as PAINTSTRUCT ps
-        dim as HDC hDc
+        dim as HDC hDC
+        dim as RECT rc
 
         dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_STATUSBAR)
         if pWindow = 0 then exit function
@@ -263,8 +264,10 @@ function frmStatusBar_WndProc( _
         hDC = BeginPaint(hwnd, @ps)
 
         SaveDC(hDC)
-        dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
-        dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
+        
+        GetClientRect(hwnd, @rc)
+        dim as long nWidth = rc.right - rc.left
+        dim as long nHeight = rc.bottom - rc.top
 
         dim memDC as HDC      ' Double buffering
         dim hbit as HBITMAP   ' Double buffering
@@ -275,8 +278,7 @@ function frmStatusBar_WndProc( _
         SaveDC(memDC)
         SelectObject( memDC, hbit )
 
-
-        FillRect( memDC, @ps.rcPaint, ghStatusBar.hPanelBrush )
+        FillRect( memDC, @rc, ghStatusBar.hPanelBrush )
         
         ' paint the panels
         for i as long = lbound(gSBPanels) to ubound(gSBPanels)

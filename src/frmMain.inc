@@ -543,13 +543,15 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
 
     dim as PAINTSTRUCT ps
     dim as HPEN hPen
-    dim as HDC hDc
+    dim as HDC hDC
+    dim as RECT rc
     
     hDC = BeginPaint(hwnd, @ps)
 
     SaveDC hDC
     
-    FillRect( hDC, @ps.rcPaint, ghBrushMainBackground )
+    GetClientRect(hwnd, @rc)    
+    FillRect( hDC, @rc, ghBrushMainBackground )
 
     ' Draw any horizontal splitter between the two edit windows
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr

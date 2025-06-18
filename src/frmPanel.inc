@@ -147,7 +147,7 @@ function frmPanel_PositionWindows() as LRESULT
 
     ' Ensure that the panel menu selected item is in sync with the pane
     AfxRedrawWindow(HWND_FRMPANEL_MENU)
-
+    
     function = 0
 end function
 
@@ -204,8 +204,10 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     hDC = BeginPaint(hwnd, @ps)
 
     SaveDC(hDC)
-    dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
-    dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
+    
+    GetClientRect(hwnd, @rc)
+    dim as long nWidth = rc.right - rc.left
+    dim as long nHeight = rc.bottom - rc.top
 
     dim memDC as HDC      ' Double buffering
     dim hbit as HBITMAP   ' Double buffering
@@ -214,7 +216,7 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
     if hbit then hbit = SelectObject( memDC, hbit )
 
-    FillRect( memDC, @ps.rcPaint, ghPanel.hPanelBrush )
+    FillRect( memDC, @rc, ghPanel.hPanelBrush )
 
     ' Draw the panel Label
     SetTextColor( memDC, ghPanel.forecolor )
@@ -280,7 +282,7 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
         Rectangle( memDC, rc.left, rc.top, rc.right, rc.bottom )
         wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
         oldFont = SelectObject( memDC, ghStatusBar.hFontStatusBar )
-        DrawText( memDC, gPanelButton(i).wszCaption.sptr, -1, Cast(lpRect, @rc), wsStyle )
+        DrawText( memDC, gPanelButton(i).wszCaption.sptr, -1, cast(lpRect, @rc), wsStyle )
 
         SelectObject( memDC, oldFont )
         SelectObject( memDC, oldBrush )

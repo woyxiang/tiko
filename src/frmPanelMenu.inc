@@ -113,8 +113,10 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
     hDC = BeginPaint(hwnd, @ps)
 
     SaveDC(hDC)
-    dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
-    dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
+
+    GetClientRect(hwnd, @rc)
+    dim as long nWidth = rc.right - rc.left
+    dim as long nHeight = rc.bottom - rc.top
 
     dim memDC as HDC      ' Double buffering
     dim hbit as HBITMAP   ' Double buffering
@@ -123,7 +125,7 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
     hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
     if hbit then hbit = SelectObject( memDC, hbit )
 
-    FillRect( memDC, @ps.rcPaint, ghPanel.hPanelBrush )
+    FillRect( memDC, @rc, ghPanel.hPanelBrush )
 
     for i as integer = lbound(gPanelMenu) to ubound(gPanelMenu)
         dim as CWSTR wszCaption = gPanelMenu(i).wszCaption

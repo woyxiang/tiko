@@ -650,8 +650,10 @@ function frmOutputTabs_SubclassProc ( _
             hDC = BeginPaint( hWin, @ps )
             
             SaveDC(hDC)
-            dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
-            dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
+            
+            GetClientRect(hWin, @rc)
+            dim as long nWidth = rc.right - rc.left
+            dim as long nHeight = rc.bottom - rc.top
 
             dim memDC as HDC      ' Double buffering
             dim hbit as HBITMAP   ' Double buffering
@@ -666,23 +668,23 @@ function frmOutputTabs_SubclassProc ( _
             SaveDC(memDC)
             oldBmp = selectObject( memDC, hbit )
 
-            FillRect( memDC, @ps.rcPaint, ghOutput.hPanelBrush )
+            FillRect( memDC, @rc, ghOutput.hPanelBrush )
     
             for i as long = lbound(gOutputTabs) to ubound(gOutputTabs)
-            rc = gOutputTabs(i).rcTab
-            if (i = gOutputTabsCurSel) or (gOutputTabs(i).isHot = true) then
-                SetBkColor( memDC, ghOutput.BackColorHot )
-                SetTextColor( memDC, ghOutput.ForeColorHot )
-                FillRect( memDC, @rc, ghOutput.hBackBrushHot )
-            else
-                SetBkColor( memDC, ghOutput.BackColor )
-                SetTextColor( memDC, ghOutput.ForeColor )
-                FillRect( memDC, @rc, ghOutput.hBackBrush )
-            end if
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            oldFont = selectObject( memDC, ghStatusBar.hFontStatusBar )
-            DrawText( memDC, gOutputTabs(i).wszText.sptr, -1, Cast(lpRect, @rc), wsStyle )
-            selectObject( memDC, oldFont )
+                rc = gOutputTabs(i).rcTab
+                if (i = gOutputTabsCurSel) or (gOutputTabs(i).isHot = true) then
+                    SetBkColor( memDC, ghOutput.BackColorHot )
+                    SetTextColor( memDC, ghOutput.ForeColorHot )
+                    FillRect( memDC, @rc, ghOutput.hBackBrushHot )
+                else
+                    SetBkColor( memDC, ghOutput.BackColor )
+                    SetTextColor( memDC, ghOutput.ForeColor )
+                    FillRect( memDC, @rc, ghOutput.hBackBrush )
+                end if
+                dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+                oldFont = selectObject( memDC, ghStatusBar.hFontStatusBar )
+                DrawText( memDC, gOutputTabs(i).wszText.sptr, -1, Cast(lpRect, @rc), wsStyle )
+                selectObject( memDC, oldFont )
             next
 
             dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
@@ -724,8 +726,9 @@ function frmOutputTabs_SubclassProc ( _
             hPenSolid = CreatePen( PS_SOLID, pWindow->ScaleY(1), ghOutput.Divider )
             SetBkColor( memDC, ghOutput.BackColor )
             oldPen = selectPen( memDC, hPenSolid )
-            MoveToEx( memDC, ps.rcPaint.left, ps.rcPaint.top, null )
-            LineTo( memDC, ps.rcPaint.right, ps.rcPaint.top )
+            GetClientRect(hWin, @rc)
+            MoveToEx( memDC, rc.left, rc.top, null )
+            LineTo( memDC, rc.right, rc.top )
             selectObject( memDC, oldPen )
             
             BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
@@ -831,10 +834,12 @@ function frmOutput_WndProc( _
     case WM_PAINT            
         dim as PAINTSTRUCT ps
         dim as HDC hDC
+        dim as RECT rc
         
         hDC = BeginPaint( hwnd, @ps )
         SaveDC( hDC )
-        FillRect( hDC, @ps.rcPaint, ghOutput.hPanelBrush )
+        GetClientRect(hwnd, @rc)
+        FillRect( hDC, @rc, ghOutput.hPanelBrush )
         RestoreDC( hDC, -1 )
         EndPaint( hwnd, @ps )
         exit function

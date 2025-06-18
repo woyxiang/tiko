@@ -609,7 +609,8 @@ function frmTopTabs_WndProc( _
 
     case WM_PAINT
         dim as PAINTSTRUCT ps
-        dim as HDC hDc
+        dim as HDC hDC
+        dim as RECT rc
 
         dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_TOPTABS)
         if pWindow = 0 then exit function
@@ -617,8 +618,10 @@ function frmTopTabs_WndProc( _
         hDC = BeginPaint( hwnd, @ps )
 
         SaveDC(hDC)
-        dim as long nWidth = ps.rcPaint.right - ps.rcPaint.left
-        dim as long nHeight = ps.rcPaint.bottom - ps.rcPaint.top
+        
+        GetClientRect(hwnd, @rc)
+        dim as long nWidth = rc.right - rc.left
+        dim as long nHeight = rc.bottom - rc.top
 
         dim memDC as HDC      ' Double buffering
         dim hbit as HBITMAP   ' Double buffering
@@ -628,7 +631,7 @@ function frmTopTabs_WndProc( _
         if hbit then hbit = SelectObject( memDC, hbit )
 
         ' Fill in the entire back panel width across the top of the screen
-        FillRect( memDC, @ps.rcPaint, ghTopTabs.hPanelBrush )
+        FillRect( memDC, @rc, ghTopTabs.hPanelBrush )
 
         ' Create a black pen that acts as the divider for each tab
         dim as long penWidth = pWindow->ScaleX(1)
@@ -638,7 +641,6 @@ function frmTopTabs_WndProc( _
         dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
 
         dim as point pt: GetCursorPos( @pt )
-        dim as RECT rc
         dim as long wsStyle
         
         ' All of the rc calculations have already been done in frmTopTabs_PostionWindows

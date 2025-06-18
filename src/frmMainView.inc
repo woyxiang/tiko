@@ -174,7 +174,9 @@ function OnCommand_ViewSidePanel() as LRESULT
         end if
     end if
     
+    frmPanel_PositionWindows
     frmMain_PositionWindows
+    
     function = 0
 end function
 
