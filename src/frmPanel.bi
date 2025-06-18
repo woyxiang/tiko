@@ -13,9 +13,6 @@
 
 #pragma once
 
-declare function frmPanel_Show( byval hWndParent as HWnd ) as LRESULT
-declare function frmPanelVScroll_Show( byval hWndParent as HWnd ) as LRESULT
-declare function frmPanelVScroll_PositionWindows( byval nShowState as long ) as LRESULT
 
 type PANEL_BUTTON_TYPE
     wszCaption   as CWSTR
@@ -25,11 +22,11 @@ end type
 dim shared gPanelButton(any) as PANEL_BUTTON_TYPE
 
 type PANEL_TYPE
-    hActiveChild   as HWND
-    wszHeader      as CWSTR
-    rcHeader       as RECT     ' EXPLORER, FUNCTION LIST, BOOKMARKS
-    rcBuildExecute as RECT
-    rcActionMenu   as RECT
+    hActiveChild    as HWND
+    wszHeader       as CWSTR
+    rcDividerLine   as RECT
+    rcHeader        as RECT     ' EXPLORER, FUNCTION LIST, BOOKMARKS
+    rcActionMenu    as RECT
 end type
 dim shared gPanel as PANEL_TYPE
 
@@ -44,3 +41,7 @@ type PANEL_VSCROLL_TYPE
 end type
 dim shared gPanelVScroll as PANEL_VSCROLL_TYPE
 
+
+declare function frmPanel_Show( byval hWndParent as HWnd ) as LRESULT
+declare function frmPanelVScroll_Show( byval hWndParent as HWnd ) as LRESULT
+declare function frmPanelVScroll_PositionWindows( byval nShowState as long ) as LRESULT

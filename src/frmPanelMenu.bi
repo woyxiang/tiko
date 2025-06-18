@@ -13,6 +13,18 @@
 
 #pragma once
 
+type PANEL_MENU_TYPE
+    wszCaption      as CWSTR
+    wszTooltip      as CWSTR
+    id              as integer
+    rc              as RECT   
+    isPrevHot       as boolean
+end type
+
+' Values for each panel menu button are set in frmPanelMenu_PositionWindows
+dim shared gPanelMenu(0 to 4) as PANEL_MENU_TYPE
+
+
 declare function frmPanelMenu_PositionWindows() as LRESULT
 declare function frmPanelMenu_Show( byval hWndParent as HWnd ) as LRESULT
 

@@ -65,15 +65,14 @@ function frmPanel_PositionWindows() as LRESULT
     dim as long nWidth = rc.right  - rc.Left
     dim as long nHeight = nPanelMenuHeight
 
-    ' Position the panel menu
-    SetWindowPos( HWND_FRMPANEL_MENU, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
-    frmPanelMenu_PositionWindows()
-'    
-    
     nTop = rc.top + nPanelMenuHeight + nPanelHeaderHeight
     nWidth = nWidth - pWindow->ScaleX(3)   
     nHeight = gPanelButton(0).rc.top - nTop
 
+    ' Position the panel menu
+    SetWindowPos( HWND_FRMPANEL_MENU, 0, nLeft, 0, nWidth, nPanelMenuHeight, SWP_SHOWWINDOW or SWP_NOZORDER )
+    frmPanelMenu_PositionWindows()
+    
     SetWindowPos( HWND_FRMEXPLORER, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
     SetWindowPos( HWND_FRMBOOKMARKS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
     SetWindowPos( HWND_FRMFUNCTIONS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
@@ -119,6 +118,9 @@ function frmPanel_PositionWindows() as LRESULT
             gPanelButton(1).hActionChild = HWND_FRMBOOKMARKS
     end select
 
+    ' Calculate the divider line
+    gPanel.rcDividerLine = type( 0, nPanelMenuHeight, nWidth, nPanelMenuHeight )
+    
     ' calculate the rect for the panel label (EXPLORER, FUNCTION LIST, BOOKMARKS)
     with gPanel.rcHeader 
         .left = pWindow->ScaleX( 10 )
@@ -139,9 +141,12 @@ function frmPanel_PositionWindows() as LRESULT
         .right = .left + pWindow->ScaleX(ActionButtonWidth)
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)
     end with
-    
+        
     RedrawWindow( gPanelVScroll.hListBox, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
     RedrawWindow( HWND_FRMPANEL, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+
+    ' Ensure that the panel menu selected item is in sync with the pane
+    AfxRedrawWindow(HWND_FRMPANEL_MENU)
 
     function = 0
 end function
@@ -210,7 +215,7 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     if hbit then hbit = SelectObject( memDC, hbit )
 
     FillRect( memDC, @ps.rcPaint, ghPanel.hPanelBrush )
-    
+
     ' Draw the panel Label
     SetTextColor( memDC, ghPanel.forecolor )
     SetBkColor( memDC, ghPanel.backcolor )
@@ -242,9 +247,17 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     SelectObject( memDC, oldFont )
     SelectObject( memDC, oldBrush )
 
+    ' Paint a separator line at the top of the window
+    dim as long penWidth = pWindow->ScaleY(2)
+    dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghPanel.BackColorHot )
+    oldPen = SelectObject( memDC, hPenSolid)
+    MoveToEx( memDC, gPanel.rcDividerLine.left, gPanel.rcDividerLine.top, null )
+    LineTo( memDC, gPanel.rcDividerLine.right, gPanel.rcDividerLine.top )   
+    DeleteObject SelectObject( memDC, oldPen )
+
     ' Draw the bottom two Panel buttons
-    dim as long penWidth = pWindow->ScaleX(1)
-    dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghTopTabs.Divider )
+    penWidth = pWindow->ScaleX(1)
+    hPenSolid = CreatePen( PS_SOLID, penWidth, ghTopTabs.Divider )
     oldPen = SelectObject( memDC, hPenSolid)
 
     dim as HBRUSH hBrush
@@ -372,8 +385,8 @@ function frmPanel_WndProc( _
                 GetClientRect HWND_FRMPANEL, @rc
                 dim as long nWidth = (rc.right - rc.left + nDiff)
                 ' make sure width does not go below a specific size otherwise the user will not
-                ' be able to grab the panel edge to resize
-                nWidth = max( nWidth, pWindow->ScaleX(80) )
+                ' be able to grab the panel edge to resize and the panel menu will squish together
+                nWidth = max( nWidth, pWindow->ScaleX(138) )
                 SetWindowPos( HWND_FRMPANEL, 0, 0, 0, nWidth, rc.Bottom - rc.Top, SWP_NOMOVE or SWP_NOZORDER )
                 RedrawWindow( HWND_FRMPANEL, null, null, RDW_INVALIDATE or RDW_UPDATENOW or RDW_ALLCHILDREN)                
                 frmMain_PositionWindows()
@@ -492,7 +505,7 @@ function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
     pWindow->ClassStyle = CS_DBLCLKS
 
     ' Create the child windows
-  '  frmPanelMenu_Show( HWND_FRMPANEL )
+    frmPanelMenu_Show( HWND_FRMPANEL )
     frmExplorer_Show( HWND_FRMPANEL )
     frmBookmarks_Show( HWND_FRMPANEL )
     frmFunctions_Show( HWND_FRMPANEL )

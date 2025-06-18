@@ -285,8 +285,8 @@ dim shared as wstring * 10 _
     wszChevronLeft, wszChevronRight, wszChevronUp, wszChevronDown, _
     wszDocumentIcon, wszUpArrow, wszDownArrow, wszSelection, wszCheckmark, _
     wszClose, wszDirty, wszCompileResultIcon, wszMatchCase, wszWholeWord, _
-    wszPreserveCase, wszReplace, wszReplaceAll, wszMoreActions, _
-    wszAddFileButton, wszBuildExecute
+    wszPreserveCase, wszReplace, wszReplaceAll, wszMoreActions, wszAddFileButton, _
+    wszExplorer, wszFunctions, wszBookmarks, wszCompile, wszBuildExecute
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 
@@ -334,5 +334,9 @@ dim shared as wstring * 10 _
     wszReplaceAll        = !"\uE299"     ' replace all
     wszMoreActions       = !"\uE10C"     ' ...
     wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
-    wszBuildExecute      = !"\uEDDA"
+    wszExplorer          = !"\uE8A9"
+    wszFunctions         = !"\uE8BC"
+    wszBookmarks         = !"\uE723"
+    wszCompile           = !"\uE74C"
+    wszBuildExecute      = !"\uE768"  
 
