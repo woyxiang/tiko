@@ -537,7 +537,7 @@ function IsCurrentLineIncludeFilename() as boolean
     if pDoc = 0 then exit function
     
     dim wszPath         as wstring * MAX_PATH
-    dim wszCompilerPath as wstring * MAX_PATH
+    dim wszIconCompilerPath as wstring * MAX_PATH
     dim wszText         as wstring * MAX_PATH
     dim sFilename       as string 
     dim sLine           as string 
@@ -546,14 +546,14 @@ function IsCurrentLineIncludeFilename() as boolean
 
     dim as long idxBuild = frmBuildConfig_getActiveBuildIndex()
     if idxBuild = -1 then idxBuild = 0
-    if gConfig.Builds(idxBuild).Is32bit then wszCompilerPath = gConfig.FBWINcompiler32
-    if gConfig.Builds(idxBuild).Is64bit then wszCompilerPath = gConfig.FBWINcompiler64
-    wszCompilerPath = ProcessFromCurdriveApp(wszCompilerPath)
-    wszCompilerPath = AfxStrPathname( "PATH", wszCompilerPath ) & "inc"
+    if gConfig.Builds(idxBuild).Is32bit then wszIconCompilerPath = gConfig.FBWINcompiler32
+    if gConfig.Builds(idxBuild).Is64bit then wszIconCompilerPath = gConfig.FBWINcompiler64
+    wszIconCompilerPath = ProcessFromCurdriveApp(wszIconCompilerPath)
+    wszIconCompilerPath = AfxStrPathname( "PATH", wszIconCompilerPath ) & "inc"
 
     ' Convert relative path to absolute path if needed.
-    if AfxPathIsRelative(wszCompilerPath) then
-        wszCompilerPath = AfxPathCombine(AfxGetExePathName, wszCompilerPath)
+    if AfxPathIsRelative(wszIconCompilerPath) then
+        wszIconCompilerPath = AfxPathCombine(AfxGetExePathName, wszIconCompilerPath)
     end if
 
     nLine = pDoc->GetCurrentLineNumber()
@@ -578,8 +578,8 @@ function IsCurrentLineIncludeFilename() as boolean
             gApp.IncludeFilename = AfxGetCurDir & "\" & sFilename
         elseif AfxFileExists(AfxGetExePathName & sFilename) then 
             gApp.IncludeFilename = AfxGetExePathName & sFilename
-        elseif AfxFileExists(str(wszCompilerPath) & "\" & sFilename) then 
-            gApp.IncludeFilename = str(wszCompilerPath) & "\" & sFilename
+        elseif AfxFileExists(str(wszIconCompilerPath) & "\" & sFilename) then 
+            gApp.IncludeFilename = str(wszIconCompilerPath) & "\" & sFilename
         else
             ' Iterate the optional semi colon separated list of compiler include paths
             dim as CWSTR includePath

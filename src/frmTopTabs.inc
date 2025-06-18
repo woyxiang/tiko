@@ -97,11 +97,13 @@ function frmTopTabs_PositionWindows() as LRESULT
     dim as long rcIconWidth = 20 
     dim as long rightBorderWidth = 2
     dim as long hmargin = 3
-    dim as long ActionPanelWidth = 96
+    dim as long ActionPanelWidth = 116
     dim as long ActionButtonWidth = 24
     dim as long ActionButtonHeight = 22
     dim as long PrevTabsButtonWidth = 20
     dim as long PrevTabsButtonHeight = 20
+    dim as long SplitButtonWidth = 20
+    dim as long SplitButtonHeight = 20
     dim as long AddFileButtonWidth = 24
     
     ' calculate the right hand side Action area panel that holds the
@@ -121,9 +123,16 @@ function frmTopTabs_PositionWindows() as LRESULT
     gTTabCtl.rcNextTabs.bottom = gTTabCtl.rcNextTabs.top + pWindow->ScaleY( PrevTabsButtonHeight )
     gTTabCtl.rcNextTabs.right = gTTabCtl.rcNextTabs.left + pWindow->ScaleX( PrevTabsButtonWidth )
 
+    ' calculate the split editor button
+    vmargin = (TabHeight - SplitButtonHeight) / 2
+    gTTabCtl.rcSplitEditor.left = gTTabCtl.rcNextTabs.right + pWindow->ScaleX( hmargin )
+    gTTabCtl.rcSplitEditor.top = rc.top + pWindow->ScaleY(vmargin)
+    gTTabCtl.rcSplitEditor.bottom = gTTabCtl.rcSplitEditor.top + pWindow->ScaleY( SplitButtonHeight )
+    gTTabCtl.rcSplitEditor.right = gTTabCtl.rcSplitEditor.left + pWindow->ScaleY( SplitButtonWidth )
+
     ' calculate the actual more actions "..." button itself
     vmargin = (TabHeight - ActionButtonHeight) / 2
-    gTTabCtl.rcActionButton.left = gTTabCtl.rcNextTabs.right + pWindow->ScaleX( hmargin )
+    gTTabCtl.rcActionButton.left = gTTabCtl.rcSplitEditor.right + pWindow->ScaleX( hmargin )
     gTTabCtl.rcActionButton.top = rc.top + pWindow->ScaleY(vmargin)
     gTTabCtl.rcActionButton.bottom = gTTabCtl.rcActionButton.top + pWindow->ScaleY( ActionButtonHeight )
     gTTabCtl.rcActionButton.right = gTTabCtl.rcActionButton.left + pWindow->ScaleY( ActionButtonWidth )
@@ -346,6 +355,16 @@ function isNextTabsHitTest( byval hWin as HWND ) as boolean
 end function
 
 ' ========================================================================================
+' Do hit test to determine if SplitEditor button in action Area was clicked
+' ========================================================================================
+function isSplitEditorHitTest( byval hWin as HWND ) as boolean
+    dim as point pt: GetCursorPos( @pt )
+    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
+    if PtInRect( @gTTabCtl.rcSplitEditor, pt ) then return true
+    function = false
+end function
+
+' ========================================================================================
 ' Do hit test if over the Action Panel (no action but prevents other tooltips)
 ' ========================================================================================
 function isActionPanelHitTest( byval hWin as HWND ) as boolean
@@ -388,6 +407,7 @@ function frmTopTabs_WndProc( _
 
     static as long curr_idxHot = -1
     static hTooltip as HWND
+
     
     select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmTopTabs_OnSize)
@@ -407,8 +427,13 @@ function frmTopTabs_WndProc( _
         tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
-        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
-
+        if IsWindow(hTooltip) = 0 then 
+            hTooltip = AfxAddTooltip( hwnd, "", false, false )
+            ' Set the tooltip max width in order to handle the multiline
+            ' text needed for the split editor button.
+            SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 200 )
+        end if
+        
         curr_idxHot = getHotTabHitTest( hwnd )
         AfxRedrawWindow( hwnd )
         
@@ -431,7 +456,7 @@ function frmTopTabs_WndProc( _
     case WM_MOUSELEAVE
         ' this will reset all tabs isHot to -1 and curr_idxHot to -1
         curr_idxHot = getHotTabHitTest( hwnd )
-        AfxdeleteTooltip( hTooltip, hwnd )
+        AfxDeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
         AfxRedrawWindow( hwnd )
 
@@ -448,6 +473,16 @@ function frmTopTabs_WndProc( _
             wszTooltip  = L(430, "Tab List")
         elseif isAddFileButtonHitTest( hwnd ) then
             wszTooltip  = L(003, "New File")
+        elseif isSplitEditorHitTest( hwnd ) then
+            ' If CTRL is pressed then use the top/bottom split, otherwise
+            ' use the left/right split icon.
+            if (wszIconSplitEditor = wszIconSplitTopBottom) then
+                wszTooltip  = L(070,"Toggle Split Editor Top/Bottom")
+            else    
+                wszTooltip  = L(069,"Toggle Split Editor Left/Right") & _
+                                    chr(13,10) & "[Alt]: " & L(071,"Split Top/Bottom")
+            end if
+
         elseif isActionPanelHitTest( hwnd ) then
             ' do nothing. no tooltip.
         elseif isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot then
@@ -467,6 +502,7 @@ function frmTopTabs_WndProc( _
         elseif isActionButtonHitTest( hwnd ) then
         elseif isActionPanelHitTest( hwnd ) then
         elseif isAddFileButtonHitTest( hwnd ) then
+        elseif isSplitEditorHitTest( hwnd ) then
         else
             ' Create the popup menu
             curr_idxHot = getHotTabHitTest( hwnd )
@@ -486,6 +522,7 @@ function frmTopTabs_WndProc( _
         elseif isActionButtonHitTest( hwnd ) then
         elseif isActionPanelHitTest( hwnd ) then
         elseif isAddFileButtonHitTest( hwnd ) then
+        elseif isSplitEditorHitTest( hwnd ) then
         else ' regular tab
             curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
@@ -546,6 +583,15 @@ function frmTopTabs_WndProc( _
             ' Add a new file tab
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FILENEWLASTTAB, 0), 0 )
 
+        elseif isSplitEditorHitTest( hwnd ) then
+            ' Split editor view
+            ' IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
+            if (wszIconSplitEditor = wszIconSplitTopBottom) then
+                PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_SPLITTOPBOTTOM, 0), 0 )
+            else    
+                PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_SPLITLEFTRIGHT, 0), 0 )
+            end if
+            
         elseif isActionPanelHitTest( hwnd ) then
         else
             ' Reset the mouse pointer
@@ -623,7 +669,7 @@ function frmTopTabs_WndProc( _
             if isDirty then
                 ' if mouse is over the rcClose then draw the close icon, otherwise draw the dirty circle
                 SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @gTTabCtl.tabs(i).rcClose), wsStyle )
+                DrawText( memDC, wszIconCompileResult, -1, cast(lpRect, @gTTabCtl.tabs(i).rcClose), wsStyle )
             end if
             
             if (i = gTTabCtl.CurSel) or (gTTabCtl.tabs(i).isHot = true) then
@@ -632,7 +678,7 @@ function frmTopTabs_WndProc( _
                 rc = gTTabCtl.tabs(i).rcClose
                 if isDirty = false then
                     SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                    DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
+                    DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
                 end if
                 if (isTabCloseHitTest( hwnd, i ) = i) andalso (gApp.bDragTabActive = false) then
                     ' if we are hovered over the "X" close icon rect then highlight it
@@ -641,7 +687,7 @@ function frmTopTabs_WndProc( _
                     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
                     SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
                     SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                    DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
+                    DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
                 end if   
             end if
             
@@ -674,7 +720,7 @@ function frmTopTabs_WndProc( _
         RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
         wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
         SelectObject(memDC, ghMenuBar.hFontSymbol)
-        DrawText( memDC, wszAddFileButton, -1, cast(lpRect, @rc), wsStyle )
+        DrawText( memDC, wszIconAddFileButton, -1, cast(lpRect, @rc), wsStyle )
         
         
         ' Lastly, draw the TopTabs Action Area (basically, the little panel to the
@@ -696,7 +742,7 @@ function frmTopTabs_WndProc( _
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszChevronLeft, -1, cast(lpRect, @rc), wsStyle )
+            DrawText( memDC, wszIconChevronLeft, -1, cast(lpRect, @rc), wsStyle )
 
             ' Draw the NextTabs button
             SelectObject( memDC, ghTopTabs.hPanelBrush )
@@ -711,7 +757,22 @@ function frmTopTabs_WndProc( _
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rc), wsStyle )
+            DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rc), wsStyle )
+
+            ' Draw the SplitEditor button
+            SelectObject( memDC, ghTopTabs.hPanelBrush )
+            SetBkColor( memDC, ghTopTabs.BackColor )
+            SetTextColor( memDC, ghTopTabs.ForeColorHot )
+            if isSplitEditorHitTest( hwnd ) then
+                SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
+                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
+            end if
+            rc = gTTabCtl.rcSplitEditor
+            selectPen( memDC, hPenNull )
+            RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
+            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
+            SelectObject(memDC, ghMenuBar.hFontSymbol2)
+            DrawText( memDC, wszIconSplitEditor, -1, cast(lpRect, @rc), wsStyle )
             
             ' Draw the Action buttom "..."
             SelectObject( memDC, ghTopTabs.hPanelBrush )
@@ -725,8 +786,8 @@ function frmTopTabs_WndProc( _
             selectPen( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbolLargeBold)
-            DrawText( memDC, wszMoreActions, -1, cast(lpRect, @rc), wsStyle )
+            SelectObject(memDC, ghMenuBar.hFontSymbolLarge)
+            DrawText( memDC, wszIconMoreActions, -1, cast(lpRect, @rc), wsStyle )
         end if
     
         BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )

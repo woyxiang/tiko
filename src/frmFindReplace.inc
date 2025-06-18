@@ -503,7 +503,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
         FillRect( memDC, @gFind.rcExpand, ghFindReplace.hBackBrush )
     end if
     SelectObject( memDC, ghMenuBar.hFontSymbol )
-    dim as CWSTR wszText = iif( gFind.bExpanded, wszChevronDown, wszChevronRight )
+    dim as CWSTR wszText = iif( gFind.bExpanded, wszIconChevronDown, wszIconChevronRight )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
     DrawText( memDC, wszText.sptr, -1, cast(lpRect, @gFind.rcExpand), wsStyle )
 
@@ -547,7 +547,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject(memDC, ghStatusBar.hFontStatusBar)
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszMatchCase, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconMatchCase, -1, cast(lpRect, @rc), wsStyle )
     
     ' Whole Word
     if gFind.nWholeWord then 
@@ -570,7 +570,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject(memDC, ghStatusBar.hFontStatusBar)
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszWholeWord, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconWholeWord, -1, cast(lpRect, @rc), wsStyle )
 
     ' Paint the Results text
     if gFind.foundCount = 0 then 
@@ -597,7 +597,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject( memDC, ghMenuBar.hFontSymbol )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszUpArrow, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconUpArrow, -1, cast(lpRect, @rc), wsStyle )
     
     ' Paint the Down Arrow
     if isMouseOverRECT( HWnd, gFind.rcDownArrow ) then
@@ -613,7 +613,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject( memDC, ghMenuBar.hFontSymbol )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszDownArrow, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconDownArrow, -1, cast(lpRect, @rc), wsStyle )
 
     ' Paint the Selection icon
     if gFind.nSelection then 
@@ -633,7 +633,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject( memDC, ghMenuBar.hFontSymbol )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszSelection, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconSelection, -1, cast(lpRect, @rc), wsStyle )
 
     ' Paint the Close icon
     if isMouseOverRECT( hwnd, gFind.rcClose) then
@@ -649,7 +649,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject( memDC, ghMenuBar.hFontSymbol )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
 
     ' Preserve Case
     if gFind.nPreserve then 
@@ -672,7 +672,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject(memDC, ghStatusBar.hFontStatusBar)
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszPreserveCase, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconPreserveCase, -1, cast(lpRect, @rc), wsStyle )
     
     ' Paint the Replace icon
     if isMouseOverRECT( HWnd, gFind.rcReplace) then
@@ -688,7 +688,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject( memDC, ghMenuBar.hFontSymbol )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszReplace, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconReplace, -1, cast(lpRect, @rc), wsStyle )
 
     ' Paint the ReplaceAll icon
     if isMouseOverRECT( hwnd, gFind.rcReplaceAll) then
@@ -704,7 +704,7 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     SelectObject( memDC, ghMenuBar.hFontSymbol )
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszReplaceAll, -1, cast(lpRect, @rc), wsStyle )
+    DrawText( memDC, wszIconReplaceAll, -1, cast(lpRect, @rc), wsStyle )
 
     BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 

@@ -52,7 +52,7 @@ end function
 function FindInFiles_ProcessFile( _
             byref pStreamResults as CTextStream, _
             byref wszFindText as wstring, _
-            byref wszReplaceText as wstring, _
+            byref wszIconReplaceText as wstring, _
             byref wszFilename as wstring, _
             byval bMatchCase  as boolean, _
             byval bWholeWords as boolean, _
@@ -134,9 +134,9 @@ function FindInFiles_ProcessFile( _
                 if SearchMode = ReplaceAll then
                     bSaveReplaceFile = true
                     wszLine = mid(wszLine, 1, nFoundPos - 1) + _
-                                wszReplaceText + mid(wszLine, nFoundPos + len(wszFindText))
+                                wszIconReplaceText + mid(wszLine, nFoundPos + len(wszFindText))
                     wszLookLine = iif(bMatchCase, wszLine, ucase(wszLine))
-                    nStartPos = nFoundPos + len(wszReplaceText)
+                    nStartPos = nFoundPos + len(wszIconReplaceText)
                     ' Update processing stats
                     gReplaceResults.NumReplaced += 1
                 end if
@@ -178,7 +178,7 @@ end function
 function FindInFiles_RecursiveFileSearch( _
             byref pStreamResults as CTextStream, _
             byref wszFindText as wstring, _
-            byref wszReplaceText as wstring, _
+            byref wszIconReplaceText as wstring, _
             byref wszFilePath as wstring, _
             wszFileSpecs() as CWSTR, _
             byval bSubFolders as boolean, _
@@ -198,7 +198,7 @@ function FindInFiles_RecursiveFileSearch( _
                     FindInFiles_RecursiveFileSearch( _
                                 pStreamResults, _
                                 wszFindText, _
-                                wszReplaceText, _
+                                wszIconReplaceText, _
                                 pFinder.FilePath, _
                                 wszFileSpecs(), _ 
                                 bSubFolders, _
@@ -238,7 +238,7 @@ function FindInFiles_RecursiveFileSearch( _
                         FindInFiles_ProcessFile( _
                                         pStreamResults, _
                                         wszFindText, _
-                                        wszReplaceText, _
+                                        wszIconReplaceText, _
                                         pFinder.FilePath, _
                                         bMatchCase, _
                                         bWholeWords, _
@@ -438,8 +438,8 @@ function frmFindInFiles_DoFindInFilesEx( byval SearchMode as SEARCH_MODE ) as lo
     dim wszFindText As wstring * MAX_PATH
     wszFindText = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND))
 
-    dim wszReplaceText As wstring * MAX_PATH
-    wszReplaceText = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOREPLACE))
+    dim wszIconReplaceText As wstring * MAX_PATH
+    wszIconReplaceText = AfxGetWindowText( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOREPLACE))
     
     if len(wszFindText) = 0 then
         SetFocus( GetDlgItem(HWnd_FRMFINDINFILES, IDC_FRMFINDINFILES_COMBOFIND) )
@@ -451,7 +451,7 @@ function frmFindInFiles_DoFindInFilesEx( byval SearchMode as SEARCH_MODE ) as lo
     frmFindInFiles_AddToFindCombo(gFindInFiles.txtFind)
 
     if SearchMode = ReplaceAll then
-        gFindInFiles.txtReplace = wszReplaceText
+        gFindInFiles.txtReplace = wszIconReplaceText
         frmFindInFiles_AddToReplaceCombo(gFindInFiles.txtReplace)
         ' Reset the stat tracking
         gReplaceResults.NumReplaced = 0

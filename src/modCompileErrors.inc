@@ -487,7 +487,7 @@ function ParseLogForError( _
     if fGoodCompile = false then NumErrors = NumErrors + 1
 
 
-    dim as CWSTR wszCompileMsg
+    dim as CWSTR wszIconCompileMsg
 
     ' if the EXE output file was never created then throw an error
     if fCompilingObjFiles = false then
@@ -501,13 +501,13 @@ function ParseLogForError( _
     ' In all cases where warnings and/or errors exist, we will show the Compiler Results listview
     if (NumWarnings > 0) orelse (NumErrors > 0) orelse (NumDirectives > 0) then
     
-        wszCompileMsg = L(193, "Errors")   & " " & NumErrors   & "  " & _
+        wszIconCompileMsg = L(193, "Errors")   & " " & NumErrors   & "  " & _
                         L(192, "Warnings") & " " & NumWarnings & _
                         "  [" & _
                         AfxLocalDateStr( "yyyy-MM-dd" ) & "  " & _
                         AfxLocalTimeStr( "hh:mm:ss" ) & "]"
-        gCompile.wszOutputMsg = L(229,"Failed Compile")  & " (" & wszCompileMsg & ")" & vbcrlf
-        SetCompileStatusBarMessage( wszCompileMsg, ghIconBad )
+        gCompile.wszOutputMsg = L(229,"Failed Compile")  & " (" & wszIconCompileMsg & ")" & vbcrlf
+        SetCompileStatusBarMessage( wszIconCompileMsg, ghIconBad )
         MessageBeep(MB_ICONWARNING)
         
         ' Position the Compiler Log to the first error/warning
@@ -549,12 +549,12 @@ function ParseLogForError( _
         ' close if the user is looking at the logfile textbox.
         if bAllowSuccessMessage then  ' we are not compiling modules
             dim as long nFileSize = AfxGetFileSize(gCompile.OutputFilename)
-            wszCompileMsg = L(193, "Errors") & " " & NumErrors & "  " & _
+            wszIconCompileMsg = L(193, "Errors") & " " & NumErrors & "  " & _
                             L(192, "Warnings") & " " & NumWarnings & _
                             "  [ " & AfxStrPathname("NAMEX", gCompile.OutputFilename) & "  " & _
                             rtrim(AfxStrFormatKBSize(nFileSize)) & " (" & _
                             nFileSize & " " & L(199,"bytes") & ") ]"
-            SetCompileStatusBarMessage( wszCompileMsg, ghIconGood )
+            SetCompileStatusBarMessage( wszIconCompileMsg, ghIconGood )
             ' 2018-12-13: No longer offer the option to show the popup successful dialog.
             ' Simply sound a success
             if gConfig.DisableCompileBeep = false then

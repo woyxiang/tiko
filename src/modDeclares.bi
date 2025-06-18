@@ -282,61 +282,67 @@ end type
 redim shared gTopMenu(any) as TOPMENU_TYPE
 
 dim shared as wstring * 10 _
-    wszChevronLeft, wszChevronRight, wszChevronUp, wszChevronDown, _
-    wszDocumentIcon, wszUpArrow, wszDownArrow, wszSelection, wszCheckmark, _
-    wszClose, wszDirty, wszCompileResultIcon, wszMatchCase, wszWholeWord, _
-    wszPreserveCase, wszReplace, wszReplaceAll, wszMoreActions, wszAddFileButton, _
-    wszExplorer, wszFunctions, wszBookmarks, wszCompile, wszBuildExecute
+    wszIconChevronLeft, wszIconChevronRight, wszIconChevronUp, wszIconChevronDown, _
+    wszIconDocument, wszIconUpArrow, wszIconDownArrow, wszIconSelection, wszIconCheckmark, _
+    wszIconClose, wszIconDirty, wszIconCompileResult, wszIconMatchCase, wszIconWholeWord, _
+    wszIconPreserveCase, wszIconReplace, wszIconReplaceAll, wszIconMoreActions, wszIconAddFileButton, _
+    wszIconExplorer, wszIconFunctions, wszIconBookmarks, wszIconCompile, wszIconBuildExecute, _
+    wszIconSplitEditor, wszIconSplitLeftRight, wszIconSplitTopBottom
+
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 
 '"Segoe UI Symbol"
-'    wszClose             = !"\u2715"      ' light X  
-'    wszChevronLeft       = !"\uE09A"
-'    wszChevronRight      = !"\uE097" 
-'    wszChevronUp         = !"\uE098"
-'    wszChevronDown       = !"\uE099"
+'    wszIconClose             = !"\u2715"      ' light X  
+'    wszIconChevronLeft       = !"\uE09A"
+'    wszIconChevronRight      = !"\uE097" 
+'    wszIconChevronUp         = !"\uE098"
+'    wszIconChevronDown       = !"\uE099"
 '    wszTriangleDown      = !"\u23F7"     ' triangle down
 '    wszTriangleUp        = !"\u23F6"     ' triangle up
-'    wszDocumentIcon      = !"\u22C5"     ' small dot
-'    wszUpArrow           = !"\uE1FE"     ' up arrow
-'    wszDownArrow         = !"\uE1FC"     ' down arrow
-'    wszSelection         = !"\uE1EE"     ' selection icon
-'    wszCheckmark         = !"\u2713"     ' narrow checkmark
-'    wszDirty             = !"\u2981"     ' larger dot
-'    wszCompileResultIcon = !"\u25CF"     ' larger circle  
-'    wszMatchCase         = "Aa"          ' match case
-'    wszWholeWord         = "W"           ' whole word
-'    wszPreserveCase      = "AB"          ' preserve case
-'    wszReplace           = !"\uE297"     ' replace
-'    wszReplaceAll        = !"\uE299"     ' replace all
-'    wszMoreActions       = !"\u22EF"     ' ...
-'    wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
-'    wszBuildExecute      = !"\uE102"
+'    wszIconDocument      = !"\u22C5"     ' small dot
+'    wszIconUpArrow           = !"\uE1FE"     ' up arrow
+'    wszIconDownArrow         = !"\uE1FC"     ' down arrow
+'    wszIconSelection         = !"\uE1EE"     ' selection icon
+'    wszIconCheckmark         = !"\u2713"     ' narrow checkmark
+'    wszIconDirty             = !"\u2981"     ' larger dot
+'    wszIconCompileResult = !"\u25CF"     ' larger circle  
+'    wszIconMatchCase         = "Aa"          ' match case
+'    wszIconWholeWord         = "W"           ' whole word
+'    wszIconPreserveCase      = "AB"          ' preserve case
+'    wszIconReplace           = !"\uE297"     ' replace
+'    wszIconReplaceAll        = !"\uE299"     ' replace all
+'    wszIconMoreActions       = !"\u22EF"     ' ...
+'    wszIconAddFileButton     = !"\uE109"     ' plus sign (thicker)
+'    wszIconBuildExecute      = !"\uE102"
 
 '"Segoe Fluent Icons"
-    wszClose             = !"\uE10A"      ' light X  
-    wszChevronLeft       = !"\uE012"
-    wszChevronRight      = !"\uE013" 
-    wszChevronUp         = !"\uE014"
-    wszChevronDown       = !"\uE015"
-    wszDocumentIcon      = !"\u00B7"     ' small dot (use the regular Segue UI font for this one)
-    wszUpArrow           = !"\uF0AD"     ' up arrow
-    wszDownArrow         = !"\uF0AE"     ' down arrow
-    wszSelection         = !"\uE14C"     ' selection icon
-    wszCheckmark         = !"\uE001"     ' checkmark
-    wszDirty             = !"\u2981"     ' larger dot
-    wszCompileResultIcon = !"\uECCC"     ' larger circle  
-    wszMatchCase         = "Aa"          ' match case
-    wszWholeWord         = "W"           ' whole word
-    wszPreserveCase      = "AB"          ' preserve case
-    wszReplace           = !"\uE14B"     ' replace
-    wszReplaceAll        = !"\uE299"     ' replace all
-    wszMoreActions       = !"\uE10C"     ' ...
-    wszAddFileButton     = !"\uE109"     ' plus sign (thicker)
-    wszExplorer          = !"\uE8A9"
-    wszFunctions         = !"\uE8BC"
-    wszBookmarks         = !"\uE723"
-    wszCompile           = !"\uE74C"
-    wszBuildExecute      = !"\uE768"  
+    wszIconClose             = !"\uE10A"      ' light X  
+    wszIconChevronLeft       = !"\uE012"
+    wszIconChevronRight      = !"\uE013" 
+    wszIconChevronUp         = !"\uE014"
+    wszIconChevronDown       = !"\uE015"
+    wszIconDocument          = !"\u00B7"     ' small dot (use the regular Segue UI font for this one)
+    wszIconUpArrow           = !"\uF0AD"     ' up arrow
+    wszIconDownArrow         = !"\uF0AE"     ' down arrow
+    wszIconSelection         = !"\uE14C"     ' selection icon
+    wszIconCheckmark         = !"\uE001"     ' checkmark
+    wszIconDirty             = !"\u2981"     ' larger dot
+    wszIconCompileResult     = !"\uECCC"     ' larger circle  
+    wszIconMatchCase         = "Aa"          ' match case
+    wszIconWholeWord         = "W"           ' whole word
+    wszIconPreserveCase      = "AB"          ' preserve case
+    wszIconReplace           = !"\uE14B"     ' replace
+    wszIconReplaceAll        = !"\uE299"     ' replace all
+    wszIconMoreActions       = !"\uE10C"     ' ...
+    wszIconAddFileButton     = !"\uE109"     ' plus sign (thicker)
+    wszIconExplorer          = !"\uE8A9"
+    wszIconFunctions         = !"\uE8BC"
+    wszIconBookmarks         = !"\uE723"
+    wszIconCompile           = !"\uE74C"
+    wszIconBuildExecute      = !"\uE768"  
+    
+    wszIconSplitLeftRight    = !"\u25EB"   'Segoe UI Symbol
+    wszIconSplitTopBottom    = !"\u229F"   'Segoe UI Symbol
+    wszIconSplitEditor       = wszIconSplitLeftRight
 

@@ -690,7 +690,7 @@ function frmOutputTabs_SubclassProc ( _
             rc = gOutputCloseRect
             oldFont = selectObject( memDC, ghMenuBar.hFontSymbolSmall )
             SetTextColor( memDC, ghOutput.ForeColorHot )
-            DrawText( memDC, wszClose, -1, Cast(lpRect, @rc), wsStyle )
+            DrawText( memDC, wszIconClose, -1, Cast(lpRect, @rc), wsStyle )
             selectObject( memDC, oldFont )
             
             if isMouseOverRECT( hWin, rc ) then
@@ -701,7 +701,7 @@ function frmOutputTabs_SubclassProc ( _
                 SetBkColor( memDC, ghOutput.CloseBackColorHot )
                 SetTextColor( memDC, ghOutput.ForeColorHot )
                 oldFont = selectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                DrawText( memDC, wszClose, -1, cast(lpRect, @rc), wsStyle )
+                DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
                 selectObject( memDC, oldPen )
                 selectObject( memDC, oldFont )
                 selectObject( memDC, oldBrush )

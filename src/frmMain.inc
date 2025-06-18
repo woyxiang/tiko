@@ -211,7 +211,7 @@ function frmMain_SetStatusbar() as long
         gSBPanels(GOTO_PANEL).wszText = wszText
 
         ' PANEL Build Configuration dialog
-        gSBPanels(BUILD_DIALOG_PANEL).wszText = " " & wszAddFileButton & " "
+        gSBPanels(BUILD_DIALOG_PANEL).wszText = " " & wszIconAddFileButton & " "
 
         ' PANEL Build Configuration
         if gApp.GetDocumentCount then

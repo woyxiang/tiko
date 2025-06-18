@@ -242,8 +242,8 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     DeleteObject SelectObject( memDC, oldPen )
     
     wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    oldFont = SelectObject( memDC, ghMenuBar.hFontSymbolLargeBold )
-    DrawText( memDC, wszMoreActions, -1, cast(lpRect, @rc), wsStyle )
+    oldFont = SelectObject( memDC, ghMenuBar.hFontSymbolLarge )
+    DrawText( memDC, wszIconMoreActions, -1, cast(lpRect, @rc), wsStyle )
     SelectObject( memDC, oldFont )
     SelectObject( memDC, oldBrush )
 

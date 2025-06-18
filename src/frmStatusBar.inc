@@ -302,7 +302,7 @@ function frmStatusBar_WndProc( _
 
                     if ghMenuBar.hFontSymbol then SelectObject(memDC, ghMenuBar.hFontSymbol)
                     dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                    DrawText( memDC, wszCompileResultIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
+                    DrawText( memDC, wszIconCompileResult, -1, cast(lpRect, @rcBitmap), wsStyle )
                 end if
             end if   
         next

@@ -39,7 +39,7 @@ function code_Compile( byval wID as long ) as boolean
     
     dim wszTemp      as wstring * MAX_PATH 
     dim wszFileExe   as wstring * MAX_PATH
-    dim wszCompile   as CWSTR
+    dim wszIconCompile   as CWSTR
     dim wszCommand   as CWSTR 
     dim wszParams    as CWSTR
     dim sConsoleText as string 
@@ -460,7 +460,7 @@ function AddPathsToLinkModules( byval modules as CWSTR ) as CWSTR
     dim as CWSTR wszTemp
     
     dim as CWSTR wszCurrentFolder = AfxStrPathname("PATH", gCompile.MainFilename)
-    dim as CWSTR wszCompilerIncFolder = AfxStrPathname("PATH", gCompile.CompilerPath) & "inc\"
+    dim as CWSTR wszIconCompilerIncFolder = AfxStrPathname("PATH", gCompile.CompilerPath) & "inc\"
     
     dim as CWSTR wszLinkModules = AfxStrShrink(gCompile.LinkModules)  
     
@@ -498,7 +498,7 @@ function AddPathsToLinkModules( byval modules as CWSTR ) as CWSTR
         next
     
         ' (3) \inc folder for the selected compiler toolchain
-        wszTemp = wszCompilerIncFolder & modulename
+        wszTemp = wszIconCompilerIncFolder & modulename
         if AfxFileExists(wszTemp) then
             wszResult = wszResult & chr(34) & wszTemp & chr(34) & " "
             continue for

@@ -38,34 +38,34 @@ function frmPanelMenu_PositionWindows() as LRESULT
     dim as long nTop = pWindow->ScaleY( 8 )
     dim as long nRight = rc.right - pWindow->ScaleX( 6 )
     
-    gPanelMenu(0).wszCaption = wszExplorer
+    gPanelMenu(0).wszCaption = wszIconExplorer
     gPanelMenu(0).id = IDM_VIEWEXPLORER
     gPanelMenu(0).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
     gPanelMenu(0).wszTooltip = AfxStrParse(getMenuText(IDM_VIEWEXPLORER), 1, wchr(9))
     
     nLeft += nButtonWidth
-    gPanelMenu(1).wszCaption = wszFunctions
+    gPanelMenu(1).wszCaption = wszIconFunctions
     gPanelMenu(1).id = IDM_FUNCTIONLIST
     gPanelMenu(1).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
     gPanelMenu(1).wszTooltip = AfxStrParse(getMenuText(IDM_FUNCTIONLIST), 1, wchr(9))
     
     ' Bookmarks
     nLeft += nButtonWidth
-    gPanelMenu(2).wszCaption = wszBookmarks
+    gPanelMenu(2).wszCaption = wszIconBookmarks
     gPanelMenu(2).id = IDM_BOOKMARKSLIST
     gPanelMenu(2).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
     gPanelMenu(2).wszTooltip = AfxStrParse(getMenuText(IDM_BOOKMARKSLIST), 1, wchr(9))
     
     ' Build & Execute
     nLeft = nRight - nButtonWidth
-    gPanelMenu(4).wszCaption = wszBuildExecute
+    gPanelMenu(4).wszCaption = wszIconBuildExecute
     gPanelMenu(4).id = IDM_BUILDEXECUTE
     gPanelMenu(4).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
     gPanelMenu(4).wszTooltip = AfxStrParse(getMenuText(IDM_BUILDEXECUTE), 1, wchr(9))
     
     ' Compile
     nLeft -= nButtonWidth
-    gPanelMenu(3).wszCaption = wszCompile
+    gPanelMenu(3).wszCaption = wszIconCompile
     gPanelMenu(3).id = IDM_COMPILE
     gPanelMenu(3).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
     gPanelMenu(3).wszTooltip = AfxStrParse(getMenuText(IDM_COMPILE), 1, wchr(9))

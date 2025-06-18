@@ -56,7 +56,7 @@ type PROJECT_FILELOAD_DATA
     wszFilename    as CWSTR        ' full path and filename
     wszFiletype    as CWSTR        ' pDoc->ProjectFileType
     bLoadInTab     as boolean
-    wszBookmarks   as CWSTR        ' pDoc->GetBookmarks()
+    wszIconBookmarks   as CWSTR        ' pDoc->GetBookmarks()
     wszFoldPoints  as CWSTR        ' pDoc->GetFoldPoints()
     nFirstLine     as long         ' first line of main view 
     nPosition      as long         ' current position of main view

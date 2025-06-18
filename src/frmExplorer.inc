@@ -273,9 +273,9 @@ function frmExplorer_OnDrawItem( _
             SelectObject( memDC, ghMenuBar.hFontSymbol )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             if isIconDown then 
-                DrawText( memDC, wszChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
+                DrawText( memDC, wszIconChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
             else   
-                DrawText( memDC, wszChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
+                DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
             end if
             wszCaption = getExplorerNodeHeaderDescription(wszCaption)
             rcText.left = rcBitmap.right
@@ -289,7 +289,7 @@ function frmExplorer_OnDrawItem( _
 
             SelectObject( memDC, ghMenuBar.hFontMenuBar )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszDocumentIcon, -1, cast(lpRect, @rcBitmap), wsStyle )
+            DrawText( memDC, wszIconDocument, -1, cast(lpRect, @rcBitmap), wsStyle )
 
             rcText.left = rcBitmap.right
             SelectObject( memDC, ghMenuBar.hFontMenuBar )

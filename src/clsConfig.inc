@@ -1368,7 +1368,7 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
                     .wszFilename    = wszFilename
                     .wszFileType    = wszFileType
                     .bLoadInTab     = bLoadInTab
-                    .wszBookmarks   = sBookmarks
+                    .wszIconBookmarks   = sBookmarks
                     .wszFoldPoints  = sFoldPoints
                     .nFirstLine     = nFirstLine
                     .nPosition      = nPosition
@@ -1423,7 +1423,7 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
         SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
         SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
         pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
-        pDoc->SetBookmarks(docData(i).wszBookmarks)
+        pDoc->SetBookmarks(docData(i).wszIconBookmarks)
         pDoc->SetFoldPoints(docData(i).wszFoldPoints)
     next
                     
