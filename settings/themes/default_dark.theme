@@ -71,7 +71,8 @@ editor.strings.background: %LIGHT_BLACK
 editor.strings.bold: false
 editor.strings.italic: false
 editor.strings.underline: false
-editor.bracegood.foreground: 000,128,000       # green
+#editor.bracegood.foreground: 255,255,000       # yellow
+editor.bracegood.foreground: %LIGHT_GRAY
 editor.bracebad.foreground: 196,000,000        # red
 editor.occurrence.foreground: 53,70,107
 editor.scrollbar.foreground: 75,83,97

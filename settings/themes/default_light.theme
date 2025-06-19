@@ -77,7 +77,7 @@ editor.bracebad.foreground: 196,000,000        # red
 editor.occurrence.foreground: 148,202,240      # powder blue
 editor.scrollbar.foreground: 236,236,236
 editor.scrollbar.background: %WHITE
-editor.divider.foreground: 64,67,73
+editor.divider.foreground: 221,221,221
 
 # panel holds Explorer, FunctionList, Bookmarks
 panel.panel.background: 243,243,243
