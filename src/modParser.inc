@@ -554,11 +554,11 @@ function ctxParser.ReadToEOL() as boolean
         elseif( c = asc("'") ) then
             c = this.ReadChar()
             if( this.incomment ) then
-            if( this.PeekChar() = asc("/") ) then
-                c = ReadChar()
-                this.incomment = false
-                exit while
-            end if
+                if( this.PeekChar() = asc("/") ) then
+                    c = ReadChar()
+                    this.incomment = false
+                    exit while
+                end if
             end if
         else
             c = this.ReadChar()
@@ -619,7 +619,7 @@ function ctxParser.ReadQuoted _
                 else
                     exit while
                 end if
-                elseif( c = asc("\") ) then
+            elseif( c = asc("\") ) then
                 c = this.PeekChar()
                 if( c = 10 or c = 13 ) then
                     exit while
@@ -747,7 +747,7 @@ function ctxParser.GetToken() as boolean
             this.s = this.i
             
             if this.ltoken = "'todo:" then
-            return true
+                return true
             end if
         end if
             

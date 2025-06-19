@@ -204,6 +204,10 @@ function frmPanelMenu_WndProc( _
 
     static hTooltip as hwnd
     static wszPrevTooltip as CWSTR
+
+    if IsWindow(hTooltip) = 0 then 
+        hTooltip = AfxAddTooltip( hwnd, "", false, false )
+    end if
     
     select case uMsg
         HANDLE_MSG (hwnd, WM_SIZE,  frmPanelMenu_OnSize)

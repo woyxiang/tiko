@@ -12,6 +12,9 @@
 '    GNU General Public License for more details.
 
 
+'TODO: Remove "+" button tab control
+'#define TAB_PLUS_BUTTON
+
 ' ========================================================================================
 ' Show or hide the drop down shadow that will display below the top tabs control. The
 ' width of the shadow is also influenced by whether the Find/Replace dialog is active.
@@ -138,9 +141,11 @@ function frmTopTabs_PositionWindows() as LRESULT
     gTTabCtl.rcActionButton.right = gTTabCtl.rcActionButton.left + pWindow->ScaleY( ActionButtonWidth )
 
     ' calculate the + add new file button. 
-    ' Left position is calculated below once we know hpw many tabs will be drawn in the tab control.
+    ' Left position is calculated below once we know how many tabs will be drawn in the tab control.
+#ifdef TAB_PLUS_BUTTON   
     gTTabCtl.rcAddFileButton = gTTabCtl.rcActionButton 
     gTTabCtl.rcAddFileButton.left = 0
+#endif
 
     for i as long = lbound(gTTabCtl.tabs) to ubound(gTTabCtl.tabs) 
         pDoc = gTTabCtl.tabs(i).pDoc
@@ -178,7 +183,8 @@ function frmTopTabs_PositionWindows() as LRESULT
             
         end if
     next
-    
+
+#ifdef TAB_PLUS_BUTTON   
     ' The + Add New file button
     gTTabCtl.rcAddFileButton.left = nLeft + pWindow->ScaleX( hmargin )
     ' Ensure that the button stays within the tab area and always gets drawn whether
@@ -186,7 +192,7 @@ function frmTopTabs_PositionWindows() as LRESULT
     dim as long MaxLeftAddFileButton = gTTabCtl.rcActionPanel.left - pWindow->ScaleY( AddFileButtonWidth )
     gTTabCtl.rcAddFileButton.left = min(gTTabCtl.rcAddFileButton.left, MaxLeftAddFileButton)
     gTTabCtl.rcAddFileButton.right = gTTabCtl.rcAddFileButton.left + pWindow->ScaleY( AddFileButtonWidth )
-    
+#endif    
 
     ' We now know the exact width and postions of all tabs so now we need to calculate
     ' and adjust the gTTabCtl.FirstDisplayTab based on where the gTTabCtl.CurSel is located.
@@ -303,6 +309,7 @@ function getHotTabHitTest( byval hWin as HWND ) as long
     function = hotTab
 end function
 
+
 ' ========================================================================================
 ' Do hit test to determine if "X" close button on tab was clicked
 ' ========================================================================================
@@ -314,65 +321,6 @@ function isTabCloseHitTest( byval hWin as HWND, byval idx as long ) as long
     function = -1
 end function
 
-' ========================================================================================
-' Do hit test to determine if "+" add new file button was clicked
-' ========================================================================================
-function isAddFileButtonHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcAddFileButton, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test to determine if "..." button in action Area was clicked
-' ========================================================================================
-function isActionButtonHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcActionButton, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test to determine if Prev Tabs button in action Area was clicked
-' ========================================================================================
-function isPrevTabsHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcPrevTabs, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test to determine if Next Tabs button in action Area was clicked
-' ========================================================================================
-function isNextTabsHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcNextTabs, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test to determine if SplitEditor button in action Area was clicked
-' ========================================================================================
-function isSplitEditorHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcSplitEditor, pt ) then return true
-    function = false
-end function
-
-' ========================================================================================
-' Do hit test if over the Action Panel (no action but prevents other tooltips)
-' ========================================================================================
-function isActionPanelHitTest( byval hWin as HWND ) as boolean
-    dim as point pt: GetCursorPos( @pt )
-    MapWindowpoints( HWND_DESKTOP, hWin, cast( point ptr, @pt ), 1 )
-    if PtInRect( @gTTabCtl.rcActionPanel, pt ) then return true
-    function = false
-end function
 
 ' ========================================================================================
 ' frmTopTabsShadow_WndProc Window procedure
@@ -408,7 +356,14 @@ function frmTopTabs_WndProc( _
     static as long curr_idxHot = -1
     static hTooltip as HWND
 
+    if IsWindow(hTooltip) = 0 then 
+        hTooltip = AfxAddTooltip( hwnd, "", false, false )
+        ' Set the tooltip max width in order to handle the multiline
+        ' text needed for the split editor button.
+        SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 200 )
+    end if
     
+
     select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmTopTabs_OnSize)
     
@@ -427,13 +382,6 @@ function frmTopTabs_WndProc( _
         tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
-        if IsWindow(hTooltip) = 0 then 
-            hTooltip = AfxAddTooltip( hwnd, "", false, false )
-            ' Set the tooltip max width in order to handle the multiline
-            ' text needed for the split editor button.
-            SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 200 )
-        end if
-        
         curr_idxHot = getHotTabHitTest( hwnd )
         AfxRedrawWindow( hwnd )
         
@@ -465,15 +413,19 @@ function frmTopTabs_WndProc( _
         dim as CWSTR wszTooltip 
         ' test for Action Button, Filename caption or Close caption
         curr_idxHot = getHotTabHitTest( hwnd )
-        if isPrevTabsHitTest( hwnd ) then
+        if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
             wszTooltip  = L(431, "Scroll Tabs Left")
-        elseif isNextTabsHitTest( hwnd ) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
             wszTooltip  = L(432, "Scroll Tabs Right")
-        elseif isActionButtonHitTest( hwnd ) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
             wszTooltip  = L(430, "Tab List")
-        elseif isAddFileButtonHitTest( hwnd ) then
+
+#ifdef TAB_PLUS_BUTTON   
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
             wszTooltip  = L(003, "New File")
-        elseif isSplitEditorHitTest( hwnd ) then
+#endif
+
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
             ' If CTRL is pressed then use the top/bottom split, otherwise
             ' use the left/right split icon.
             if (wszIconSplitEditor = wszIconSplitTopBottom) then
@@ -483,10 +435,10 @@ function frmTopTabs_WndProc( _
                                     chr(13,10) & "[Alt]: " & L(071,"Split Top/Bottom")
             end if
 
-        elseif isActionPanelHitTest( hwnd ) then
-            ' do nothing. no tooltip.
         elseif isTabCloseHitTest( hwnd, curr_idxHot ) = curr_idxHot then
             wszTooltip  = L(86, "Close Tab")
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionPanel) then
+            ' do nothing. no tooltip.
         else
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
             wszTooltip = gTTabCtl.tabs(curr_idxHot).pDoc->DiskFilename   
@@ -497,12 +449,14 @@ function frmTopTabs_WndProc( _
 
 
     case WM_RBUTTONDOWN
-        if isPrevTabsHitTest( hwnd ) then
-        elseif isNextTabsHitTest( hwnd ) then
-        elseif isActionButtonHitTest( hwnd ) then
-        elseif isActionPanelHitTest( hwnd ) then
-        elseif isAddFileButtonHitTest( hwnd ) then
-        elseif isSplitEditorHitTest( hwnd ) then
+        if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
+#ifdef TAB_PLUS_BUTTON   
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
+#endif
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionPanel) then
         else
             ' Create the popup menu
             curr_idxHot = getHotTabHitTest( hwnd )
@@ -517,12 +471,14 @@ function frmTopTabs_WndProc( _
         end if
 
     case WM_LBUTTONDOWN
-        if isPrevTabsHitTest( hwnd ) then
-        elseif isNextTabsHitTest( hwnd ) then
-        elseif isActionButtonHitTest( hwnd ) then
-        elseif isActionPanelHitTest( hwnd ) then
-        elseif isAddFileButtonHitTest( hwnd ) then
-        elseif isSplitEditorHitTest( hwnd ) then
+        if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
+#ifdef TAB_PLUS_BUTTON   
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
+#endif
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionPanel) then
         else ' regular tab
             curr_idxHot = getHotTabHitTest( hwnd )
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
@@ -542,7 +498,7 @@ function frmTopTabs_WndProc( _
         end if
 
     case WM_LBUTTONUP
-        if isPrevTabsHitTest( hwnd ) then
+        if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
             ' if the first displayed tab is not index 0 then there must be tabs before it
             ' that can be displayed. if no previous tabs then set focus to the first tab.
             if gTTabCtl.FirstDisplayTab > 0 then
@@ -550,7 +506,7 @@ function frmTopTabs_WndProc( _
             else   
                 gTTabCtl.SetFocusTab(0)
             end if
-        elseif isNextTabsHitTest( hwnd ) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
             ' determine if there are any tabs to the right of the current display view. Bring
             ' the first one found (if any) into view. Keep track of the found tab because if
             ' none found then simply set the CurSel to the last tab.
@@ -564,7 +520,7 @@ function frmTopTabs_WndProc( _
             if nFound = -1 then nFound = gTTabCtl.GetItemCount - 1
             gTTabCtl.SetFocusTab(nFound)
 
-        elseif isActionButtonHitTest( hwnd ) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
             dim as HMENU hPopupMenu = CreateTopTabsActionButtonContextMenu()
             ' Popup the menu to the bottom of the Action Button (right aligned)
             dim as RECT rc = gTTabCtl.rcActionButton   ' work with a copy
@@ -579,11 +535,12 @@ function frmTopTabs_WndProc( _
             DestroyMenu( hPopUpMenu )
             Return true   ' prevent further processing that leads to WM_CONTEXTMENU
 
-        elseif isAddFileButtonHitTest( hwnd ) then
+#ifdef TAB_PLUS_BUTTON   
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
             ' Add a new file tab
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FILENEWLASTTAB, 0), 0 )
-
-        elseif isSplitEditorHitTest( hwnd ) then
+#endif
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
             ' Split editor view
             ' IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
             if (wszIconSplitEditor = wszIconSplitTopBottom) then
@@ -592,7 +549,7 @@ function frmTopTabs_WndProc( _
                 PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_SPLITLEFTRIGHT, 0), 0 )
             end if
             
-        elseif isActionPanelHitTest( hwnd ) then
+        elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionPanel) then
         else
             ' Reset the mouse pointer
             SetCursor( LoadCursor( null, IDC_ARROW ))
@@ -706,7 +663,7 @@ function frmTopTabs_WndProc( _
 
         next
         
-        
+ #ifdef TAB_PLUS_BUTTON   
         ' Draw the + new file button
         SelectObject( memDC, ghTopTabs.hPanelBrush )
         SetBkColor( memDC, ghTopTabs.BackColor )
@@ -723,7 +680,7 @@ function frmTopTabs_WndProc( _
         wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
         SelectObject(memDC, ghMenuBar.hFontSymbol)
         DrawText( memDC, wszIconAddFileButton, -1, cast(lpRect, @rc), wsStyle )
-        
+#endif        
         
         ' Lastly, draw the TopTabs Action Area (basically, the little panel to the
         ' right of all of the top tabs that has the "..." icon.
@@ -735,7 +692,7 @@ function frmTopTabs_WndProc( _
             SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isPrevTabsHitTest( hwnd ) then
+            if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
@@ -750,7 +707,7 @@ function frmTopTabs_WndProc( _
             SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isNextTabsHitTest( hwnd ) then
+            if isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
@@ -765,7 +722,7 @@ function frmTopTabs_WndProc( _
             SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isSplitEditorHitTest( hwnd ) then
+            if isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
@@ -780,7 +737,7 @@ function frmTopTabs_WndProc( _
             SelectObject( memDC, ghTopTabs.hPanelBrush )
             SetBkColor( memDC, ghTopTabs.BackColor )
             SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isActionButtonHitTest( hwnd ) then
+            if isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
                 SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
