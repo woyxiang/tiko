@@ -39,6 +39,7 @@ constructor clsConfig
     FBKeywordsDefaultFilename = exe_path & "settings\keywords\freebasic_keywords_default.txt" 
     FBCodetipsFilename        = exe_path & "settings\keywords\codetips.ini" 
     WinAPICodetipsFilename    = exe_path & "settings\keywords\codetips_winapi.ini" 
+    WinFBXCodetipsFilename    = exe_path & "settings\keywords\codetips_winfbx.ini" 
     TikoHelpFile              = exe_path & "settings\help\tiko_help.txt" 
 end constructor
 
@@ -141,7 +142,7 @@ function clsConfig.LoadCodetipsGeneric( _
     
     dim pStream as CTextStream
     if pStream.Open(wszFilename) <> S_OK then return true   ' error
-    
+
     do until pStream.EOS
         wst = pStream.ReadLine
 
@@ -165,6 +166,7 @@ function clsConfig.LoadCodetipsGeneric( _
             i = instr(wst, "(")
             parser.functionName   = trim(left(wst, i-1))
             parser.functionParams = wst
+            parser.typeName = ""
             gdb2.dbAdd( @parser, DB2_FUNCTION )
 
             case "T"     ' type
@@ -198,6 +200,14 @@ end function
 
 ''
 ''
+function clsConfig.LoadCodetipsWinFBX() as boolean
+   gdb2.dbDeleteByFileType( DB2_FILETYPE_WINFBX )
+   function = this.LoadCodetipsGeneric(this.WinFBXCodetipsFilename, DB2_FILETYPE_WINFBX)
+end function
+
+
+''
+''
 function clsConfig.LoadCodetipsWinAPI() as boolean
     gdb2.dbDeleteByFileType( DB2_FILETYPE_WINAPI )
     function = this.LoadCodetipsGeneric(this.WinAPICodetipsFilename, DB2_FILETYPE_WINAPI)
@@ -208,6 +218,7 @@ end function
 ''
 function clsConfig.LoadCodetips() as long
     this.LoadCodetipsFB()
+    this.LoadCodetipsWinFBX()
     this.LoadCodetipsWinAPI()
     function = 0
 end function

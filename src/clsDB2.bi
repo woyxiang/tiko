@@ -26,8 +26,7 @@ const DB2_STANDARDDATATYPE = 5    ' long, integer, string, etc...
 
 const DB2_FILETYPE_FB        = 100
 const DB2_FILETYPE_WINAPI    = 101
-const DB2_FILETYPE_WINFORMSX = 102
-const DB2_FILETYPE_WINFBX    = 103
+const DB2_FILETYPE_WINFBX    = 102
 const DB2_FILETYPE_USERCODE  = 200
 
 ' Do not adjust sizes of this type definition because it is saved

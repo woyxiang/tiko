@@ -116,85 +116,20 @@ function frmMain_InsertMatchedChars( _
 end function
 
 
-' ========================================================================================
-' This sub finds the position of a brace at the current caret position
-' and the position of its matching pair.
-' ========================================================================================
-sub frmMain_findMatchingBracePos( _
-            byval pDoc as clsDocument ptr, _
-            byref braceAtCaret as integer, _
-            byref braceOpposite as integer _
-            )
-    
-    dim as integer caretPos = SciExec( pDoc->hWndActiveScintilla, SCI_GETCURRENTPOS, 0, 0)
-
-    braceAtCaret = -1
-    braceOpposite = -1
-    dim as integer charBefore = 0
-
-    dim as integer lengthDoc = SciExec( pDoc->hWndActiveScintilla, SCI_GETLENGTH, 0, 0)
-
-    if (lengthDoc > 0) andalso (caretPos > 0) then
-        charBefore = SciExec( pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos - 1, 0)
-    end if
-
-    ' Priority goes to the character before the caret
-    if (charBefore <> 0) andalso instr("()[]{}", chr(charBefore)) then
-        braceAtCaret = caretPos - 1
-    end if
-
-    if (lengthDoc > 0) andalso (braceAtCaret < 0) then
-        ' No brace found, so check the character after the caret
-        dim as integer charAfter = SciExec( pDoc->hWndActiveScintilla, SCI_GETCHARAT, caretPos, 0)
-        if (charAfter <> 0) andalso instr("()[]{}", chr(charAfter)) then
-            braceAtCaret = caretPos
-        end if
-    end if
-
-    if braceAtCaret >= 0 then
-        braceOpposite = SciExec( pDoc->hWndActiveScintilla, SCI_BRACEMATCH, braceAtCaret, 0)
-    end if
-
-end sub
-
 
 ' ========================================================================================
-' This function performs brace matching and highlighting.
-' It returns true if a brace (matched or unmatched) is found near the caret.
+' Brace matching 
 ' ========================================================================================
-function frmMain_DoBraceMatching( byval pDoc as clsDocument ptr ) as boolean
 
-    if gConfig.BraceHighlight = false then
-        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, -1, -1 )
-        return false
-    end if         
-
-    dim as integer braceAtCaret = -1
-    dim as integer braceOpposite = -1
-
-    frmMain_findMatchingBracePos( pDoc, braceAtCaret, braceOpposite )
-
-    if (braceAtCaret <> -1) andalso (braceOpposite = -1) then
-        ' Found a brace, but it's unmatched
-        SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad ) 
-        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEBADLIGHT, braceAtCaret, 0 )
-    else
-        ' Found a matched pair or no brace at all
-        SciExec( pDoc->hWndActiveScintilla, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
-        SciExec( pDoc->hWndActiveScintilla, SCI_BRACEHIGHLIGHT, braceAtCaret, braceOpposite )
-    end if
-
-    return (braceAtCaret <> -1)
-
-end function
-
-
-
+type BRACE_INFO
+    found    as boolean = false
+    position as integer = -1
+    chrcode  as integer = 0
+end type
 
 ' check if character is an opening brace
 function is_open_brace(byval ch as integer) as boolean
-    return iif(instr("C[{", chr(ch)), true, false) 
-    return (ch = asc("(")) orelse (ch = asc("[")) orelse (ch = asc("{"))
+    return iif(instr("([{", chr(ch)), true, false) 
 end function
 
 ' check if character is a closing brace
@@ -216,8 +151,8 @@ function get_matching_brace(byval ch as integer) as integer
     return asc(brace)
 end function
 
-
-function style_is_comment_or_string( byval nstyle as integer) as boolean
+function style_is_comment_or_string( byval hwnd as HWND, byval npos as integer ) as boolean
+    dim as integer nstyle = SendMessage(hwnd, SCI_GETSTYLEAT, npos, 0)
     select case nstyle
         case SCE_B_COMMENT, SCE_B_MULTILINECOMMENT, SCE_B_STRING
             return true
@@ -227,90 +162,163 @@ function style_is_comment_or_string( byval nstyle as integer) as boolean
     return false
 end function
 
+function SetBraceHighlights( byval hwnd as HWND, byval startpos as integer, byval endpos as integer ) as long
+    if endpos >= 0 then
+        ' highlight matching braces (even if on different lines)
+        SciExec( hwnd, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracegood )
+        SciExec( hwnd, SCI_BRACEHIGHLIGHT, startpos, endpos )
+    else
+        ' highlight unmatched brace
+        SciExec( hwnd, SCI_INDICSETFORE, 9, ghEditor.ForeColorBracebad ) 
+        SciExec( hwnd, SCI_BRACEBADLIGHT, startpos, 0 )
+    end if
 
-' find matching brace for given position and character
-function find_matching_brace( byval hwnd as HWND, byval npos as long, byval brace_char as integer ) as long
-    dim as integer text_length = SendMessage(hwnd, SCI_GETLENGTH, 0, 0)
-    dim as integer matching_char = get_matching_brace(brace_char)
-    dim as integer depth = 1
-    dim as integer direction = iif(is_open_brace(brace_char), 1, -1)
-    dim as integer search_pos = npos + direction
+    function = 0
+end function  
+
+
+function find_starting_brace( byval hwnd as HWND, byval current_pos as long ) as BRACE_INFO
+    dim as integer current_line = SendMessage(hwnd, SCI_LINEFROMPOSITION, current_pos, 0)
+    dim as integer line_start   = SendMessage(hwnd, SCI_POSITIONFROMLINE, current_line, 0)
+    dim as BRACE_INFO brace
+
+    ' There are 3 different brace types (round, square, curly). Iterate from current
+    ' position to the start of the line. For every ending brace increment the push
+    ' state of that brace type. When we encounter an opening brace, if the push state
+    ' is zero then we've found the starting brace.
+    dim as integer round_stack = 0
+    dim as integer square_stack = 0
+    dim as integer curly_stack = 0
+    dim as boolean exit_search = false
+
+    dim as integer npos = current_pos - 1
     
-    while (search_pos >= 0) and (search_pos < text_length)
-        ' Skip if in comment/string
-        dim as integer nstyle = SendMessage(hwnd, SCI_GETSTYLEAT, search_pos, 0)
-        if style_is_comment_or_string(nstyle) = false then
-            dim as byte ch = SendMessage(hwnd, SCI_GETCHARAT, search_pos, 0)
-            
-            if ch = brace_char then
-                depth += 1
-            elseif ch = matching_char then
-                depth -= 1
-                if depth = 0 then return search_pos
+    do while npos >= 0
+
+        if style_is_comment_or_string(hwnd, npos) then 
+            npos -= 1: continue do
+        end if
+
+        ' If we make it to the start of the line then we should examine the previous
+        ' line to see if it has a line continuation character "_". If it does, then
+        ' load that line and continue searching.
+        dim as integer ch = SendMessage(hwnd, SCI_GETCHARAT, npos, 0)
+        
+        if (npos < line_start) then
+            ' skip whitespace, tab, cr, lf
+            if (ch = 32) orelse (ch = 9) orelse (ch = 10) orelse (ch = 13) then
+                npos -= 1: continue do
             end if
-            
-            search_pos += direction
-        end if    
-    wend
-    
-    return -1 ' no match found
+            if ch <> 95 then exit do   ' first char is not an underscore
+            if ch = 95 then            ' we have found underscore at end of the line
+                current_line = SendMessage(hwnd, SCI_LINEFROMPOSITION, npos, 0)
+                line_start   = SendMessage(hwnd, SCI_POSITIONFROMLINE, current_line, 0)
+                npos -= 1: continue do
+            end if
+        end if
+        
+        select case chr(ch)
+            case "(": round_stack  -= 1
+            case ")": round_stack  += 1
+            case "[": square_stack -= 1
+            case "]": square_stack += 1
+            case "{": curly_stack  -= 1
+            case "}": curly_stack  += 1
+        end select
+
+        ' Check if we have a good match on one of the brace types
+        if (round_stack < 0) orelse (square_stack < 0) orelse (curly_stack < 0) then
+            brace.found = true: brace.chrcode = ch: brace.position = npos
+            exit do
+        end if
+        
+        npos -= 1
+        
+    loop
+
+    return brace
 end function
 
 
+function find_matching_brace( byval hwnd as HWND, byval npos as integer, byval chrcode as integer ) as BRACE_INFO
+    dim as integer text_length = SendMessage(hwnd, SCI_GETLENGTH, 0, 0)
+    dim as integer matching_char = get_matching_brace(chrcode)
+    dim as integer depth = 1
+    dim as integer direction = iif(is_open_brace(chrcode), 1, -1)
+    dim as integer search_pos = npos + direction
+    dim as BRACE_INFO match_brace
 
-' main brace highlighting function
-sub highlight_braces( byval hwnd as HWND ) 
+    while (search_pos >= 0) andalso (search_pos < text_length)
+        ' Skip if in comment/string
+        if style_is_comment_or_string(hwnd, search_pos) = false then
+            dim as byte ch = SendMessage(hwnd, SCI_GETCHARAT, search_pos, 0)
+            
+            if ch = chrcode then
+                depth += 1
+            elseif ch = matching_char then
+                depth -= 1
+                if depth = 0 then
+                    match_brace.found = true
+                    match_brace.position = search_pos
+                    exit while
+                end if
+            end if
+            
+        end if    
+        search_pos += direction
+    wend
+    
+    return match_brace
+end function
+
+
+function frmMain_DoBraceMatching( byval hwnd as HWND ) as long
+    if gConfig.BraceHighlight = false then
+        SciExec( hwnd, SCI_BRACEHIGHLIGHT, -1, -1 )
+        return false
+    end if         
+
     dim as integer current_pos  = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0)
     dim as integer current_line = SendMessage(hwnd, SCI_LINEFROMPOSITION, current_pos, 0)
     dim as integer line_start   = SendMessage(hwnd, SCI_POSITIONFROMLINE, current_line, 0)
-    dim as integer line_end     = SendMessage(hwnd, SCI_GETLINEENDPOSITION, current_line, 0)
     
     ' clear previous brace highlighting
     SendMessage(hwnd, SCI_BRACEHIGHLIGHT, -1, -1)
-    
-    ' check each position in the current line for braces
-    for npos as integer = line_start to line_end - 1
-        dim as integer ch = SendMessage(hwnd, SCI_GETCHARAT, npos, 0)
-        
-        if is_open_brace(ch) orelse is_close_brace(ch) then
-            dim as integer match_pos = find_matching_brace(hwnd, npos, ch)
 
-            if match_pos >= 0 then
-                ' highlight matching braces (even if on different lines)
-                SendMessage(hwnd, SCI_BRACEHIGHLIGHT, npos, match_pos)
-                exit for ' only highlight first brace pair found on line
-            else
-                ' highlight unmatched brace
-                SendMessage(hwnd, SCI_BRACEBADLIGHT, npos, 0)
-                exit for
-            end if
-        end if
-    next
+    ' Scan left from current position to start of line until an unbalanced
+    ' open brace is found.
+    dim as BRACE_INFO open_brace
+    dim as BRACE_INFO match_brace
     
+    open_brace = find_starting_brace( hwnd, current_pos )
+    
+    if open_brace.found then
+        match_brace = find_matching_brace( hwnd, open_brace.position, open_brace.chrcode )
+        SetBraceHighlights( hwnd, open_brace.position, match_brace.position )
+    end if
+
     ' also check if caret is adjacent to a brace (common case)
     if current_pos > 0 then
-        dim as integer ch_before = SendMessage(hwnd, SCI_GETCHARAT, current_pos - 1, 0)
-        if is_open_brace(ch_before) orelse is_close_brace(ch_before) then
-            dim as integer match_pos = find_matching_brace(hwnd, current_pos - 1, ch_before)
-            if match_pos >= 0 then
-                SendMessage(hwnd, SCI_BRACEHIGHLIGHT, current_pos - 1, match_pos)
-            else
-                SendMessage(hwnd, SCI_BRACEBADLIGHT, current_pos - 1, 0)
+        if style_is_comment_or_string(hwnd, current_pos) = false then
+            dim as integer ch_before = SendMessage(hwnd, SCI_GETCHARAT, current_pos - 1, 0)
+            if is_open_brace(ch_before) orelse is_close_brace(ch_before) then
+                match_brace = find_matching_brace(hwnd, current_pos - 1, ch_before)
+                SetBraceHighlights( hwnd, current_pos - 1, match_brace.position )
             end if
-        end if
+        end if    
     end if
     
     ' check character at current position
-    dim as integer ch_at = SendMessage(hwnd, SCI_GETCHARAT, current_pos, 0)
-    if is_open_brace(ch_at) orelse is_close_brace(ch_at) then
-        dim as integer match_pos = find_matching_brace(hwnd, current_pos, ch_at)
-        if match_pos >= 0 then
-            SendMessage(hwnd, SCI_BRACEHIGHLIGHT, current_pos, match_pos)
-        else
-            SendMessage(hwnd, SCI_BRACEBADLIGHT, current_pos, 0)
+    if style_is_comment_or_string(hwnd, current_pos) = false then
+        dim as integer ch_at = SendMessage(hwnd, SCI_GETCHARAT, current_pos, 0)
+        if is_open_brace(ch_at) orelse is_close_brace(ch_at) then
+            match_brace = find_matching_brace(hwnd, current_pos, ch_at)
+            SetBraceHighlights( hwnd, current_pos, match_brace.position )
         end if
     end if
-end sub
+    
+    function = 0
+end function
 
 
 
@@ -371,9 +379,7 @@ function Scintilla_OnNotify( _
                         end if
                         
                         '// Update any brace highlighting
-                     '   frmMain_DoBraceMatching( pDoc )
-
-                   '     highlight_braces(pDoc->hWndActiveScintilla)
+                        frmMain_DoBraceMatching( pDoc->hWndActiveScintilla )
 
                     end if
                     

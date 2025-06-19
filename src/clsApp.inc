@@ -400,5 +400,3 @@ function clsApp.CheckQuickRunEXE() as long
 end function
 
 
-
-

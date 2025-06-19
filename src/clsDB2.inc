@@ -322,11 +322,10 @@ function clsDB2.dbDebug() as integer
             
             dim as CWSTR wszFileType
             select case pData->nFileType
-            case DB2_FILETYPE_FB:        wszFileType = "DB2_FILETYPE_FB"
-            case DB2_FILETYPE_WINAPI:    wszFileType = "DB2_FILETYPE_WINAPI"
-            case DB2_FILETYPE_WINFORMSX: wszFileType = "DB2_FILETYPE_WINFORMSX"
-            case DB2_FILETYPE_WINFBX:    wszFileType = "DB2_FILETYPE_WINFBX"
-            case DB2_FILETYPE_USERCODE:  wszFileType = "DB2_FILETYPE_USERCODE"
+                case DB2_FILETYPE_FB:        wszFileType = "DB2_FILETYPE_FB"
+                case DB2_FILETYPE_WINAPI:    wszFileType = "DB2_FILETYPE_WINAPI"
+                case DB2_FILETYPE_WINFBX:    wszFileType = "DB2_FILETYPE_WINFBX"
+                case DB2_FILETYPE_USERCODE:  wszFileType = "DB2_FILETYPE_USERCODE"
             end select
 
             pStream.WriteLine "   " & wszTitle

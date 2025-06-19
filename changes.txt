@@ -1,6 +1,8 @@
 Version 1.0.4 ()
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon to top/bottom split.
 - Added: Panel icon menu (located above the EXPLORER panel).
+- Added: Much improved brace highlighting.
+- Added: Codetips for WinFBX / Afx library.
 - Changed: All icons now use SegoeFluentIcons. SegoeFluentIcons.ttf must now be located in same folder as the editor exe. SegoeFluentIcons is not part of Windows 10 by default.
 - Changed: Removed the "+" Add New File button from the top tab bar (may implement it again in the future).
 - Changed: Drag top tab positions without having to hold down the SHIFT key.
@@ -9,6 +11,7 @@ Version 1.0.4 ()
 - Fixed: Find popup dialog flickering
 - Fixed: Find popup dialog losing focus after entering several characters into the textbox.
 - Fixed: autoinsert after ENTER at end of Function line would not move existing code down one line.
+- Fixed: WinAPI codetips not displaying.
 
 Version 1.0.3 (June 16, 2025)
 - Added a "Build and Execute" icon to the left side Panel.

@@ -1354,6 +1354,36 @@ function frmMain_WndProc( _
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,     frmMain_OnMouseMove)
         HANDLE_MSG (hwnd, WM_LBUTTONDBLCLK, frmMain_OnLButtonDblClk)
 
+'        case WM_MEASUREITEM
+'            dim mi as LPMEASUREITEMSTRUCT = cast(LPMEASUREITEMSTRUCT, lParam)
+'            mi->itemWidth = AfxScaleX(150)
+'            mi->itemHeight = AfxScaleY(24)
+'            return true
+
+'        case WM_DRAWITEM
+'            dim pdis as DRAWITEMSTRUCT ptr = cast(DRAWITEMSTRUCT ptr, lParam)
+'            dim as HBRUSH hBrush
+'            dim as COLORREF bgColor = ghPopup.BackColor
+'            dim as COLORREF textColor = ghPopup.ForeColor
+
+'            if (pdis->itemState and ODS_SELECTED) then
+'                ' Hover/selected state colors
+'                bgColor = ghPopup.BackColorHot
+'                textColor = ghPopup.ForeColorHot
+'            end if
+
+'            ' Draw background
+'            hBrush = CreateSolidBrush(bgColor)
+'            FillRect(pdis->hDC, @pdis->rcItem, hBrush)
+'            DeleteObject(hBrush)
+
+'            ' Set text color and draw text
+'            SetBkMode(pdis->hDC, TRANSPARENT)
+'            SetTextColor(pdis->hDC, textColor)
+'            dim as CWSTR wszMenuText = "Paul Squires Menu"
+'            DrawText(pdis->hDC, wszMenuText, -1, @pdis->rcItem, DT_SINGLELINE or DT_VCENTER or DT_LEFT or DT_NOPREFIX)
+'            return true
+
         case WM_ERASEBKGND
             return true      ' prevents painting the background
             

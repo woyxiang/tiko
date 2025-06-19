@@ -78,6 +78,7 @@ function RemoveComments( byval st as string) as string
     function = AfxStrExtract( 1, st, "'")
 end function  
 
+
 ' ========================================================================================
 ' Determine what variable relates to the "With" statement
 ' ========================================================================================
@@ -98,7 +99,6 @@ function DetermineWithVariable( byval pDoc as clsDocument ptr) as string
     
     function = sWithVariable
 end function    
-
 
 
 ' ========================================================================================
@@ -211,24 +211,24 @@ function DereferenceLine( _
             '' ATTEMPT TO MATCH GLOBAL VARIABLE   
             pData = gdb2.dbFindVariable( "", sLookfor )
             if pData then
-            pLastData = pData
+                pLastData = pData
             end if
         end if
 
         '' ATTEMPT TO MATCH FUNCTION NAME
         if pData = 0 then
             if len(sParent) then
-            sSearch = sParent & "." & sLookFor
-            pData = gdb2.dbFindFunctionTYPE( sParent, sSearch )
-            if pData = 0 then
-                ' Determine if there is a TYPE Extends that needs to be checked
-                pData = gdb2.dbFindTYPE( sParent )
-                if pData then
-                    sParent = pData->TypeExtends
-                    sSearch = sParent & "." & sLookFor
-                    pData = gdb2.dbFindFunctionTYPE( sParent, sSearch )
+                sSearch = sParent & "." & sLookFor
+                pData = gdb2.dbFindFunctionTYPE( sParent, sSearch )
+                if pData = 0 then
+                    ' Determine if there is a TYPE Extends that needs to be checked
+                    pData = gdb2.dbFindTYPE( sParent )
+                    if pData then
+                        sParent = pData->TypeExtends
+                        sSearch = sParent & "." & sLookFor
+                        pData = gdb2.dbFindFunctionTYPE( sParent, sSearch )
+                    end if   
                 end if   
-            end if   
             end if
             if pData then
                 pLastData = pData

@@ -78,6 +78,7 @@ type clsConfig
         FBKeywordsDefaultFilename as CWSTR 
         FBCodetipsFilename        as CWSTR
         WinAPICodetipsFilename    as CWSTR 
+        WinFBXCodetipsFilename    as CWSTR
         TikoHelpFile              as CWSTR 
         
         DateFileTime              as FILETIME
@@ -164,6 +165,7 @@ type clsConfig
         declare function ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean    
         declare function LoadCodetipsFB() as boolean
         declare function LoadCodetipsWinAPI() as boolean
+        declare function LoadCodetipsWinFBX() as boolean
         declare function LoadCodetipsGeneric( byval wszFilename as CWSTR, byval nFiletype as long) as boolean
         declare function LoadCodetips() as long
         declare function ReloadConfigFileTest() as boolean    

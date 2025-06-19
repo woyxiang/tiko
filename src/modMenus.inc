@@ -27,6 +27,7 @@ function EnableTopMenuItem( byval nID as long, byval bEnabled as boolean ) as lo
     function = 0
 end function
 
+
 ' ========================================================================================
 ' CheckMarkTopMenuItem: Show a checkmark to the left of the menu entry
 ' ========================================================================================
@@ -286,7 +287,8 @@ function AddProjectFileTypesToMenu( _
     if fSeparator then AppendMenu( hPopUpMenu, MF_SEPARATOR, 0, "" )
 
     dim messages(...) as long => _
-        { IDM_SETFILEMAIN, _
+        { _
+        IDM_SETFILEMAIN, _
         IDM_SETFILERESOURCE, _
         IDM_SETFILEHEADER, _
         IDM_SETFILEMODULE, _
@@ -512,7 +514,29 @@ function CreateScintillaContextMenu() as HMENU
     AppendMenu hPopupMenu, MF_ENABLED, IDM_COMMENTBLOCK, L(25,"Block Comment") 
     AppendMenu hPopupMenu, MF_ENABLED, IDM_UNCOMMENTBLOCK, L(26,"Block Uncomment")
     AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
-    AppendMenu hPopupMenu, MF_ENABLED, IDM_selectALL, L(40,"Select All")
+    AppendMenu hPopupMenu, MF_ENABLED, IDM_SELECTALL, L(40,"Select All")
+
+'    ' Determine if the text under the cursor is an #Include file. if yes, then add a
+'    ' menu option to allow to open it.
+'    if IsCurrentLineIncludeFilename() then
+'        AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_OPENINCLUDE, L(75,"Open") + chr(32, 34) + gApp.IncludeFilename + chr(34)
+'        AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
+'    end if
+    
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_UNDO, L(15,"Undo")
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_REDO, L(16,"Redo")
+'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_CUT, L(17,"Cut")
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_COPY, L(18,"Copy")
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_PASTE, L(19,"Paste")
+'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_INDENTBLOCK, L(23,"Block Indent") 
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_UNINDENTBLOCK, L(24,"Block Unindent")
+'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_COMMENTBLOCK, L(25,"Block Comment") 
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_UNCOMMENTBLOCK, L(26,"Block Uncomment")
+'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
+'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_SELECTALL, L(40,"Select All")
     
     function = hPopupMenu
 

@@ -216,6 +216,7 @@ function WinMain( _
     ' Load codetip files 
     if gConfig.Codetips then gConfig.LoadCodetips
 
+
     ' Show the main form
     function = frmMain_Show( 0 )
 
