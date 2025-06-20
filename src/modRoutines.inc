@@ -807,7 +807,7 @@ function AfxIFileOpenDialogW( _
             hr = pofd->lpVtbl->SetTitle(pofd, L(216,"Project files"))
         
         case IDM_INSERTFILE
-            rgFileTypes(1).pszName = @L(106,"Open source file")
+            rgFileTypes(1).pszName = @L(106,"Source files")
             rgFileTypes(2).pszName = @L(77,"Code files")
             rgFileTypes(3).pszName = @L(78,"Header files")
             rgFileTypes(4).pszName = @L(209,"Resource files")
@@ -921,7 +921,7 @@ function AfxIFileOpenDialogMultiple( _
 
     select case idButton
         case IDM_FILEOPEN
-            rgFileTypes(1).pszName = @L(106,"Open source file")
+            rgFileTypes(1).pszName = @L(106,"Source files")
             rgFileTypes(2).pszName = @L(77,"Code files")
             rgFileTypes(3).pszName = @L(78,"Header files")
             rgFileTypes(4).pszName = @L(209,"Resource files")
@@ -1067,15 +1067,17 @@ function AfxIFileSaveDialog( _
             end if
 
         case else
-            rgFileTypes(1).pszName = @L(77,"FB code files")
-            rgFileTypes(1).pszSpec = @wstr("*.bas")
-            rgFileTypes(2).pszName = @L(78,"FB Include files")
-            rgFileTypes(2).pszSpec = @wstr("*.bi;*.inc")
-            rgFileTypes(3).pszName = @L(209,"Resource files")
-            rgFileTypes(3).pszSpec = @wstr("*.rc")
-            rgFileTypes(4).pszName = @L(79,"All files")
-            rgFileTypes(4).pszSpec = @wstr("*.*")
-            psfd->lpVtbl->SetFileTypes(psfd, 4, @rgFileTypes(1))
+            rgFileTypes(1).pszName = @L(106,"Source files")
+            rgFileTypes(2).pszName = @L(77,"Code files")
+            rgFileTypes(3).pszName = @L(78,"Header files")
+            rgFileTypes(4).pszName = @L(209,"Resource files")
+            rgFileTypes(5).pszName = @L(79,"All files")
+            rgFileTypes(1).pszSpec = @wstr("*.bas;*.bi;*.inc;*.rc")
+            rgFileTypes(2).pszSpec = @wstr("*.bas;*.inc")
+            rgFileTypes(3).pszSpec = @wstr("*.bi")
+            rgFileTypes(4).pszSpec = @wstr("*.rc")
+            rgFileTypes(5).pszSpec = @wstr("*.*")
+            psfd->lpVtbl->SetFileTypes(psfd, 5, @rgFileTypes(1))
             psfd->lpVtbl->SetTitle(psfd, L(8,"Save As..."))
             if pwszDefExt then 
                 if *pwszDefExt = "inc" then
