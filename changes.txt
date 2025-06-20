@@ -11,6 +11,7 @@ Version 1.0.4 ()
 - Changed: Win64 Console (Release) is now the default build configuration for new installations.
 - Fixed: Find popup dialog flickering
 - Fixed: Find popup dialog losing focus after entering several characters into the textbox.
+- Fixed: Split editor window flickering.
 - Fixed: autoinsert after ENTER at end of Function line would not move existing code down one line.
 - Fixed: WinAPI codetips not displaying.
 
