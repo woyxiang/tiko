@@ -28,7 +28,7 @@
 ' ========================================================================================
 ' Save all options to the gConfig class
 ' ========================================================================================
-private function frmOptions_SaveEditorOptions() as long   
+function frmOptions_SaveEditorOptions() as long   
     
     dim hwnd as HWND 
     dim wText as wstring * MAX_PATH  
@@ -448,17 +448,17 @@ public function frmOptions_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' delete the frmOptions CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
     ' delete the child windows releasing their manually allocated memory 
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSGENERAL):   delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSEDITOR):    delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSEDITOR2):   delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSCOLORS):    delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSCOMPILER):  delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSLOCAL):     delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSKEYWORDS):  delete pWindow
-    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSKEYWORDSWINAPI):  delete pWindow
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSGENERAL):   if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSEDITOR):    if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSEDITOR2):   if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSCOLORS):    if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSCOMPILER):  if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSLOCAL):     if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSKEYWORDS):  if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr(HWND_FRMOPTIONSKEYWORDSWINAPI):  if pWindow then delete(pWindow)
 
 end function
 

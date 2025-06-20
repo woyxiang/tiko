@@ -18,7 +18,7 @@
 ' ========================================================================================
 ' If a localization file has been edited then save it.
 ' ========================================================================================
-public function frmOptionsLocal_LocalEditCheck() as Long
+function frmOptionsLocal_LocalEditCheck() as Long
     if gLocalPhrasesEdit = false then exit function
                 
     dim as CWSTR wszLocalName = AfxGetWindowText( GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION) )
@@ -74,7 +74,7 @@ end function
 ' ========================================================================================
 ' Do not allow the English language file to be edited or deleted
 ' ========================================================================================
-private function frmOptionsLocal_DisableEnglish() as long
+function frmOptionsLocal_DisableEnglish() as long
     dim as boolean bEnable, bEnglish
     dim as CWSTR wszFilename = ucase(AfxGetWindowText(GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION)))
     
@@ -118,7 +118,7 @@ end function
 ' ========================================================================================
 ' Clear the global localization phrase array.
 ' ========================================================================================
-private function frmOptionsLocal_ClearGlobalArray() as Long
+function frmOptionsLocal_ClearGlobalArray() as Long
     ' Clear the global array contents
     for i as long = lbound(gLocalPhrases) to ubound(gLocalPhrases) 
         gLocalPhrases(i) = ""
@@ -130,7 +130,7 @@ end function
 ' ========================================================================================
 ' Load the selected localization file into the global array
 ' ========================================================================================
-private function frmOptionsLocal_LoadLocalizationFile( byref wszFilename as wstring ) as long
+function frmOptionsLocal_LoadLocalizationFile( byref wszFilename as wstring ) as long
 
     if AfxFileExists( wszFileName ) = 0 then exit function
 
@@ -192,7 +192,7 @@ end function
 ' ========================================================================================
 ' Update the translation textboxes
 ' ========================================================================================
-private function frmOptionsLocal_UpdateTextBoxes( byval hwnd as HWND ) as LRESULT
+function frmOptionsLocal_UpdateTextBoxes( byval hwnd as HWND ) as LRESULT
     dim wszIndex     as wstring * MAX_PATH
     dim wszEnglish   as wstring * MAX_PATH
     dim wszTranslate as wstring * MAX_PATH
@@ -216,113 +216,115 @@ end function
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOptionsLocal
 ' ========================================================================================
-private function frmOptionsLocal_OnCommand( byval hwnd as HWND, _
-                                            byval id as Long, _
-                                            byval hwndCtl as HWND, _
-                                            byval codeNotify as UINT _
-                                            ) as LRESULT
+function frmOptionsLocal_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as Long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
+
     select case id
 
-        case IDC_FRMOPTIONSLOCAL_CMDLOCALIZATION
-            ' select localization file
-            if codeNotify = BN_CLICKED then
-                ' If a localization file is currently being edited then save it now.
-                frmOptionsLocal_LocalEditCheck
+    case IDC_FRMOPTIONSLOCAL_CMDLOCALIZATION
+        ' select localization file
+        if codeNotify = BN_CLICKED then
+            ' If a localization file is currently being edited then save it now.
+            frmOptionsLocal_LocalEditCheck
 
-                ' Display the Open File Dialog
-                dim pwszName as wstring ptr = AfxIFileOpenDialogW(hwnd, id)
-                if pwszName then
-                    frmOptionsLocal_LoadLocalizationFile(*pwszName)
-                    gLocalPhrasesEdit = false
-                    ' Clear any previous listview selected line
-                    dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
-                    ListView_UnselectAllItems(hLV)
-                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTENGLISH), "")
-                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE), "")
-                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION), AfxStrPathname("NAMEX", *pwszName) )
-                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), AfxStrPathName("NAME", *pwszName) )
-                    frmOptionsLocal_DisableEnglish()
-                    CoTaskMemFree pwszName
-                end if
-                exit function
+            ' Display the Open File Dialog
+            dim pwszName as wstring ptr = AfxIFileOpenDialogW(hwnd, id)
+            if pwszName then
+                frmOptionsLocal_LoadLocalizationFile(*pwszName)
+                gLocalPhrasesEdit = false
+                ' Clear any previous listview selected line
+                dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
+                ListView_UnselectAllItems(hLV)
+                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTENGLISH), "")
+                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE), "")
+                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION), AfxStrPathname("NAMEX", *pwszName) )
+                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), AfxStrPathName("NAME", *pwszName) )
+                frmOptionsLocal_DisableEnglish()
+                CoTaskMemFree pwszName
             end if
+            exit function
+        end if
 
-        case IDC_FRMOPTIONSLOCAL_CMDNEW
-            ' New localization file
-            if codeNotify = BN_CLICKED then
-                ' If a localization file is currently being edited then save it now.
-                frmOptionsLocal_LocalEditCheck
-                
-                ' Display the Save File Dialog
-                dim wzFilename as wstring * MAX_PATH 
-                dim pwszName as wstring ptr = AfxIFileSaveDialog(hwnd, @wzFilename, @wstr("lang"), id)
-                if pwszName then
-                    wzFilename = *pwszName
-                    frmOptionsLocal_ClearGlobalArray()
-                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION), AfxStrPathname("NAMEX", *pwszName) )
-                    AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), AfxStrPathName("NAME", *pwszName) )
-                    gLocalPhrasesEdit = true
-                    frmOptionsLocal_DisableEnglish()
-                    dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
-                    ListView_SelectItem(hLV, 0)
-                    frmOptionsLocal_UpdateTextBoxes(hwnd)
-                    SetFocus( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE) )
-                    CoTaskMemFree(pwszName)
-                end if
-                exit function
-            end if
-
-        case IDC_FRMOPTIONSLOCAL_CMDEDIT
-            ' Edit the loaded localization file
-            if codeNotify = BN_CLICKED then
-                dim as CWSTR wszLanguage = _
-                    AfxGetExePathName & wstr("settings\languages\") & AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION) )
-                frmOptionsLocal_LoadLocalizationFile(wszLanguage)
-                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), AfxStrPathName("NAME", wszLanguage) )
+    case IDC_FRMOPTIONSLOCAL_CMDNEW
+        ' New localization file
+        if codeNotify = BN_CLICKED then
+            ' If a localization file is currently being edited then save it now.
+            frmOptionsLocal_LocalEditCheck
+            
+            ' Display the Save File Dialog
+            dim wzFilename as wstring * MAX_PATH 
+            dim pwszName as wstring ptr = AfxIFileSaveDialog(hwnd, @wzFilename, @wstr("lang"), id)
+            if pwszName then
+                wzFilename = *pwszName
+                frmOptionsLocal_ClearGlobalArray()
+                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION), AfxStrPathname("NAMEX", *pwszName) )
+                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), AfxStrPathName("NAME", *pwszName) )
                 gLocalPhrasesEdit = true
                 frmOptionsLocal_DisableEnglish()
                 dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
                 ListView_SelectItem(hLV, 0)
                 frmOptionsLocal_UpdateTextBoxes(hwnd)
                 SetFocus( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE) )
-            end if
-
-        case IDC_FRMOPTIONSLOCAL_CMDDELETE
-            ' Delete localization file
-            if codeNotify = BN_CLICKED then
-                if MessageBox( hwnd, L(366,"Are you sure you want to delete?"), L(276,"Confirm"), _
-                        MB_YESNOCANCEL or MB_ICONQUESTION or MB_DEFBUTTON1 ) <> IDYES then
-                    exit function
-                end if
-                dim as CWSTR wszFileName = AfxGetExePathName + wstr("settings\languages\") + _
-                                            AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION) )
-                frmOptionsLocal_ClearGlobalArray()
-                AfxDeleteFile(wszFileName)
-                ' Clear any previous listview selected line
-                dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
-                ListView_UnselectAllItems(hLV)
-                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTENGLISH), "")
-                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE), "")
-                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION), wstr("english.lang"))
-                AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), wstr("english") )
-                frmOptionsLocal_DisableEnglish()
-            end if
-            
-        case IDC_FRMOPTIONSLOCAL_TXTTRANSLATE
-            if codeNotify = EN_CHANGE then
-                dim wszIndex     as wstring * MAX_PATH
-                dim wszTranslate as wstring * MAX_PATH
-                dim as HWND hLV = GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
-                dim as long nCurSel = ListView_GetSelection(hLV)
-                if nCurSel >= 0 then 
-                    LV_GetItemText(hLV, nCurSel, 0, @wszIndex, MAX_PATH )
-                    dim as long idx = val(wszIndex)
-                    if (idx >= lbound(gLocalPhrases)) andalso (idx <= ubound(gLocalPhrases)) then
-                        gLocalPhrases(idx) = AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE) )
-                    end if
-                end if
+                CoTaskMemFree(pwszName)
             end if
             exit function
+        end if
+
+    case IDC_FRMOPTIONSLOCAL_CMDEDIT
+        ' Edit the loaded localization file
+        if codeNotify = BN_CLICKED then
+            dim as CWSTR wszLanguage = _
+                AfxGetExePathName & wstr("settings\languages\") & AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION) )
+            frmOptionsLocal_LoadLocalizationFile(wszLanguage)
+            AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), AfxStrPathName("NAME", wszLanguage) )
+            gLocalPhrasesEdit = true
+            frmOptionsLocal_DisableEnglish()
+            dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
+            ListView_SelectItem(hLV, 0)
+            frmOptionsLocal_UpdateTextBoxes(hwnd)
+            SetFocus( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE) )
+        end if
+
+    case IDC_FRMOPTIONSLOCAL_CMDDELETE
+        ' Delete localization file
+        if codeNotify = BN_CLICKED then
+            if MessageBox( hwnd, L(366,"Are you sure you want to delete?"), L(276,"Confirm"), _
+                    MB_YESNOCANCEL or MB_ICONQUESTION or MB_DEFBUTTON1 ) <> IDYES then
+                exit function
+            end if
+            dim as CWSTR wszFileName = AfxGetExePathName + wstr("settings\languages\") + _
+                                        AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION) )
+            frmOptionsLocal_ClearGlobalArray()
+            AfxDeleteFile(wszFileName)
+            ' Clear any previous listview selected line
+            dim as HWND hLV = GetDlgItem(HWND_FRMOPTIONSLOCAL, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
+            ListView_UnselectAllItems(hLV)
+            AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTENGLISH), "")
+            AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE), "")
+            AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_FRAMELOCALIZATION), wstr("english.lang"))
+            AfxSetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LBLTRANSLATE), wstr("english") )
+            frmOptionsLocal_DisableEnglish()
+        end if
+        
+    case IDC_FRMOPTIONSLOCAL_TXTTRANSLATE
+        if codeNotify = EN_CHANGE then
+            dim wszIndex     as wstring * MAX_PATH
+            dim wszTranslate as wstring * MAX_PATH
+            dim as HWND hLV = GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_LVWPHRASES)
+            dim as long nCurSel = ListView_GetSelection(hLV)
+            if nCurSel >= 0 then 
+                LV_GetItemText(hLV, nCurSel, 0, @wszIndex, MAX_PATH )
+                dim as long idx = val(wszIndex)
+                if (idx >= lbound(gLocalPhrases)) andalso (idx <= ubound(gLocalPhrases)) then
+                    gLocalPhrases(idx) = AfxGetWindowText( GetDlgItem(hwnd, IDC_FRMOPTIONSLOCAL_TXTTRANSLATE) )
+                end if
+            end if
+        end if
+        exit function
 
     end select
 
@@ -333,10 +335,12 @@ end function
 ' ========================================================================================
 ' Process WM_NOTIFY message for window/dialog: frmOptionsLocal
 ' ========================================================================================
-private function frmOptionsLocal_OnNotify( byval hwnd as HWND, _
-                                            byval id as long, _
-                                            byval pNMHDR as NMHDR ptr _
-                                            ) as LRESULT
+function frmOptionsLocal_OnNotify( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval pNMHDR as NMHDR ptr _
+            ) as LRESULT
+
     select case id
         case IDC_FRMOPTIONSLOCAL_LVWPHRASES
             select case pNMHDR->code
@@ -352,11 +356,12 @@ end function
 ' ========================================================================================
 ' frmOptionsLocal Window procedure
 ' ========================================================================================
-private function frmOptionsLocal_WndProc( byval hwnd   as HWND, _
-                                            byval uMsg   as UINT, _
-                                            byval wParam as WPARAM, _
-                                            byval lParam as LPARAM _
-                                            ) as LRESULT
+function frmOptionsLocal_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_COMMAND, frmOptionsLocal_OnCommand)
@@ -371,11 +376,10 @@ end function
 ' ========================================================================================
 ' frmOptionsLocal_Show
 ' ========================================================================================
-public function frmOptionsLocal_Show( byval hWndParent as HWND ) as LRESULT
+function frmOptionsLocal_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     gLocalPhrasesEdit = false
 

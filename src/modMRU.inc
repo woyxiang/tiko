@@ -15,7 +15,7 @@
 
 ''
 ''
-private function clearMRUFilesItems( byval nParentID as long ) as long
+function clearMRUFilesItems( byval nParentID as long ) as long
     ' clear out any existing items that match the nParentID so that they can be
     ' reused when the MRU popup menu is created and shown. This function is used
     ' for Files and Projects and UserTools MRU lists.
@@ -31,7 +31,7 @@ end function
 
 ''
 ''
-private function getnextFreeMRUindex() as long
+function getNextFreeMRUindex() as long
     ' gets the first available free MRU index in the gTopMenu array. if there are
     ' none free then the gTopMenu array is extended and that index is returned. This
     ' function is used for both Files and Projects MRU lists.
@@ -49,7 +49,7 @@ end function
 
 ''
 ''
-public function updateMRUFilesItems() as long
+function updateMRUFilesItems() as long
     ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
     ' the gTopMenu array rather than erase it because existing menus depend on the 
     ' array index that aready exist. The function also returns the width to use for
@@ -89,7 +89,7 @@ end function
 
 ''
 ''
-public function updateMRUSessionFilesItems() as long
+function updateMRUSessionFilesItems() as long
     ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
     ' the gTopMenu array rather than erase it because existing menus depend on the 
     ' array index that aready eist.
@@ -128,7 +128,7 @@ end function
 
 ''
 ''
-public function updateMRUProjectFilesItems() as long
+function updateMRUProjectFilesItems() as long
     ' clear MRU items already existing in the gTopMenu array. We overwrite and extend
     ' the gTopMenu array rather than erase it because existing menus depend on the 
     ' array index that aready eist.
@@ -167,9 +167,10 @@ end function
 
 ''
 ''
-public function OpenMRUFile( byval hwnd as HWND, _
-                                byval wID as long _
-                                ) as long
+function OpenMRUFile( _
+            byval hwnd as HWND, _
+            byval wID as long _
+            ) as long
     dim wszFile as wstring * MAX_PATH
     dim pDoc as clsDocument ptr
     dim pDocIn as clsDocument ptr
@@ -206,7 +207,7 @@ end function
 
 ''
 ''
-public function ClearMRUlist( byval wID as long ) as long
+function ClearMRUlist( byval wID as long ) as long
     Select Case wID
         Case IDM_MRUCLEAR
             for i as long = 0 To 9
@@ -227,8 +228,7 @@ end function
 
 ''
 ''
-public function UpdateMRUList( byref wzFilename as wstring ) as long
-
+function UpdateMRUList( byref wzFilename as wstring ) as long
     dim idxExistsAt as long = -1   ' index of where filename already exists 
     dim i           as long
     dim wzFile      as wstring * MAX_PATH
@@ -270,9 +270,10 @@ end function
 
 ''
 ''
-public function OpenMRUSessionFile( byval hwnd as HWND, _
-                                    byval wID as long _
-                                    ) as long
+function OpenMRUSessionFile( _
+            byval hwnd as HWND, _
+            byval wID as long _
+            ) as long
     dim wzFile as wstring * MAX_PATH
     wzFile = gConfig.MRUSESSION(wID - IDM_MRUSESSIONBASE)
     gConfig.LoadSessionFile( wzFile )
@@ -282,7 +283,7 @@ end function
     
 ''
 ''
-public function UpdateMRUSessionList( byval wszFilename as CWSTR ) as long
+function UpdateMRUSessionList( byval wszFilename as CWSTR ) as long
 
     dim idxExistsAt as long = -1   ' index of where filename already exists 
     dim i           as long
@@ -320,9 +321,10 @@ end function
 
 ''
 ''
-public function OpenMRUProjectFile( byval hwnd as HWND, _
-                                    byval wID as long _
-                                    ) as long
+function OpenMRUProjectFile( _
+            byval hwnd as HWND, _
+            byval wID as long _
+            ) as long
     dim wzFile as wstring * MAX_PATH
     wzFile = gConfig.MRUPROJECT(wID - IDM_MRUPROJECTBASE)
     frmMain_OpenProjectSafely(hwnd, wzFile) 
@@ -332,7 +334,7 @@ end function
     
 ''
 ''
-public function UpdateMRUProjectList( byval wszFilename as CWSTR ) as long
+function UpdateMRUProjectList( byval wszFilename as CWSTR ) as long
 
     dim idxExistsAt as long = -1   ' index of where filename already exists 
     dim i           as long

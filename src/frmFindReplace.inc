@@ -39,7 +39,6 @@ end function
 ' frmFindReplace_PositionWindows
 ' ========================================================================================
 function frmFindReplace_PositionWindows() as LRESULT
-
     ' make sure that the shadows under the top tabs are showing and if the main form
     ' has moved, that the shadows move with it. 
     frmTopTabs_ShowShadow
@@ -456,7 +455,9 @@ end function
 function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
             
     dim as PAINTSTRUCT ps
-    dim as HPEN hPen
+    dim as HPEN hPenNull
+    dim as HPEN hPenSolid
+    dim as HPEN hPenSolid2
     dim as HWND hCtl
     dim as HDC hDc
     dim as RECT rc
@@ -468,8 +469,6 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
 
     hDC = BeginPaint( hwnd, @ps )
 
-    SaveDC( hDC )
-
     GetClientRect(hwnd, @rc)
     dim as long nWidth = rc.right - rc.left
     dim as long nHeight = rc.bottom - rc.top
@@ -478,8 +477,11 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     dim hbit as HBITMAP   ' Double buffering
 
     memDC = CreateCompatibleDC( hDC )
+
+    SaveDC( memDC )
+
     hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-    if hbit then hbit = SelectObject( memDC, hbit )
+    if hbit then SelectObject( memDC, hbit )
 
     SelectObject( memDC, ghFindReplace.hPanelBrush )
 
@@ -487,11 +489,10 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     FillRect( memDC, @rc, ghFindReplace.hPanelBrush )
 
     ' Paint the left edge
-    hPen = CreatePen( PS_SOLID, pWindow->ScaleY(2), ghFindReplace.leftedge ) 
-    SelectPen( memDC, hPen )
+    hPenSolid = CreatePen( PS_SOLID, pWindow->ScaleY(2), ghFindReplace.leftedge ) 
+    SelectPen( memDC, hPenSolid )
     MoveToEx( memDC, 0, 0, null )
     LineTo( memDC, 0, rc.bottom )   
-    DeletePen( hPen )
 
     ' Paint the Expand/Collapse button
     if isMouseOverRECT( hwnd, gFind.rcExpand ) then
@@ -509,25 +510,24 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     DrawText( memDC, wszText.sptr, -1, cast(lpRect, @gFind.rcExpand), wsStyle )
 
     ' Paint a rectangle around the textbox control that has focus.
-    hPen = CreatePen( PS_SOLID, 1, BGR(0,0,255) )  ' blue
-    SelectPen( memDC, hPen )
+    hPenSolid2 = CreatePen( PS_SOLID, 1, BGR(0,0,255) )  ' blue
+    SelectPen( memDC, hPenSolid2 )
     hCtl = GetFocus()
     if hCtl = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND) then
-        SelectObject( hDC, ghFindReplace.hBackBrushTextBox )
+        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
         GetWindowRect( GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND), @rc )
         MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rc), 2)
         Rectangle( memDC, rc.left - 1, rc.top - 1, rc.right + pWindow->ScaleX(49), rc.bottom + 1 )
     elseif hCtl = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE) then
-        SelectObject( hDC, ghFindReplace.hBackBrushTextBox )
+        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
         GetWindowRect( GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE), @rc )
         MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rc), 2)
         Rectangle( memDC, rc.left - 1, rc.top - 1, rc.right + pWindow->ScaleX(25), rc.bottom + 1 )
     end if
-    DeleteObject( hPen )
     
     ' Match Case
-    hPen = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-    SelectPen( memDC, hPen )
+    hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
+    SelectPen( memDC, hPenNull )
     if gFind.nMatchCase then 
         SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
         SetTextColor( memDC, ghFindReplace.ForeColor )
@@ -710,10 +710,13 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
     ' Cleanup
-    if hPen  then DeleteObject( hPen )
-    if hbit  then DeleteObject( SelectObject(memDC, hbit) )
-    if memDC then DeleteDC( memDC )
-    RestoreDC( hDC, -1 )
+    RestoreDC( memDC, -1 )
+    
+    if hPenNull   then DeleteObject( hPenNull )
+    if hPenSolid  then DeleteObject( hPenSolid )
+    if hPenSolid2 then DeleteObject( hPenSolid2 )
+    if hbit       then DeleteObject( hbit )
+    if memDC      then DeleteDC( memDC )
 
     EndPaint( hwnd, @ps )
     
@@ -751,11 +754,11 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
         frmMain_SetFocusToCurrentCodeWindow
     end if
         
-    HWND_FRMFINDREPLACE = 0
-
     ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow then delete(pWindow)
+    
+    HWND_FRMFINDREPLACE = 0
     
     function = 0
 end function
@@ -795,7 +798,6 @@ function frmFindReplace_WndProc( _
             ) as LRESULT
     
     static hTooltip as HWND
-    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
     
     select case uMsg
         HANDLE_MSG (hwnd, WM_CLOSE,    frmFindReplace_OnClose)
@@ -817,6 +819,7 @@ function frmFindReplace_WndProc( _
         tme.dwHoverTime = 400    ' system default is 400ms
         TrackMouseEvent(@tme) 
 
+        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
         AfxRedrawWindow(hwnd)
 
     case WM_MOUSELEAVE
@@ -1027,6 +1030,8 @@ function frmFindReplace_Show( _
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
         
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMFINDREPLACE )
+
     dim as HWND hCtl
     dim as String sFindText
     dim as HWND hCtlFind, hCtlReplace 
@@ -1039,7 +1044,7 @@ function frmFindReplace_Show( _
         gFind.nSelection = false
 
         '  Create the main window and child controls
-        dim pWindow as CWindow ptr = new CWindow
+        pWindow = new CWindow
 
         HWND_FRMFINDREPLACE = _
         pWindow->Create(hWndParent, "FINDREPLACE", @frmFindReplace_WndProc, 0, 0, 0, 0, _
@@ -1105,9 +1110,6 @@ function frmFindReplace_Show( _
     ' Place the window the width of 2 scrollbars from the right of the main window.
     dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
                                 HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
-
-    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMFINDREPLACE )
-    if pWindow = 0 then exit function
 
     dim as RECT rc = AfxGetWindowRect( hCtrl )
     SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, 0, _

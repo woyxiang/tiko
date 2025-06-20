@@ -352,7 +352,7 @@ function LoadThemeFile() as boolean
     pStream.Close
     
     ' Load the TYPE's for each of the forms that require theme data   
-    DIM pWindow as CWindow PTR = AfxCWindowPtr(HWND_FRMMAIN)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
 
     dim as THEME_TYPE ptr pTheme
     

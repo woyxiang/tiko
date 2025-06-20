@@ -336,6 +336,6 @@ function frmProjectOptions_Show( _
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmProjectOptions CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function

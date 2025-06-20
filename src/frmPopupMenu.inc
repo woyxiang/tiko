@@ -38,7 +38,7 @@ function setNextMenuItemTabIndex( byval bReverse as boolean ) as long
         for i as long = nCursel - 1 to 0 step -1
             dim as long nIdx = ListBox_GetItemData( hListBox, i )
             if (gTopMenu(nIdx).isDisabled = false) and (gTopMenu(nIdx).isSeparator = false) then
-            nFound = i: exit for
+                nFound = i: exit for
             end if
         next
         if nFound = -1 then nFound = nCount - 1   ' wrap to end of list
@@ -46,7 +46,7 @@ function setNextMenuItemTabIndex( byval bReverse as boolean ) as long
         for i as long = nCursel + 1 to nCount - 1
             dim as long nIdx = ListBox_GetItemData( hListBox, i )
             if (gTopMenu(nIdx).isDisabled = false) and (gTopMenu(nIdx).isSeparator = false) then
-            nFound = i: exit for
+                nFound = i: exit for
             end if
         next
         if nFound = -1 then nFound = 0   ' wrap to start of list
@@ -135,6 +135,9 @@ function paintLayeredWindow( byval hwnd as HWND, byval clrRGBA as integer ) as l
     
     dim as HDC hdcScreen = GetDC(0)
     dim as HDC hDC = CreateCompatibleDC(hdcScreen)
+    
+    SaveDC(hDC)
+    
     dim as long iWidth  = rcPos.right - rcPos.left
     dim as long iHeight = rcPos.bottom - rcPos.top
 
@@ -147,7 +150,7 @@ function paintLayeredWindow( byval hwnd as HWND, byval clrRGBA as integer ) as l
     sBI.bmiHeader.biCompression = BI_RGB
 
     dim as HBITMAP hBmp = CreateDIBSection(hDC, @sBI, DIB_RGB_COLORS, null, null, 0)
-    dim as HBITMAP hBmpOld = SelectObject(hDC, hBmp)
+    SelectObject(hDC, hBmp)
 
     dim as boolean bFillAlphaOK = bitmapFillAlpha(hBmp, clrRGBA)
     dim as BLENDfunction blend
@@ -166,7 +169,7 @@ function paintLayeredWindow( byval hwnd as HWND, byval clrRGBA as integer ) as l
 
     UpdateLayeredWindow(hwnd, hdcScreen, @ptPos, @sizeWnd, hDC, @ptSrc, 0, @blend, ULW_ALPHA) 
 
-    SelectObject(hDC, hBmpOld)
+    RestoreDC(hDC, -1)
     DeleteObject(hBmp)
     DeleteDC(hDC)
     ReleaseDC(0, hdcScreen)
@@ -179,9 +182,9 @@ end function
 ' Process WM_MEASUREITEM message for window/dialog: frmPopupMenu
 ' ========================================================================================
 function frmPopupMenu_OnMeasureItem( _
-                byval hwnd as HWND, _
-                byval lpmis as MEASUREITEMSTRUCT ptr _
-                ) as Long
+            byval hwnd as HWND, _
+            byval lpmis as MEASUREITEMSTRUCT ptr _
+            ) as Long
     ' Set the height of the menuitem list box items. 
     dim as long nHeight = iif(gConfig.CompactMenus, MENUITEM_HEIGHT_COMPACT, MENUITEM_HEIGHT)
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
@@ -195,9 +198,9 @@ end function
 ' Process WM_DRAWITEM message for window/dialog: frmPopupMenu
 ' ========================================================================================
 function frmPopupMenu_OnDrawItem( _
-                byval hwnd as HWND, _
-                byval lpdis as const DRAWITEMSTRUCT ptr _
-                ) as long
+            byval hwnd as HWND, _
+            byval lpdis as const DRAWITEMSTRUCT ptr _
+            ) as long
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
     if pWindow = 0 then exit function
@@ -212,20 +215,16 @@ function frmPopupMenu_OnDrawItem( _
         dim as long nWidth  = rc.right-rc.left
         dim as long nHeight = rc.bottom-rc.top 
 
-        SaveDC(lpdis->hDC)
-
         dim memDC as HDC      ' Double buffering
         dim hbit as HBITMAP   ' Double buffering
-        dim as HPEN oldPen
-        dim as HBRUSH oldBrush
-        dim as HFONT oldFont
-        dim as HFONT oldBmp
-
+        dim as HPEN hPenSolid
+        
         memDC = CreateCompatibleDC( lpdis->hDC )
         hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
         
         SaveDC(memDC)
-        oldBmp = SelectObject( memDC, hbit )
+        
+        if hbit then SelectObject( memDC, hbit )
             
         dim as CWSTR wszCaption 
         dim as long wsStyle 
@@ -263,12 +262,10 @@ function frmPopupMenu_OnDrawItem( _
         if pMenu->isSeparator then 
             rcText.left = rcText.left + pWindow->ScaleX(12) 
             rcText.right = rcText.right - pWindow->ScaleX(12) 
-            dim as HPEN hPen = CreatePen( PS_SOLID, 1, ghPopup.ForeColorDisabled )
-            oldPen = SelectObject( memDC, hPen )
+            hPenSolid = CreatePen( PS_SOLID, 1, ghPopup.ForeColorDisabled )
+            SelectObject( memDC, hPenSolid )
             MoveToEx( memDC, rcText.Left, (rcText.bottom-rcText.top) / 2, null )   
             LineTo( memDC, rcText.Right, (rcText.bottom-rcText.top) / 2 )
-            SelectObject( memDC, oldPen )
-            DeleteObject( hPen )   
         else
             dim as RECT rcBitmap = rcText
             ' Handle caption, keyboard accelerator or submenu marker
@@ -279,11 +276,10 @@ function frmPopupMenu_OnDrawItem( _
             if pMenu->isChecked then
                 rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(30) 
                 wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
+                SelectObject( memDC, ghMenuBar.hFontSymbol )
                 DrawText( memDC, wszIconCheckmark, -1, cast(lpRect, @rcBitmap), wsStyle )
-                SelectObject( memDC, oldFont )
             end if
-            oldFont = SelectObject( memDC, ghMenuBar.hFontMenuBar )
+            SelectObject( memDC, ghMenuBar.hFontMenuBar )
             rcText.left = rcText.left + pWindow->ScaleX(30) 
             rcText.right = rcText.right - pWindow->ScaleX(30) 
 
@@ -294,30 +290,27 @@ function frmPopupMenu_OnDrawItem( _
             ' keyboard accelerator 
             wsStyle = DT_NOPREFIX or DT_RIGHT or DT_VCENTER or DT_SINGLELINE
             DrawText( memDC, wszRight.sptr, -1, cast(lpRect, @rcText), wsStyle )
-            SelectObject( memDC, oldFont )
 
             ' submenu arrow
             if pMenu->nChildID then
                 rcBitmap = rcText
                 rcBitmap.Left = rcText.Right
                 rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(20) 
-                oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
+                SelectObject( memDC, ghMenuBar.hFontSymbol )
                 wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
                 DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
-                SelectObject( memDC, oldFont )
             end if   
         end if
             
         BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, _
                 nWidth, nHeight, memDC, 0, 0, SRCCOPY 
 
-        SelectObject( memDC, oldBmp )
-        
         ' Cleanup
         RestoreDC(memDC, -1)
-        if hbit  then DeleteObject(hbit)
-        if memDC then DeleteDC memDC
-        RestoreDC(lpdis->hDC, -1)
+        if hPenSolid then DeleteObject( hPenSolid )
+        if hbit      then DeleteObject( hbit )
+        if memDC     then DeleteDC( memDC )
+
     end if   
 
     function = true 
@@ -328,12 +321,18 @@ end function
 ' frmPopupMenuShadow Window procedure
 ' ========================================================================================
 function frmPopupMenuShadow_WndProc( _
-                byval hwnd   as HWND, _
-                byval uMsg   as UINT, _
-                byval wParam as WPARAM, _
-                byval lParam as LPARAM _
-                ) as LRESULT
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
+    select case uMsg
+        case WM_DESTROY
+            dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+            if pWindow then delete(pWindow)
+    end select
+    
     ' for messages that we don't deal with
     function = DefWindowProc(hwnd, uMsg, wParam, lParam)
 
@@ -358,10 +357,10 @@ function frmPopupMenu_WndProc( _
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
             if hwnd = HWND_MENU(0) then DestroyWindow(HWND_SHADOW(0))
             if hwnd = HWND_MENU(1) then DestroyWindow(HWND_SHADOW(1))
-            if pWindow then delete pWindow
+            if pWindow then delete(pWindow)
             
         ' prevent this popup menu from stealing focus from main app
-        ' This message is reveive before WM_NCACTIVATE for the main form is processed
+        ' This message is received before WM_NCACTIVATE for the main form is processed
         ' This popup is not activated but the mouse click is not thrown away thereby
         ' allowing us to reset the flag in WM_LBUTTUPUP
         case WM_MOUSEACTIVATE
@@ -375,11 +374,13 @@ function frmPopupMenu_WndProc( _
         case WM_PAINT
             dim as PAINTSTRUCT ps
             dim as HDC hDc
-            dim as Rect rc
+            dim as RECT rc
 
             hDC = BeginPaint(hwnd, @ps)
+            SaveDC(hDC)
             GetClientRect(hwnd, @rc)
             FillRect( hDC, @rc, ghPopup.hPanelBrush )
+            RestoreDC(hDC, -1)
             EndPaint hwnd, @ps
 
     end Select
@@ -394,13 +395,13 @@ end function
 ' frmPopupMenu_SubclassProc 
 ' ========================================================================================
 function frmPopupMenu_SubclassProc ( _
-                    byval hWin   as HWND, _                 ' // Control window handle
-                    byval uMsg   as UINT, _                 ' // Type of message
-                    byval _wParam as WPARAM, _               ' // First message parameter
-                    byval _lParam as LPARAM, _               ' // Second message parameter
-                    byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
-                    byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
-                    ) as LRESULT
+            byval hWin   as HWND, _                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval _wParam as WPARAM, _              ' // First message parameter
+            byval _lParam as LPARAM, _              ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(hWin)
 
@@ -664,10 +665,7 @@ function frmPopupMenu_Show( _
         end if
     end if      
     
-    
-
     ' Create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
-    ' We don't do this for compact windows because of the dimensions.
     pWindow = new CWindow
     dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, "", _
         @frmPopupMenuShadow_WndProc, 0, 0, 0, 0, _

@@ -82,8 +82,9 @@ function frmOptionsColors_DrawFontCombo( _
 
     select case lpdis->itemAction
         case ODA_DRAWENTIRE, ODA_select
+            SaveDC(lpdis->hDC)
             ' if not selected or if in edit part of the combobox
-            if (lpdis->itemState and ODS_selectED) = 0 or _
+            if (lpdis->itemState and ODS_SELECTED) = 0 or _
                 (lpdis->itemState and ODS_COMBOBOXEDIT) then
                 SetBkColor lpdis->hDC, GetSysColor(COLOR_WINDOW)
                 SetTextColor lpdis->hDC, GetSysColor(COLOR_WINDOWTEXT)
@@ -99,15 +100,17 @@ function frmOptionsColors_DrawFontCombo( _
             wText = AfxGetComboBoxText(HWnd, lpdis->itemID)
             if len(wText) then
                 hFont = pWindow->CreateFont( wText, 10 ) 
-                if hFont then hFont = selectObject(lpdis->hDC, hFont)
+                if hFont then hFont = SelectObject(lpdis->hDC, hFont)
             end if
-            DrawTextW lpdis->hDC, @wText, len(wText), @lpdis->rcItem, DT_SINGLELINE or DT_LEFT or DT_VCENTER
-            if hFont then DeleteObject selectObject(lpdis->hDC, hFont)
+            DrawText( lpdis->hDC, @wText, len(wText), @lpdis->rcItem, DT_SINGLELINE or DT_LEFT or DT_VCENTER)
 
             ' Focus rect around selected item
             if (lpdis->itemState and ODS_selectED) then
                 DrawFocusRect lpdis->hDC, @lpdis->rcItem
             end if
+            
+            RestoreDC(lpdis->hDC, -1)
+            DeleteObject(hFont) 
             function = true
 
     end select
@@ -258,7 +261,6 @@ function frmOptionsColors_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMOPTIONSCOLORS = pWindow->Create( hWndParent, "", @frmOptionsColors_WndProc, 0, 0, 0, 0, _
         WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _

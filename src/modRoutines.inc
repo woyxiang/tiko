@@ -312,60 +312,60 @@ end function
 ' ========================================================================================
 ' Maps UTF-8 string to Ansi string.
 ' ========================================================================================
-FUNCTION Utf8ToAnsi(byref strUtf8 AS STRING) AS STRING
+function Utf8ToAnsi(byref strUtf8 as string) as string
 
-   dim i AS LONG                ' // Loop counter
-   dim strAscii AS STRING       ' // Ascii string
-   dim idx AS LONG              ' // Position in the string
-   dim c AS LONG                ' // ASCII code
-   dim b2 AS LONG               ' // Second byte
-   dim fSkipChar AS boolean     ' // Flag
+   dim i as long                ' // Loop counter
+   dim strAscii as string       ' // Ascii string
+   dim idx as long              ' // Position in the string
+   dim c as long                ' // ASCII code
+   dim b2 as long               ' // Second byte
+   dim fSkipChar as boolean     ' // Flag
 
-   IF LEN(strUtf8) = 0 THEN EXIT FUNCTION
+   if len(strUtf8) = 0 then exit function
    
    ' // The maximum length of the translated string will be
    ' // the same as the length of the original string.
    ' // We are pre-allocating the buffer for faster operation
    ' // than concatenating each character one by one.
-   strAscii = SPACE(LEN(strUtf8))
+   strAscii = space(len(strUtf8))
 
    ' // Intialize index position in the string buffer
    ' // used to store the converted Ascii string
    idx = 1
    
    ' // Examine the contents of each character in the UTF-8 encoded string
-   FOR i = 1 TO LEN(strUtf8)
+   for i = 1 to len(strUtf8)
       ' // If fSkipChar is set we have to skip this character
-      IF fSkipChar THEN
+      if fSkipChar then
          fSkipChar = 0
-         continue FOR
-      END IF
+         continue for
+      end if
       ' // Get the Ascii code of the character
-      c = ASC(MID(strUtf8, i, 1))
+      c = asc(mid(strUtf8, i, 1))
       ' // If it is betwen 0 and 127...
-      IF c < 128 THEN 
+      if c < 128 then 
          ' // ...we simply copy it to the string buffer...
-         MID(strAscii, idx, 1) = MID(strUtf8, idx, 1)
+         mid(strAscii, idx, 1) = mid(strUtf8, idx, 1)
          ' // ...and increase the position by 1.
          idx = idx + 1
-      ELSEIF c < 224 THEN
+      elseif c < 224 then
          ' // We need to join this byte and the next byte.
-         b2 = ASC(MID(strUtf8, i + 1, 1))
-         IF b2 > 127 THEN
+         b2 = asc(mid(strUtf8, i + 1, 1))
+         if b2 > 127 then
             c = (c - 192) * 64 + (b2 - 128)
-            MID(strAscii, idx, 1) = CHR(c)
+            mid(strAscii, idx, 1) = chr(c)
             ' // Set the flag to skip the next character
-            fSkipChar = TRUE
+            fSkipChar = true
             ' // Increase the position by 1.
             idx = idx + 1
-         END IF
-      END IF
-   NEXT
+         end if
+      end if
+   next
 
    ' // Return the string
-   FUNCTION = LEFT(strAscii, idx - 1)
+   function = left(strAscii, idx - 1)
 
-END FUNCTION
+end function
 
 
 ' ========================================================================================

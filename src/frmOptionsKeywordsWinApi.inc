@@ -88,7 +88,9 @@ function frmOptionsKeywordsWinApi_Show( byval hwndParent as HWND ) as LRESULT
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or ES_LEFT or _
         ES_MULTILINE or ES_AUTOVSCROLL or ES_WANTRETURN, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING )
+        
     SendMessage( hTextBox, EM_SETLIMITTEXT, (1024 * 100), 0 )    ' max 100K text   
+    
     dim as HFONT hFont = pWindow->CreateFont("Courier New", 9)
     AfxSetWindowFont( hTextBox, hFont, true )
 

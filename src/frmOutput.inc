@@ -65,7 +65,7 @@ function frmOutput_UpdateToDoListview() as long
         LV_InsertItem( hLV, n, 2, ltrim(wstr(pData->fileName)))
         LV_InsertItem( hLV, n, 3, ltrim(wstr(pData->ElementData))) 
         n = n + 1
-    loop
+    loop until pData = 0
 
     function = 0
 end function
@@ -384,6 +384,7 @@ function frmOutput_Listview_SubclassProc ( _
                         select case ptnmcd->dwItemSpec
                             case 0, 1, 2, 3   ' columns
                             ' Paint the whole cell ourselves
+                            SaveDC(ptnmcd->hdc)
                             FillRect( ptnmcd->hdc, @ptnmcd->rc, ghOutput.hPanelBrush )
                             SetTextColor( ptnmcd->hdc, ghOutput.ForeColorHot )
                             SetBkColor( ptnmcd->hdc, ghOutput.BackColor )
@@ -391,11 +392,10 @@ function frmOutput_Listview_SubclassProc ( _
                             'Header_GetItemText is currently bugged. Report submitted to Jose to correct.
                             'Header_GetItemText( ptnmhdr->hwndFrom, ptnmcd->dwItemSpec, @wszText, MAX_PATH )
                             ListView_GetHeaderText( hwnd, ptnmcd->dwItemSpec, @wszText, MAX_PATH )
-                            dim as HFONT oldFont
-                            oldFont = selectObject( ptnmcd->hdc, ghStatusBar.hFontStatusBar )
+                            SelectObject( ptnmcd->hdc, ghStatusBar.hFontStatusBar )
                             dim as long wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
                             DrawText( ptnmcd->hdc, wszText, -1, Cast(lpRect, @ptnmcd->rc), wsStyle )
-                            selectObject( ptnmcd->hdc, oldFont )
+                            RestoreDC(ptnmcd->hdc, -1)
                             return CDRF_SKIPDEFAULT
                         end select
                             
@@ -649,25 +649,19 @@ function frmOutputTabs_SubclassProc ( _
             dim as RECT rc
             hDC = BeginPaint( hWin, @ps )
             
-            SaveDC(hDC)
-            
             GetClientRect(hWin, @rc)
             dim as long nWidth = rc.right - rc.left
             dim as long nHeight = rc.bottom - rc.top
 
             dim memDC as HDC      ' Double buffering
             dim hbit as HBITMAP   ' Double buffering
-            dim oldFont as HFONT
-            dim oldPen as HPEN
-            dim oldBrush as HBRUSH
-            dim oldBmp as HBITMAP
             
             memDC = CreateCompatibleDC( hDC )
             hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
             
             SaveDC(memDC)
-            oldBmp = selectObject( memDC, hbit )
 
+            SelectObject( memDC, hbit )
             FillRect( memDC, @rc, ghOutput.hPanelBrush )
     
             for i as long = lbound(gOutputTabs) to ubound(gOutputTabs)
@@ -682,31 +676,26 @@ function frmOutputTabs_SubclassProc ( _
                     FillRect( memDC, @rc, ghOutput.hBackBrush )
                 end if
                 dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                oldFont = selectObject( memDC, ghStatusBar.hFontStatusBar )
+                SelectObject( memDC, ghStatusBar.hFontStatusBar )
                 DrawText( memDC, gOutputTabs(i).wszText.sptr, -1, Cast(lpRect, @rc), wsStyle )
-                selectObject( memDC, oldFont )
             next
 
             dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
             dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             rc = gOutputCloseRect
-            oldFont = selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+            SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
             SetTextColor( memDC, ghOutput.ForeColorHot )
             DrawText( memDC, wszIconClose, -1, Cast(lpRect, @rc), wsStyle )
-            selectObject( memDC, oldFont )
             
             if isMouseOverRECT( hWin, rc ) then
                 ' if we are hovered over the "X" close icon rect then highlight it
-                oldPen = selectPen( memDC, hPenNull )
-                oldBrush = selectObject( memDC, ghOutput.hCloseBrushHot )
+                SelectObject( memDC, hPenNull )
+                SelectObject( memDC, ghOutput.hCloseBrushHot )
                 RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
                 SetBkColor( memDC, ghOutput.CloseBackColorHot )
                 SetTextColor( memDC, ghOutput.ForeColorHot )
-                oldFont = selectObject( memDC, ghMenuBar.hFontSymbolSmall )
+                SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
                 DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
-                selectObject( memDC, oldPen )
-                selectObject( memDC, oldFont )
-                selectObject( memDC, oldBrush )
             end if   
 
             ' Paint a simple line under the currently active tab
@@ -714,26 +703,21 @@ function frmOutputTabs_SubclassProc ( _
             if gOutputTabsCurSel <> -1 then
                 rc = gOutputTabs(gOutputTabsCurSel).rcText
                 SetBkColor( memDC, ghOutput.ForeColor )
-                oldPen = selectPen( memDC, hPenSolid )
+                SelectPen( memDC, hPenSolid )
                 MoveToEx( memDC, rc.left, rc.bottom - pWindow->ScaleY(4), Null )
                 LineTo( memDC, rc.right, rc.bottom - pWindow->ScaleY(4) )
-                selectObject( memDC, oldPen )
             end if
             
             ' Paint a simple line at the top of the window that will act as a 
             ' visual separator between the Output window and the Scintilla window.
-            if hPenSolid then DeleteObject( hPenSolid )
-            hPenSolid = CreatePen( PS_SOLID, pWindow->ScaleY(1), ghOutput.Divider )
+            dim as HPEN hPenSolid2 = CreatePen( PS_SOLID, pWindow->ScaleY(1), ghOutput.Divider )
             SetBkColor( memDC, ghOutput.BackColor )
-            oldPen = selectPen( memDC, hPenSolid )
+            SelectObject( memDC, hPenSolid2 )
             GetClientRect(hWin, @rc)
             MoveToEx( memDC, rc.left, rc.top, null )
             LineTo( memDC, rc.right, rc.top )
-            selectObject( memDC, oldPen )
             
             BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
-
-            selectObject( memDC, oldBmp )
 
             ' Cleanup
             RestoreDC( memDC, -1 )
@@ -741,8 +725,8 @@ function frmOutputTabs_SubclassProc ( _
             if memDC then DeleteDC( memDC )
             
             if hPenSolid then DeleteObject( hPenSolid )
+            if hPenSolid2 then DeleteObject( hPenSolid2 )
             if hPenNull then DeleteObject( hPenNull )
-            RestoreDC( hDC, -1 )
             
             EndPaint( hWin, @ps )
             exit function
@@ -883,14 +867,15 @@ function frmOutput_SetControlColors() as long
     function = 0
 end function
 
+
 ' ========================================================================================
 ' frmOutput_Show
 ' ========================================================================================
 function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
+    '  This pointer destroyed at end of frmMain ends before application ends.
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, 180, _
         WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
@@ -930,12 +915,12 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         pWindow->AddControl("LISTVIEW", , IDC_FRMOUTPUT_LVRESULTS, "", 0, 0, 0, 0, _
         WS_CHILD or WS_TABSTOP or LVS_REPORT or LVS_SINGLESEL, _
         WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-        Cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVRESULTS, Cast(DWORD_PTR, @pWindow))
+        cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVRESULTS, cast(DWORD_PTR, @pWindow))
 
         ' Configure the ListView
         AfxSetWindowFont( hLV, ghStatusBar.hFontStatusBar )
         dim as long dwExStyle = ListView_GetExtendedListViewStyle(hLV)
-        dwExStyle = dwExStyle or LVS_EX_FULLROWselect or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
+        dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
         ListView_SetExtendedListViewStyle(hLV, dwExStyle)
         ListView_MakeHeaderFlat(hLV)
         ListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )

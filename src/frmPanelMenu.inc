@@ -205,10 +205,6 @@ function frmPanelMenu_WndProc( _
     static hTooltip as hwnd
     static wszPrevTooltip as CWSTR
 
-    if IsWindow(hTooltip) = 0 then 
-        hTooltip = AfxAddTooltip( hwnd, "", false, false )
-    end if
-    
     select case uMsg
         HANDLE_MSG (hwnd, WM_SIZE,  frmPanelMenu_OnSize)
         HANDLE_MSG (hwnd, WM_PAINT, frmPanelMenu_OnPaint)
@@ -226,6 +222,8 @@ function frmPanelMenu_WndProc( _
         tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
         
+        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
+
         for i as integer = lbound(gPanelMenu) to ubound(gPanelMenu)
             dim as boolean isHot = isMouseOverRECT(hwnd, gPanelMenu(i).rc)
             if isHot <> gPanelMenu(i).isPrevHot then
@@ -265,7 +263,6 @@ function frmPanelMenu_WndProc( _
 
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip 
-        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
         for i as integer = lbound(gPanelMenu) to ubound(gPanelMenu)
             dim as boolean isHot = isMouseOverRECT(hwnd, gPanelMenu(i).rc)
             if isHot then

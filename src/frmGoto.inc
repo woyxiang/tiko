@@ -57,7 +57,7 @@ end function
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmGoto
 ' ========================================================================================
-private function frmGoto_OnClose( byval hwnd as HWND ) as LRESULT
+function frmGoto_OnClose( byval hwnd as HWND ) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
     DestroyWindow hwnd
@@ -68,7 +68,7 @@ end function
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmGoto
 ' ========================================================================================
-private function frmGoto_OnDestroy( byval hwnd as HWND ) as LRESULT
+function frmGoto_OnDestroy( byval hwnd as HWND ) as LRESULT
     PostQuitMessage(0)
     function = 0
 end function
@@ -77,7 +77,7 @@ end function
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmGoto
 ' ========================================================================================
-private function frmGoto_OnCreate( _
+function frmGoto_OnCreate( _
             byval hwnd as HWND, _
             byval lpCreateStructPtr as LPCREATESTRUCT _
             ) as boolean
@@ -96,7 +96,7 @@ end function
 ' ========================================================================================
 ' frmGoto Window procedure
 ' ========================================================================================
-private function frmGoto_WndProc( _
+function frmGoto_WndProc( _
             byval hwnd   as HWND, _
             byval uMsg   as UINT, _
             byval wParam as WPARAM, _
@@ -117,7 +117,7 @@ end function
 ' ========================================================================================
 ' frmGoto_Show
 ' ========================================================================================
-public function frmGoto_Show( byval hWndParent as HWND ) as LRESULT
+function frmGoto_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow

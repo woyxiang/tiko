@@ -325,9 +325,9 @@ end function
 ' Swap two entries in the Tools Listbox
 ' ========================================================================================
 function frmUserTools_SwapListBoxItems( _
-    byval Item1 as long, _
-    byval Item2 as long _
-    ) as long
+            byval Item1 as long, _
+            byval Item2 as long _
+            ) as long
     dim as HWND hList1 = GetDlgItem( HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_LSTTOOLS)
     
     ' Swap the array values
@@ -345,7 +345,7 @@ end function
 ' ========================================================================================
 function frmUserTools_SetTextboxes() as long
     dim as long nCurSel = ListBox_GetCurSel(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_LSTTOOLS))
-    dim as Boolean fEnabled = iif( nCurSel < 0, false, true)
+    dim as boolean fEnabled = iif( nCurSel < 0, false, true)
 
     AfxSetWindowText(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTTOOLNAME), iif(fEnabled, gConfig.ToolsTemp(nCurSel).wszDescription, wstr("")))
     EnableWindow(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTTOOLNAME), fEnabled)
@@ -377,13 +377,14 @@ function frmUserTools_SetTextboxes() as long
     function = 0
 end function
 
+
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmUserTools
 ' ========================================================================================
 function frmUserTools_OnCreate( _
-    byval hwnd as HWND, _
-    byval lpCreateStructPtr as LPCREATESTRUCT _
-    ) as boolean
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -400,13 +401,13 @@ end Function
 ' Process WM_COMMAND message for window/dialog: frmUserTools
 ' ========================================================================================
 function frmUserTools_OnCommand( _
-    byval hwnd as HWND, _
-    byval id as long, _
-    byval hwndCtl as HWND, _
-    byval codeNotify as UINT _
-    ) as LRESULT
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
-    dim as hwnd hList1 = GetDlgItem( HWND, IDC_FRMUSERTOOLS_LSTTOOLS)
+    dim as HWND hList1 = GetDlgItem( hwnd, IDC_FRMUSERTOOLS_LSTTOOLS)
     dim as long nCurSel = ListBox_GetCurSel(hList1)
 
     select case id
@@ -602,7 +603,7 @@ end Function
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmUserTools
 ' ========================================================================================
-private function frmUserTools_OnClose( byval hwnd as HWND ) as LRESULT
+function frmUserTools_OnClose( byval hwnd as HWND ) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
     DestroyWindow( hwnd )
@@ -613,7 +614,7 @@ end Function
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmUserTools
 ' ========================================================================================
-private function frmUserTools_OnDestroy( byval hwnd as HWND ) as LRESULT
+function frmUserTools_OnDestroy( byval hwnd as HWND ) as LRESULT
     PostQuitMessage(0)
     function = 0
 end Function
@@ -622,11 +623,12 @@ end Function
 ' ========================================================================================
 ' frmUserTools Window procedure
 ' ========================================================================================
-private function frmUserTools_WndProc( byval hwnd   as HWND, _
-                                        byval uMsg   as UINT, _
-                                        byval wParam as WPARAM, _
-                                        byval lParam as LPARAM _
-                                        ) as LRESULT
+function frmUserTools_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_CREATE,   frmUserTools_OnCreate)
@@ -643,15 +645,13 @@ end function
 ' ========================================================================================
 ' frmUserTools_Show
 ' ========================================================================================
-public function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
-
+function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     dim hBitmap as HBITMAP
     dim hCtrl as HWND
     dim wszImage as wstring * 100
     
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     dim as HWND hForm = _
     pWindow->Create(hWndParent, L(289,"User Tools"), _
@@ -794,7 +794,7 @@ public function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmUserTools CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
     function = 0
 end function

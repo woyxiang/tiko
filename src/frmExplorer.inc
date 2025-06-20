@@ -391,7 +391,6 @@ function frmExplorerListBox_SubclassProc ( _
     static as long accumDelta
     
     static as HWND hTooltip
-    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
         
     ' keep track of last index we were over so that we only issue a 
     ' repaint if the cursor has moved off of the line
@@ -429,6 +428,8 @@ function frmExplorerListBox_SubclassProc ( _
             tme.hwndTrack = hWin
             TrackMouseEvent(@tme) 
             
+            if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
+
             ' get the item rect that the mouse is over and only invalidate
             ' that instead of the entire listbox
             dim as RECT rc

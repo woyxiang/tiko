@@ -158,7 +158,8 @@ function frmStatusBar_WndProc( _
     
     case WM_DESTROY
         dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-        if pWindow = 0 then delete pWindow
+        if pWindow = 0 then delete(pWindow)
+        HWND_FRMMAIN_STATUSBAR = 0
         
     case WM_ERASEBKGND
         return true
@@ -263,8 +264,6 @@ function frmStatusBar_WndProc( _
 
         hDC = BeginPaint(hwnd, @ps)
 
-        SaveDC(hDC)
-        
         GetClientRect(hwnd, @rc)
         dim as long nWidth = rc.right - rc.left
         dim as long nHeight = rc.bottom - rc.top
@@ -276,7 +275,8 @@ function frmStatusBar_WndProc( _
         hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
         
         SaveDC(memDC)
-        SelectObject( memDC, hbit )
+        
+        if hbit then SelectObject( memDC, hbit )
 
         FillRect( memDC, @rc, ghStatusBar.hPanelBrush )
         

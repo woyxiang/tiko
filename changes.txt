@@ -8,6 +8,7 @@ Version 1.0.4 ()
 - Changed: Drag top tab positions without having to hold down the SHIFT key.
 - Changed: The editor caret width from 1 pixel to 3 pixel. 
 - Changed: Brace highlighting uses box around glyph (will need to use the latest \themes\*.* files to ensure color of box is correct).
+- Changed: Win64 Console (Release) is now the default build configuration for new installations.
 - Fixed: Find popup dialog flickering
 - Fixed: Find popup dialog losing focus after entering several characters into the textbox.
 - Fixed: autoinsert after ENTER at end of Function line would not move existing code down one line.

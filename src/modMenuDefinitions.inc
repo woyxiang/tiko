@@ -37,6 +37,7 @@ function getMenuAccelText( byval idMenu as long ) As CWSTR
     return wszAccel
 end function
 
+
 ' ========================================================================================
 ' Get the menu text based on the incoming control id
 ' ========================================================================================
@@ -174,12 +175,13 @@ end function
 ' ========================================================================================
 ' Set the values for one element in the gTopMenu TYPE array
 ' ========================================================================================
-function setTopMenuItem( byval nParentID as long, _
-                            byval nID as long, _
-                            byval nChildID as long, _
-                            byval isDisabled as boolean, _
-                            byval isSeparator as boolean _
-                            ) as long
+function setTopMenuItem( _
+            byval nParentID as long, _
+            byval nID as long, _
+            byval nChildID as long, _
+            byval isDisabled as boolean, _
+            byval isSeparator as boolean _
+            ) as long
                             
     redim preserve gTopMenu(ubound(gTopMenu)+1) as TOPMENU_TYPE
     dim as long i = ubound(gTopMenu)
@@ -197,13 +199,14 @@ end function
 ' ========================================================================================
 ' Set the values for one MRU element in the gTopMenu TYPE array
 ' ========================================================================================
-function setTopMenuMRUItem( byval nIndex as long, _
-                            byval nParentID as long, _
-                            byval nID as long, _
-                            byval nChildID as long, _
-                            byval isDisabled as boolean, _
-                            byval isSeparator as boolean _
-                            ) as long
+function setTopMenuMRUItem( _
+            byval nIndex as long, _
+            byval nParentID as long, _
+            byval nID as long, _
+            byval nChildID as long, _
+            byval isDisabled as boolean, _
+            byval isSeparator as boolean _
+            ) as long
     ' do sanity check to ensure that nIndex is within range
     if (nIndex >= lbound(gTopMenu)) andalso (nIndex <= ubound(gTopMenu)) then
         gTopMenu(nIndex).nParentID = nParentID
@@ -221,7 +224,7 @@ end function
 ' Reurns a pointer to the gTopMenu TYPE array for the incoming nID
 ' Used mostly during the painting of the line
 ' ========================================================================================
-public function getTopMenuPtr( byval nID as long ) as TOPMENU_TYPE ptr
+function getTopMenuPtr( byval nID as long ) as TOPMENU_TYPE ptr
     static dummy as TOPMENU_TYPE    ' returned in case no match in order to avoid null pointer
     for i as long = lbound(gTopMenu) to ubound(gTopMenu)
         if gTopMenu(i).nID = nID then

@@ -83,7 +83,7 @@ end function
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmCommandLine
 ' ========================================================================================
-private function frmCommandLine_OnDestroy( byval hwnd as HWND ) as LRESULT
+function frmCommandLine_OnDestroy( byval hwnd as HWND ) as LRESULT
     PostQuitMessage(0)
     function = 0
 end function
@@ -92,11 +92,12 @@ end function
 ' ========================================================================================
 ' frmCommandLine Window procedure
 ' ========================================================================================
-private function frmCommandLine_WndProc( byval hwnd   as HWND, _
-                                            byval uMsg   as UINT, _
-                                            byval wParam as WPARAM, _
-                                            byval lParam as LPARAM _
-                                            ) as LRESULT
+function frmCommandLine_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     Select case uMsg
         HANDLE_MSG (hwnd, WM_CREATE,   frmCommandLine_OnCreate)
@@ -113,7 +114,7 @@ end function
 ' ========================================================================================
 ' frmCommandLine_Show
 ' ========================================================================================
-public function frmCommandLine_Show( byval hWndParent as HWND ) as LRESULT
+function frmCommandLine_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow

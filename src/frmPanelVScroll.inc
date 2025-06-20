@@ -164,9 +164,11 @@ function frmPanelVScroll_WndProc( _
             dim as RECT rc
             
             hDC = BeginPaint( hwnd, @ps )
+            SaveDC(hDC)
             GetClientRect(hwnd, @rc)
             FillRect( hDC, @rc, ghPanel.hBackBrushScrollBar )
             FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
+            RestoreDC(hDC, -1)
             EndPaint hwnd, @ps
             exit function
 
@@ -184,6 +186,7 @@ end function
 function frmPanelVScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
+    ' Pointer destroyed at end of frmMain prior to application end
     dim pWindow as CWindow ptr = new CWindow
 
     HWND_FRMPANEL_VSCROLLBAR = pWindow->Create( hWndParent, _

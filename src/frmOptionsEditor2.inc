@@ -18,22 +18,23 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOptions
 ' ========================================================================================
-private function frmOptionsEditor2_OnCommand( byval hwnd as HWND, _
-                                                byval id as long, _
-                                                byval hwndCtl as hwnd, _
-                                                byval codeNotify as UINT _
-                                                ) as LRESULT
+function frmOptionsEditor2_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as hwnd, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
     select case id
         
-        case IDC_FRMOPTIONSEDITOR2_CHKAUTOINDENTATION
-            if codeNotify = BN_CLICKED then
-                if Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSEDITOR2_CHKAUTOINDENTATION) ) then
-                    EnableWindow( GetDlgItem( hwnd, IDC_FRMOPTIONSEDITOR2_CHKFORNEXTVARIABLE), true )
-                else
-                    EnableWindow( GetDlgItem( hwnd, IDC_FRMOPTIONSEDITOR2_CHKFORNEXTVARIABLE), false )
-                end if   
-            end if
+    case IDC_FRMOPTIONSEDITOR2_CHKAUTOINDENTATION
+        if codeNotify = BN_CLICKED then
+            if Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSEDITOR2_CHKAUTOINDENTATION) ) then
+                EnableWindow( GetDlgItem( hwnd, IDC_FRMOPTIONSEDITOR2_CHKFORNEXTVARIABLE), true )
+            else
+                EnableWindow( GetDlgItem( hwnd, IDC_FRMOPTIONSEDITOR2_CHKFORNEXTVARIABLE), false )
+            end if   
+        end if
     
     end select      
 
@@ -44,11 +45,13 @@ end function
 ' ========================================================================================
 ' frmOptionsEditor2 Window procedure
 ' ========================================================================================
-private function frmOptionsEditor2_WndProc( byval hwnd   as HWND, _
-                                            byval uMsg   as UINT, _
-                                            byval wParam as WPARAM, _
-                                            byval lParam as LPARAM _
-                                            ) as LRESULT
+function frmOptionsEditor2_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
+
     select case uMsg
         HANDLE_MSG (hwnd, WM_COMMAND,  frmOptionsEditor2_OnCommand)
     end select
@@ -62,11 +65,10 @@ end function
 ' ========================================================================================
 ' frmOptionsEditor2_Show
 ' ========================================================================================
-public function frmOptionsEditor2_Show( byval hwndParent as HWND ) as LRESULT
+function frmOptionsEditor2_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMOPTIONSEDITOR2 = pWindow->Create( hwndParent, "", @frmOptionsEditor2_WndProc, 0, 0, 0, 0, _
         WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _

@@ -303,7 +303,6 @@ end function
 function handleEscKeyModeless( byval uMsg as MSG ) as boolean
     ' Close any open Find/Replace window with ESC key
     ' Close any open FindInFiles window with ESC key
-    ' Close any open FunctionList window
     if (uMsg.message = WM_KEYDOWN) andAlso (uMsg.wParam = VK_ESCAPE) THEN
         if IsWindowVisible( HWND_FRMFINDREPLACE ) THEN 
             SendMessage( HWND_FRMFINDREPLACE, WM_CLOSE, 0, 0 )

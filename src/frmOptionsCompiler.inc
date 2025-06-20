@@ -18,11 +18,12 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOptionsCompiler
 ' ========================================================================================
-private function frmOptionsCompiler_OnCommand( byval hwnd as HWND, _
-                                                byval id as long, _
-                                                byval hwndCtl as HWND, _
-                                                byval codeNotify as UINT _
-                                                ) as LRESULT
+function frmOptionsCompiler_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
     select case id
 
@@ -47,11 +48,12 @@ end function
 ' ========================================================================================
 ' frmOptionsCompiler Window procedure
 ' ========================================================================================
-private function frmOptionsCompiler_WndProc( byval hwnd   as HWND, _
-                                                byval uMsg   as UINT, _
-                                                byval wParam as WPARAM, _
-                                                byval lParam as LPARAM _
-                                                ) as LRESULT
+function frmOptionsCompiler_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_COMMAND, frmOptionsCompiler_OnCommand)
@@ -65,11 +67,10 @@ end function
 ' ========================================================================================
 ' frmOptionsCompiler_Show
 ' ========================================================================================
-public function frmOptionsCompiler_Show( byval hWndParent as HWND ) as LRESULT
+function frmOptionsCompiler_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowptr(hwndParent)->DPI
     
     HWND_FRMOPTIONSCOMPILER = pWindow->Create( hWndParent, "", @frmOptionsCompiler_WndProc, 0, 0, 0, 0, _
         WS_CHILD, WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)

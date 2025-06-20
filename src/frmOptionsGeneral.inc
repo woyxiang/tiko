@@ -18,11 +18,12 @@
 ' ========================================================================================
 ' frmOptionsGeneral Window procedure
 ' ========================================================================================
-private function frmOptionsGeneral_WndProc( byval hwnd   as HWND, _
-                                            byval uMsg   as UINT, _
-                                            byval wParam as WPARAM, _
-                                            byval lParam as LPARAM _
-                                            ) as LRESULT
+function frmOptionsGeneral_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     ' for messages that we don't deal with
     function = DefWindowProc(hwnd, uMsg, wParam, lParam)
@@ -33,11 +34,10 @@ end function
 ' ========================================================================================
 ' frmOptionsGeneral_Show
 ' ========================================================================================
-public function frmOptionsGeneral_Show( byval hwndParent as HWND ) as LRESULT
+function frmOptionsGeneral_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMOPTIONSGENERAL = pWindow->Create( hwndParent, "", @frmOptionsGeneral_WndProc, 0, 0, 0, 0, _
         WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _

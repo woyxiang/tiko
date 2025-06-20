@@ -391,11 +391,9 @@ function frmFunctionsListBox_SubclassProc ( _
             byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
             ) as LRESULT
 
-    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMFUNCTIONS)
     static as long accumDelta
     
     static as HWND hTooltip
-    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
         
     ' keep track of last index we were over so that we only issue a 
     ' repaint if the cursor has moved off of the line
@@ -434,6 +432,8 @@ function frmFunctionsListBox_SubclassProc ( _
             tme.dwHoverTime = 1
             TrackMouseEvent(@tme) 
             
+            if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
+
             ' get the item rect that the mouse is over and only invalidate
             ' that instead of the entire listbox
             dim as RECT rc

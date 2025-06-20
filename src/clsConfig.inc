@@ -837,7 +837,6 @@ function clsConfig.LoadConfigFile() as long
         this.Builds(2).id = AfxGuidText(AfxGuid())
         this.Builds(2).wszDescription = "Win32 Console (Release)"
         this.Builds(2).wszOptions = "-s console"
-        this.Builds(2).IsDefault = 1
         this.Builds(2).Is32bit = 1
         this.Builds(2).Is64bit = 0
         this.Builds(2).ExcludeInPopup = 0
@@ -880,6 +879,7 @@ function clsConfig.LoadConfigFile() as long
         this.Builds(8).id = AfxGuidText(AfxGuid())
         this.Builds(8).wszDescription = "Win64 Console (Release)"
         this.Builds(8).wszOptions = "-s console -gen gas64"
+        this.Builds(8).IsDefault = 1
         this.Builds(8).Is32bit = 0
         this.Builds(8).Is64bit = 1
         this.Builds(8).ExcludeInPopup = 0

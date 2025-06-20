@@ -335,7 +335,8 @@ function frmTopTabsShadow_WndProc( _
     select Case uMsg
         case WM_DESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-            if pWindow = 0 then delete pWindow
+            if pWindow = 0 then delete(pWindow)
+            HWND_FRMMAIN_TOPTABS_SHADOW = 0
     end select      
 
     ' for messages that we don't deal with
@@ -356,20 +357,13 @@ function frmTopTabs_WndProc( _
     static as long curr_idxHot = -1
     static hTooltip as HWND
 
-    if IsWindow(hTooltip) = 0 then 
-        hTooltip = AfxAddTooltip( hwnd, "", false, false )
-        ' Set the tooltip max width in order to handle the multiline
-        ' text needed for the split editor button.
-        SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 200 )
-    end if
-    
-
     select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmTopTabs_OnSize)
     
     case WM_DESTROY
         dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-        if pWindow = 0 then delete pWindow
+        if pWindow = 0 then delete(pWindow)
+        HWND_FRMMAIN_TOPTABS = 0
         DestroyWindow( HWND_FRMMAIN_TOPTABS_SHADOW )
         
     case WM_ERASEBKGND
@@ -382,6 +376,13 @@ function frmTopTabs_WndProc( _
         tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
 
+        if IsWindow(hTooltip) = 0 then 
+            hTooltip = AfxAddTooltip( hwnd, "", false, false )
+            ' Set the tooltip max width in order to handle the multiline
+            ' text needed for the split editor button.
+            SendMessage( hTooltip, TTM_SETMAXTIPWIDTH, 0, 200 )
+        end if
+    
         curr_idxHot = getHotTabHitTest( hwnd )
         AfxRedrawWindow( hwnd )
         
@@ -573,8 +574,6 @@ function frmTopTabs_WndProc( _
         if pWindow = 0 then exit function
 
         hDC = BeginPaint( hwnd, @ps )
-
-        SaveDC(hDC)
         
         GetClientRect(hwnd, @rc)
         dim as long nWidth = rc.right - rc.left
@@ -584,8 +583,11 @@ function frmTopTabs_WndProc( _
         dim hbit as HBITMAP   ' Double buffering
 
         memDC = CreateCompatibleDC( hDC )
+
+        SaveDC(memDC)
+
         hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-        if hbit then hbit = SelectObject( memDC, hbit )
+        if hbit then SelectObject( memDC, hbit )
 
         ' Fill in the entire back panel width across the top of the screen
         FillRect( memDC, @rc, ghTopTabs.hPanelBrush )
@@ -641,7 +643,7 @@ function frmTopTabs_WndProc( _
                 end if
                 if (isTabCloseHitTest( hwnd, i ) = i) andalso (gApp.bDragTabActive = false) then
                     ' if we are hovered over the "X" close icon rect then highlight it
-                    selectPen( memDC, hPenNull )
+                    SelectObject( memDC, hPenNull )
                     SelectObject( memDC, ghTopTabs.hCloseBrushHot )
                     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
                     SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
@@ -651,7 +653,7 @@ function frmTopTabs_WndProc( _
             end if
             
             ' Draw the righthand side black divider
-            selectPen( memDC, hPenSolid )
+            SelectObject( memDC, hPenSolid )
             MoveToEx( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.top, null )
             LineTo( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.bottom )   
             
@@ -697,7 +699,7 @@ function frmTopTabs_WndProc( _
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcPrevTabs
-            selectPen( memDC, hPenNull )
+            SelectObject( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
@@ -712,7 +714,7 @@ function frmTopTabs_WndProc( _
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcNextTabs
-            selectPen( memDC, hPenNull )
+            SelectObject( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
@@ -727,7 +729,7 @@ function frmTopTabs_WndProc( _
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcSplitEditor
-            selectPen( memDC, hPenNull )
+            SelectObject( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbol)
@@ -742,7 +744,7 @@ function frmTopTabs_WndProc( _
                 SelectObject( memDC, ghTopTabs.hCloseBrushHot )
             end if
             rc = gTTabCtl.rcActionButton
-            selectPen( memDC, hPenNull )
+            SelectObject( memDC, hPenNull )
             RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             SelectObject(memDC, ghMenuBar.hFontSymbolLarge)
@@ -752,11 +754,12 @@ function frmTopTabs_WndProc( _
         BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
         ' Cleanup
+        RestoreDC( memDC, -1 )
+        
         if hPenSolid then deleteObject( hPenSolid )
         if hPenNull  then deleteObject( hPenNull )
-        if hbit  then deleteObject( SelectObject(memDC, hbit) )
-        if memDC then deleteDC( memDC )
-        RestoreDC( hDC, -1 )
+        if hbit      then deleteObject( hbit )
+        if memDC     then deleteDC( memDC )
 
         EndPaint( hwnd, @ps )
     
