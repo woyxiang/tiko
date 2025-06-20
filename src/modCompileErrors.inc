@@ -521,27 +521,18 @@ function ParseLogForError( _
         ' if the Search Results, TODO, Notes tab is active then reposition to 
         ' the first tab for error listview
         select case gOutputTabsCurSel 
-            case 2, 3, 4
+            case 1, 2, 3, 4
             gOutputTabsCurSel = 0
             frmOutput_PositionWindows
         end select
         
+        frmOutput_ActivatePanelHeight
         ShowWindow( HWND_FRMOUTPUT, SW_SHOW)
         frmMain_PositionWindows
         ' Set to error line position only after all windows have been shown and resized
         SetDocumentErrorPosition(hLV, wID)
     end if
     
-    ' if there were no errors or warnings then close any previously open compiler results listviews
-    if (NumWarnings = 0) andalso (NumErrors = 0) andalso (NumDirectives = 0) then
-        if IsWindowVisible(HWND_FRMOUTPUT) then
-            if gOutputTabsCurSel = 0 then
-            ShowWindow( HWND_FRMOUTPUT, SW_HIDE )
-            frmMain_PositionWindows
-            end if   
-        end if 
-    end if
-
     if NumErrors = 0 then 
         ' 2018-08-29: Show popup compile message in cases where no errors but warnings may exist.
         ' Hide the Output window is already open but there is no longer any warnings
@@ -560,7 +551,7 @@ function ParseLogForError( _
             if gConfig.DisableCompileBeep = false then
                 MessageBeep(MB_OK)
             end if
-            
+           
             gCompile.wszOutputMsg = _   ' this gets output to the Output window
                 L(228,"Successful Compile")  & " (" & _
                 L(193,"Errors")              & " " & NumErrors & " " & _

@@ -4,6 +4,7 @@ Version 1.0.4 ()
 - Added: Much improved brace highlighting.
 - Added: Codetips for WinFBX / Afx library.
 - Changed: All icons now use SegoeFluentIcons. SegoeFluentIcons.ttf must now be located in same folder as the editor exe. SegoeFluentIcons is not part of Windows 10 by default.
+- Changed: Refactored how the Output window functions.
 - Changed: Removed the "+" Add New File button from the top tab bar (may implement it again in the future).
 - Changed: Drag top tab positions without having to hold down the SHIFT key.
 - Changed: The editor caret width from 1 pixel to 3 pixel. 
