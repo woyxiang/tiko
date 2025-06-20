@@ -586,7 +586,9 @@ function frmOutputTabs_SubclassProc ( _
     ' repaint if the cursor has moved off of the tab
     static as long nLastIdx = -1
     static as boolean isLastClose = false
-    static hTooltip as hwnd
+
+    static hTooltip as HWND
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
         
     select case uMsg
             

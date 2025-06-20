@@ -66,7 +66,7 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
 
     ' Should we show an Editor HScrollbar
     dim as clsDocument ptr pDoc = gTTabCtl.GetActiveDocumentPtr()
-    if pDoc then
+    if (pDoc <> 0) andalso (pDoc->bSizing = false) then   ' no testing during split panel resizing
         for i as long = lbound(pDoc->hWindow) to ubound(pDoc->hWindow)
             dim as boolean isVisible = IsWindowVisible( HWND_FRMEDITOR_HSCROLLBAR(i) )
             dim as long curState = iif(isVisible, SW_SHOWNA, SW_HIDE)

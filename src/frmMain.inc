@@ -586,6 +586,16 @@ end function
 
 
 ' ========================================================================================
+' Hide the horizontal editor scrollbars (done during splitter panel resizing)
+' ========================================================================================
+function frmMain_HideHorizScrollBars() as LRESULT
+    ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(0), SW_HIDE )
+    ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(1), SW_HIDE )
+    function = 0
+end function
+
+
+' ========================================================================================
 ' Position Left split document window
 ' ========================================================================================
 function frmMain_PositionSplitDocLeft( byval pDoc as clsDocument ptr, byval rcDoc as RECT ) as LRESULT
@@ -601,15 +611,13 @@ function frmMain_PositionSplitDocLeft( byval pDoc as clsDocument ptr, byval rcDo
     SetWindowPos( pDoc->hWindow(1), 0, _
                 rcDoc.left, rcDoc.top, _
                 nWidth, nHeight, _
-                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-    RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
 
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
         SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(1), 0, _ 
                         rcDoc.left, rcDoc.bottom - iHScrollbarHeight, _
                         nWidth, iHScrollbarHeight, _
                         SWP_NOZORDER or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
     end if
     
     ' Position the VScrollBar if necessary
@@ -617,8 +625,7 @@ function frmMain_PositionSplitDocLeft( byval pDoc as clsDocument ptr, byval rcDo
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(1), 0, _ 
                         rcDoc.left + nWidth, rcDoc.top, _
                         iVScrollbarWidth, nHeight, _ 
-                        SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                        SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
     end if
     
     function = 0
@@ -639,16 +646,14 @@ function frmMain_PositionSplitDocTop( byval pDoc as clsDocument ptr, byval rcDoc
                 rcDoc.left, rcDoc.top, _
                 rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                 pDoc->SplitY - rcDoc.top - iHScrollbarHeight, _ 
-                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-    RedrawWindow( pDoc->hWindow(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
 
     ' Position the TOP view horizontal scroll bar
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
         SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(1), 0, _ 
                         rcDoc.left, pDoc->SplitY - iHScrollbarHeight, _
                         rcDoc.right - rcDoc.left - iVScrollbarWidth, iHScrollbarHeight, _
-                        SWP_NOZORDER or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                        SWP_NOZORDER )
     end if
     
     ' Position the TOP view vertical scroll bar
@@ -657,8 +662,7 @@ function frmMain_PositionSplitDocTop( byval pDoc as clsDocument ptr, byval rcDoc
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(1), 0, _ 
                         rcDoc.right - iVScrollbarWidth, rcDoc.top, _
                         iVScrollbarWidth, pDoc->SplitY - rcDoc.top, _ 
-                        SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(1), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                        SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
     end if
     
     function = 0
@@ -684,23 +688,20 @@ function frmMain_PositionMainDocRight( byval pDoc as clsDocument ptr, byval rcDo
     SetWindowPos( pDoc->hWindow(0), 0, _
                 nLeft, rcDoc.top, _
                 nWidth, nHeight, _
-                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-    RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
 
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then
         SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(0), 0, _ 
                         nLeft, rcDoc.bottom - iHScrollbarHeight, _
                         nWidth, iHScrollbarHeight, _
-                        SWP_NOZORDER or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                        SWP_NOZORDER )
     end if
     
     if iVScrollbarWidth then 
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(0), 0, _ 
                     nLeft + nWidth, rcDoc.top, _
                     iVScrollbarWidth, nHeight, _
-                    SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                    SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
     end if
 
     function = 0
@@ -724,16 +725,14 @@ function frmMain_PositionMainDocBottom( byval pDoc as clsDocument ptr, byval rcD
                 rcDoc.left, nTop, _
                 rcDoc.right - rcDoc.left - iVScrollbarWidth, _
                 rcDoc.bottom - nTop - iHScrollbarHeight, _
-                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-    RedrawWindow( pDoc->hWindow(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
 
     ' Position the MAIN view horizontal scroll bar
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then
         SetWindowPos( HWND_FRMEDITOR_HSCROLLBAR(0), 0, _ 
                     rcDoc.left, rcDoc.bottom - iHScrollbarHeight, _
                     rcDoc.right - rcDoc.left - iVScrollbarWidth, iHScrollbarHeight, _
-                    SWP_NOZORDER or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_HSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                    SWP_NOZORDER )
     end if
 
     ' Position the MAIN view vertical scroll bar
@@ -743,8 +742,7 @@ function frmMain_PositionMainDocBottom( byval pDoc as clsDocument ptr, byval rcD
                     rcDoc.right - iVScrollbarWidth, nTop + SPLITSIZE, _
                     iVScrollbarWidth, _
                     rcDoc.bottom - nTop, _ 
-                    SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE or SWP_NOREDRAW )
-        RedrawWindow( HWND_FRMEDITOR_VSCROLLBAR(0), null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+                    SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
     else
         ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
     end if
@@ -778,13 +776,11 @@ function frmMain_PositionWindows() as LRESULT
     SetWindowPos( HWND_FRMMAIN_MENUBAR, 0, _
                     0, 0, rc.right - rc.left, nHeightMenuBar, _
                     SWP_NOZORDER or SWP_SHOWWINDOW ) 
-    RedrawWindow( HWND_FRMMAIN_MENUBAR, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
 
     ' Set the statusbar into place 
     SetWindowPos( HWND_FRMMAIN_STATUSBAR, 0, _
                     0, rc.bottom - nHeightStatusBar, rc.right - rc.left, nHeightStatusBar, _
                     SWP_NOZORDER or SWP_SHOWWINDOW ) 
-    RedrawWindow( HWND_FRMMAIN_STATUSBAR, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
     
     nLeft = rc.Left 
     nTop = rc.top + nHeightMenuBar
@@ -1198,10 +1194,10 @@ function frmMain_OnMouseMove( _
         dim as point pt = (x, y)
         if pDoc->bSizing then
             dim as long nSplitSize = pWindow->ScaleY(SPLITSIZE)
-            dim as long nSscrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR)
-            dim as long maxLeft = pDoc->rcDocSplitArea.left + nSscrollWidth
+            dim as long nScrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR)
+            dim as long maxLeft = pDoc->rcDocSplitArea.left + nScrollWidth
             dim as long maxTop = pDoc->rcDocSplitArea.top 
-            dim as long maxRight = pDoc->rcDocSplitArea.right - nSscrollWidth - nSplitSize
+            dim as long maxRight = pDoc->rcDocSplitArea.right - nScrollWidth - nSplitSize
             dim as long maxBottom = pDoc->rcDocSplitArea.bottom - nSplitSize
             if (pDoc->EditorSplitMode = SplitTopBottom) andalso (pt.y <> pDoc->ptPrev.y) then
                 pDoc->SplitY = pDoc->SplitY + (pt.y - pDoc->ptPrev.y)
@@ -1250,7 +1246,8 @@ function frmMain_OnLButtonDown( _
         dim as point pt = (x, y)
         if PtInRect(@pDoc->rcSplitButton, pt) then 
             pDoc->bSizing = true
-            
+            frmMain_HideHorizScrollBars()   ' hide to reduce flickering
+                     
             if pDoc->EditorSplitMode = SplitTopBottom then
                 pDoc->SplitY = pDoc->rcSplitButton.top  
                 pDoc->ptPrev.y = pt.y
@@ -1285,11 +1282,8 @@ function frmMain_OnLButtonUp( _
     if pDoc then 
         if pDoc->bSizing then
             pDoc->bSizing = false
+            frmMain_PositionWindows
             ReleaseCapture
-            pDoc->SplitX = 0
-            pDoc->SplitY = 0
-            pDoc->EditorSplitMode = SplitNone
-            frmMain_PositionWindows()
         end if
     end if   
     SetCursor( LoadCursor( null, IDC_ARROW ))
@@ -1560,8 +1554,8 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     
     ' Load the tick and untick icons
     dim cx as long =  16 * (pWindow->DPI \ 96)
-    ghIconTick   = LoadImage( pWindow->InstanceHandle, "IMAGE_TICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR )
-    ghIconNoTick = LoadImage( pWindow->InstanceHandle, "IMAGE_NOTICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR )
+    ghIconTick   = LoadImage( pWindow->InstanceHandle, "IMAGE_TICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR or LR_SHARED )
+    ghIconNoTick = LoadImage( pWindow->InstanceHandle, "IMAGE_NOTICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR or LR_SHARED )
 
     ' Load the North/South and East/West cursor images
     ghCursorSizeNS = LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZENS), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )

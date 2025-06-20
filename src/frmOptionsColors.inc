@@ -100,12 +100,12 @@ function frmOptionsColors_DrawFontCombo( _
             wText = AfxGetComboBoxText(HWnd, lpdis->itemID)
             if len(wText) then
                 hFont = pWindow->CreateFont( wText, 10 ) 
-                if hFont then hFont = SelectObject(lpdis->hDC, hFont)
+                if hFont then SelectObject(lpdis->hDC, hFont)
             end if
             DrawText( lpdis->hDC, @wText, len(wText), @lpdis->rcItem, DT_SINGLELINE or DT_LEFT or DT_VCENTER)
 
             ' Focus rect around selected item
-            if (lpdis->itemState and ODS_selectED) then
+            if (lpdis->itemState and ODS_SELECTED) then
                 DrawFocusRect lpdis->hDC, @lpdis->rcItem
             end if
             

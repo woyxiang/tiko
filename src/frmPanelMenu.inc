@@ -202,8 +202,10 @@ function frmPanelMenu_WndProc( _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static hTooltip as hwnd
     static wszPrevTooltip as CWSTR
+
+    static hTooltip as HWND
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_SIZE,  frmPanelMenu_OnSize)

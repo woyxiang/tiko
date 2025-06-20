@@ -307,7 +307,9 @@ function frmPanel_WndProc( _
             ) as LRESULT
 
     static as boolean isPrevHotAction, isPrevHotButton0, isPrevHotButton1
-    static hTooltip as hwnd
+    
+    static hTooltip as HWND
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_SIZE,    frmPanel_OnSize)

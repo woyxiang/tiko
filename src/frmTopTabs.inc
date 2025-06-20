@@ -12,7 +12,6 @@
 '    GNU General Public License for more details.
 
 
-'TODO: Remove "+" button tab control
 '#define TAB_PLUS_BUTTON
 
 ' ========================================================================================
@@ -356,6 +355,7 @@ function frmTopTabs_WndProc( _
 
     static as long curr_idxHot = -1
     static hTooltip as HWND
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmTopTabs_OnSize)

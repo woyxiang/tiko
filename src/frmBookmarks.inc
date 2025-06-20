@@ -311,6 +311,7 @@ function frmBookmarks_WndProc( _
             ) as LRESULT
 
     static hTooltip as HWND
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_DESTROY,     frmBookmarks_OnDestroy)

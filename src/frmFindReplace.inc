@@ -798,6 +798,7 @@ function frmFindReplace_WndProc( _
             ) as LRESULT
     
     static hTooltip as HWND
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
     
     select case uMsg
         HANDLE_MSG (hwnd, WM_CLOSE,    frmFindReplace_OnClose)
