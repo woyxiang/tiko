@@ -48,7 +48,6 @@ end function
 ' ========================================================================================
 function frmAbout_OnDestroy( byval hwnd as HWND) as LRESULT
     Dim As HFONT hFont = AfxGetWindowFont(GetDlgItem(hwnd, IDC_FRMABOUT_LBLAPPNAME))
-    DeleteFont(hFont)
     PostQuitMessage(0)
     function = 0
 end function
@@ -82,8 +81,6 @@ function frmAbout_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
-
 
     pWindow->Create( hWndParent, L(74,"About"), @frmAbout_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
@@ -114,7 +111,7 @@ function frmAbout_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmAbout CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function
 

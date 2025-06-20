@@ -17,9 +17,10 @@
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmCommandLine
 ' ========================================================================================
-private function frmCommandLine_OnCreate( byval hwnd as HWND, _
-                                            byval lpCreateStructPtr as LPCREATESTRUCT _
-                                            ) as boolean
+function frmCommandLine_OnCreate( _
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -35,11 +36,12 @@ end function
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmCommandLine
 ' ========================================================================================
-private function frmCommandLine_OnCommand( byval hwnd as HWND, _
-                                            byval id as long, _
-                                            byval hwndCtl as HWND, _
-                                            byval codeNotify as UINT _
-                                            ) as LRESULT
+function frmCommandLine_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
     select case id
         case IDOK
@@ -70,7 +72,7 @@ end function
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmCommandLine
 ' ========================================================================================
-private function frmCommandLine_OnClose( byval hwnd as HWND ) as LRESULT
+function frmCommandLine_OnClose( byval hwnd as HWND ) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
     DestroyWindow hwnd
@@ -115,7 +117,6 @@ public function frmCommandLine_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     pWindow->Create( hWndParent, L(178,"Command Line"), @frmCommandLine_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
@@ -151,6 +152,6 @@ public function frmCommandLine_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmCommandLine CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function

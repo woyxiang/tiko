@@ -553,20 +553,21 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
     GetClientRect(hwnd, @rc)    
     FillRect( hDC, @rc, ghBrushMainBackground )
 
+    dim as HBRUSH hBackBrush = CreateSolidBrush( ghEditor.Divider )
+
     ' Draw any horizontal splitter between the two edit windows
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr
     if pDoc then
         if pDoc->EditorSplitMode <> SplitNone then
             frmMain_CalcSplitRect(pDoc)
-            dim as HBRUSH hBackBrush = CreateSolidBrush( ghEditor.Divider )
             FillRect( hDC, @pDoc->rcSplitButton, hBackBrush )
-            DeleteObject( hBackBrush )
         end if    
     end if
     
     RestoreDC hDC, -1 
-    
     EndPaint hwnd, @ps
+
+    DeleteObject( hBackBrush )
     
     function = 0
 end Function
@@ -576,10 +577,10 @@ end Function
 ' Hide the vertical & horizontal editor scrollbars
 ' ========================================================================================
 function frmMain_HideScrollBars() as LRESULT
-        ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(0), SW_HIDE )
-        ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(1), SW_HIDE )
-        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
-        ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
+    ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(0), SW_HIDE )
+    ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(1), SW_HIDE )
+    ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
+    ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
     function = 0
 end function
 
@@ -1139,7 +1140,7 @@ function frmMain_OnClose( byval hwnd as HWND ) as LRESULT
     gConfig.ShowPanel = IsWindowVisible(HWND_FRMPANEL)
     gConfig.ShowPanelWidth = pWindow->UnScaleX(AfxGetWindowWidth( HWND_FRMPANEL ))
     
-    ' if a project(s) is already open then save/close it.
+    ' if a project is already open then save/close it.
     if gApp.IsProjectActive then 
         if OnCommand_ProjectClose(hwnd) = 0 then return 0
     end if
@@ -1694,14 +1695,14 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     if ghAccelUserTools then DestroyAcceleratorTable( ghAccelUserTools )
     
     ' delete the allocated memory for the various child windows
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(0) ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(1) ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(0) ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(1) ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT ): delete pWindow
-    pWindow = AfxCWindowPtr( HWND_FRMMAIN ): delete pWindow
+    pWindow = AfxCWindowPtr( HWND_FRMPANEL ):                if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ):     if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(0) ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(1) ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(0) ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(1) ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT ):               if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMMAIN ):                 if pWindow then delete(pWindow)
 
 end function
 

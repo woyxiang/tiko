@@ -435,6 +435,7 @@ function frmKeyboard_BuildAcceleratorTable() as long
     function = 0
 end function
 
+
 ' ========================================================================================
 ' Check for keybinding conflict with other keys and display warning label message
 ' ========================================================================================
@@ -568,6 +569,7 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmKeyboard
 ' ========================================================================================
 function frmKeyboard_OnDestroy( byval hwnd as HWND) as LRESULT
+    HWND_FRMKEYBOARD = 0
     PostQuitMessage(0)
     function = 0
 end function
@@ -669,7 +671,6 @@ function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     HWND_FRMKEYBOARD = _
     pWindow->Create(hWndParent, L(220,"Keyboard Shortcuts"), _
@@ -683,7 +684,7 @@ function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
         pWindow->AddControl("LISTVIEW", , IDC_FRMKEYBOARD_LIST1, "", 0, 0, 622, 364, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or LVS_REPORT or LVS_SHOWSELALWAYS or LVS_SINGLESEL, _
         WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-        Cast(SUBCLASSPROC, @frmKeyboard_ListView_SubclassProc), IDC_FRMKEYBOARD_LIST1, Cast(DWORD_PTR, @pWindow))
+        cast(SUBCLASSPROC, @frmKeyboard_ListView_SubclassProc), IDC_FRMKEYBOARD_LIST1, cast(DWORD_PTR, @pWindow))
                                         
     ' Make the listview header flat
     ListView_MakeHeaderFlat( HWND_FRMKEYBOARD_LISTVIEW )
@@ -754,7 +755,7 @@ function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
     function = uMsg.wParam
     
     ' Delete the CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function
 

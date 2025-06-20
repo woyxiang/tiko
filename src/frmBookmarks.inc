@@ -158,19 +158,20 @@ function frmBookmarks_OnDrawItem( _
         dim as long nWidth  = rc.right-rc.left
         dim as long nHeight = rc.bottom-rc.top
 
-        SaveDC(lpdis->hDC)
-
         dim memDC as HDC      ' Double buffering
         dim hbit as HBITMAP   ' Double buffering
 
         memDC = CreateCompatibleDC( lpdis->hDC )
         hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
+
+        SaveDC(memDC)
+
         if hbit then hbit = SelectObject( memDC, hbit )
 
         SelectObject( memDC, ghMenuBar.hFontMenuBar )
 
         ' Default to using normal
-        dim as HBRUSH hBrush = ghPanel.hBackBrush
+        dim as HBRUSH   hBrush  = ghPanel.hBackBrush
         dim as COLORREF foreclr = ghPanel.ForeColor
         dim as COLORREF backclr = ghPanel.BackColor
 
@@ -188,9 +189,9 @@ function frmBookmarks_OnDrawItem( _
 
         if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
 
-        hBrush = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
-        backclr = iif( IsHot, ghPanel.BackColorHot, ghPanel.BackColor)
-        foreclr = iif( IsHot, ghPanel.ForeColorHot, ghPanel.ForeColor)
+        hBrush  = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
+        backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
+        foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
 
         dim as CWSTR wszCaption = AfxGetListBoxText(lpdis->hwndItem, lpdis->ItemID)
         dim as clsDocument ptr pDoc = cast(clsDocument ptr, lpdis->itemData)
@@ -228,9 +229,9 @@ function frmBookmarks_OnDrawItem( _
             SelectObject( memDC, ghMenuBar.hFontSymbol )
             wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
             if isIconDown then
-            DrawText( memDC, wszIconChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
+                DrawText( memDC, wszIconChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
             else
-            DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
+                DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
             end if
             wszCaption = wszCaption
             rcText.left = rcBitmap.right
@@ -256,9 +257,9 @@ function frmBookmarks_OnDrawItem( _
                 nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
         ' Cleanup
-        if hbit  then DeleteObject SelectObject(memDC, hbit)
-        if memDC then DeleteDC memDC
-        RestoreDC(lpdis->hDC, -1)
+        RestoreDC(memDC, -1)
+        if hbit  then DeleteObject(hbit)
+        if memDC then DeleteDC(memDC)
     end if
 
     function = true
@@ -288,6 +289,18 @@ end function
 
 
 ' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmBookmarks
+' ========================================================================================
+function frmBookmarks_OnDestroy( byval hwnd as HWND ) as LRESULT 
+    ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    if pWindow then delete(pWindow)
+    HWND_FRMBOOKMARKS = 0
+    function = 0
+end function
+
+
+' ========================================================================================
 ' frmBookmarks Window procedure
 ' ========================================================================================
 function frmBookmarks_WndProc( _
@@ -300,6 +313,7 @@ function frmBookmarks_WndProc( _
     static hTooltip as HWND
 
     select case uMsg
+        HANDLE_MSG (hwnd, WM_DESTROY,     frmBookmarks_OnDestroy)
         HANDLE_MSG (hwnd, WM_SIZE,        frmBookmarks_OnSize)
         HANDLE_MSG (hwnd, WM_PAINT,       frmBookmarks_OnPaint)
         HANDLE_MSG (hwnd, WM_COMMAND,     frmBookmarks_OnCommand)
@@ -330,7 +344,9 @@ function frmBookmarksListBox_SubclassProc ( _
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMBOOKMARKS)
     static as long accumDelta
+
     static as HWND hTooltip
+    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
 
     ' keep track of last index we were over so that we only issue a
     ' repaint if the cursor has moved off of the line
@@ -387,16 +403,15 @@ function frmBookmarksListBox_SubclassProc ( _
 
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip
-            if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam))
             ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero
             ' if the specified point is in the client area of the list box, or one if it is outside the
             ' client area.
             if hiword(idx) <> 1 then
-            dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
-            if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
-                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-                if pDoc then wszTooltip = pDoc->DiskFilename
+                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
+                if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
+                    dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+                    if pDoc then wszTooltip = pDoc->DiskFilename
                     ' Display the tooltip
                     AfxSetTooltipText( hTooltip, hWin, wszTooltip )
                     AfxRedrawWindow( hWin )
@@ -512,7 +527,6 @@ function frmBookmarks_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = New CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMBOOKMARKS = pWindow->Create( hWndParent, "Bookmarks Window", @frmBookmarks_WndProc, _
         0, 0, 0, 0, _

@@ -40,6 +40,16 @@ end function
 
 
 ' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmMenuBar
+' ========================================================================================
+function frmMenuBar_OnDestroy( byval hwnd as HWND ) as LRESULT
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    if pWindow then delete(pWindow)
+    function = 0
+end Function
+
+
+' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmMenuBar
 ' ========================================================================================
 function frmMenuBar_OnSize( _
@@ -67,8 +77,9 @@ function frmMenuBar_WndProc( _
             ) as LRESULT
 
     select case uMsg
-        HANDLE_MSG (hwnd, WM_SIZE, frmMenuBar_OnSize)
-    
+        HANDLE_MSG (hwnd, WM_SIZE,    frmMenuBar_OnSize)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmMenuBar_OnDestroy)
+
     case WM_ERASEBKGND
         return true
 
@@ -262,7 +273,7 @@ function frmMenuBar_Show( byval hWndParent as HWND ) as LRESULT
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
     
-    frmMenuBar_CreateButton( true, pWindow, IDC_MENUBAR_FILE )
+    frmMenuBar_CreateButton( true,  pWindow, IDC_MENUBAR_FILE )
     frmMenuBar_CreateButton( false, pWindow, IDC_MENUBAR_EDIT )
     frmMenuBar_CreateButton( false, pWindow, IDC_MENUBAR_SEARCH )
     frmMenuBar_CreateButton( false, pWindow, IDC_MENUBAR_VIEW )

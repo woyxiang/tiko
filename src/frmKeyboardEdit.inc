@@ -127,6 +127,7 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmKeyboardEdit
 ' ========================================================================================
 function frmKeyboardEdit_OnDestroy( byval hwnd as HWND) as LRESULT
+    HWND_FRMKEYBOARDEDIT = 0
     PostQuitMessage(0)
     function = 0
 end function
@@ -335,7 +336,7 @@ function frmKeyboardEdit_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function
 

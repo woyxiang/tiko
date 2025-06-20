@@ -100,6 +100,7 @@ function frmExplorer_UnSelectListBox() as long
     function = 0
 end function
 
+
 ' ========================================================================================
 ' Select the listbox item that matches the incoming pDoc item. Do not open nodes to
 ' find a possible hidden document because the user may have purposely closed a node
@@ -143,6 +144,17 @@ end function
 
 
 ' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmExplorer
+' ========================================================================================
+function frmExplorer_OnDestroy( byval hwnd as HWND ) as LRESULT 
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    if pWindow then delete(pWindow)
+    HWND_FRMEXPLORER = 0
+    function = 0
+end function
+
+
+' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnSize( _
@@ -157,6 +169,7 @@ function frmExplorer_OnSize( _
     end if
     function = 0
 end function
+ 
         
 ' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmExplorer
@@ -216,19 +229,19 @@ function frmExplorer_OnDrawItem( _
         dim as long nWidth  = rc.right-rc.left
         dim as long nHeight = rc.bottom-rc.top 
 
-        SaveDC(lpdis->hDC)
-
         dim memDC as HDC      ' Double buffering
         dim hbit as HBITMAP   ' Double buffering
 
         memDC = CreateCompatibleDC( lpdis->hDC )
         hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
-        if hbit then hbit = SelectObject( memDC, hbit )
+        
+        SaveDC(memDC)
+        if hbit then SelectObject( memDC, hbit )
 
         SelectObject( memDC, ghMenuBar.hFontMenuBar )
             
         ' Default to using normal
-        dim as HBRUSH hBrush = ghPanel.hBackBrush
+        dim as HBRUSH   hBrush  = ghPanel.hBackBrush
         dim as COLORREF foreclr = ghPanel.ForeColor
         dim as COLORREF backclr = ghPanel.BackColor
             
@@ -246,9 +259,9 @@ function frmExplorer_OnDrawItem( _
             
         if ListBox_GetSel(lpdis->hwndItem, lpdis->itemID) then IsHot = true
 
-        hBrush = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
-        backclr = iif( IsHot, ghPanel.BackColorHot, ghPanel.BackColor)
-        foreclr = iif( IsHot, ghPanel.ForeColorHot, ghPanel.ForeColor)
+        hBrush  = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
+        backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
+        foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
 
         dim as CWSTR wszCaption = AfxGetListBoxText(lpdis->hwndItem, lpdis->ItemID)
 
@@ -303,9 +316,9 @@ function frmExplorer_OnDrawItem( _
                 nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
         ' Cleanup
-        if hbit  then DeleteObject SelectObject(memDC, hbit)
-        if memDC then DeleteDC memDC
-        RestoreDC(lpdis->hDC, -1)
+        RestoreDC(memDC, -1)
+        if hbit  then DeleteObject(hbit)
+        if memDC then DeleteDC(memDC)
     end if   
 
     function = true
@@ -345,6 +358,7 @@ function frmExplorer_WndProc( _
             ) as LRESULT
 
     select case uMsg
+        HANDLE_MSG (hwnd, WM_DESTROY,     frmExplorer_OnDestroy)
         HANDLE_MSG (hwnd, WM_SIZE,        frmExplorer_OnSize)
         HANDLE_MSG (hwnd, WM_PAINT,       frmExplorer_OnPaint)
         HANDLE_MSG (hwnd, WM_COMMAND,     frmExplorer_OnCommand)
@@ -375,7 +389,9 @@ function frmExplorerListBox_SubclassProc ( _
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMEXPLORER)
     static as long accumDelta
+    
     static as HWND hTooltip
+    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
         
     ' keep track of last index we were over so that we only issue a 
     ' repaint if the cursor has moved off of the line
@@ -432,7 +448,6 @@ function frmExplorerListBox_SubclassProc ( _
                         
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip 
-            if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
             ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
             ' if the specified point is in the client area of the list box, or one if it is outside the 

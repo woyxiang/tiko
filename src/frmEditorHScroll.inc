@@ -34,6 +34,7 @@ function frmEditorHScroll_WndProc( _
 
     select case uMsg
         case WM_DESTROY
+            ' The pWindow are destroyed after frmMain closes.
             if hwnd = HWND_FRMEDITOR_HSCROLLBAR(0) then HWND_FRMEDITOR_HSCROLLBAR(0) = 0
             if hwnd = HWND_FRMEDITOR_HSCROLLBAR(1) then HWND_FRMEDITOR_HSCROLLBAR(1) = 0
                 
@@ -134,8 +135,8 @@ function frmEditorHScroll_WndProc( _
                 FillRect( hDC, @gEditorHScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
             end if
             
-            EndPaint( hwnd, @ps )
             RestoreDC( hDC, -1 )
+            EndPaint( hwnd, @ps )
 
     end Select
 

@@ -1042,7 +1042,7 @@ function frmFindInFiles_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents( SW_SHOW )
     
     ' Delete the CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
     function = 0
 end function

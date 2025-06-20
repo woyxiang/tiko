@@ -139,6 +139,17 @@ end function
 
 
 ' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmFunctions
+' ========================================================================================
+function frmFunctions_OnDestroy( byval hwnd as HWND ) as LRESULT 
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    if pWindow then delete(pWindow)
+    HWND_FRMFUNCTIONS = 0
+    function = 0
+end function
+
+
+' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmFunctions
 ' ========================================================================================
 function frmFunctions_OnSize( _
@@ -212,19 +223,20 @@ function frmFunctions_OnDrawItem( _
         dim as long nWidth  = rc.right-rc.left
         dim as long nHeight = rc.bottom-rc.top 
 
-        SaveDC(lpdis->hDC)
 
         dim memDC as HDC      ' Double buffering
         dim hbit as HBITMAP   ' Double buffering
 
         memDC = CreateCompatibleDC( lpdis->hDC )
         hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
-        if hbit then hbit = SelectObject( memDC, hbit )
+        
+        SaveDC(memDC)
+        if hbit then SelectObject( memDC, hbit )
 
         SelectObject( memDC, ghMenuBar.hFontMenuBar )
             
         ' Default to using normal
-        dim as HBRUSH hBrush = ghPanel.hBackBrush
+        dim as HBRUSH   hBrush  = ghPanel.hBackBrush
         dim as COLORREF foreclr = ghPanel.ForeColor
         dim as COLORREF backclr = ghPanel.BackColor
             
@@ -242,9 +254,9 @@ function frmFunctions_OnDrawItem( _
             
         if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
 
-        hBrush = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
-        backclr = iif( IsHot, ghPanel.BackColorHot, ghPanel.BackColor)
-        foreclr = iif( IsHot, ghPanel.ForeColorHot, ghPanel.ForeColor)
+        hBrush  = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
+        backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
+        foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
 
         dim as CWSTR wszCaption = AfxGetListBoxText(lpdis->hwndItem, lpdis->ItemID)
         dim as clsDocument ptr pDoc = cast(clsDocument ptr, lpdis->itemData)
@@ -308,9 +320,9 @@ function frmFunctions_OnDrawItem( _
                 nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
         ' Cleanup
-        if hbit  then DeleteObject SelectObject(memDC, hbit)
-        if memDC then DeleteDC memDC
-        RestoreDC(lpdis->hDC, -1)
+        RestoreDC(memDC, -1)
+        if hbit  then DeleteObject(hbit)
+        if memDC then DeleteDC(memDC)
     end if   
 
     function = true
@@ -350,6 +362,7 @@ function frmFunctions_WndProc( _
             ) as LRESULT
 
     select case uMsg
+        HANDLE_MSG (hwnd, WM_DESTROY,     frmFunctions_OnDestroy)
         HANDLE_MSG (hwnd, WM_SIZE,        frmFunctions_OnSize)
         HANDLE_MSG (hwnd, WM_PAINT,       frmFunctions_OnPaint)
         HANDLE_MSG (hwnd, WM_COMMAND,     frmFunctions_OnCommand)
@@ -380,7 +393,9 @@ function frmFunctionsListBox_SubclassProc ( _
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMFUNCTIONS)
     static as long accumDelta
+    
     static as HWND hTooltip
+    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
         
     ' keep track of last index we were over so that we only issue a 
     ' repaint if the cursor has moved off of the line
@@ -438,7 +453,6 @@ function frmFunctionsListBox_SubclassProc ( _
                             
         case WM_MOUSEHOVER
             dim as CWSTR wszTooltip 
-            if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
             ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
             ' if the specified point is in the client area of the list box, or one if it is outside the 
@@ -542,7 +556,6 @@ function frmFunctions_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowPtr(hwndParent)->DPI
 
     HWND_FRMFUNCTIONS = pWindow->Create( hWndParent, "Function List", @frmFunctions_WndProc, _
         0, 0, 0, 0, _

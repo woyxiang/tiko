@@ -17,11 +17,13 @@
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmGoto
 ' ========================================================================================
-private function frmGoto_OnCommand( byval hwnd as HWND, _
-                                    byval id as long, _
-                                    byval hwndCtl as HWND, _
-                                    byval codeNotify as UINT _
-                                    ) as LRESULT
+function frmGoto_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
+
     select case id
         case IDOK
             If codeNotify = BN_CLICKED then
@@ -75,9 +77,10 @@ end function
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmGoto
 ' ========================================================================================
-private function frmGoto_OnCreate( byval hwnd as HWND, _
-                                    byval lpCreateStructPtr as LPCREATESTRUCT _
-                                    ) as boolean
+private function frmGoto_OnCreate( _
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -93,11 +96,12 @@ end function
 ' ========================================================================================
 ' frmGoto Window procedure
 ' ========================================================================================
-private function frmGoto_WndProc( byval hwnd   as HWND, _
-                                    byval uMsg   as UINT, _
-                                    byval wParam as WPARAM, _
-                                    byval lParam as LPARAM _
-                                    ) as LRESULT
+private function frmGoto_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
     Select case uMsg
         HANDLE_MSG (hwnd, WM_CREATE,   frmGoto_OnCreate)
         HANDLE_MSG (hwnd, WM_CLOSE,    frmGoto_OnClose)
@@ -118,7 +122,6 @@ public function frmGoto_Show( byval hWndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
     pWindow->ClassStyle = CS_DROPSHADOW
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     pWindow->Create(hWndParent, L(168,"Go to Line"), @frmGoto_WndProc, 0, 0, 287, 126, _
         WS_POPUP or WS_DLGFRAME or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
@@ -170,7 +173,7 @@ public function frmGoto_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmGoto CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function
 

@@ -159,10 +159,10 @@ end function
 ' Find next/prev selection based on current document position
 ' ========================================================================================
 function frmFindReplace_NextSelection( _
-        byval StartPos as long, _
-        byval bGetnext as boolean, _
-        byval bRepositionCaret as boolean _
-        ) as boolean
+            byval StartPos as long, _
+            byval bGetnext as boolean, _
+            byval bRepositionCaret as boolean _
+            ) as boolean
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
@@ -238,9 +238,9 @@ end function
 ' Replace current selection or all selections
 ' ========================================================================================
 function frmFindReplace_DoReplace( _
-        byval fReplaceAll as boolean = false, _
-        byval fMovenext as boolean = true _
-        ) as long
+            byval fReplaceAll as boolean = false, _
+            byval fMovenext as boolean = true _
+            ) as long
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
@@ -418,11 +418,11 @@ end function
 ' Process WM_COMMAND message for window/dialog: frmFindReplace
 ' ========================================================================================
 function frmFindReplace_OnCommand( _
-        byval hwnd as HWND, _
-        byval id as Long, _
-        byval hwndCtl as HWND, _
-        byval codeNotify as UINT _
-        ) as LRESULT
+            byval hwnd as HWND, _
+            byval id as Long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
@@ -755,7 +755,7 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
 
     ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow then delete pWindow
+    if pWindow then delete(pWindow)
     
     function = 0
 end function
@@ -765,16 +765,16 @@ end function
 ' frmFindReplaceShadow_WndProc Window procedure
 ' ========================================================================================
 function frmFindReplaceShadow_WndProc( _
-        byval hwnd   as HWND, _
-        byval uMsg   as UINT, _
-        byval wParam as WPARAM, _
-        byval lParam as LPARAM _
-        ) as LRESULT
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
         
     select case uMsg
         case WM_DESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-            if pWindow = 0 then delete pWindow
+            if pWindow then delete(pWindow)
             HWND_FRMFINDREPLACE_SHADOW = 0
     end select      
 
@@ -788,13 +788,14 @@ end function
 ' frmFindReplace Window procedure
 ' ========================================================================================
 function frmFindReplace_WndProc( _
-        byval hwnd   as HWND, _
-        byval uMsg   as UINT, _
-        byval wParam as WPARAM, _
-        byval lParam as LPARAM _
-        ) as LRESULT
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
     
     static hTooltip as HWND
+    if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
     
     select case uMsg
         HANDLE_MSG (hwnd, WM_CLOSE,    frmFindReplace_OnClose)
@@ -816,15 +817,12 @@ function frmFindReplace_WndProc( _
         tme.dwHoverTime = 400    ' system default is 400ms
         TrackMouseEvent(@tme) 
 
-        if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )
         AfxRedrawWindow(hwnd)
-
 
     case WM_MOUSELEAVE
         AfxDeleteTooltip( hTooltip, hwnd )
         hTooltip = 0
         AfxRedrawWindow( hwnd )
-
 
     case WM_MOUSEHOVER
         dim as CWSTR wszTooltip = ""
@@ -926,13 +924,13 @@ end function
 ' frmFindReplace_RichEdit_SubclassProc Window procedure
 ' ========================================================================================
 Function frmFindReplace_RichEdit_SubclassProc ( _
-        byval hWin   as HWND, _                 ' // Control window handle
-        byval uMsg   as UINT, _                 ' // Type of message
-        byval _wParam as WPARAM, _               ' // First message parameter
-        byval _lParam as LPARAM, _               ' // Second message parameter
-        byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
-        byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
-        ) as LRESULT
+            byval hWin   as HWND, _                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval _wParam as WPARAM, _               ' // First message parameter
+            byval _lParam as LPARAM, _               ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(hWin)
 
@@ -953,10 +951,11 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
                 ' no caret litter left on the screen after tabbing away.
                 dim as LRESULT result = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
 
+                SaveDC(hdc)
+                
                 ' Get the font and margin so the cue banner text has a
                 ' consistent appearance and placement with existing text.
-                dim as HFONT font = ghStatusBar.hFontStatusBar 
-                dim as Rect editRect: SendMessage( hWin, EM_GETRECT, 0, cast(LPARAM, @editRect) )
+                dim as RECT editRect: SendMessage( hWin, EM_GETRECT, 0, cast(LPARAM, @editRect) )
 
                 ' Ideally we would call Edit_GetCueBannerText, but since that message
                 ' returns nothing when ES_MULTILINE, use a window property instead.
@@ -967,15 +966,14 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
                     cueBannerText = L(173,"Replace")
                 end if
 
-                dim as HFONT previousFont = SelectFont(hdc, font)
-                SetTextColor( hDC, ghFindReplace.CueBannerForeColor )
+                SelectObject( hdc, ghStatusBar.hFontStatusBar )
+                SetTextColor( hdc, ghFindReplace.CueBannerForeColor )
                 SetBkMode(hdc, TRANSPARENT)
                 dim as long wsStyle = DT_TOP or DT_LEFT or DT_NOPREFIX or DT_NOCLIP
                 DrawText(hdc, cueBannerText, -1, @editRect, wsStyle)
-                SelectFont(hdc, previousFont)
 
-                RestoreDC( hDC, -1 )
-                ReleaseDC(hWin, hdc)
+                RestoreDC( hdc, -1 )
+                ReleaseDC( hWin, hdc )
 
                 ' Return the EDIT's result (could probably safely just return zero here,
                 ' but seems safer to relay whatever value came from the edit).
@@ -1022,12 +1020,9 @@ end function
 ' frmFindReplace_Show
 ' ========================================================================================
 function frmFindReplace_Show( _
-        byval hWndParent as HWND, _
-        byval fShowReplace as boolean _
-        ) as LRESULT
-
-    '  Create the main window and child controls
-    dim pWindow as CWindow ptr = new CWindow
+            byval hWndParent as HWND, _
+            byval fShowReplace as boolean _
+            ) as LRESULT
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
@@ -1042,6 +1037,9 @@ function frmFindReplace_Show( _
         gFind.nMatchCase = false
         gFind.nWholeWord = false
         gFind.nSelection = false
+
+        '  Create the main window and child controls
+        dim pWindow as CWindow ptr = new CWindow
 
         HWND_FRMFINDREPLACE = _
         pWindow->Create(hWndParent, "FINDREPLACE", @frmFindReplace_WndProc, 0, 0, 0, 0, _
@@ -1086,7 +1084,6 @@ function frmFindReplace_Show( _
         
         ' create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
         pWindow = New CWindow
-        pWindow->DPI = AfxCWindowPtr(HWND_FRMMAIN)->DPI
         HWND_FRMFINDREPLACE_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
             @frmFindReplaceShadow_WndProc, 0, 0, 0, 0, _
             WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED )
@@ -1108,6 +1105,10 @@ function frmFindReplace_Show( _
     ' Place the window the width of 2 scrollbars from the right of the main window.
     dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
                                 HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
+
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMFINDREPLACE )
+    if pWindow = 0 then exit function
+
     dim as RECT rc = AfxGetWindowRect( hCtrl )
     SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, 0, _
                     rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - _

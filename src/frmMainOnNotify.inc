@@ -11,11 +11,10 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
-#include once "frmMainOnNotify.bi"
-
 #include once "clsApp.bi"
 #include once "clsDocument.bi"
 #include once "frmMain.bi"
+#include once "frmMainOnNotify.bi"
 
 
 ' ========================================================================================
@@ -400,7 +399,7 @@ function Scintilla_OnNotify( _
             ' a huge slowdown when notifications sent for UI updates.
             
             if (pNSC->modificationType and SC_MOD_INSERTTEXT) orelse _
-            (pNSC->modificationType and SC_MOD_DELETETEXT) then
+                    (pNSC->modificationType and SC_MOD_DELETETEXT) then
 
                 ' Set parsing flag to true. We use a parse flag rather than depending on the dirty
                 ' flags because the file could stay dirty for a long time before it gets saved and 

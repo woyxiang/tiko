@@ -153,8 +153,10 @@ function getTextWidth( _
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     
     dim as HDC hDC = GetDC(hwnd)
-    if _hFont then selectObject(hDC, _hFont)
+    SaveDC(hDC)
+    if _hFont then SelectObject(hDC, _hFont)
     GetTextExtentpoint32( hDC, @wszText, len(wszText), @size )  'get text size
+    RestoreDC(hDC, -1)
     ReleaseDC hwnd, hDC
     
     function = pWindow->UnScaleX(size.cx) + pWindow->ScaleX(nPadding)  ' add enough padding
@@ -167,7 +169,7 @@ end function
 function isMouseOverWindow( byval hChild as HWND ) as boolean
     dim as point pt
     GetCursorPos( @pt )
-    if WindowFrompoint( pt ) = hChild then return true
+    if WindowFromPoint( pt ) = hChild then return true
 end function
 
 ' ========================================================================================

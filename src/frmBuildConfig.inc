@@ -42,7 +42,7 @@ dim shared gBuildOptions(...) as CWSTR => _
 ' ========================================================================================
 ' Load all of the build descriptions into the listbox
 ' ========================================================================================
-private function frmBuildConfig_LoadBuildListBox( byval hParent as HWND ) as Long
+function frmBuildConfig_LoadBuildListBox( byval hParent as HWND ) as Long
     dim hList1 as HWND = GetDlgItem(hParent, IDC_FRMBUILDCONFIG_LIST1)
 
     ListBox_ResetContent(hList1)
@@ -57,7 +57,7 @@ end function
 ' ========================================================================================
 ' Determine the current active build index
 ' ========================================================================================
-public function frmBuildConfig_getActiveBuildIndex() as long
+function frmBuildConfig_getActiveBuildIndex() as long
     ' determine the default build in case no other build overrides it
     dim as long nDefault
     for i as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
@@ -88,7 +88,7 @@ end function
 ' ========================================================================================
 ' Return the string description of the currently selected build configuration
 ' ========================================================================================
-public function frmBuildConfig_GetSelectedBuildDescription() as CWSTR
+function frmBuildConfig_GetSelectedBuildDescription() as CWSTR
     dim as long nCurSel = frmBuildConfig_getActiveBuildIndex()
     if nCurSel > -1 then
         function = gConfig.Builds(nCurSel).wszDescription
@@ -99,7 +99,7 @@ end function
 ' ========================================================================================
 ' Return the string GUID of the currently selected build configuration
 ' ========================================================================================
-public function frmBuildConfig_GetSelectedBuildGUID() as string
+function frmBuildConfig_GetSelectedBuildGUID() as string
     dim as long nCurSel = frmBuildConfig_getActiveBuildIndex()
     if nCurSel > -1 then
         function = gConfig.Builds(nCurSel).Id
@@ -110,7 +110,7 @@ end function
 ' ========================================================================================
 ' Return the string GUID of the default (if any) build configuration
 ' ========================================================================================
-private function frmBuildConfig_GetDefaultBuildGUID() as string
+function frmBuildConfig_GetDefaultBuildGUID() as string
     for i as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
         if gConfig.Builds(i).IsDefault then 
             return gConfig.Builds(i).Id
@@ -123,9 +123,10 @@ end function
 ' ========================================================================================
 ' Swap two entries in the build Listbox
 ' ========================================================================================
-private function frmBuildConfig_SwapListBoxItems( byval Item1 as long, _
-                                                    byval Item2 as long _
-                                                    ) as Long
+function frmBuildConfig_SwapListBoxItems( _
+            byval Item1 as long, _
+            byval Item2 as long _
+            ) as long
     dim as hwnd hList1 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LIST1)
     
     ' Swap the array values
@@ -141,7 +142,7 @@ end function
 ' ========================================================================================
 ' Set the build description and compiler options depending on what listbox entry is selected
 ' ========================================================================================
-private function frmBuildConfig_SetBuildConfigTextboxes() as long
+function frmBuildConfig_SetBuildConfigTextboxes() as long
     dim as HWND hList1 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LIST1)
     dim as HWND hList2 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS)
     dim as HWND hCheck = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKISDEFAULT)
@@ -193,12 +194,15 @@ end function
 ' ========================================================================================
 ' Process WM_MEASUREITEM message for window/dialog: frmBuildConfig
 ' ========================================================================================
-private Function frmBuildConfig_OnMeasureItem( byval hwnd as HWND, _
-                                                byval lpmis as MEASUREITEMSTRUCT ptr _
-                                                ) as long
+function frmBuildConfig_OnMeasureItem( _
+            byval hwnd as HWND, _
+            byval lpmis as MEASUREITEMSTRUCT ptr _
+            ) as long
     ' Set the height of the List box items. 
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    lpmis->itemHeight = pWindow->ScaleY(FRMBUILDCONFIG_LISTBOX_LINEHEIGHT)
+    if pWindow then 
+        lpmis->itemHeight = pWindow->ScaleY(FRMBUILDCONFIG_LISTBOX_LINEHEIGHT)
+    end if
     function = 0
 end function
 
@@ -206,9 +210,10 @@ end function
 ' ========================================================================================
 ' Process WM_DRAWITEM message for window/dialog: frmBuildConfig
 ' ========================================================================================
-private Function frmBuildConfig_OnDrawItem( byval hwnd as HWND, _
-                                            byval lpdis as const DRAWITEMSTRUCT ptr _
-                                            ) as long
+function frmBuildConfig_OnDrawItem( _
+            byval hwnd as HWND, _
+            byval lpdis as const DRAWITEMSTRUCT ptr _
+            ) as long
 
     dim memDC as HDC                 ' Double buffering
     dim hbit  as HBITMAP             ' Double buffering
@@ -226,9 +231,6 @@ private Function frmBuildConfig_OnDrawItem( byval hwnd as HWND, _
     
     select case lpdis->itemAction
         case ODA_DRAWENTIRE, ODA_SELECT
-
-            SaveDC(lpdis->hDC)
-
             if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
                 wszText = gConfig.BuildsTemp(lpdis->itemID).wszDescription
                 hCheckBox = 0
@@ -249,8 +251,10 @@ private Function frmBuildConfig_OnDrawItem( byval hwnd as HWND, _
             
             memDC = CreateCompatibleDC( lpdis->hDC )
             hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
+
+            SaveDC(memDC)
                                             
-            if hbit then hbit = SelectObject( memDC, hbit )
+            if hbit then SelectObject( memDC, hbit )
 
             ' Create our rect that works with the entire line
             SetRect(@rc, 0, 0, nWidth, nHeight)
@@ -297,13 +301,11 @@ private Function frmBuildConfig_OnDrawItem( byval hwnd as HWND, _
             BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, nWidth, nHeight, memDC, 0, 0, SRCCOPY 
 
             ' Cleanup
-            if hbit  then DeleteObject SelectObject(memDC, hbit)
-            if memDC then DeleteDC memDC
-    
-            RestoreDC(lpdis->hDC, -1)
+            RestoreDC(memDC, -1)
+            if hbit  then DeleteObject(hbit)
+            if memDC then DeleteDC(memDC)
 
-
-            function = true : exit function
+            return true
     
     end select
 
@@ -314,9 +316,10 @@ end function
 ' ========================================================================================
 ' Processes messages for the subclassed ListBox window.
 ' ========================================================================================
-private function frmBuildConfig_ProcessListboxClick( byval hwnd as HWND, _
-                                                        byval nCurSel as long _
-                                                        ) as long
+function frmBuildConfig_ProcessListboxClick( _
+            byval hwnd as HWND, _
+            byval nCurSel as long _
+            ) as long
     if nCurSel = -1 then exit function
     
     ' Get the action text for this listbox item. If it exists in the Options
@@ -339,14 +342,14 @@ end function
 ' ========================================================================================
 ' Processes messages for the subclassed ListBox window.
 ' ========================================================================================
-private Function frmBuildConfig_ListBox_SubclassProc ( _
-                            byval hwnd   as HWND, _                 ' // Control window handle
-                            byval uMsg   as UINT, _                 ' // Type of message
-                            byval wParam as WPARAM, _               ' // First message parameter
-                            byval lParam as LPARAM, _               ' // Second message parameter
-                            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
-                            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
-                            ) as LRESULT
+function frmBuildConfig_ListBox_SubclassProc ( _
+            byval hwnd   as HWND, _                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval wParam as WPARAM, _               ' // First message parameter
+            byval lParam as LPARAM, _               ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
 
     
     select case uMsg
@@ -357,11 +360,10 @@ private Function frmBuildConfig_ListBox_SubclassProc ( _
             ' reduce screen flicker.
             dim as RECT rc = GetListBoxEmptyClientArea( HWND, FRMBUILDCONFIG_LISTBOX_LINEHEIGHT )
             if rc.top < rc.bottom then
-            dim as HDC hDC = cast(HDC, wParam)
-            FillRect(hDC, @rc, GetSysColorBrush(COLOR_WINDOW))
+                dim as HDC hDC = cast(HDC, wParam)
+                FillRect(hDC, @rc, GetSysColorBrush(COLOR_WINDOW))
             end if
             return true
-            
             
         case WM_GETDLGCODE
             ' All keyboard input
@@ -415,9 +417,10 @@ End Function
 ' ========================================================================================
 ' Process WM_CREATE message for window/dialog: frmBuildConfig
 ' ========================================================================================
-private function frmBuildConfig_OnCreate( byval hwnd as HWND, _
-                                            byval lpCreateStructPtr as LPCREATESTRUCT _
-                                            ) as boolean
+function frmBuildConfig_OnCreate( _
+            byval hwnd as HWND, _
+            byval lpCreateStructPtr as LPCREATESTRUCT _
+            ) as boolean
 
     ' This is a modal popup window so disable the parent window
     DisableAllModeless()
@@ -433,11 +436,12 @@ end function
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmBuildConfig
 ' ========================================================================================
-private function frmBuildConfig_OnCommand( byval hwnd as HWND, _
-                                            byval id as Long, _
-                                            byval hwndCtl as HWND, _
-                                            byval codeNotify as UINT _
-                                            ) as LRESULT
+function frmBuildConfig_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as Long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify as UINT _
+            ) as LRESULT
 
     dim as HWND hList1 = GetDlgItem( hwnd, IDC_FRMBUILDCONFIG_LIST1)
     dim as long nCurSel = ListBox_GetCurSel(hList1)
@@ -619,8 +623,8 @@ private function frmBuildConfig_OnCommand( byval hwnd as HWND, _
             
         case IDCANCEL
             If codeNotify = BN_CLICKED then
-            SendMessage( hwnd, WM_CLOSE, 0, 0 )
-            exit function
+                SendMessage( hwnd, WM_CLOSE, 0, 0 )
+                exit function
             end if
     end select
 
@@ -631,7 +635,7 @@ end function
 ' ========================================================================================
 ' Process WM_CLOSE message for window/dialog: frmBuildConfig
 ' ========================================================================================
-private function frmBuildConfig_OnClose( byval hwnd as HWND ) as LRESULT
+function frmBuildConfig_OnClose( byval hwnd as HWND ) as LRESULT
     ' Enables parent window keeping parent's zorder
     EnableAllModeless()
     DestroyWindow( hwnd )
@@ -642,7 +646,8 @@ end function
 ' ========================================================================================
 ' Process WM_DESTROY message for window/dialog: frmBuildConfig
 ' ========================================================================================
-private function frmBuildConfig_OnDestroy( byval hwnd as HWND) as LRESULT
+function frmBuildConfig_OnDestroy( byval hwnd as HWND) as LRESULT
+    HWND_FRMBUILDCONFIG = 0
     PostQuitMessage(0)
     function = 0
 end function
@@ -651,11 +656,12 @@ end function
 ' ========================================================================================
 ' frmBuildConfig Window procedure
 ' ========================================================================================
-private function frmBuildConfig_WndProc( byval hwnd   as HWND, _
-                                            byval uMsg   as UINT, _
-                                            byval wParam as WPARAM, _
-                                            byval lParam as LPARAM _
-                                            ) as LRESULT
+function frmBuildConfig_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
 
     select case uMsg
         HANDLE_MSG (hwnd, WM_CREATE,      frmBuildConfig_OnCreate)
@@ -675,7 +681,7 @@ end function
 ' ========================================================================================
 ' frmBuildConfig_Show
 ' ========================================================================================
-public function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
+function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
 
     dim hBitmap as HBITMAP 
     dim hCtrl as HWND
@@ -683,13 +689,12 @@ public function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
-    pWindow->DPI = AfxCWindowOwnerPtr(hwndParent)->DPI
 
     dim as HWnd hForm = _
-    pWindow->Create(hWndParent, L(277,"Build Configurations"), _
-        @frmBuildConfig_WndProc, 0, 0, 0, 0, _
-        WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
+        pWindow->Create(hWndParent, L(277,"Build Configurations"), _
+            @frmBuildConfig_WndProc, 0, 0, 0, 0, _
+            WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+            WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->SetClientSize(622, 436)
     pWindow->Center(pWindow->hWindow, hWndParent)
 
@@ -788,7 +793,7 @@ public function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     function = pWindow->DoEvents(SW_SHOW)
     
     ' Delete the frmBuildConfig CWindow class manually allocated memory 
-    delete pWindow
+    if pWindow then delete(pWindow)
 
 end function
 

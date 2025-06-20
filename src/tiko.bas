@@ -165,7 +165,8 @@ function WinMain( _
     
     ' Load the Segoe Fluent Icons ttf file that is used for displaying the various
     ' icons used within the editor.
-    dim as CWSTR wszFontFile = AfxGetExePathName + "SegoeFluentIcons.ttf"
+    dim as CWSTR wszFontFile 
+    wszFontFile = AfxGetExePathName + "SegoeFluentIcons.ttf"
     if AddFontResourceEx(wszFontFile.vptr, FR_PRIVATE, NULL) = 0 then
         MessageBox( 0, _
                     "Unable to load application font 'SegoeFluentIcons.ttf'. Aborting application." , _
@@ -226,7 +227,9 @@ function WinMain( _
     dylibfree(pLibScintilla)
     dylibfree(gpHelpLib)
     
-
+    ' Unload the font file
+    if len(wszFontFile) then RemoveFontResource(wszFontFile)
+    
     ' Uninitialize the COM library
     CoUninitialize
 

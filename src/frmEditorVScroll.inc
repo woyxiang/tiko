@@ -75,6 +75,7 @@ function frmEditorVScroll_WndProc( _
 
     select case uMsg
         case WM_DESTROY
+            'pWindow pointer destroyed after frmMain.
             if hwnd = HWND_FRMEDITOR_VSCROLLBAR(0) then HWND_FRMEDITOR_VSCROLLBAR(0) = 0
             if hwnd = HWND_FRMEDITOR_VSCROLLBAR(1) then HWND_FRMEDITOR_VSCROLLBAR(1) = 0
                 
@@ -166,8 +167,8 @@ function frmEditorVScroll_WndProc( _
             MoveToEx( hDC, rc.left, rc.top, null )
             LineTo( hDC, rc.left, rc.bottom )   
             FillRect( hDC, @gEditorVScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
-            EndPaint( hwnd, @ps )
             RestoreDC( hDC, -1 )
+            EndPaint( hwnd, @ps )
             DeletePen( hPenSolid )
 
     end Select

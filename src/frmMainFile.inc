@@ -17,7 +17,11 @@
 ' ========================================================================================
 ' Create a new editing window
 ' ========================================================================================
-function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisplayTab as boolean ) as clsDocument ptr
+function OnCommand_FileNew( _
+            byval hwnd as HWND, _
+            byval bShowAfterLastDisplayTab as boolean _
+            ) as clsDocument ptr
+    
     dim pDocNew as clsDocument ptr
     
     dim as boolean bShowInTab = true
@@ -34,7 +38,8 @@ function OnCommand_FileNew( byval hwnd as HWND, byval bShowAfterLastDisplayTab a
         ' Move the new file to the end of the tabs currently displayed. Basically,
         ' right before the "+" Add New file button. 
         LoadExplorerFiles()
-        dim as long idx = gTTabCtl.InsertTab( pDocNew, gTTabCtl.LastDisplayTab )  ' Add the new document to the top tabcontrol
+        ' Add the new document to the top tabcontrol
+        dim as long idx = gTTabCtl.InsertTab( pDocNew, gTTabCtl.LastDisplayTab )  
         frmTopTabs_PositionWindows()
         gTTabCtl.SetFocusTab(idx)
         frmMain_SetFocusToCurrentCodeWindow
@@ -407,9 +412,9 @@ end function
 ' Message received from Explorer popup menu
 ' ========================================================================================
 function OnCommand_FileExplorerMessage( _
-        byval id as long, _
-        byval pDoc as clsDocument ptr _
-        ) as LRESULT
+            byval id as long, _
+            byval pDoc as clsDocument ptr _
+            ) as LRESULT
     
     if id = IDM_FILEOPEN_EXPLORERLISTBOX then
         OpenSelectedDocument( pDoc->DiskFilename, "" )
