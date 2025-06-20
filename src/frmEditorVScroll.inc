@@ -170,7 +170,7 @@ function frmEditorVScroll_WndProc( _
             RestoreDC( hDC, -1 )
             EndPaint( hwnd, @ps )
             DeletePen( hPenSolid )
-
+            return 0
     end Select
 
     ' for messages that we don't deal with

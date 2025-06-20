@@ -170,7 +170,7 @@ function frmPanelVScroll_WndProc( _
             FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
             RestoreDC(hDC, -1)
             EndPaint hwnd, @ps
-            exit function
+            return 0
 
     end select
 

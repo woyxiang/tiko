@@ -21,8 +21,6 @@
 #Define IDC_FRMOUTPUT_TXTNOTES                      1005
 #Define IDC_FRMOUTPUT_BTNCLOSE                      1006
 
-#define OUTPUT_TABS_HEIGHT  40
-
 
 type OUTPUT_TABS
     wszText as CWSTR
@@ -42,4 +40,5 @@ declare function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) As LRESU
 declare function frmOutput_PositionWindows() as LRESULT
 declare function frmOutput_Show( byval hWndParent as HWND ) as LRESULT
 declare function frmOutput_ResetAllControls() as long 
+declare function frmOutput_ActivatePanelHeight() as long
 

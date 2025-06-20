@@ -315,10 +315,10 @@ function frmStatusBar_WndProc( _
         RestoreDC(memDC, -1)
         if hbit  then DeleteObject(hbit)
         if memDC then DeleteDC(memDC)
-        RestoreDC(hDC, -1)
 
         EndPaint hwnd, @ps
-    
+        return 0
+        
     end Select
     
     ' for messages that we don't deal with

@@ -1130,11 +1130,17 @@ function frmMain_OnClose( byval hwnd as HWND ) as LRESULT
     ' treeview, etc. Those tasks simply slow down the exiting of the program.
     gApp.IsShutdown = true
 
-    ' Save whether the Panel should be shown the next time the program is run.
+    ' Save whether the Side panel should be shown the next time the program is run.
     ' Also save the panel width. 
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     gConfig.ShowPanel = IsWindowVisible(HWND_FRMPANEL)
     gConfig.ShowPanelWidth = pWindow->UnScaleX(AfxGetWindowWidth( HWND_FRMPANEL ))
+
+    ' Save whether the Output panel should be shown the next time the program is run.
+    ' Also save the panel height. 
+    gConfig.ShowOutputPanel = IsWindowVisible(HWND_FRMOUTPUT)
+    gConfig.ShowOutputPanelHeight = pWindow->UnScaleX(AfxGetWindowHeight( HWND_FRMOUTPUT ))
+    gConfig.ShowOutputPanelIndex = gOutputTabsCurSel
     
     ' if a project is already open then save/close it.
     if gApp.IsProjectActive then 

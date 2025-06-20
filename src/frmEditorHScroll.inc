@@ -137,6 +137,7 @@ function frmEditorHScroll_WndProc( _
             
             RestoreDC( hDC, -1 )
             EndPaint( hwnd, @ps )
+            return 0
 
     end Select
 

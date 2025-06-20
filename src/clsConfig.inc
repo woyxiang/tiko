@@ -368,6 +368,9 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine "StartupMaximized="      & this.StartupMaximized     
     pStream.WriteLine "ShowPanel="             & this.ShowPanel
     pStream.WriteLine "ShowPanelWidth="        & this.ShowPanelWidth    
+    pStream.WriteLine "ShowOutputPanel="       & this.ShowOutputPanel
+    pStream.WriteLine "ShowOutputPanelHeight=" & this.ShowOutputPanelHeight
+    pStream.WriteLine "ShowOutputPanelIndex="  & gOutputTabsCurSel
     pStream.WriteLine ""
 
     ' for each folder location determine if it resides on the same drive as
@@ -753,6 +756,9 @@ function clsConfig.LoadConfigFile() as long
             case "StartupMaximized":       this.StartupMaximized      = nData
             case "ShowPanel":              this.ShowPanel             = nData
             case "ShowPanelWidth":         this.ShowPanelWidth        = nData
+            case "ShowOutputPanel":        this.ShowOutputPanel       = nData
+            case "ShowOutputPanelHeight":  this.ShowOutputPanelHeight = nData
+            case "ShowOutputPanelIndex":   gOutputTabsCurSel          = nData
             case "FBWINCompiler32":        this.FBWINCompiler32       = ProcessFromCurdriveApp(wData)
             case "FBWINCompiler64":        this.FBWINCompiler64       = ProcessFromCurdriveApp(wData)
             case "CompilerBuild":          this.CompilerBuild         = wData

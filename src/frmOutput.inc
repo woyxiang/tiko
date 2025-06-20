@@ -117,6 +117,7 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
     ' Show the search results
     gOutputTabsCurSel = 2 
     ShowWindow( HWND_FRMOUTPUT, SW_SHOW )
+    frmOutput_ActivatePanelHeight
     frmMain_PositionWindows
     frmOutput_PositionWindows
 
@@ -173,7 +174,7 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     end select
     
     SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )    
-    RedrawWindow( hCtrl, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+    AfxRedrawWindow( hCtrl )
             
     function = 0
 end function
@@ -190,7 +191,7 @@ function frmOutput_PositionWindows() as LRESULT
     dim as long nTop  = pWindow->ScaleY(2)
     dim as long nLeft = 0 
     dim as long nTabsHeight
-    dim as Rect rc: GetClientRect( HWND_FRMOUTPUT, @rc )
+    dim as RECT rc: GetClientRect( HWND_FRMOUTPUT, @rc )
     
     dim as HWND hTabs = GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TABS)
 
@@ -568,6 +569,22 @@ end function
 
 
 ' ========================================================================================
+' If the Output panel is "minimized" at only OUTPUT_TABS_HEIGHT then
+' we expand the height to 4x OUTPUT_TABS_HEIGHT.
+' ========================================================================================
+function frmOutput_ActivatePanelHeight() as long
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
+    if pWindow = 0 then exit function
+    dim as long nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
+    if AfxGetWindowHeight(HWND_FRMOUTPUT) <= nHeight then
+        AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight * 5)
+    end if
+    function = 0
+end function
+
+
+' ========================================================================================
 ' frmOutputTabs_SubclassProc 
 ' ========================================================================================
 function frmOutputTabs_SubclassProc ( _
@@ -637,6 +654,8 @@ function frmOutputTabs_SubclassProc ( _
             else
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
+                frmOutput_ActivatePanelHeight()
+                frmMain_PositionWindows()
                 gOutputTabsCurSel = idx
                 AfxRedrawWindow(hWin)   
                 frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
@@ -731,7 +750,7 @@ function frmOutputTabs_SubclassProc ( _
             if hPenNull then DeleteObject( hPenNull )
             
             EndPaint( hWin, @ps )
-            exit function
+            return 0
 
         
         case WM_DESTROY
@@ -879,8 +898,13 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     '  This pointer destroyed at end of frmMain ends before application ends.
     dim pWindow as CWindow ptr = new CWindow
 
-    HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, 180, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+    ' Only make the Output panel initially visible if it was already visible
+    ' when the most previous instance of the program closed. Also, set the height of
+    ' the window to the last used visible height.
+    dim as long nHeight = iif(gConfig.ShowOutputPanel, gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
+    
+    HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, nHeight, _
+        WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->ClassStyle = CS_DBLCLKS
     

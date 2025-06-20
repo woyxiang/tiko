@@ -103,6 +103,9 @@ type clsConfig
         CompactMenus              as long = false
         ShowPanel                 as long = true
         ShowPanelWidth            as long = 250
+        ShowOutputPanel           as long = true
+        ShowOutputPanelHeight     as long = OUTPUT_TABS_HEIGHT
+        ShowOutputPanelIndex      as long = 0      ' gOutputTabsCurSel (default: Compiler Results)
         SyntaxHighlighting        as long = true
         Codetips                  as long = true
         AutoComplete              as long = true

@@ -263,7 +263,8 @@ Examples:
 '#RESOURCE "filename.rc"
 '#CONSOLE ON
 '#CONSOLE OFF
-'#LINKMODULES "module1.bas" "module2.bas"    
+'#LINKMODULES "module1.bas" "module2.bas"
+'TODO: This is sample text for something that I need to do.    
 
 #RESOURCE <filename>
 Specify the filename of a resource file that will be compiled along with the
@@ -285,6 +286,14 @@ have multiple #LINKMODULE directives in a source file which is useful because
 the number of filenames on a line can become quite long especially if the 
 filename includes a full path specification.
 
+'TODO: <text>
+Multiple TODO directives can be placed throughout your source as placeholders
+for reminders of things you need to work on. The editor scans your source
+code for these TODO reminders and places them in a list in the TODO tab of the
+Output window. Viewing that list of TODO's allows you to click on each of them
+and the editor will automatically navigate to and show you the code in the
+editor window.
+  
 
 - END OF HELP FILE -
 
