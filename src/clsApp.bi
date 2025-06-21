@@ -15,7 +15,6 @@
 
 type clsApp
     private: 
-        m_arrQuickRun(any) as wstring * MAX_PATH
         
     public:
         pDocList                   as clsDocument ptr   ' Single linked list of loaded files
@@ -55,8 +54,6 @@ type clsApp
         ProjectManifest            as long              ' T/F create a generic resource and manifest file
 
         declare function IsValidDocumentPointer( byval pDocSearch as clsDocument ptr ) as boolean
-        declare function AddQuickRunEXE( byref sFilename as wstring ) as long
-        declare function CheckQuickRunEXE() as long
         declare function RemoveAllSelectionAttributes() as long
         Declare function AddNewDocument() as clsDocument ptr 
         Declare function RemoveDocument( byval pDoc as clsDocument ptr ) as long

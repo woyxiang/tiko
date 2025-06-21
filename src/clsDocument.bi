@@ -88,6 +88,7 @@ type clsDocument
     
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
+    QuickRunDiskFilename  as wstring * MAX_PATH
     DiskFilename          as wstring * MAX_PATH
     AutoSaveFilename      as wstring * MAX_PATH    ' #filename#
     AutoSaveRequired      as boolean

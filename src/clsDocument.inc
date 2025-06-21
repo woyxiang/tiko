@@ -28,6 +28,10 @@ destructor clsDocument
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
         DestroyWindow this.hWindow(i)
     next
+    
+    ' If a QuickRun filename exists for this document then delete
+    ' that temporary disk file now.
+    AfxDeleteFile(this.QuickRunDiskFilename)
 
     ' Repaint the main area because we don't want any splitter to show
     AfxRedrawWindow(HWND_FRMMAIN)

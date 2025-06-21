@@ -360,43 +360,5 @@ function clsApp.GetDocumentPtrByWindow( byval hWindow as hwnd) as clsDocument pt
     function = 0
 end function
 
-''
-''
-function clsApp.AddQuickRunEXE( byref wszFilename as wstring ) as long
-    dim as long nFoundAt = -1
-    if len(wszFilename) = 0 then exit function
-    
-    ' Scan array for an empty slot
-    for i as long = lbound(m_arrQuickRun) to ubound(m_arrQuickRun)
-        if len(m_arrQuickRun(i)) = 0 then
-            m_arrQuickRun(i) = wszFilename
-            exit function
-        end if
-    NEXT
-    if nFoundAt = -1 then
-        redim preserve m_arrQuickRun(ubound(m_arrQuickRun) + 1)
-        m_arrQuickRun(ubound(m_arrQuickRun)) = wszFilename
-    end if      
-
-    function = 0
-end function
-
-
-''
-''
-function clsApp.CheckQuickRunEXE() as long
-    ' Scan all array items to see if can be deleted
-    for i as long = lbound(m_arrQuickRun) to ubound(m_arrQuickRun)
-        if len(m_arrQuickRun(i)) then
-            if AfxFileExists(m_arrQuickRun(i)) then 
-                AfxDeleteFile(m_arrQuickRun(i))
-            else
-                m_arrQuickRun(i) = ""
-            end if   
-        end if
-    NEXT
-
-    function = 0
-end function
 
 

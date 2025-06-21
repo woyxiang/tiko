@@ -202,16 +202,6 @@ function RunEXE( _
     end with
     ShellExecuteEx(@ShExecInfo)
 
-    ' if this was a QuickRun then add the filename to the global tracking array
-    ' that checks if the file exists and then deletes it.
-    if gCompile.CompileID = IDM_QUICKRUN then
-        ' Give time for the application to start to run (especially if being run via
-        ' the RunViaCommandWindow batch file, otherwise the exe will be deleted even
-        ' before it gets a chance to execute.
-        sleep 500
-        gApp.AddQuickRunEXE(wszQuickRunExe)
-    end if
-    
     function = 0
 end function
 

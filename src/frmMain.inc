@@ -994,6 +994,10 @@ function frmMain_OnActivateApp( _
         pDoc = gApp.pDocList
         do until pDoc = 0
             pDocNext = pDoc->pDocNext
+            
+            if pDoc->IsNewFlag then
+                pDoc = pDocNext: continue do
+            end if
 
             if AfxFileExists(pDoc->DiskFilename) = false then
                 ' Ensure that the file is open and displayed
@@ -1674,9 +1678,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
             ' Handle ENTER key for active FindReplace dialog
             if handleKeysFindReplace(uMsg) then continue do
             
-            ' Check for any QuickRun exes that can be deleted.
-            gApp.CheckQuickRunExe()
-                
             ' Check if the settings.ini file was changed by an external program.
             ' Reload the config file in case a user has automated a change to it since
             ' the application started (for example, changing the compiler path).

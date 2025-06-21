@@ -160,7 +160,7 @@ function code_Compile( byval wID as long ) as boolean
 
         dim as long f = freefile
         if open (gCompile.MainFilename for output as #f) = 0 then
-            print #f, UnicodeToUtf8(wszText)
+            print #f, wszText
             close #f
         end if
 
@@ -405,15 +405,10 @@ function code_Compile( byval wID as long ) as boolean
     gCompile.SystemTime = AfxSystemSystemTime 
 
     ' if this was a QuickRun then delete the temporary code file that was created.
-    ' Both the temporary disk file and (if applicable) the VD MAIN CODEGEN file.
     if wID = IDM_QUICKRUN then 
         AfxDeleteFile( gCompile.MainFilename )
-        AfxDeleteFile( wszTempMainFilename )
     end if    
     
-    ' Add any temp resource file to the list of temp files to later be deleted.
-    gApp.AddQuickRunEXE(gCompile.TempResourceFile)
-        
     if ParseLogForError(sConsoleText, true, wID, fCompile64, false) = true then 
         ' Error was found. Editor has now been set to the error position. Nothing
         ' more we can do now but exit out. 
@@ -431,6 +426,14 @@ function code_Compile( byval wID as long ) as boolean
             gCompile.OutputFilename = AfxStrReplace( gCompile.OutputFilename, "/", "\" )
             if AfxPathIsRelative( gCompile.OutputFilename ) then 
                 gCompile.OutputFilename = AfxPathCombine( gCompile.MainFolder, gCompile.OutputFilename )
+            end if
+
+            if wID = IDM_QUICKRUN then 
+                dim pDocMain as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+                if pDocMain then
+                    AfxDeleteFile(pDocMain->QuickRunDiskFilename)   ' delete any already existing file
+                    pDocMain->QuickRunDiskFilename = gCompile.OutputFilename  ' set with new temp filename
+                end if
             end if
 
             RunEXE( _

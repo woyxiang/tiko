@@ -1346,6 +1346,7 @@ function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
         CloseHandle hSnapShot
     end if
 
+    return false
 end function
 
 
