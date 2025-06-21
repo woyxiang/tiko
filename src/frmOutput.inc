@@ -629,6 +629,7 @@ function frmOutputTabs_SubclassProc ( _
             tme.cbSize = sizeof(TrackMouseEvent)
             tme.dwFlags = TME_HOVER or TME_LEAVE
             tme.hwndTrack = hWin
+            tme.dwHoverTime = 20    ' HOVER_DEFAULT is 500
             TrackMouseEvent(@tme) 
 
             if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hWin, "", false, false )

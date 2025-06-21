@@ -817,7 +817,7 @@ function frmFindReplace_WndProc( _
         tme.cbSize = sizeof(TrackMouseEvent)
         tme.dwFlags = TME_HOVER or TME_LEAVE
         tme.hwndTrack = hwnd
-        tme.dwHoverTime = 400    ' system default is 400ms
+        tme.dwHoverTime = 20    ' system default is 400ms
         TrackMouseEvent(@tme) 
 
         if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )

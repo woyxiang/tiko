@@ -189,6 +189,7 @@ function frmStatusBar_WndProc( _
         tme.cbSize = sizeof(TrackMouseEvent)
         tme.dwFlags = TME_HOVER or TME_LEAVE
         tme.hwndTrack = hwnd
+        tme.dwHoverTime = 20    ' HOVER_DEFAULT is 500
         TrackMouseEvent(@tme) 
 
         if IsWindow(hTooltip) = 0 then hTooltip = AfxAddTooltip( hwnd, "", false, false )

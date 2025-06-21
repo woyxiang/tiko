@@ -234,6 +234,7 @@ function frmPanelMenu_WndProc( _
         dim tme as TrackMouseEvent
         tme.cbSize = sizeof(TrackMouseEvent)
         tme.dwFlags = TME_HOVER or TME_LEAVE
+        tme.dwHoverTime = 20    ' HOVER_DEFAULT is 500
         tme.hwndTrack = hwnd
         TrackMouseEvent(@tme) 
         
