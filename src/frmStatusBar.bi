@@ -16,15 +16,25 @@
 
 enum STATUSBAR_IDPANEL
     GOTO_PANEL           = 0
-    CRLF_PANEL           = 7
-    UTF_PANEL            = 6
-    SPACES_PANEL         = 5
-    FILETYPE_PANEL       = 4
-    BUILD_POPUP_PANEL    = 3
-    BUILD_DIALOG_PANEL   = 2
+    CRLF_PANEL           = 8
+    UTF_PANEL            = 7
+    SPACES_PANEL         = 6
+    FILETYPE_PANEL       = 5
+    BUILD_POPUP_PANEL    = 4
+    BUILD_DIALOG_PANEL   = 3
+    THEMES_DIALOG_PANEL  = 2
     COMPILE_STATUS_PANEL = 1
 end enum
 
+' type and array to hold values related to the statusbar panels
+type STATUSBAR_PANEL_TYPE
+    wszText as CWSTR
+    rc      as RECT            ' client coordinates 
+    nID     as long            ' id to invoke if clicked on
+    isHot   as boolean
+end type
+dim shared gSBPanels(8) as STATUSBAR_PANEL_TYPE 
+dim shared grcGripper as RECT  
 
 declare function frmStatusBar_Show( byval hwndParent as HWND ) as LRESULT
 

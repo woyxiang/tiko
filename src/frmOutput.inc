@@ -451,13 +451,14 @@ function frmOutput_OnMouseMove( _
     rc.Bottom = rc.Top + pWindow->ScaleY(3)
     GetCursorPos(@pt)
     if PtInRect( @rc, pt ) then
-        if WindowFrompoint(pt) = HWND_FRMOUTPUT then
+        if WindowFromPoint(pt) = HWND_FRMOUTPUT then
             SetCursor( ghCursorSizeNS )
         end if
     end if
     
     if gApp.bDragActive then
         if gApp.hwndPanel = HWND_FRMOUTPUT then
+            gConfig.ShowOutputPanelMinimized = 0
             GetCursorPos(@pt)
             GetWindowRect( HWND_FRMOUTPUT, @rc )
             dim as long nHeight 
@@ -516,7 +517,7 @@ function frmOutput_OnLButtonDown( _
     if PtInRect( @rc, pt ) then
         if WindowFrompoint(pt) = HWND_FRMOUTPUT then
             SetCursor( ghCursorSizeNS )
-            gApp.bDragActive = True 
+            gApp.bDragActive = true 
             gApp.hwndPanel   = HWND_FRMOUTPUT
             SetCapture( HWND_FRMOUTPUT )
         end if
@@ -539,6 +540,7 @@ function frmOutput_OnLButtonUp( _
 
     ' HITTEST (PANELS TOP/BOTTOM SPLITTER)
     if gApp.bDragActive then
+        gConfig.ShowOutputPanelHeight = AfxGetWindowHeight(hwnd)
         gApp.bDragActive = False 
         gApp.hwndPanel = 0
         ReleaseCapture()
@@ -575,11 +577,21 @@ end function
 function frmOutput_ActivatePanelHeight() as long
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
     if pWindow = 0 then exit function
-    dim as long nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+
+    dim as long nHeight
     dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
-    if AfxGetWindowHeight(HWND_FRMOUTPUT) <= nHeight then
-        AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight * 5)
+
+    if gConfig.ShowOutputPanelMinimized then
+        nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    else
+        if gConfig.ShowOutputPanelHeight <= pWindow->ScaleY(OUTPUT_TABS_HEIGHT) then
+            gConfig.ShowOutputPanelHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
+        end if
+        nHeight = gConfig.ShowOutputPanelHeight
     end if
+    
+    AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight)
+    
     function = 0
 end function
 
@@ -654,6 +666,24 @@ function frmOutputTabs_SubclassProc ( _
             else
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
+                frmOutput_ActivatePanelHeight()
+                frmMain_PositionWindows()
+                gOutputTabsCurSel = idx
+                AfxRedrawWindow(hWin)   
+                frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
+            end if
+
+        case WM_LBUTTONDBLCLK
+            ' Toggle the Output window between "minimized" state and the height
+            ' that the user has manually resized the window to.
+            if isMouseOverRECT( hWin, gOutputCloseRect ) = false then
+                dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
+                if idx = -1 then exit function
+                if gConfig.ShowOutputPanelMinimized = 1 then
+                    gConfig.ShowOutputPanelMinimized = 0
+                else    
+                    gConfig.ShowOutputPanelMinimized = 1
+                end if
                 frmOutput_ActivatePanelHeight()
                 frmMain_PositionWindows()
                 gOutputTabsCurSel = idx
@@ -827,11 +857,11 @@ function frmOutput_WndProc( _
             ) as LRESULT
 
     select case uMsg
-        HANDLE_MSG (hwnd, WM_COMMAND,     frmOutput_OnCommand)
-        HANDLE_MSG (hwnd, WM_SIZE,        frmOutput_OnSize)
-        HANDLE_MSG (hwnd, WM_LBUTTONUP,   frmOutput_OnLButtonUp)
-        HANDLE_MSG (hwnd, WM_LBUTTONDOWN, frmOutput_OnLButtonDown)
-        HANDLE_MSG (hwnd, WM_MOUSEMOVE,   frmOutput_OnMouseMove)
+        HANDLE_MSG (hwnd, WM_COMMAND,       frmOutput_OnCommand)
+        HANDLE_MSG (hwnd, WM_SIZE,          frmOutput_OnSize)
+        HANDLE_MSG (hwnd, WM_LBUTTONUP,     frmOutput_OnLButtonUp)
+        HANDLE_MSG (hwnd, WM_LBUTTONDOWN,   frmOutput_OnLButtonDown)
+        HANDLE_MSG (hwnd, WM_MOUSEMOVE,     frmOutput_OnMouseMove)
     
     case WM_ERASEBKGND
         return true
@@ -901,7 +931,8 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     ' Only make the Output panel initially visible if it was already visible
     ' when the most previous instance of the program closed. Also, set the height of
     ' the window to the last used visible height.
-    dim as long nHeight = iif(gConfig.ShowOutputPanel, gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
+    dim as long nHeight = _
+        iif(gConfig.ShowOutputPanel, gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
     
     HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, nHeight, _
         WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
@@ -990,6 +1021,10 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
         ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
 
+    ' Need to scale up the user defined panel height because it is save to the config
+    ' file in unscaled value.
+    gConfig.ShowOutputPanelHeight = pWindow->ScaleY(gConfig.ShowOutputPanelHeight)
+    frmOutput_ActivatePanelHeight
     frmOutput_SetControlColors
     frmOutput_PositionWindows
     

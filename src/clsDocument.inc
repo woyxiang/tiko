@@ -1486,12 +1486,12 @@ function clsDocument.ApplyProperties() as long
 
             ' Set FreeBASIC Keywords
             if len(gConfig.FBKeywords) then
-            SciMsg( m_pSci(i), SCI_SETKEYWORDS, 0, cast(LPARAM, strptr(gConfig.FBKeywords)) )
+                SciMsg( m_pSci(i), SCI_SETKEYWORDS, 0, cast(LPARAM, strptr(gConfig.FBKeywords)) )
             end if
 
             ' Set Windows Api Keywords
             if len(gConfig.WinApiKeywords) then
-            SciMsg( m_pSci(i), SCI_SETKEYWORDS, 1, cast(LPARAM, strptr(gConfig.WinApiKeywords)) )
+                SciMsg( m_pSci(i), SCI_SETKEYWORDS, 1, cast(LPARAM, strptr(gConfig.WinApiKeywords)) )
             end if
             
             if gConfig.SyntaxHighlighting then

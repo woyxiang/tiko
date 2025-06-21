@@ -107,6 +107,15 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).nID       = IDM_BUILDCONFIG
     nRight = gSBPanels(i).rc.left - nSpacer
 
+    i = THEMES_DIALOG_PANEL  ' Themes/Colors dialog
+    gSBPanels(i).rc.Left   = nRight - _
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+    gSBPanels(i).rc.top    = rc.top
+    gSBPanels(i).rc.right  = nRight
+    gSBPanels(i).rc.bottom = rc.bottom
+    gSBPanels(i).nID       = IDM_THEMES
+    nRight = gSBPanels(i).rc.left - nSpacer
+
     '''' THE MESSAGES PANEL FILLS THE REMAINING AVAILABLE SPACE ''''
     i = COMPILE_STATUS_PANEL  ' Compile status and error messages
     gSBPanels(i).rc.Left   = gSBPanels(0).rc.right
@@ -245,11 +254,18 @@ function frmStatusBar_WndProc( _
         next   
 
     case WM_MOUSEHOVER
-        dim as point pt: GetCursorPos( @pt )
-        MapWindowpoints( HWND_DESKTOP, hwnd, cast( point ptr, @pt ), 1 )
-        if PtInRect( @gSBPanels(BUILD_DIALOG_PANEL).rc, pt ) then 
+        if IsMouseOverRECT(hwnd,  gSBPanels(BUILD_DIALOG_PANEL).rc ) then 
             dim as CWSTR wszTooltip = L(277,"Build Configurations") & "..."
-            ' Display the tooltip
+            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+            AfxRedrawWindow( hwnd )
+        end if
+        if IsMouseOverRECT(hwnd,  gSBPanels(THEMES_DIALOG_PANEL).rc ) then 
+            dim as CWSTR wszTooltip = L(111,"Themes and Fonts")
+            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+            AfxRedrawWindow( hwnd )
+        end if
+        if IsMouseOverRECT(hwnd,  gSBPanels(COMPILE_STATUS_PANEL).rc ) then 
+            dim as CWSTR wszTooltip = L(251,"View Output Window")
             AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
             AfxRedrawWindow( hwnd )
         end if
@@ -282,7 +298,12 @@ function frmStatusBar_WndProc( _
         
         ' paint the panels
         for i as long = lbound(gSBPanels) to ubound(gSBPanels)
-            SelectObject(memDC, ghStatusBar.hFontStatusBar)
+            if (i = BUILD_DIALOG_PANEL) orelse (i = THEMES_DIALOG_PANEL) then
+                SelectObject(memDC, ghMenuBar.hFontSymbol)
+            else
+                SelectObject(memDC, ghStatusBar.hFontStatusBar)
+            end if
+
             SetBkColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.BackColorHot, ghStatusBar.BackColor) )   
             SetTextColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.ForeColorHot, ghStatusBar.ForeColor) )
             FillRect( memDC, @gSBPanels(i).rc, iif( gSBPanels(i).isHot, ghStatusBar.hBackBrushHot, ghStatusBar.hBackBrush) )

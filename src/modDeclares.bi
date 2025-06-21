@@ -49,7 +49,7 @@ enum
     IDM_LOADSESSION, IDM_SAVESESSION, IDM_CLOSESESSION
     IDM_MRU, IDM_MRUFILES, IDM_MRUSESSION, IDM_MRUSESSIONFILES
     IDM_OPENINCLUDE, IDM_KEYBOARDSHORTCUTS 
-    IDM_OPTIONS, IDM_OPTIONSDIALOG, IDM_BUILDCONFIG, IDM_BUILDCONFIG_POPUP
+    IDM_OPTIONS, IDM_OPTIONSDIALOG, IDM_BUILDCONFIG, IDM_BUILDCONFIG_POPUP, IDM_THEMES
     IDM_USERTOOLS, IDM_USERTOOLSDIALOG
     IDM_EXIT
     IDM_FILE_END
@@ -235,6 +235,10 @@ dim shared as HWND ghWndActiveMenuBarButton
 dim shared as long gMenuLastCurSel = -1
 dim shared as boolean gPrevent_WM_NCACTIVATE = false
 
+' array that holds the names of all fonts on the target system
+dim shared gFontNames( any ) as CWSTR
+
+
 const MENUITEM_HEIGHT = 24
 const EXPLORERITEM_HEIGHT = 22
 const MENUBAR_HEIGHT = 30
@@ -259,19 +263,6 @@ enum SPLIT_MODE
 end enum
 
 
-' array that holds the names of all fonts on the target system
-dim shared gFontNames( any ) as CWSTR
-
-' type and array to hold values related to the statusbar panels
-type STATUSBAR_PANEL_TYPE
-    wszText as CWSTR
-    rc      as RECT            ' client coordinates 
-    nID     as long            ' id to invoke if clicked on
-    isHot   as boolean
-end type
-dim shared gSBPanels(7) as STATUSBAR_PANEL_TYPE 
-dim shared grcGripper as RECT  
-
 type TOPMENU_TYPE
     nParentID   as long
     nID         as long
@@ -288,7 +279,8 @@ dim shared as wstring * 10 _
     wszIconClose, wszIconDirty, wszIconCompileResult, wszIconMatchCase, wszIconWholeWord, _
     wszIconPreserveCase, wszIconReplace, wszIconReplaceAll, wszIconMoreActions, wszIconAddFileButton, _
     wszIconExplorer, wszIconFunctions, wszIconBookmarks, wszIconCompile, wszIconBuildExecute, _
-    wszIconSplitEditor, wszIconSplitLeftRight, wszIconSplitTopBottom
+    wszIconSplitEditor, wszIconSplitLeftRight, wszIconSplitTopBottom, wszIconThemes, _
+    wszIconSettings
 
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
@@ -342,8 +334,9 @@ dim shared as wstring * 10 _
     wszIconBookmarks         = !"\uE723"
     wszIconCompile           = !"\uE74C"
     wszIconBuildExecute      = !"\uE768"  
-    
-    wszIconSplitLeftRight    = !"\uF57C"   'Segoe Fluent Icons
-    wszIconSplitTopBottom    = !"\uF16E"   'Segoe Fluent Icons
+    wszIconSplitLeftRight    = !"\uF57C"   
+    wszIconSplitTopBottom    = !"\uF16E"   
     wszIconSplitEditor       = wszIconSplitLeftRight
+    wszIconThemes            = !"\uF67B"   
+    wszIconSettings          = !"\uE713"   
 

@@ -55,20 +55,27 @@ function frmPanelMenu_PositionWindows() as LRESULT
     gPanelMenu(2).id = IDM_BOOKMARKSLIST
     gPanelMenu(2).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
     gPanelMenu(2).wszTooltip = AfxStrParse(getMenuText(IDM_BOOKMARKSLIST), 1, wchr(9))
+
+    ' Settings (Environment Options)
+    nLeft += nButtonWidth
+    gPanelMenu(3).wszCaption = wszIconSettings
+    gPanelMenu(3).id = IDM_OPTIONSDIALOG
+    gPanelMenu(3).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
+    gPanelMenu(3).wszTooltip = AfxStrParse(getMenuText(IDM_OPTIONSDIALOG), 1, wchr(9))
     
     ' Build & Execute
     nLeft = nRight - nButtonWidth
-    gPanelMenu(4).wszCaption = wszIconBuildExecute
-    gPanelMenu(4).id = IDM_BUILDEXECUTE
-    gPanelMenu(4).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(4).wszTooltip = AfxStrParse(getMenuText(IDM_BUILDEXECUTE), 1, wchr(9))
+    gPanelMenu(5).wszCaption = wszIconBuildExecute
+    gPanelMenu(5).id = IDM_BUILDEXECUTE
+    gPanelMenu(5).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
+    gPanelMenu(5).wszTooltip = AfxStrParse(getMenuText(IDM_BUILDEXECUTE), 1, wchr(9))
     
     ' Compile
     nLeft -= nButtonWidth
-    gPanelMenu(3).wszCaption = wszIconCompile
-    gPanelMenu(3).id = IDM_COMPILE
-    gPanelMenu(3).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(3).wszTooltip = AfxStrParse(getMenuText(IDM_COMPILE), 1, wchr(9))
+    gPanelMenu(4).wszCaption = wszIconCompile
+    gPanelMenu(4).id = IDM_COMPILE
+    gPanelMenu(4).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
+    gPanelMenu(4).wszTooltip = AfxStrParse(getMenuText(IDM_COMPILE), 1, wchr(9))
 
     function = 0
 end function

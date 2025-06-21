@@ -64,6 +64,10 @@ function frmMain_OnCommand( _
             SendMessage( hCtrl, WM_LBUTTONDOWN, 0, 0)     
             setNextMenuItemTabIndex(false)
 
+        case IDM_THEMES
+            OptionsDialogLastOpened = 3
+            frmOptions_Show( hwnd )
+            
         case IDM_BUILDCONFIG_POPUP
             dim as HMENU hPopupMenu = CreateStatusBarBuildConfigContextMenu()
             dim as point pt: GetCursorPos @pt

@@ -104,8 +104,9 @@ type clsConfig
         ShowPanel                 as long = true
         ShowPanelWidth            as long = 250
         ShowOutputPanel           as long = true
-        ShowOutputPanelHeight     as long = OUTPUT_TABS_HEIGHT
-        ShowOutputPanelIndex      as long = 0      ' gOutputTabsCurSel (default: Compiler Results)
+        ShowOutputPanelHeight     as long = OUTPUT_TABS_HEIGHT * 5 ' user set height 
+        ShowOutputPanelMinimized  as long = true          ' if window is at minimum height (toggled "minimized")
+        ShowOutputPanelIndex      as long = 0             ' gOutputTabsCurSel (default: Compiler Results)
         SyntaxHighlighting        as long = true
         Codetips                  as long = true
         AutoComplete              as long = true

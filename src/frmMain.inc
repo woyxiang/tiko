@@ -165,12 +165,13 @@ function frmMain_SetStatusbar() as long
     
     ' PANEL (0) Line/Col/Sel 
     ' PANEL (1) Compiling Results -or- Filename being parsed
-    ' PANEL (2) Build Configuration (dialog popup)
-    ' PANEL (3) Build Configuration (quick select)
-    ' PANEL (4) Filetype (Normal/Main/Resource/Module)
-    ' PANEL (5) Spacing
-    ' PANEL (6) File Encoding (Ansi, UTF-8, etc)
-    ' PANEL (7) Line Endings
+    ' PANEL (2) Theme selection (dialog popup)
+    ' PANEL (3) Build Configuration (dialog popup)
+    ' PANEL (4) Build Configuration (quick select)
+    ' PANEL (5) Filetype (Normal/Main/Resource/Module)
+    ' PANEL (6) Spacing
+    ' PANEL (7) File Encoding (Ansi, UTF-8, etc)
+    ' PANEL (8) Line Endings
 
     ' blank out the current statusbar values  
     for i as long = lbound(gSBPanels) to ubound(gSBPanels)
@@ -209,6 +210,9 @@ function frmMain_SetStatusbar() as long
         
         ' PANEL Line/Col/Sel -or- VD coordinates
         gSBPanels(GOTO_PANEL).wszText = wszText
+
+        ' PANEL Themes dialog
+        gSBPanels(THEMES_DIALOG_PANEL).wszText = "  " & wszIconThemes & "  "
 
         ' PANEL Build Configuration dialog
         gSBPanels(BUILD_DIALOG_PANEL).wszText = " " & wszIconAddFileButton & " "
@@ -757,7 +761,7 @@ end function
 function frmMain_PositionWindows() as LRESULT
     dim as HWND hEdit
     dim as long nHeightTabControl, nLeft, nTop
-    dim as Rect rc
+    dim as RECT rc
 
     dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
     if pWindow = 0 then exit function
@@ -771,6 +775,10 @@ function frmMain_PositionWindows() as LRESULT
     dim as long nHeightStatusBar = AfxGetWindowHeight( HWND_FRMMAIN_STATUSBAR )
     dim as long nHeightOutput    = AfxGetWindowHeight( HWND_FRMOUTPUT )
     dim as long nWidthPanel      = AfxGetWindowWidth( HWND_FRMPANEL )
+
+    if gConfig.ShowOutputPanelMinimized then
+        nHeightOutput = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    end if
 
     ' Set the top menu menubar into place 
     SetWindowPos( HWND_FRMMAIN_MENUBAR, 0, _
@@ -1139,7 +1147,8 @@ function frmMain_OnClose( byval hwnd as HWND ) as LRESULT
     ' Save whether the Output panel should be shown the next time the program is run.
     ' Also save the panel height. 
     gConfig.ShowOutputPanel = IsWindowVisible(HWND_FRMOUTPUT)
-    gConfig.ShowOutputPanelHeight = pWindow->UnScaleX(AfxGetWindowHeight( HWND_FRMOUTPUT ))
+    gConfig.ShowOutputPanelHeight = pWindow->UnScaleY(gConfig.ShowOutputPanelHeight)
+    'gConfig.ShowOutputPanelMinimized this is set when double clicking an Output panel tab.
     gConfig.ShowOutputPanelIndex = gOutputTabsCurSel
     
     ' if a project is already open then save/close it.

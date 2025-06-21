@@ -22,7 +22,7 @@ type PANEL_MENU_TYPE
 end type
 
 ' Values for each panel menu button are set in frmPanelMenu_PositionWindows
-dim shared gPanelMenu(0 to 4) as PANEL_MENU_TYPE
+dim shared gPanelMenu(0 to 5) as PANEL_MENU_TYPE
 
 
 declare function frmPanelMenu_PositionWindows() as LRESULT
