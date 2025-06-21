@@ -988,7 +988,7 @@ function AfxIFileSaveDialog( _
             ) as wstring ptr
 
     ' // Create an instance of the IFileSaveDialog interface
-    dim rgFileTypes(1 To 4) as COMDLG_FILTERSPEC 
+    dim rgFileTypes(1 To 5) as COMDLG_FILTERSPEC 
     dim hr as long
     dim psfd as IFileSaveDialog ptr
     hr = CoCreateInstance(@CLSID_FileSaveDialog, null, CLSCTX_INPROC_SERVER, @IID_IFileSaveDialog, @psfd)

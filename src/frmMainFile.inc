@@ -206,7 +206,8 @@ function OnCommand_FileSave( _
                     end if
                 end if
             else
-                return true   
+                'return true   
+                exit for
             end if
         end if    
 
