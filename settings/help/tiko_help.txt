@@ -188,6 +188,8 @@ will make using the editor easier:'
     
     Split Editor Top/Bottom   Ctrl+Shift+\
     Split Editor Left/Right   Ctrl+\
+
+    Multiple Edit Carets      Ctrl+MouseClick
     
 When using split editing windows, you can quickly navigate back and forth 
 between them using Ctrl+~ (tilde). If the Find/Replace dialog is open then 
