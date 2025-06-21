@@ -32,6 +32,7 @@ END TYPE
 
 dim shared as any ptr gpHelpLib
 
+declare function SpawnPreviousInstance() as boolean
 declare function ReloadDocument( byref wszFilename as wstring ) as long
 declare function ShowContextHelp( byval id as long ) as long
 declare function isMouseOverRECT( byval hWin as HWND, byval rc as RECT ) as boolean

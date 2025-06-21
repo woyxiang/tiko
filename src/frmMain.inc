@@ -309,6 +309,8 @@ function frmMain_RestoreSessionOrProject() as long
         if gConfig.RestoreSession then 
             if AfxFileExists( gConfig.wszLastActiveSession ) then
                 gConfig.LoadSessionFile( gConfig.wszLastActiveSession )
+            else
+                gConfig.LoadDefaultSessionFile()
             end if   
         end if
     end if
@@ -672,6 +674,7 @@ function frmMain_PositionSplitDocLeft( byval pDoc as clsDocument ptr, byval rcDo
                         rcDoc.left + nWidth, rcDoc.top, _
                         iVScrollbarWidth, nHeight, _ 
                         SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
+        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(1))
     end if
     
     function = 0
@@ -709,6 +712,7 @@ function frmMain_PositionSplitDocTop( byval pDoc as clsDocument ptr, byval rcDoc
                         rcDoc.right - iVScrollbarWidth, rcDoc.top, _
                         iVScrollbarWidth, pDoc->SplitY - rcDoc.top, _ 
                         SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
+        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(1))
     end if
     
     function = 0
@@ -748,6 +752,7 @@ function frmMain_PositionMainDocRight( byval pDoc as clsDocument ptr, byval rcDo
                     nLeft + nWidth, rcDoc.top, _
                     iVScrollbarWidth, nHeight, _
                     SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
+        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(0))
     end if
 
     function = 0
@@ -789,6 +794,7 @@ function frmMain_PositionMainDocBottom( byval pDoc as clsDocument ptr, byval rcD
                     iVScrollbarWidth, _
                     rcDoc.bottom - nTop, _ 
                     SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
+        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(0))
     else
         ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE )
     end if
@@ -892,17 +898,22 @@ function frmMain_PositionWindows() as LRESULT
         if gConfig.ExplorerPositionRight then rcDoc.right = rc.right - nWidthPanel
         pDoc->rcDocSplitArea = rcDoc
 
+        frmMain_HideScrollBars()
+        
         if pDoc->EditorSplitMode = SplitNone then 
+            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_SHOW )
             ShowWindow( pDoc->hWindow(1), SW_HIDE )      
-            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
-            ShowWindow( HWND_FRMEDITOR_HSCROLLBAR(1), SW_HIDE )
             frmMain_PositionMainDocBottom(pDoc, rcDoc)
         end if
         if pDoc->EditorSplitMode = SplitLeftRight then
+            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_SHOW )
+            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_SHOW )
             frmMain_PositionSplitDocLeft(pDoc, rcDoc)
             frmMain_PositionMainDocRight(pDoc, rcDoc)
         end if
         if pDoc->EditorSplitMode = SplitTopBottom then
+            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_SHOW )
+            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_SHOW )
             frmMain_PositionSplitDocTop(pDoc, rcDoc)
             frmMain_PositionMainDocBottom(pDoc, rcDoc)
         end if
@@ -1166,12 +1177,14 @@ function frmMain_OnClose( byval hwnd as HWND ) as LRESULT
     
     ' if a project is already open then save/close it.
     if gApp.IsProjectActive then 
-        if OnCommand_ProjectClose(hwnd) = 0 then return 0
-    end if
-
-    ' if a session is already open then save/close it.
-    if gApp.IsSessionActive then 
-        if gConfig.SaveSessionFile(gApp.SessionFilename) = 0 then return 0
+        if OnCommand_ProjectClose(hwnd) = false then return 0
+    elseif gApp.IsSessionActive then 
+        ' if a session is already open then save/close it.
+        if gConfig.SaveSessionFile(gApp.SessionFilename) = false then return 0
+    else
+        ' Save a default session file that will open if Settings option checked to load
+        ' last project/session but no last used project or session exits.
+        if gConfig.SaveDefaultSessionFile() = 0 then return 0
     end if
     
     ' Close any open files asking to save any that are dirty 
@@ -1481,7 +1494,8 @@ function frmMain_WndProc( _
             frmMain_PositionWindows
             dim pDoc as clsDocument ptr = gTTabCtl.tabs(gTTabCtl.CurSel).pDoc
             if pDoc then
-                AfxRedrawWindow( pdoc->hWindow(0) )  ' makes the code window display quicker especially when loading Project.
+                AfxRedrawWindow( pDoc->hWindow(0) )  ' makes the code window display quicker especially when loading Project.
+                AfxRedrawWindow( pDoc->hWindow(1) )  ' makes the code window display quicker especially when loading Project.
             end if   
             ' Set the focus to the Scintilla window. This will call frmMain_SetStatusbar.
             frmMain_SetFocusToCurrentCodeWindow()

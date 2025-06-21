@@ -41,6 +41,7 @@ constructor clsConfig
     WinAPICodetipsFilename    = exe_path & "settings\keywords\codetips_winapi.ini" 
     WinFBXCodetipsFilename    = exe_path & "settings\keywords\codetips_winfbx.ini" 
     TikoHelpFile              = exe_path & "settings\help\tiko_help.txt" 
+    DefaultSessionFilename    = exe_path & "default.session" 
 end constructor
 
 ''
@@ -977,7 +978,7 @@ function clsConfig.SaveSessionFile( byref wszSessionFile as wstring ) as boolean
         pDoc = gTTabCtl.tabs(i).pDoc
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
-        wszText = ProcessToCurdriveApp(pDoc->DiskFilename)
+            wszText = ProcessToCurdriveApp(pDoc->DiskFilename)
             pStream.WriteLine "File=" & wszText
             pStream.WriteLine "FileType=" & pDoc->ProjectFileType
             pStream.WriteLine "TabIndex=" & -1     ' use -1 rather than true
@@ -987,7 +988,9 @@ function clsConfig.SaveSessionFile( byref wszSessionFile as wstring ) as boolean
             pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
             pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
             pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "SplitPosition=" & pDoc->SplitY
+            pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
+            pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
+            pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
             pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
             pStream.WriteLine "FileEnd=[-]" 
         end if
@@ -999,7 +1002,6 @@ function clsConfig.SaveSessionFile( byref wszSessionFile as wstring ) as boolean
 
     function = true   ' successful save
 end function
-
 
 
 ' ========================================================================================
@@ -1044,11 +1046,12 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
     dim pDoc as clsDocument ptr
     dim as CWSTR wst, wKey, wData, wszFilename, wszProjectName
         
-    dim sBookmarks as string
-    dim sFoldPoints as string
+    dim as string sBookmarks
+    dim as string sFoldPoints
     dim as long nData, i, iTab, nActiveTab, nFocusEdit
     dim as long nFileIndex = -1
-    dim as long nFirstLine, nPosition, nFirstLine1, nPosition1, nSplitPosition
+    dim as long nFirstLine, nPosition, nFirstLine1, nPosition1
+    dim as long nSplitMode, nSplitPositionX, nSplitPositionY
 
     ' Info saved for each File and used to create the file once Fileend is found
     dim as long nTabIndex
@@ -1101,17 +1104,19 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
             case "Position":            nPosition   = nData
             case "FirstLine1":          nFirstLine1 = nData
             case "Position1":           nPosition1  = nData
-            case "SplitPosition":       nSplitPosition = nData
+            case "SplitMode":           nSplitMode  = nData
+            case "SplitPositionX":      nSplitPositionX = nData
+            case "SplitPositionY":      nSplitPositionY = nData
             case "FocusEdit":           nFocusEdit  = nData
             
             case "FileEnd":
             if AfxFileExists(wszFilename) then
                 pDoc = frmMain_OpenFileSafely( _
                         HWND_FRMMAIN, _
-                        false, _    ' bIsNewFile
-                        false, _    ' bIsTemplate
-                        false, _    ' bShowInTab (we'll manually add new tab below)
-                        false, _    ' bIsInclude
+                        false, _        ' bIsNewFile
+                        false, _        ' bIsTemplate
+                        false, _        ' bShowInTab (we'll manually add new tab below)
+                        false, _        ' bIsInclude
                         wszFilename, _  ' wszName
                         0, _            ' pDocIn
                         wszFileType )
@@ -1119,8 +1124,9 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
                 iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
                 
                 ' Set the saved positions
-                pDoc->SplitY = nSplitPosition
-                if pDoc->SplitY then pDoc->EditorSplitMode = SplitTopBottom
+                pDoc->EditorSplitMode = nSplitMode
+                pDoc->SplitY = nSplitPositionY
+                pDoc->SplitX = nSplitPositionX
                 SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
                 SciExec( pDoc->hWindow(0), SCI_GOTOPOS, nPosition, 0) 
                 SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, nFirstLine1, 0) 
@@ -1168,14 +1174,25 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
     frmMain_PositionWindows
     frmMain_SetFocusToCurrentCodeWindow
     
-    pDoc = gTTabCtl.GetActiveDocumentPtr()
-    if pDoc then 
-        if pDoc->EditorSplitMode <> SplitNone then AfxRedrawWindow( HWND_FRMMAIN )
-    end if
-
     UpdateMRUSessionList(wszSessionFile)
 
     function = true   ' successful open
+end function
+
+
+' ========================================================================================
+' Save the DEFAULT session (open files) to a diskfile
+' ========================================================================================
+function clsConfig.SaveDefaultSessionFile() as boolean    
+    return this.SaveSessionFile( this.DefaultSessionFilename )
+end function
+
+
+' ========================================================================================
+' Load the DEFAULT session (open files) to a diskfile
+' ========================================================================================
+function clsConfig.LoadDefaultSessionFile() as boolean    
+    return this.LoadSessionFile( this.DefaultSessionFilename )
 end function
 
 
@@ -1226,7 +1243,9 @@ function clsConfig.ProjectSaveToFile() as boolean
             pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
             pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
             pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "SplitPosition=" & pDoc->SplitY
+            pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
+            pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
+            pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
             pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
             pStream.WriteLine "FileEnd=[-]" 
         end if
@@ -1252,7 +1271,9 @@ function clsConfig.ProjectSaveToFile() as boolean
                 pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
                 pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
                 pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-                pStream.WriteLine "SplitPosition=" & pDoc->SplitY
+                pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
+                pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
+                pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
                 pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
                 pStream.WriteLine "FileEnd=[-]"
             end If
@@ -1291,6 +1312,7 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
     dim as long nData, i, iTab, nActiveTab, nFocusEdit
     dim as long nFileIndex = -1
     dim as long nFirstLine, nPosition, nFirstLine1, nPosition1, nSplitPosition
+    dim as long nSplitMode, nSplitPositionX, nSplitPositionY
 
     ' Info saved for each File and used to create the file once Fileend is found
     dim as long nTabIndex
@@ -1356,18 +1378,20 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
             case "ProjectOther32":      gApp.ProjectOther32     = wData
             case "ProjectOther64":      gApp.ProjectOther64     = wData
             case "ProjectCommandLine":  gApp.ProjectCommandLine = wData
-            case "ActiveTab":           nActiveTab = nData
-            case "File":                wszFilename = wData
-            case "FileType":            wszFileType  = wData
-            case "Bookmarks":           sBookmarks  = str(wData)
-            case "FoldPoints":          sFoldPoints = str(wData)
-            case "TabIndex":            bLoadInTab  = nData
-            case "FirstLine":           nFirstLine  = nData
-            case "Position":            nPosition   = nData
-            case "FirstLine1":          nFirstLine1 = nData
-            case "Position1":           nPosition1  = nData
-            case "SplitPosition":       nSplitPosition = nData
-            case "FocusEdit":           nFocusEdit  = nData
+            case "ActiveTab":           nActiveTab              = nData
+            case "File":                wszFilename             = wData
+            case "FileType":            wszFileType             = wData
+            case "Bookmarks":           sBookmarks              = str(wData)
+            case "FoldPoints":          sFoldPoints             = str(wData)
+            case "TabIndex":            bLoadInTab              = nData
+            case "FirstLine":           nFirstLine              = nData
+            case "Position":            nPosition               = nData
+            case "FirstLine1":          nFirstLine1             = nData
+            case "Position1":           nPosition1              = nData
+            case "SplitMode":           nSplitMode              = nData
+            case "SplitPositionX":      nSplitPositionX         = nData
+            case "SplitPositionY":      nSplitPositionY         = nData
+            case "FocusEdit":           nFocusEdit              = nData
             
             case "FileEnd":
             ' if this is a relative filename then convert it back.
@@ -1384,24 +1408,25 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
                 end If
 
                 with docData(nFileIndex)
-                    .wszFilename    = wszFilename
-                    .wszFileType    = wszFileType
-                    .bLoadInTab     = bLoadInTab
-                    .wszIconBookmarks   = sBookmarks
-                    .wszFoldPoints  = sFoldPoints
-                    .nFirstLine     = nFirstLine
-                    .nPosition      = nPosition
-                    .nFirstLine1    = nFirstLine1
-                    .nPosition1     = nPosition1
-                    .nSplitPosition = nSplitPosition
-                    .nFocusEdit     = nFocusEdit
+                    .wszFilename     = wszFilename
+                    .wszFileType     = wszFileType
+                    .bLoadInTab      = bLoadInTab
+                    .wszBookmarks    = sBookmarks
+                    .wszFoldPoints   = sFoldPoints
+                    .nFirstLine      = nFirstLine
+                    .nPosition       = nPosition
+                    .nFirstLine1     = nFirstLine1
+                    .nPosition1      = nPosition1
+                    .nSplitMode      = nSplitMode
+                    .nSplitPositionX = nSplitPositionX
+                    .nSplitPositionY = nSplitPositionY
+                    .nFocusEdit      = nFocusEdit
                 end with
 
                 nFirstLine  = 0: nPosition  = 0
                 nFirstLine1 = 0: nPosition1 = 0
-                nFocusEdit  = 0: nSplitPosition = 0
-                sBookmarks  = ""
-                sFoldPoints = ""
+                nFocusEdit  = 0: nSplitPositionX = 0: nSplitPositionY = 0
+                nSplitMode  = 0: sBookmarks  = "": sFoldPoints = ""
                 bLoadInTab    = false
             end if
             
@@ -1435,14 +1460,15 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
         end if
 
         ' Set the saved positions
-        pDoc->SplitY = docData(i).nSplitPosition
-        if pDoc->SplitY then pDoc->EditorSplitMode = SplitTopBottom
+        pDoc->SplitX = docData(i).nSplitPositionX
+        pDoc->SplitY = docData(i).nSplitPositionY
+        pDoc->EditorSplitMode = docData(i).nSplitMode
         SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
         SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
         SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
         SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
         pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
-        pDoc->SetBookmarks(docData(i).wszIconBookmarks)
+        pDoc->SetBookmarks(docData(i).wszBookmarks)
         pDoc->SetFoldPoints(docData(i).wszFoldPoints)
     next
                     

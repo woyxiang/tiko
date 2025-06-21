@@ -182,44 +182,14 @@ function WinMain( _
     gConfig.SetCategoryDefaults()
 
 
-    ' Check for previous instance 
+    ' If multiple editor instances is disallowed then bring the current active
+    ' instance to the foreground and pass it whatever command line was intended
+    ' for this instance.
     if gConfig.MultipleInstances = false Then
-        dim as HWND hWindow = FindWindow(APPCLASSNAME, 0)
-        if hWindow then
-            SetForegroundWindow(hWindow)
-            ' Send the command line to the original editor to be processed
-            dim as CWSTR wszPath 
-            dim as CWSTR wszArg  
-            dim as CWSTR wszSendString  
-
-            dim as long i = 1
-            do
-                wszArg = AfxCommand(i)
-                if len(wszArg) = 0 then exit do
-                
-                ' Remove any double quotes from the argument.
-                wszPath = AfxStrRemove( wszArg, wchr(34) )
-                
-                ' if no path exists for the file then add the current folder
-                wszPath = AfxStrPathname( "PATH", wszArg )
-                if len(wszPath) = 0 then wszArg = AfxGetExePathName & wszArg 
-                
-                wszSendString = wszSendString & _
-                                iif(len(wszSendString), ";", "") & _
-                                wszArg
-                i += 1
-            loop
-
-            dim as COPYDATASTRUCT cds
-            cds.dwData = IDM_COPYDATA_COMMANDLINE
-            cds.cbData = len(wszSendString) * 2  ' unicode
-            cds.lpData = wszSendString.vptr
-            SendMessage(hWindow, WM_COPYDATA, 0, cast(LPARAM, @cds))
-            return true
-        end if
+        if SpawnPreviousInstance() then return 0
     end if
-    
 
+    
     ' Initialize the COM library
     CoInitialize(null)
 

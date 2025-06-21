@@ -79,7 +79,8 @@ type clsConfig
         FBCodetipsFilename        as CWSTR
         WinAPICodetipsFilename    as CWSTR 
         WinFBXCodetipsFilename    as CWSTR
-        TikoHelpFile              as CWSTR 
+        TikoHelpFile              as CWSTR
+        DefaultSessionFilename    as CWSTR 
         
         DateFileTime              as FILETIME
         
@@ -164,7 +165,9 @@ type clsConfig
         declare function LoadConfigFile() as long
         declare function CloseSessionFile( byref wszSessionFile as wstring ) as boolean    
         declare function SaveSessionFile( byref wszSessionFile as wstring ) as boolean    
-        declare function LoadSessionFile( byref wszSessionFile as wstring ) as boolean    
+        declare function LoadSessionFile( byref wszSessionFile as wstring ) as boolean   
+        declare function SaveDefaultSessionFile() as boolean    
+        declare function LoadDefaultSessionFile() as boolean    
         declare function ProjectSaveToFile() as boolean    
         declare function ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean    
         declare function LoadCodetipsFB() as boolean

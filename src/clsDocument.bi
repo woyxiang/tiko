@@ -53,17 +53,19 @@ end enum
 ' type that holds data for all project files as it they are loaded from
 ' the project file.
 type PROJECT_FILELOAD_DATA
-    wszFilename    as CWSTR        ' full path and filename
-    wszFiletype    as CWSTR        ' pDoc->ProjectFileType
-    bLoadInTab     as boolean
-    wszIconBookmarks   as CWSTR        ' pDoc->GetBookmarks()
-    wszFoldPoints  as CWSTR        ' pDoc->GetFoldPoints()
-    nFirstLine     as long         ' first line of main view 
-    nPosition      as long         ' current position of main view
-    nFirstLine1    as long         ' first line of second view 
-    nPosition1     as long         ' current position of second view
-    nSplitPosition as long         ' pDoc->SplitY
-    nFocusEdit     as long         ' View 0 or View 1
+    wszFilename     as CWSTR        ' full path and filename
+    wszFiletype     as CWSTR        ' pDoc->ProjectFileType
+    bLoadInTab      as boolean
+    wszBookmarks    as CWSTR        ' pDoc->GetBookmarks()
+    wszFoldPoints   as CWSTR        ' pDoc->GetFoldPoints()
+    nFirstLine      as long         ' first line of main view 
+    nPosition       as long         ' current position of main view
+    nFirstLine1     as long         ' first line of second view 
+    nPosition1      as long         ' current position of second view
+    nSplitMode      as long         ' pDoc->SplitMode
+    nSplitPositionX as long         ' pDoc->SplitX
+    nSplitPositionY as long         ' pDoc->SplitY
+    nFocusEdit      as long         ' View 0 or View 1
 end type
 
 

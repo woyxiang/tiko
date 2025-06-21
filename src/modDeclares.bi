@@ -258,9 +258,9 @@ const SCROLLBAR_MINTHUMBSIZE = 30
 const SPLITSIZE = 4
 
 enum SPLIT_MODE
-    SplitNone
-    SplitLeftRight
-    SplitTopBottom
+    SplitNone       = 0
+    SplitLeftRight  = 1
+    SplitTopBottom  = 2
 end enum
 
 

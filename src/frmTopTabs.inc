@@ -703,10 +703,10 @@ function frmTopTabs_WndProc( _
         ' Cleanup
         RestoreDC( memDC, -1 )
         
-        if hPenSolid then deleteObject( hPenSolid )
-        if hPenNull  then deleteObject( hPenNull )
-        if hbit      then deleteObject( hbit )
-        if memDC     then deleteDC( memDC )
+        if hPenSolid then DeleteObject( hPenSolid )
+        if hPenNull  then DeleteObject( hPenNull )
+        if hbit      then DeleteObject( hbit )
+        if memDC     then DeleteDC( memDC )
 
         EndPaint( hwnd, @ps )
     

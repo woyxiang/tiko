@@ -4,6 +4,7 @@ Version 1.0.4 ()
 - Added: Much improved brace highlighting.
 - Added: Codetips for WinFBX / Afx library.
 - Added: Button in Statusbar to quickly access 'Themes and Fonts'.
+- Added: A default.session file is saved if "Restore previous session/project on startup" is checked if user does not specify another name.
 - Changed: All icons now use SegoeFluentIcons. SegoeFluentIcons.ttf must now be located in same folder as the editor exe. SegoeFluentIcons is not part of Windows 10 by default.
 - Changed: Refactored how the Output window functionality.
 - Changed: Removed the "+" Add New File button from the top tab bar (may implement it again in the future).
