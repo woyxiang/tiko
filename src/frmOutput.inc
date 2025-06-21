@@ -117,6 +117,7 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
     ' Show the search results
     gOutputTabsCurSel = 2 
     ShowWindow( HWND_FRMOUTPUT, SW_SHOW )
+    gConfig.ShowOutputPanelMinimized = 0
     frmOutput_ActivatePanelHeight
     frmMain_PositionWindows
     frmOutput_PositionWindows
