@@ -336,6 +336,7 @@ function frmTopTabs_WndProc( _
             ) as LRESULT
 
     static as long curr_idxHot = -1
+    
     static hTooltip as HWND
     if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
@@ -387,8 +388,6 @@ function frmTopTabs_WndProc( _
     case WM_MOUSELEAVE
         ' this will reset all tabs isHot to -1 and curr_idxHot to -1
         curr_idxHot = getHotTabHitTest( hwnd )
-        AfxDeleteTooltip( hTooltip, hwnd )
-        hTooltip = 0
         AfxRedrawWindow( hwnd )
 
 

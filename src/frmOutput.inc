@@ -657,8 +657,6 @@ function frmOutputTabs_SubclassProc ( _
             ' reset the hot tab index
             frmOutputTabs_getHotTabHitTest( hWin )
             nLastIdx = -1
-            AfxDeleteTooltip( hTooltip, hWin )
-            hTooltip = 0
             AfxRedrawWindow(hWin)   
         
         case WM_LBUTTONUP
@@ -714,7 +712,7 @@ function frmOutputTabs_SubclassProc ( _
             
             SaveDC(memDC)
 
-            SelectObject( memDC, hbit )
+            if hbit then SelectObject( memDC, hbit )
             FillRect( memDC, @rc, ghOutput.hPanelBrush )
     
             for i as long = lbound(gOutputTabs) to ubound(gOutputTabs)

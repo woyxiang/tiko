@@ -235,8 +235,6 @@ function frmStatusBar_WndProc( _
         next
         prev_idxHot = -1
         curr_idxHot = -1
-        AfxdeleteTooltip( hTooltip, hwnd )
-        hTooltip = 0
         AfxRedrawWindow( hwnd )
 
     case WM_LBUTTONUP

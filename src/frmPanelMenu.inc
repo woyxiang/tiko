@@ -124,16 +124,11 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
     dim as HDC hDc
     dim as HPEN hPenNull
     dim as HPEN hPenSolid 
-    dim as HPEN oldPen
-    dim as HFONT oldFont
-    dim as HBRUSH oldBrush
     dim as RECT rc
     
     dim as long wsStyle 
     
     hDC = BeginPaint(hwnd, @ps)
-
-    SaveDC(hDC)
 
     GetClientRect(hwnd, @rc)
     dim as long nWidth = rc.right - rc.left
@@ -144,7 +139,10 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
 
     memDC = CreateCompatibleDC( hDC )
     hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-    if hbit then hbit = SelectObject( memDC, hbit )
+
+    SaveDC(memDC)
+
+    if hbit then SelectObject( memDC, hbit )
 
     FillRect( memDC, @rc, ghPanel.hPanelBrush )
 
@@ -155,20 +153,19 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
         
         SetTextColor( memDC, ghPanel.ForeColorHot )
         if isMouseOverRECT( hwnd, rc ) then
-            oldBrush = SelectObject( memDC, ghPanel.hBackBrushHot )
+            SelectObject( memDC, ghPanel.hBackBrushHot )
             SetBkColor( memDC, ghPanel.BackColorHot )
         else
-            oldBrush = SelectObject( memDC, ghPanel.hPanelBrush )
+            SelectObject( memDC, ghPanel.hPanelBrush )
             SetBkColor( memDC, ghPanel.BackColor )
         end if
 
-        hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-        oldPen = SelectObject( memDC, hPenNull )
+        if (hPenNull = 0) then hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
+        SelectObject( memDC, hPenNull )
         RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-        DeleteObject SelectObject( memDC, oldPen )
         
         wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-        oldFont = SelectObject( memDC, ghMenuBar.hFontSymbol )
+        SelectObject( memDC, ghMenuBar.hFontSymbol )
         DrawText( memDC, wszCaption, -1, cast(lpRect, @rc), wsStyle )
         
         ' Should we underline this icon as actively selected    
@@ -183,28 +180,23 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
         if bDrawUnderline then
             rc.left += pWindow->ScaleX(2)
             rc.right -= pWindow->ScaleX(2)
-            hPenSolid = CreatePen( PS_SOLID, 1, ghPanel.ForeColorHot )
-            oldPen = SelectObject( memDC, hPenSolid)
+            if (hPenSolid = 0) then hPenSolid = CreatePen( PS_SOLID, 1, ghPanel.ForeColorHot )
+            SelectObject( memDC, hPenSolid)
             MoveToEx( memDC, rc.left, rc.bottom, null )
             LineTo( memDC, rc.right, rc.bottom )   
-            DeleteObject SelectObject( memDC, oldPen )
         end if
         
-        SelectObject( memDC, oldFont )
-        SelectObject( memDC, oldPen )
-        SelectObject( memDC, oldBrush )
     next
     
     BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
 
     ' Cleanup
-    DeleteObject SelectObject( memDC, oldPen )
+    RestoreDC( memDC, -1 )
+    
     if hPenNull  then DeleteObject( hPenNull )
     if hPenSolid then DeleteObject( hPenSolid )
-    if hbit  then DeleteObject( SelectObject(memDC, hbit) )
-    if memDC then DeleteDC( memDC )
-
-    RestoreDC( hDC, -1 )
+    if hbit      then DeleteObject( hbit )
+    if memDC     then DeleteDC( memDC )
 
     EndPaint( hwnd, @ps )
 
@@ -279,8 +271,6 @@ function frmPanelMenu_WndProc( _
         for i as integer = lbound(gPanelMenu) to ubound(gPanelMenu)
             gPanelMenu(i).isPrevHot = false
         next
-        AfxDeleteTooltip( hTooltip, hwnd )
-        hTooltip = 0
         AfxRedrawWindow(hwnd)
 
 

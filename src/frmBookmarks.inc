@@ -166,7 +166,7 @@ function frmBookmarks_OnDrawItem( _
 
         SaveDC(memDC)
 
-        if hbit then hbit = SelectObject( memDC, hbit )
+        if hbit then SelectObject( memDC, hbit )
 
         SelectObject( memDC, ghMenuBar.hFontMenuBar )
 
@@ -347,6 +347,7 @@ function frmBookmarksListBox_SubclassProc ( _
     static as long accumDelta
 
     static as HWND hTooltip
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     ' keep track of last index we were over so that we only issue a
     ' repaint if the cursor has moved off of the line

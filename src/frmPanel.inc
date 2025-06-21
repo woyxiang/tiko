@@ -457,8 +457,6 @@ function frmPanel_WndProc( _
         isPrevHotAction = false
         isPrevHotButton0 = false
         isPrevHotButton1 = false
-        AfxDeleteTooltip( hTooltip, hwnd )
-        hTooltip = 0
         AfxRedrawWindow(hwnd)
 
 

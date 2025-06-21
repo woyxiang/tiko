@@ -824,8 +824,6 @@ function frmFindReplace_WndProc( _
         AfxRedrawWindow(hwnd)
 
     case WM_MOUSELEAVE
-        AfxDeleteTooltip( hTooltip, hwnd )
-        hTooltip = 0
         AfxRedrawWindow( hwnd )
 
     case WM_MOUSEHOVER

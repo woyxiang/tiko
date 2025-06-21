@@ -118,7 +118,7 @@ function frmMenuBar_WndProc( _
             
             SaveDC(memDC)
             
-            SelectObject( memDC, hbit )
+            if hbit then SelectObject( memDC, hbit )
             SelectObject( memDC, ghMenuBar.hFontMenuBar )
             
             dim as boolean IsHot = false
