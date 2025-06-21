@@ -776,10 +776,6 @@ function frmMain_PositionWindows() as LRESULT
     dim as long nHeightOutput    = AfxGetWindowHeight( HWND_FRMOUTPUT )
     dim as long nWidthPanel      = AfxGetWindowWidth( HWND_FRMPANEL )
 
-    if gConfig.ShowOutputPanelMinimized then
-        nHeightOutput = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
-    end if
-
     ' Set the top menu menubar into place 
     SetWindowPos( HWND_FRMMAIN_MENUBAR, 0, _
                     0, 0, rc.right - rc.left, nHeightMenuBar, _
