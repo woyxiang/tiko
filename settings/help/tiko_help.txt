@@ -21,7 +21,7 @@ locations.
     \settings\tools
 
 * This assumes that you are using the "tiko_suite.zip" file which contains both
-the editor -AND- the Freebasic compiler. This is the download that most users
+the editor -AND- the FreeBasic compiler. This is the download that most users
 will want to use. The "tiko_suite.zip" can always be found from the Releases
 area of the Tiko Editor's Github page.
 
@@ -89,9 +89,9 @@ Using the Explorer you can -not- drag and drop the files between the categories.
 
 4. COMPILER SETUP
 -----------------
-The editor allows you to use one or multiple versions of the Freebasic compile.
+The editor allows you to use one or multiple versions of the FreeBasic compile.
 Each version is stored in the special subfolder off the "settings\toolchains"
-folder. If you download the Freebasic compiler separately, then ensure that
+folder. If you download the FreeBasic compiler separately, then ensure that
 you place the files within the toolchains folder otherwise the editor will have
 no way to find it.
 
@@ -119,11 +119,11 @@ the Compiler Setup dialog.
 
 5. BUILD CONFIGURATIONS
 -----------------------
-The editor allows you to select and customize how you want to invoke Freebasic 
+The editor allows you to select and customize how you want to invoke FreeBasic 
 to compile your code. Various default configurations are already available to
 you in both 32-bit and 64-bit variants.
 
-You can switch between the various configurations vian the Build Configurations
+You can switch between the various configurations via the Build Configurations
 popup dialog accessed by:
     - The Preferences / Build Configurations menu option.
     - The F7 keyboard shortcut.
@@ -231,6 +231,9 @@ You can create you own custom themes via this process:
     - Ensure that the new theme file is in the \settings\themes subfolder.
     - The theme file is a simple text file that can be edited using any standard
       text editor include Tiko.
+
+You can quickly access the "Themes and Fonts" popup dialog by clicking on the 
+pen icon in the status bar.
 
 
 9. LOCALIZATION

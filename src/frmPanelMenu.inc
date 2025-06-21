@@ -21,6 +21,20 @@
 
 
 ' ========================================================================================
+' Format the tooltip based on menu id
+' ========================================================================================
+function frmPanelMenu_FormatTooltip( byval id as integer ) as CWSTR
+    dim as CWSTR wszTooltip = getMenuText(id)
+    dim as CWSTR wszCaption = rtrim(AfxStrParse(wszTooltip, 1, wchr(9)), "...")
+    dim as CWSTR wszShortcut = AfxStrParse(wszTooltip, 2, wchr(9))
+    
+    if len(wszShortcut) then wszShortcut = " (" & wszShortcut & ")"
+    
+    return wszCaption & wszShortcut
+end function
+
+
+' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
 function frmPanelMenu_PositionWindows() as LRESULT
@@ -37,45 +51,45 @@ function frmPanelMenu_PositionWindows() as LRESULT
     dim as long nLeft = pWindow->ScaleX( 10 )
     dim as long nTop = pWindow->ScaleY( 8 )
     dim as long nRight = rc.right - pWindow->ScaleX( 6 )
-    
+
     gPanelMenu(0).wszCaption = wszIconExplorer
     gPanelMenu(0).id = IDM_VIEWEXPLORER
     gPanelMenu(0).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(0).wszTooltip = AfxStrParse(getMenuText(IDM_VIEWEXPLORER), 1, wchr(9))
+    gPanelMenu(0).wszTooltip = frmPanelMenu_FormatTooltip(IDM_VIEWEXPLORER)
     
     nLeft += nButtonWidth
     gPanelMenu(1).wszCaption = wszIconFunctions
     gPanelMenu(1).id = IDM_FUNCTIONLIST
     gPanelMenu(1).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(1).wszTooltip = AfxStrParse(getMenuText(IDM_FUNCTIONLIST), 1, wchr(9))
+    gPanelMenu(1).wszTooltip = frmPanelMenu_FormatTooltip(IDM_FUNCTIONLIST)
     
     ' Bookmarks
     nLeft += nButtonWidth
     gPanelMenu(2).wszCaption = wszIconBookmarks
     gPanelMenu(2).id = IDM_BOOKMARKSLIST
     gPanelMenu(2).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(2).wszTooltip = AfxStrParse(getMenuText(IDM_BOOKMARKSLIST), 1, wchr(9))
+    gPanelMenu(2).wszTooltip = frmPanelMenu_FormatTooltip(IDM_BOOKMARKSLIST)
 
     ' Settings (Environment Options)
     nLeft += nButtonWidth
     gPanelMenu(3).wszCaption = wszIconSettings
     gPanelMenu(3).id = IDM_OPTIONSDIALOG
     gPanelMenu(3).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(3).wszTooltip = AfxStrParse(getMenuText(IDM_OPTIONSDIALOG), 1, wchr(9))
+    gPanelMenu(3).wszTooltip = frmPanelMenu_FormatTooltip(IDM_OPTIONSDIALOG)
     
     ' Build & Execute
     nLeft = nRight - nButtonWidth
     gPanelMenu(5).wszCaption = wszIconBuildExecute
     gPanelMenu(5).id = IDM_BUILDEXECUTE
     gPanelMenu(5).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(5).wszTooltip = AfxStrParse(getMenuText(IDM_BUILDEXECUTE), 1, wchr(9))
+    gPanelMenu(5).wszTooltip = frmPanelMenu_FormatTooltip(IDM_BUILDEXECUTE)
     
     ' Compile
     nLeft -= nButtonWidth
     gPanelMenu(4).wszCaption = wszIconCompile
     gPanelMenu(4).id = IDM_COMPILE
     gPanelMenu(4).rc = type(nLeft, nTop, nLeft + nButtonWidth, nTop + nButtonHeight)
-    gPanelMenu(4).wszTooltip = AfxStrParse(getMenuText(IDM_COMPILE), 1, wchr(9))
+    gPanelMenu(4).wszTooltip = frmPanelMenu_FormatTooltip(IDM_COMPILE)
 
     function = 0
 end function

@@ -666,6 +666,7 @@ function frmOutputTabs_SubclassProc ( _
             else
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
+                gConfig.ShowOutputPanelMinimized = 0
                 frmOutput_ActivatePanelHeight()
                 frmMain_PositionWindows()
                 gOutputTabsCurSel = idx
@@ -938,6 +939,10 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->ClassStyle = CS_DBLCLKS
+
+    ' Need to scale up the user defined panel height because it is saved to the config
+    ' file in unscaled value.
+    gConfig.ShowOutputPanelHeight = pWindow->ScaleY(gConfig.ShowOutputPanelHeight)
     
     dim as HWND hCtl, hLV, hLB
     
@@ -1021,9 +1026,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
         ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
 
-    ' Need to scale up the user defined panel height because it is save to the config
-    ' file in unscaled value.
-    gConfig.ShowOutputPanelHeight = pWindow->ScaleY(gConfig.ShowOutputPanelHeight)
     frmOutput_ActivatePanelHeight
     frmOutput_SetControlColors
     frmOutput_PositionWindows

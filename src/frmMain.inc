@@ -318,9 +318,74 @@ end function
 
 
 ' ========================================================================================
+' Process an array of files (from commandline or dragdrop)
+' ========================================================================================
+function frmMain_ProcessFilesArray( _
+            byval hwnd as HWND, _
+            wszFiles() as CWSTR _
+            ) as long
+
+    dim wszExt as wstring * MAX_PATH
+    dim as CWSTR wszArg
+    dim as integer numProcessed
+    
+    for i as integer = lbound(wszFiles) to ubound(wszFiles)
+        wszArg = wszFiles(i)
+        if AfxFileExists(wszArg) = 0 then continue for
+
+        ' We have a valid filename so determine what type it is.
+        wszExt = AfxStrPathname( "EXTN", wszArg )
+        wszExt = lcase(wszExt)
+        
+        select case wszExt
+        case APPEXTENSION    ' project file
+            numProcessed += 1
+            ' Pass the info to our generic project open function to handle everything.
+            frmMain_OpenProjectSafely(HWND_FRMMAIN, wszArg) 
+
+        case ".session"      ' session file
+            numProcessed += 1
+            gConfig.LoadSessionFile(wszArg)
+            
+        case else   ' .bas, .bi, .rc, etc...
+            ' Test to see if the file is already loaded in the editor. if it is, then
+            ' bypass loading it again thereby creating multiple ghost instances.
+            dim pDoc as clsDocument ptr
+            dim pDocIn as clsDocument ptr
+            pDoc = gApp.GetDocumentPtrByFilename(wszArg) 
+            if pDoc then
+                if pDoc->GetActiveScintillaPtr = 0 then pDocIn = pDoc
+            end if   
+            if (pDoc = 0) orelse (pDocIn <> 0) then 
+                numProcessed += 1
+                pDoc = frmMain_OpenFileSafely(hwnd, _
+                                        false, _    ' bIsNewFile
+                                        false, _    ' bIsTemplate
+                                        true,  _    ' bShowInTab
+                                        false, _    ' bIsInclude
+                                        wszArg, _   ' wszName
+                                        pDocIn _    ' pDocIn
+                                        )
+                                        
+                ' Give this document a default project type depending on its file extension
+                if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
+                    if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
+                        gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
+                    end if   
+                end if
+            end if    
+        end select    
+
+    next
+    
+    function = numProcessed
+end function
+
+
+' ========================================================================================
 ' Process any command line that was passed to the editor
 ' ========================================================================================
-function frmMain_ProcessCommandLine( byval HWnd as HWnd ) as long
+function frmMain_ProcessCommandLine( byval hwnd as HWND ) as long
 
     ' The incoming command line may contain a regular file to open or a project file.
     
@@ -331,11 +396,11 @@ function frmMain_ProcessCommandLine( byval HWnd as HWnd ) as long
     '          A value of zero (0) returns the name of the executable; and values of 
     '          one (1) and greater return each command-line argument.
 
-    ' as of v1.7.4 start to use AfxCommand which is a unicode aware replacement for FB's
+    ' Uuse AfxCommand which is a unicode aware replacement for FB's
     ' built in COMMAND function (that is not unicode compliant).
     
     if len(AfxCommand(1)) = 0 then 
-        ' no command line files/project specified bu the user may be wanting
+        ' no command line files/project specified by the user may be wanting
         ' to restore a previous session/project.
         frmMain_RestoreSessionOrProject()
         exit function
@@ -343,7 +408,8 @@ function frmMain_ProcessCommandLine( byval HWnd as HWnd ) as long
     
     dim wszPath as wstring * MAX_PATH
     dim wszArg  as wstring * MAX_PATH
-    dim DataToSend as COPYDATASTRUCT   
+    dim as integer numProcessed
+    dim wszFiles(any) as CWSTR
     
     if IsIconic(hwnd) then 
         dim WinPla as WINDOWPLACEMENT
@@ -359,7 +425,6 @@ function frmMain_ProcessCommandLine( byval HWnd as HWnd ) as long
     end if
     SetForegroundWindow(hwnd)
     
-    dim as long NumCommandLineFiles = 0 
     dim as long i = 1
     do
         wszArg = AfxCommand(i)
@@ -372,41 +437,18 @@ function frmMain_ProcessCommandLine( byval HWnd as HWnd ) as long
         wszPath = AfxStrPathname( "PATH", wszArg )
         if len(wszPath) = 0 then wszArg = AfxGetExePathName & wszArg 
         
-        if AfxFileExists(wszArg) then
-            NumCommandLineFiles =+ 1
-            dim wszExt as wstring * MAX_PATH
-
-            ' We have a valid filename so determine what type it is.
-            wszExt = AfxStrPathname( "EXTN", wszArg )
-            wszExt = lcase(wszExt)
-            
-            select case wszExt
-            case APPEXTENSION    ' project file
-                ' Pass the info to our generic project open function to handle everything.
-                frmMain_OpenProjectSafely(HWND_FRMMAIN, wszArg) 
-
-            case ".session"      ' session file
-                gConfig.LoadSessionFile(wszArg)
-                
-            case else   ' .bas, .bi, .rc, etc...
-                dim pDoc as clsDocument ptr
-                pDoc = frmMain_OpenFileSafely( HWND, _
-                                        false, _    ' bIsNewFile
-                                        false, _    ' bIsTemplate
-                                        true,  _    ' bShowInTab
-                                        false, _    ' bIsInclude
-                                        wszArg, _   ' pwszName
-                                        0 )         ' pDocIn
-                if pDoc then UpdateMRUList(pDoc->DiskFilename) 
-            end select    
-        end if
+        dim as integer ub = ubound(wszFiles) + 1
+        redim preserve wszFiles(ub)
+        wszFiles(ub) = wszArg
         
         i += 1
     loop
 
+    numProcessed = frmMain_ProcessFilesArray(hwnd, wszFiles())
+    
     ' If no files or project was loaded from the command line then check if the user 
     ' had session/project restore option.
-    if NumCommandLineFiles = 0 then
+    if numProcessed = 0 then
         frmMain_RestoreSessionOrProject()
     end if    
 
@@ -1060,8 +1102,8 @@ function frmMain_OnDropFiles( _
     
     dim as long i, nLen
     dim wszPath as wstring * MAX_PATH
-    dim wFileExt as wstring * MAX_PATH
-    
+    dim wszFiles(any) as CWSTR
+
     for i = 0 To nCount - 1
         nLen = DragQueryFile(hDrop, i, @wszPath, MAX_PATH)
         ' Make sure it's a file, not a folder
@@ -1070,49 +1112,20 @@ function frmMain_OnDropFiles( _
         if hFind <> INVALID_HANDLE_VALUE then
             FindClose hFind
             if (fd.dwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) <> FILE_ATTRIBUTE_DIRECTORY then
-                ' Determine what type of file is being dropped. if it is a project file APPEXTENSION then
-                ' use the OpenProject routines, otherwise open it as a regular file.
-                wFileExt = AfxStrPathname( "EXTN", wszPath)
-                wFileExt = lcase(wFileExt)
-                if wFileExt = APPEXTENSION then
-                    frmMain_OpenProjectSafely(HWND_FRMMAIN, wszPath) 
-                else   
-                    ' Test to see if the file is already loaded in the editor. if it is, then
-                    ' bypass loading it again thereby creating multiple ghost instances.
-                    dim pDoc as clsDocument ptr
-                    dim pDocIn as clsDocument ptr
-                    pDoc = gApp.GetDocumentPtrByFilename(wszPath) 
-                    if pDoc then
-                        if pDoc->GetActiveScintillaPtr = 0 then pDocIn = pDoc
-                    end if   
-                    if (pDoc = 0) orelse (pDocIn <> 0) then 
-                        pDoc = frmMain_OpenFileSafely(hwnd, _
-                                                false, _    ' bIsNewFile
-                                                false, _    ' bIsTemplate
-                                                true,  _    ' bShowInTab
-                                                false, _    ' bIsInclude
-                                                wszPath, _  ' wszName
-                                                pDocIn _   ' pDocIn
-                                                )
-                                                
-                        ' Give this document a default project type depending on its file extension
-                        if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
-                            if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
-                            gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
-                            end if   
-                        end if
-
-                    end if
-                end if                           
+                dim as integer ub = ubound(wszFiles) + 1
+                redim preserve wszFiles(ub)
+                wszFiles(ub) = wszPath
             end if
         end if
     Next
     
     DragFinish hDrop
 
-    LoadExplorerFiles()
-    LoadFunctionsFiles()
-
+    if frmMain_ProcessFilesArray(hwnd, wszFiles()) then
+        LoadExplorerFiles()
+        LoadFunctionsFiles()
+    end if
+    
     function = 0
 end Function
 
@@ -1432,34 +1445,23 @@ function frmMain_WndProc( _
         case WM_CAPTURECHANGED
             gApp.bDragTabActive = false
             
-        case WM_COPYDATA      ' used during processing of commandline
-'            dim pDataToGet as COPYDATASTRUCT ptr
-'            dim pwszArg as wstring ptr 
-'            dim wszExt as wstring * MAX_PATH
-
-'            pDataToGet = cast(COPYDATASTRUCT ptr, lParam)
-'            pwszArg = pDataToGet->lpData
-
-'            ' We have a valid filename so determine what type it is.
-'            wszExt = AfxStrPathname( "EXTN", *pwszArg )
-'            wszExt = lcase(wszExt)
             
-'            select case wszExt
-'            case APPEXTENSION    ' project file
-'                ' Pass the info to our generic project open function to handle everything.
-'                frmMain_OpenProjectSafely(HWND_FRMMAIN, *pwszArg) 
-                
-'            case else   ' .bas, .bi, .rc, etc...
-'                dim pDoc as clsDocument ptr
-'                pDoc = frmMain_OpenFileSafely( HWND, _
-'                                        false, _    ' bIsNewFile
-'                                        false, _    ' bIsTemplate
-'                                        true,  _    ' bShowInTab
-'                                        false, _    ' bIsInclude
-'                                        *pwszArg, _  ' pwszName
-'                                        0 )         ' pDocIn
-'                if pDoc then UpdateMRUList(pDoc->DiskFilename) 
-'            end select    
+        case WM_COPYDATA      ' used during processing of commandline
+            dim pDataToGet as COPYDATASTRUCT ptr = cast(COPYDATASTRUCT ptr, lParam)
+            if pDataToGet then
+                if pDataToGet->dwData = IDM_COPYDATA_COMMANDLINE then  
+                    dim as CWSTR wszCommandLine = *cast(wstring ptr, pDataToGet->lpData)
+                    dim as integer numfiles = AfxStrParseCount(wszCommandLine, ";")
+                    dim wszFiles(numfiles) as CWSTR
+                    for i as integer = 1 to numfiles
+                        wszFiles(i) = AfxStrParse(wszCommandLine, i, ";")
+                    next
+                    if frmMain_ProcessFilesArray(hwnd, wszFiles()) then
+                        LoadExplorerFiles()
+                        LoadFunctionsFiles()
+                    end if
+                end if
+            end if
             
 
         ''  CUSTOM MESSAGES
@@ -1495,7 +1497,7 @@ function frmMain_WndProc( _
 
         case MSG_USER_PROCESS_COMMANDLINE 
             ' process any command line arguments that may have been passed to the program.
-            frmMain_ProcessCommandLine(HWnd)
+            frmMain_ProcessCommandLine(hwnd)
 
         case MSG_USER_PROCESS_STARTUPUSERTOOLS
             ' process any User Tools that must display immediately after the main editor

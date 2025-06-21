@@ -526,6 +526,7 @@ function ParseLogForError( _
             frmOutput_PositionWindows
         end select
         
+        gConfig.ShowOutputPanelMinimized = 0
         frmOutput_ActivatePanelHeight
         ShowWindow( HWND_FRMOUTPUT, SW_SHOW)
         frmMain_PositionWindows

@@ -12,7 +12,6 @@
 '    GNU General Public License for more details.
 
 
-'#define TAB_PLUS_BUTTON
 
 ' ========================================================================================
 ' Show or hide the drop down shadow that will display below the top tabs control. The
@@ -139,13 +138,6 @@ function frmTopTabs_PositionWindows() as LRESULT
     gTTabCtl.rcActionButton.bottom = gTTabCtl.rcActionButton.top + pWindow->ScaleY( ActionButtonHeight )
     gTTabCtl.rcActionButton.right = gTTabCtl.rcActionButton.left + pWindow->ScaleY( ActionButtonWidth )
 
-    ' calculate the + add new file button. 
-    ' Left position is calculated below once we know how many tabs will be drawn in the tab control.
-#ifdef TAB_PLUS_BUTTON   
-    gTTabCtl.rcAddFileButton = gTTabCtl.rcActionButton 
-    gTTabCtl.rcAddFileButton.left = 0
-#endif
-
     for i as long = lbound(gTTabCtl.tabs) to ubound(gTTabCtl.tabs) 
         pDoc = gTTabCtl.tabs(i).pDoc
         if pDoc then
@@ -182,16 +174,6 @@ function frmTopTabs_PositionWindows() as LRESULT
             
         end if
     next
-
-#ifdef TAB_PLUS_BUTTON   
-    ' The + Add New file button
-    gTTabCtl.rcAddFileButton.left = nLeft + pWindow->ScaleX( hmargin )
-    ' Ensure that the button stays within the tab area and always gets drawn whether
-    ' it is immediately after the last tab or at the very end next top the right panel.
-    dim as long MaxLeftAddFileButton = gTTabCtl.rcActionPanel.left - pWindow->ScaleY( AddFileButtonWidth )
-    gTTabCtl.rcAddFileButton.left = min(gTTabCtl.rcAddFileButton.left, MaxLeftAddFileButton)
-    gTTabCtl.rcAddFileButton.right = gTTabCtl.rcAddFileButton.left + pWindow->ScaleY( AddFileButtonWidth )
-#endif    
 
     ' We now know the exact width and postions of all tabs so now we need to calculate
     ' and adjust the gTTabCtl.FirstDisplayTab based on where the gTTabCtl.CurSel is located.
@@ -421,11 +403,6 @@ function frmTopTabs_WndProc( _
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
             wszTooltip  = L(430, "Tab List")
 
-#ifdef TAB_PLUS_BUTTON   
-        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
-            wszTooltip  = L(003, "New File")
-#endif
-
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
             ' If CTRL is pressed then use the top/bottom split, otherwise
             ' use the left/right split icon.
@@ -453,9 +430,6 @@ function frmTopTabs_WndProc( _
         if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
-#ifdef TAB_PLUS_BUTTON   
-        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
-#endif
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionPanel) then
         else
@@ -475,9 +449,6 @@ function frmTopTabs_WndProc( _
         if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
-#ifdef TAB_PLUS_BUTTON   
-        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
-#endif
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcActionPanel) then
         else ' regular tab
@@ -536,11 +507,6 @@ function frmTopTabs_WndProc( _
             DestroyMenu( hPopUpMenu )
             Return true   ' prevent further processing that leads to WM_CONTEXTMENU
 
-#ifdef TAB_PLUS_BUTTON   
-        elseif isMouseOverRECT(hwnd, gTTabCtl.rcAddFileButton) then
-            ' Add a new file tab
-            PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FILENEWLASTTAB, 0), 0 )
-#endif
         elseif isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
             ' Split editor view
             ' IDM_SPLITLEFTRIGHT, IDM_SPLITTOPBOTTOM
@@ -664,25 +630,6 @@ function frmTopTabs_WndProc( _
             end if
 
         next
-        
- #ifdef TAB_PLUS_BUTTON   
-        ' Draw the + new file button
-        SelectObject( memDC, ghTopTabs.hPanelBrush )
-        SetBkColor( memDC, ghTopTabs.BackColor )
-        SetTextColor( memDC, ghTopTabs.ForeColor )
-        if isAddFileButtonHitTest( hwnd ) then
-            SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-            SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-        end if
-        rc = gTTabCtl.rcAddFileButton
-        FillRect( memDC, @rc, ghTopTabs.hPanelBrush )
-        selectPen( memDC, hPenNull )
-        RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-        SelectObject(memDC, ghMenuBar.hFontSymbol)
-        DrawText( memDC, wszIconAddFileButton, -1, cast(lpRect, @rc), wsStyle )
-#endif        
         
         ' Lastly, draw the TopTabs Action Area (basically, the little panel to the
         ' right of all of the top tabs that has the "..." icon.

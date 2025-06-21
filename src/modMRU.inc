@@ -199,7 +199,7 @@ function OpenMRUFile( _
     end if
 
     LoadExplorerFiles()
-    LoadfunctionsFiles()
+    LoadFunctionsFiles()
 
     function = 0
 end function

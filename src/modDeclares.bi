@@ -130,6 +130,7 @@ enum
     IDM_FUNCTIONS_VIEWASLIST
     IDM_SETCATEGORY
     IDM_CLOSEPANEL
+    IDM_COPYDATA_COMMANDLINE     ' IPC message sending commandline between instances of the editor
         
     IDM_MRUCLEAR, IDM_MRUSESSIONCLEAR, IDM_MRUPROJECTCLEAR
     IDM_CONSOLE, IDM_GUI, IDM_RESOURCE, IDM_LINKMODULES   ' used for compiler directives in code
