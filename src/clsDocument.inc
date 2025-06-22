@@ -924,37 +924,51 @@ function clsDocument.BlockComment( byval flagBlock as boolean ) as long
     dim strNewText  as string      ' new text to insert or delete
     dim nCount      as long        ' Number of "'" added or removed
     
-    dim blockChars  as string = "'"
+    ' flagBlock
+    '   true   comment selected lines
+    '   false  uncomment selected lines
+    
+    dim blockChars as string = "'"
+    
     ' If this is a resource file then use different block characters
     if lcase(AfxStrPathname( "EXTN", this.DiskFilename)) = ".rc" then
         blockChars = "//"
     end if
     
     dim as any ptr pSci = this.GetActiveScintillaPtr()
-    ' flagBlock = true for Blocking comment, false for UnBlocking comment
     this.GetSelectedLineRange( startLine, endLine, startPos, endPos )
     
     gApp.SuppressNotify = true
     SetWindowRedraw( this.hWndActiveScintilla, false )
+
     SciMsg( pSci, SCI_BEGINUNDOACTION, 0, 0)
     for i = startLine to endLine
         strText = this.GetLine(i)   
         if flagBlock = false then   
             ' unblock comment
-            if left(strText, len(blockChars)) <> blockChars then
-            continue For
+            ' Bypass leading spaces and tabs in order to find the firstpos
+            firstpos = -1
+            for ii as integer = 0 to len(strText) - 1
+                if (strText[ii] <> 32) andalso (strText[ii] <> 9) then 
+                    firstpos = ii: exit for
+                end if
+            next
+            if firstpos = -1 then continue for
+                
+            if mid(strText, firstpos + 1, len(blockChars)) <> blockChars then
+                continue For
             else   
-            firstpos = SciMsg( pSci, SCI_POSITIONFROMLINE, i, 0 )
-            SciMsg( pSci, SCI_DELETERANGE, firstpos, cast(LPARAM, len(blockChars)) )
+                firstpos = SciMsg( pSci, SCI_POSITIONFROMLINE, i, 0 ) + firstpos
+                SciMsg( pSci, SCI_DELETERANGE, firstpos, cast(LPARAM, len(blockChars)) )
             end if
             nCount += 1
         else
             ' block comment
             if len(rtrim(strText)) then
-            strNewText = blockChars
-            firstpos = SciMsg( pSci, SCI_POSITIONFROMLINE, i, 0 )
-            SciMsg( pSci, SCI_INSERTTEXT, firstpos, cast(LPARAM, strptr(strNewText)) )
-            nCount += 1
+                strNewText = blockChars
+                firstpos = SciMsg( pSci, SCI_POSITIONFROMLINE, i, 0 )
+                SciMsg( pSci, SCI_INSERTTEXT, firstpos, cast(LPARAM, strptr(strNewText)) )
+                nCount += 1
             end if   
         end if
     next
@@ -1421,7 +1435,7 @@ function clsDocument.ApplyProperties() as long
         ''
         ''  CARET
         SciMsg( m_pSci(i), SCI_SETCARETFORE, ghEditor.ForeColorCaret, 0 )
-        SciMsg( m_pSci(i), SCI_SETCARETWIDTH, 2, 0 )       ' 2 pixels
+        SciMsg( m_pSci(i), SCI_SETCARETWIDTH, 3, 0 )   '(1,2,3  Default is 1)
 
         ''
         ''  SHOW CARET LINE
@@ -1432,11 +1446,6 @@ function clsDocument.ApplyProperties() as long
             SciMsg( m_pSci(i), SCI_SETCARETLINEVISIBLE, false, 0 )
         end if
         
-        ''
-        ''  SET CARET WIDTH (1,2,3. Default is 1)
-        SciMsg( m_pSci(i), SCI_SETCARETWIDTH, 3, 0 )
-        
-
         ''
         ''  SELECTION COLORS
         SciMsg( m_pSci(i), SCI_SETSELFORE, Ctrue, ghEditor.ForeColorSelection )
@@ -1549,6 +1558,13 @@ function clsDocument.ApplyProperties() as long
             SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_OPERATOR, ghEditor.OperatorsBold)
             SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_OPERATOR, ghEditor.OperatorsItalic)
             SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_OPERATOR, ghEditor.OperatorsUnderline)
+
+'            ' Set the "date" style. We use this for @()[]{} brace characters
+'            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_DATE, ghEditor.ForeColorBraceGood)
+'            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_DATE, ghEditor.BackColorText)
+'            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_DATE, ghEditor.TextBold )
+'            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_DATE, ghEditor.TextItalic )
+'            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_DATE, ghEditor.TextUnderline )
 
             ' Set the Preprocessor style
             SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_PREPROCESSOR, ghEditor.ForeColorPreprocessor )

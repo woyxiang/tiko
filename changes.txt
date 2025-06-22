@@ -18,6 +18,7 @@ Version 1.0.4 ()
 - Fixed: autoinsert after ENTER at end of Function line would not move existing code down one line.
 - Fixed: WinAPI codetips not displaying.
 - Fixed: Command line not being sent to existing instance of the editor when option "Allow Multiple Instances" unchecked.
+- Fixed: UnComment Block now correctly handles comment characters not located at the first position of the line.
 
 Version 1.0.3 (June 16, 2025)
 - Added a "Build and Execute" icon to the left side Panel.

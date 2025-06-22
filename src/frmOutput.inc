@@ -585,7 +585,7 @@ function frmOutput_ActivatePanelHeight() as long
     if gConfig.ShowOutputPanelMinimized then
         nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
     else
-        if gConfig.ShowOutputPanelHeight <= pWindow->ScaleY(OUTPUT_TABS_HEIGHT) then
+        if gConfig.ShowOutputPanelHeight = 0 then
             gConfig.ShowOutputPanelHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
         end if
         nHeight = gConfig.ShowOutputPanelHeight
@@ -647,7 +647,7 @@ function frmOutputTabs_SubclassProc ( _
             end if
                         
         case WM_MOUSEHOVER
-            dim as CWSTR wszTooltip = ""
+            dim as CWSTR wszTooltip
             if isMouseOverRECT( hWin, gOutputCloseRect ) = true then
                 ' Display the tooltip
                 wszTooltip  = L(161, "Close")
@@ -680,11 +680,7 @@ function frmOutputTabs_SubclassProc ( _
             if isMouseOverRECT( hWin, gOutputCloseRect ) = false then
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
-                if gConfig.ShowOutputPanelMinimized = 1 then
-                    gConfig.ShowOutputPanelMinimized = 0
-                else    
-                    gConfig.ShowOutputPanelMinimized = 1
-                end if
+                gConfig.ShowOutputPanelMinimized = iif(gConfig.ShowOutputPanelMinimized = 1, 0, 1)
                 frmOutput_ActivatePanelHeight()
                 frmMain_PositionWindows()
                 gOutputTabsCurSel = idx

@@ -477,8 +477,8 @@ dim shared SciMsg as Scintilla_DirectFunction
 #Define SCI_GETTEXTLENGTH                               2183
 #Define SCI_GETDIRECTFUNCTION                           2184
 #Define SCI_GETDIRECTPOINTER                            2185
-#Define SCI_SETOVERtype                                 2186
-#Define SCI_GETOVERtype                                 2187
+#Define SCI_SETOVERTYPE                                 2186
+#Define SCI_GETOVERTYPE                                 2187
 #Define SCI_SETCARETWIDTH                               2188
 #Define SCI_GETCARETWIDTH                               2189
 #Define SCI_SETTARGETSTART                              2190
