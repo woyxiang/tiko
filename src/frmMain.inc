@@ -898,7 +898,6 @@ function frmMain_PositionWindows() as LRESULT
         if gConfig.ExplorerPositionRight then rcDoc.right = rc.right - nWidthPanel
         pDoc->rcDocSplitArea = rcDoc
 
-        frmMain_HideScrollBars()
         
         if pDoc->EditorSplitMode = SplitNone then 
             ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_SHOW )

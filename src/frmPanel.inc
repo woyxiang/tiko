@@ -195,7 +195,6 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
 
     dim as PAINTSTRUCT ps
     dim as HDC hDC
-    dim as HPEN hPenNull
     dim as RECT rc
     
     hDC = BeginPaint(hwnd, @ps)
@@ -235,7 +234,7 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     end if
     rc = gPanel.rcActionMenu
 
-    hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
+    dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
     SelectObject( memDC, hPenNull )
     RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
     
@@ -283,9 +282,9 @@ function frmPanel_OnPaint( byval hwnd as HWND ) as LRESULT
     ' Cleanup
     RestoreDC( memDC, -1 )
 
+    if hPenNull   then DeleteObject( hPenNull )
     if hPenSolid  then DeleteObject( hPenSolid )
     if hPenSolid2 then DeleteObject( hPenSolid2 )
-    if hPenNull   then DeleteObject( hPenNull )
     if hbit       then DeleteObject( hbit )
     if memDC      then DeleteDC( memDC )
 

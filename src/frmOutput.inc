@@ -770,12 +770,12 @@ function frmOutputTabs_SubclassProc ( _
 
             ' Cleanup
             RestoreDC( memDC, -1 )
-            DeleteObject( hbit )
-            if memDC then DeleteDC( memDC )
             
-            if hPenSolid then DeleteObject( hPenSolid )
+            if hPenSolid  then DeleteObject( hPenSolid )
             if hPenSolid2 then DeleteObject( hPenSolid2 )
-            if hPenNull then DeleteObject( hPenNull )
+            if hPenNull   then DeleteObject( hPenNull )
+            if hbit       then DeleteObject( hbit )
+            if memDC      then DeleteDC( memDC )
             
             EndPaint( hWin, @ps )
             return 0

@@ -121,9 +121,21 @@ function frmEditorHScroll_WndProc( _
             dim as RECT rc
             
             hDC = BeginPaint( hwnd, @ps )
-            SaveDC( hDC )
+            
             GetClientRect(hwnd, @rc)
-            FillRect( hDC, @rc, ghEditor.hBackBrushScrollBar )
+            dim as long nWidth = rc.right - rc.left
+            dim as long nHeight = rc.bottom - rc.top
+
+            dim memDC as HDC      ' Double buffering
+            dim hbit as HBITMAP   ' Double buffering
+            
+            memDC = CreateCompatibleDC( hDC )
+            hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
+            
+            SaveDC(memDC)
+
+            if hbit then SelectObject( memDC, hbit )
+            FillRect( memDC, @rc, ghEditor.hBackBrushScrollBar )
             
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
@@ -132,10 +144,16 @@ function frmEditorHScroll_WndProc( _
                 gEditorHScroll(idxWindow).rc = rc
                 gEditorHScroll(idxWindow).rc.left = GetXOffset
                 gEditorHScroll(idxWindow).rc.right = GetXOffset + ((rc.right / gEditorHScroll(idxWindow).lineLength) * rc.right)
-                FillRect( hDC, @gEditorHScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
+                FillRect( memDC, @gEditorHScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
             end if
             
-            RestoreDC( hDC, -1 )
+            BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
+
+            RestoreDC( memDC, -1 )
+
+            if hbit      then DeleteObject( hbit )
+            if memDC     then DeleteDC( memDC )
+            
             EndPaint( hwnd, @ps )
             return 0
 

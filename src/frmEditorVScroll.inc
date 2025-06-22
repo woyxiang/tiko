@@ -158,18 +158,38 @@ function frmEditorVScroll_WndProc( _
             dim as RECT rc
 
             hDC = BeginPaint( hwnd, @ps )
-            SaveDC( hDC )
+
             GetClientRect(hwnd, @rc)
-            FillRect( hDC, @rc, ghEditor.hBackBrushScrollBar )
+            dim as long nWidth = rc.right - rc.left
+            dim as long nHeight = rc.bottom - rc.top
+
+            dim memDC as HDC      ' Double buffering
+            dim hbit as HBITMAP   ' Double buffering
+            
+            memDC = CreateCompatibleDC( hDC )
+            hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
+            
+            SaveDC(memDC)
+
+            if hbit then SelectObject( memDC, hbit )
+            FillRect( memDC, @rc, ghEditor.hBackBrushScrollBar )
+
             dim as long penWidth = pWindow->ScaleX(1)
             dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghEditor.Divider )
-            SelectPen( hDC, hPenSolid )
-            MoveToEx( hDC, rc.left, rc.top, null )
-            LineTo( hDC, rc.left, rc.bottom )   
-            FillRect( hDC, @gEditorVScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
-            RestoreDC( hDC, -1 )
+            SelectObject( memDC, hPenSolid )
+            MoveToEx( memDC, rc.left, rc.top, null )
+            LineTo( memDC, rc.left, rc.bottom )   
+            FillRect( memDC, @gEditorVScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
+
+            BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
+
+            RestoreDC( memDC, -1 )
+
+            if hPenSolid then DeleteObject( hPenSolid )
+            if hbit      then DeleteObject( hbit )
+            if memDC     then DeleteDC( memDC )
+            
             EndPaint( hwnd, @ps )
-            DeletePen( hPenSolid )
             return 0
     end Select
 
