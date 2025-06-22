@@ -18,5 +18,6 @@
 #Define IDC_FRMABOUT_LBLAPPCOPYRIGHT                1002
 #Define IDC_FRMABOUT_IMAGE1                         1003
 #Define IDC_FRMABOUT_LBLJOSE                        1004
+#Define IDC_FRMABOUT_LBLOTHERS                      1005
 
 declare function frmAbout_Show( byval hWndParent as hwnd ) as LRESULT

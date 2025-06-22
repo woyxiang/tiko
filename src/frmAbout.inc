@@ -105,7 +105,10 @@ function frmAbout_Show( byval hWndParent as HWND ) as LRESULT
         WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
 
     pWindow->AddControl("LABEL", , IDC_FRMABOUT_LBLJOSE, "Special thanks to: José Roca (WinFBX Framework)", _
-        200, 131, 300, 20, WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
+        200, 143, 300, 18, WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
+
+    pWindow->AddControl("LABEL", , IDC_FRMABOUT_LBLOTHERS, "Paul Doe and ImortisInglorian for ideas and testing", _
+        200, 159, 350, 18, WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, WS_EX_LEFT or WS_EX_LTRREADING)
 
     ' Process Windows messages
     function = pWindow->DoEvents(SW_SHOW)

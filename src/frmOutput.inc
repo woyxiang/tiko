@@ -581,16 +581,17 @@ function frmOutput_ActivatePanelHeight() as long
 
     dim as long nHeight
     dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
+    dim as long nDefaultHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
 
     if gConfig.ShowOutputPanelMinimized then
         nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
     else
-        if gConfig.ShowOutputPanelHeight = 0 then
-            gConfig.ShowOutputPanelHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
+        if gConfig.ShowOutputPanelHeight <= nDefaultHeight then
+            gConfig.ShowOutputPanelHeight = nDefaultHeight
         end if
         nHeight = gConfig.ShowOutputPanelHeight
     end if
-    
+   
     AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight)
     
     function = 0
