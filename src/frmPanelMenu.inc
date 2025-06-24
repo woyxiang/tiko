@@ -116,58 +116,33 @@ end function
 ' Process WM_PAINT message for window/dialog: frmPanelMenu
 ' ========================================================================================
 function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
             
-    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL_MENU)
-    if pWindow = 0 then exit function
-
-    dim as PAINTSTRUCT ps
-    dim as HDC hDc
-    dim as HPEN hPenNull
-    dim as HPEN hPenSolid 
-    dim as RECT rc
+    dim as clsDoubleBuffer b
     
-    dim as long wsStyle 
+    b.BeginDoubleBuffer(hwnd)
+
+    ' Set default fore and back colors
+    b.SetForeColors( ghPanel.ForeColor, ghPanel.ForeColorHot )
+    b.SetBackColors( ghPanel.BackColor, ghPanel.BackColorHot )
+
+    ' Clear the entire back client area
+    b.PaintClientRect()
     
-    hDC = BeginPaint(hwnd, @ps)
-
-    GetClientRect(hwnd, @rc)
-    dim as long nWidth = rc.right - rc.left
-    dim as long nHeight = rc.bottom - rc.top
-
-    dim memDC as HDC      ' Double buffering
-    dim hbit as HBITMAP   ' Double buffering
-
-    memDC = CreateCompatibleDC( hDC )
-    hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-
-    SaveDC(memDC)
-
-    if hbit then SelectObject( memDC, hbit )
-
-    FillRect( memDC, @rc, ghPanel.hPanelBrush )
+    b.SetFont( SYMBOLFONT_10 )
 
     for i as integer = lbound(gPanelMenu) to ubound(gPanelMenu)
         dim as CWSTR wszCaption = gPanelMenu(i).wszCaption
-        dim as RECT rc = gPanelMenu(i).rc
-        dim as integer id = gPanelMenu(i).id
-        
-        SetTextColor( memDC, ghPanel.ForeColorHot )
-        if isMouseOverRECT( hwnd, rc ) then
-            SelectObject( memDC, ghPanel.hBackBrushHot )
-            SetBkColor( memDC, ghPanel.BackColorHot )
-        else
-            SelectObject( memDC, ghPanel.hPanelBrush )
-            SetBkColor( memDC, ghPanel.BackColor )
-        end if
+        dim as integer id       = gPanelMenu(i).id
+        dim as RECT rc          = gPanelMenu(i).rc
 
-        if (hPenNull = 0) then hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-        SelectObject( memDC, hPenNull )
-        RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
+        b.SetForeColors( ghPanel.ForeColorHot, ghPanel.ForeColorHot )
+        b.SetBackColors( ghPanel.BackColor, ghPanel.BackColorHot )
         
-        wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-        SelectObject( memDC, ghMenuBar.hFontSymbol )
-        DrawText( memDC, wszCaption, -1, cast(lpRect, @rc), wsStyle )
-        
+        ' Draw the icon
+        b.PaintRoundRect( @rc, true )
+        b.PaintText( wszCaption, @rc, DT_CENTER, true )
+
         ' Should we underline this icon as actively selected    
         dim as boolean bDrawUnderline = false
         if (id = IDM_VIEWEXPLORER) andalso _
@@ -177,28 +152,16 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
         if (id = IDM_BOOKMARKSLIST) andalso _
             (gPanel.hActiveChild = HWND_FRMBOOKMARKS) then bDrawUnderline = true
         
-        if bDrawUnderline then
+        if (bDrawUnderline = true) andalso (pWindow <> 0) then
             rc.left += pWindow->ScaleX(2)
             rc.right -= pWindow->ScaleX(2)
-            if (hPenSolid = 0) then hPenSolid = CreatePen( PS_SOLID, 1, ghPanel.ForeColorHot )
-            SelectObject( memDC, hPenSolid)
-            MoveToEx( memDC, rc.left, rc.bottom, null )
-            LineTo( memDC, rc.right, rc.bottom )   
+            b.SetPenColor( ghOutput.ForeColor )
+            b.PaintLine( 1, rc.left, rc.bottom, rc.right, rc.bottom )
         end if
         
     next
     
-    BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
-
-    ' Cleanup
-    RestoreDC( memDC, -1 )
-    
-    if hPenNull  then DeleteObject( hPenNull )
-    if hPenSolid then DeleteObject( hPenSolid )
-    if hbit      then DeleteObject( hbit )
-    if memDC     then DeleteDC( memDC )
-
-    EndPaint( hwnd, @ps )
+    b.EndDoubleBuffer()
 
     function = 0
 end function
@@ -215,9 +178,8 @@ function frmPanelMenu_WndProc( _
             byval lParam as LPARAM _
             ) as LRESULT
 
-    static wszPrevTooltip as CWSTR
-
-    static hTooltip as HWND
+    static as CWSTR wszPrevTooltip 
+    static as HWND hTooltip
     if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     select case uMsg
@@ -269,6 +231,7 @@ function frmPanelMenu_WndProc( _
 
 
     case WM_MOUSELEAVE
+        wszPrevTooltip = ""
         for i as integer = lbound(gPanelMenu) to ubound(gPanelMenu)
             gPanelMenu(i).isPrevHot = false
         next
@@ -287,7 +250,6 @@ function frmPanelMenu_WndProc( _
         if wszTooltip <> wszPrevTooltip then
             AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
             wszPrevTooltip = wszTooltip
-            AfxRedrawWindow( hwnd )
         end if
         
     end select

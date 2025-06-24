@@ -259,7 +259,7 @@ end function
 ' ========================================================================================
 function frmMain_ChangeTopMenuStates() as long
     
-    select case GetDlgCtrlID( ghWndActiveMenuBarButton )
+    select case gMenuBar(gActiveMenuBarIndex).id
         case IDC_MENUBAR_FILE:     frmMain_FileTopMenuStates()
         case IDC_MENUBAR_EDIT:     frmMain_EditTopMenuStates()
         case IDC_MENUBAR_SEARCH:   frmMain_SearchTopMenuStates()

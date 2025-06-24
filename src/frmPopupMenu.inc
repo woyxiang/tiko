@@ -11,7 +11,8 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
-declare function frmPopupMenu_Show(byval nPopupType as long, byval nItemID as long, byval hParent as HWND) as HWND
+declare function frmPopupMenu_Show( _
+    byval nPopupType as long, byval nItemID as long, byval hParent as HWND, byval rcParent as RECT) as HWND
 
 dim shared as HWND HWND_MENU(1)
 dim shared as HWND HWND_SHADOW(1)
@@ -86,9 +87,8 @@ function killAllPopupMenus() as boolean
     gMenuLastCurSel = -1
     gPrevent_WM_NCACTIVATE = false
     ' unhighlight any previous hot menubar button
-    dim as HWND hCtrl = ghWndActiveMenuBarButton
-    ghWndActiveMenuBarButton = 0
-    if hCtrl then AfxRedrawWindow(hCtrl)
+    gActiveMenuBarIndex = -1
+    AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
     return true
 end function
 
@@ -211,105 +211,80 @@ function frmPopupMenu_OnDrawItem( _
         ( lpdis->itemAction = ODA_SELECT ) orelse _
         ( lpdis->itemAction = ODA_FOCUS ) then
 
-        dim as RECT rc = lpdis->rcItem
-        dim as long nWidth  = rc.right-rc.left
-        dim as long nHeight = rc.bottom-rc.top 
+        dim as clsDoubleBuffer b
 
-        dim memDC as HDC      ' Double buffering
-        dim hbit as HBITMAP   ' Double buffering
-        dim as HPEN hPenSolid
-        
-        memDC = CreateCompatibleDC( lpdis->hDC )
-        hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
-        
-        SaveDC(memDC)
-        
-        if hbit then SelectObject( memDC, hbit )
-            
-        dim as CWSTR wszCaption 
-        dim as long wsStyle 
+        b.BeginDoubleBuffer(lpdis->hwndItem, lpdis->hDC, lpdis->rcItem)
 
-        dim as HBRUSH hBrush
-        dim as COLORREF foreclr, backclr
-            
         dim as long idx = ListBox_GetItemData( lpdis->hwndItem, lpdis->ItemID )
         dim pMenu as TOPMENU_TYPE ptr = @gTopMenu(idx)
 
-        wszCaption = getMenuText(pMenu->nID)
+        dim as COLORREF backclr
+        dim as COLORREF foreclr
+        
+        dim as CWSTR wszCaption = getMenuText(pMenu->nID)
 
         if (pMenu->isSeparator = true) orelse (pMenu->isDisabled = true) then
-            hBrush = ghPopup.hBackBrushDisabled
             foreclr = ghPopup.ForeColorDisabled
             backclr = ghPopup.BackColorDisabled
         else
             dim as boolean IsHot = false
             if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
-            hBrush = iif( IsHot, ghPopup.hBackBrushHot, ghPopup.hBackBrush)
             backclr = iif( IsHot, ghPopup.BackColorHot, ghPopup.BackColor)
             foreclr = iif( IsHot, ghPopup.ForeColorHot, ghPopup.ForeColor)
         end if
+
+        b.SetForeColors(foreclr, foreclr)
+        b.SetBackColors(backclr, backclr)
+
+        ' Create our rect that works with the entire line
+        dim as RECT rc
+        SetRect( @rc, 0, 0, b.rcClientWidth, b.rcClientHeight )
+        dim as RECT rcText = rc 
+        dim as RECT rcBitmap = rc 
         
         ' Paint the entire background
-        ' Create our rect that works with the entire line
-        SetRect(@rc, 0, 0, nWidth, nHeight)
-        FillRect( memDC, @rc, hBrush )
-
-        SetBkColor( memDC, backclr )   
-        SetTextColor( memDC, foreclr )
-
-        dim as RECT rcText = rc
+        b.PaintRect( @rc )
 
         if pMenu->isSeparator then 
             rcText.left = rcText.left + pWindow->ScaleX(12) 
-            rcText.right = rcText.right - pWindow->ScaleX(12) 
-            hPenSolid = CreatePen( PS_SOLID, 1, ghPopup.ForeColorDisabled )
-            SelectObject( memDC, hPenSolid )
-            MoveToEx( memDC, rcText.Left, (rcText.bottom-rcText.top) / 2, null )   
-            LineTo( memDC, rcText.Right, (rcText.bottom-rcText.top) / 2 )
+            rcText.right = rcText.right - pWindow->ScaleX(12)
+            b.SetPenColor(ghPopup.ForeColorDisabled)
+            b.SetBackColors(backclr, backclr)
+            b.PaintLine(1, rcText.left, (rcText.bottom-rcText.top) / 2, _
+                            rcText.right, (rcText.bottom-rcText.top) / 2 )
         else
-            dim as RECT rcBitmap = rcText
             ' Handle caption, keyboard accelerator or submenu marker
             dim as CWSTR wszLeft = AfxStrParse(wszCaption, 1, chr(9))
             dim as CWSTR wszRight = AfxStrParse(wszCaption, 2, chr(9))
             
             ' checkmark
             if pMenu->isChecked then
-                rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(30) 
-                wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                SelectObject( memDC, ghMenuBar.hFontSymbol )
-                DrawText( memDC, wszIconCheckmark, -1, cast(lpRect, @rcBitmap), wsStyle )
+                b.SetFont( SYMBOLFONT_10 )
+                rcBitmap.right = rcBitmap.left + pWindow->ScaleX(30) 
+                b.PaintText( wszIconCheckmark, @rcBitmap, DT_CENTER )
             end if
-            SelectObject( memDC, ghMenuBar.hFontMenuBar )
+
             rcText.left = rcText.left + pWindow->ScaleX(30) 
             rcText.right = rcText.right - pWindow->ScaleX(30) 
 
             ' caption
-            wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszLeft.sptr, -1, cast(lpRect, @rcText), wsStyle )
+            b.SetFont( GUIFONT_10 )
+            b.PaintText( wszLeft, @rcText, DT_LEFT )
 
             ' keyboard accelerator 
-            wsStyle = DT_NOPREFIX or DT_RIGHT or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszRight.sptr, -1, cast(lpRect, @rcText), wsStyle )
+            b.PaintText( wszRight, @rcText, DT_RIGHT )
 
             ' submenu arrow
             if pMenu->nChildID then
+                b.SetFont( SYMBOLFONT_10 )
                 rcBitmap = rcText
                 rcBitmap.Left = rcText.Right
                 rcBitmap.Right = rcBitmap.Left + pWindow->ScaleX(20) 
-                SelectObject( memDC, ghMenuBar.hFontSymbol )
-                wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
+                b.PaintText( wszIconChevronRight, @rcBitmap, DT_CENTER )
             end if   
         end if
             
-        BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, _
-                nWidth, nHeight, memDC, 0, 0, SRCCOPY 
-
-        ' Cleanup
-        RestoreDC(memDC, -1)
-        if hPenSolid then DeleteObject( hPenSolid )
-        if hbit      then DeleteObject( hbit )
-        if memDC     then DeleteDC( memDC )
+        b.EndDoubleBuffer()
 
     end if   
 
@@ -372,17 +347,15 @@ function frmPopupMenu_WndProc( _
             return true
 
         case WM_PAINT
-            dim as PAINTSTRUCT ps
-            dim as HDC hDc
-            dim as RECT rc
+            dim as clsDoubleBuffer b
 
-            hDC = BeginPaint(hwnd, @ps)
-            SaveDC(hDC)
-            GetClientRect(hwnd, @rc)
-            FillRect( hDC, @rc, ghPopup.hPanelBrush )
-            RestoreDC(hDC, -1)
-            EndPaint hwnd, @ps
-
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghPopup.PanelColor, ghPopup.PanelColor )
+            b.PaintClientRect()
+            b.EndDoubleBuffer()
+            
+            return 0
+            
     end Select
     
     ' for messages that we don't deal with
@@ -453,8 +426,10 @@ function frmPopupMenu_SubclassProc ( _
             dim as HWND hListBox = GetDlgItem( HWND_MENU(0), IDC_MENU_LISTBOX )
             if hWin = hListBox then 
                 dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
+                dim as RECT rc
+                ListBox_GetItemRect( hWin, idx, @rc )
                 gMenuLastCurSel = idx
-                frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hWin )
+                frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hWin, rc )
             end if
 
         case WM_ERASEBKGND
@@ -512,14 +487,14 @@ function frmPopupMenu_GetMaxMenuWidth( byval nCtrlID as long ) as long
                 interior_width = AfxScaleX(20)
 
                 wszLeft = AfxStrParse(wszText, 1, chr(9))
-                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszLeft, ghMenuBar.hFontMenuBar, 0 )
+                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszLeft, GUIFONT_10, 0 )
                 if left_width > max_left_width then max_left_width = left_width
                 
                 wszRight = AfxStrParse(wszText, 2, chr(9))
-                right_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszRight, ghMenuBar.hFontMenuBar, 0 )
+                right_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszRight, GUIFONT_10, 0 )
                 if right_width > max_right_width then max_right_width = right_width
             else   
-                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 0 )
+                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 0 )
                 if left_width > max_left_width then max_left_width = left_width
             end if
         end if   
@@ -535,7 +510,8 @@ end function
 function frmPopupMenu_Show( _
                 byval nPopupType as long, _   ' popup or subpopup
                 byval nItemID as long, _      ' parent listbox row 
-                byval hParent as HWND _       ' listbox or menubar button
+                byval hParent as HWND, _      ' listbox or menubar hwnd
+                byval rcParent as RECT _      ' listbox or menubar RECT
                 ) as HWND
 
     dim pWindow as CWindow ptr 
@@ -568,8 +544,9 @@ function frmPopupMenu_Show( _
         end if
         
     elseif nPopupType = ID_POPUP then
-        nCtrlID = GetDlgCtrlID( hParent )
-        rc = AfxGetWindowRect( hParent )
+        nCtrlID = gMenuBar(gActiveMenuBarIndex).id
+        MapWindowpoints( HWND_FRMMAIN_MENUBAR, HWND_DESKTOP, cast( point ptr, @rcParent), 2 )
+        rc = rcParent 
         nMenuLeft = rc.left
         nMenuTop = rc.bottom - 1  ' b/c rect doesn't include bottom pixel
 

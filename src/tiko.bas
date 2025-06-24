@@ -45,10 +45,16 @@ using Afx
 #define APPCOPYRIGHT   wstr("Paul Squires, PlanetSquires Software, Copyright (C) 2016-2025") 
 dim shared as CWSTR gwszDefaultToolchain = "FreeBASIC-1.10.1-winlibs-gcc-9.3.0"
 
+
+'TODO: Refactor AutoSave functionality. Until then, just disable it in the editor.
+#define ENABLE_AUTOSAVE false
+
+
 #include once "modScintilla.bi"
 #include once "modDeclares.bi"         
 
 #include once "clsDocument.bi"
+#include once "clsDoubleBuffer.bi"
 #include once "clsTopTabCtl.bi"
 #include once "clsDB2.bi"
 #include once "clsConfig.bi"
@@ -60,9 +66,10 @@ dim shared gConfig  as clsConfig
 dim shared gTTabCtl as clsTopTabCtl
 
 
+#include once "modThemes.inc"
 #include once "clsDB2.inc"
 #include once "clsConfig.inc"
-#include once "modThemes.inc"
+#include once "clsDoubleBuffer.inc"
 #include once "modRoutines.inc"
 #include once "modParser.inc"
 #include once "clsDocument.inc"
@@ -166,7 +173,7 @@ function WinMain( _
     ' Load the Segoe Fluent Icons ttf file that is used for displaying the various
     ' icons used within the editor.
     dim as CWSTR wszFontFile 
-    wszFontFile = AfxGetExePathName + "SegoeFluentIcons.ttf"
+    wszFontFile = AfxGetExePathName + "\bin\SegoeFluentIcons.ttf"
     if AddFontResourceEx(wszFontFile.vptr, FR_PRIVATE, NULL) = 0 then
         MessageBox( 0, _
                     "Unable to load application font 'SegoeFluentIcons.ttf'. Aborting application." , _
@@ -195,8 +202,8 @@ function WinMain( _
 
 
     ' Load the Scintilla code editing dll
-    dim as any ptr pLibLexilla = dylibload("Lexilla64.dll")
-    dim as any ptr pLibScintilla = dylibload("Scintilla64.dll")
+    dim as any ptr pLibLexilla = dylibload("bin\Lexilla64.dll")
+    dim as any ptr pLibScintilla = dylibload("bin\Scintilla64.dll")
     gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
 
     if (pLibLexilla = 0) orelse (pLibScintilla = 0) then

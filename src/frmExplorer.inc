@@ -175,19 +175,13 @@ end function
 ' Process WM_PAINT message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnPaint( byval hwnd as HWND ) as LRESULT
-            
-    dim as PAINTSTRUCT ps
-    dim as HDC hDC
-    dim as RECT rc
-    
-    hDC = BeginPaint(hwnd, @ps)
+    dim as clsDoubleBuffer b
 
-    SaveDC( hDC )
-    GetClientRect(hwnd, @rc)
-    FillRect( hDC, @rc, ghPanel.hPanelBrush )
-    RestoreDC( hDC, -1 )
-    EndPaint( hwnd, @ps )
-    
+    b.BeginDoubleBuffer(hwnd)
+    b.SetBackColors( ghPanel.BackColor, ghPanel.BackColor )
+    b.PaintClientRect()
+    b.EndDoubleBuffer()
+
     function = 0
 end function
 
@@ -225,100 +219,63 @@ function frmExplorer_OnDrawItem( _
         ( lpdis->itemAction = ODA_SELECT ) orelse _
         ( lpdis->itemAction = ODA_FOCUS ) then
 
-        dim as RECT rc = lpdis->rcItem
-        dim as long nWidth  = rc.right-rc.left
-        dim as long nHeight = rc.bottom-rc.top 
+        dim as clsDoubleBuffer b
 
-        dim memDC as HDC      ' Double buffering
-        dim hbit as HBITMAP   ' Double buffering
+        b.BeginDoubleBuffer(lpdis->hwndItem, lpdis->hDC, lpdis->rcItem)
 
-        memDC = CreateCompatibleDC( lpdis->hDC )
-        hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
-        
-        SaveDC(memDC)
-        if hbit then SelectObject( memDC, hbit )
-
-        SelectObject( memDC, ghMenuBar.hFontMenuBar )
-            
-        ' Default to using normal
-        dim as HBRUSH   hBrush  = ghPanel.hBackBrush
-        dim as COLORREF foreclr = ghPanel.ForeColor
-        dim as COLORREF backclr = ghPanel.BackColor
-            
         dim as boolean IsHot = false
         dim as boolean isNodeHeader = false
         dim as boolean isIconDown = false
-            
-        dim as point pt
-        GetCursorPos( @pt )
-        MapWindowPoints( lpdis->hwndItem, HWND_DESKTOP, cast( point ptr, @rc ), 2 )
-        if PtInRect( @rc, pt ) then IsHot = true
         
-        ' if mouse is over VScrollBar then reset hot
-        if isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then IsHot = false
-            
+        if isMouseOverRECT(lpdis->hwndItem, b.rcClient) then IsHot = true   
         if ListBox_GetSel(lpdis->hwndItem, lpdis->itemID) then IsHot = true
+        if isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then IsHot = false
 
-        hBrush  = iif( IsHot, ghPanel.hBackBrushHot, ghPanel.hBackBrush)
-        backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
-        foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
+        dim as COLORREF backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
+        dim as COLORREF foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
+        b.SetForeColors(foreclr, foreclr)
+        b.SetBackColors(backclr, backclr)
 
+        ' if this is a "node" header then use that icon
         dim as CWSTR wszCaption = AfxGetListBoxText(lpdis->hwndItem, lpdis->ItemID)
-
-        ' if this is a "node" header then use those colors
         if left(wszCaption, 1) = "%" then isNodeHeader = true
         if getExplorerNodeHeaderState(wszCaption) = 1 then isIconDown = true
         
-        ' Paint the entire background
         ' Create our rect that works with the entire line
-        SetRect( @rc, 0, 0, nWidth, nHeight )
-        FillRect( memDC, @rc, hBrush )
-
-        SetBkColor( memDC, backclr )   
-        SetTextColor( memDC, foreclr )
-
-        dim as RECT rcText = rc
-        dim as RECT rcBitmap = rc
-
-        dim as long wsStyle 
+        dim as RECT rc
+        SetRect( @rc, 0, 0, b.rcClientWidth, b.rcClientHeight )
+        dim as RECT rcText = rc 
+        dim as RECT rcBitmap = rc 
         
+        ' Paint the entire background
+        b.PaintRect( @rc )
+
         ' indent the text based on its type
         if isNodeHeader then
+            b.SetFont( SYMBOLFONT_10 )
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20)
-            SelectObject( memDC, ghMenuBar.hFontSymbol )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            if isIconDown then 
-                DrawText( memDC, wszIconChevronDown, -1, cast(lpRect, @rcBitmap), wsStyle )
-            else   
-                DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rcBitmap), wsStyle )
-            end if
+            dim as CWSTR wszBitmap = iif(isIconDown, wszIconChevronDown, wszIconChevronRight) 
+            b.PaintText( wszBitmap, @rcBitmap, DT_CENTER )
+
+            b.SetFont( GUIFONT_10 )
             wszCaption = getExplorerNodeHeaderDescription(wszCaption)
             rcText.left = rcBitmap.right
-            SelectObject( memDC, ghMenuBar.hFontMenuBar )
-            wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE  
-            DrawText( memDC, wszCaption.sptr, -1, cast(lpRect, @rcText), wsStyle )
+            b.PaintText( wszCaption, @rcText, DT_LEFT )
         else
             ' This would be a regular file.
             rcBitmap.left = rcText.left + pWindow->ScaleX(20)
             rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20) 
 
-            SelectObject( memDC, ghMenuBar.hFontMenuBar )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszIconDocument, -1, cast(lpRect, @rcBitmap), wsStyle )
+            b.SetFont( GUIFONT_10 )  ' use GUI rather than SYMBOL b/c of dot icon
+            b.PaintText( wszIconDocument, @rcBitmap, DT_CENTER )
 
+            b.SetFont( GUIFONT_10 )
             rcText.left = rcBitmap.right
-            SelectObject( memDC, ghMenuBar.hFontMenuBar )
-            wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, wszCaption.sptr, -1, cast(lpRect, @rcText), wsStyle )
+            b.PaintText( wszCaption, @rcText, DT_LEFT )
         end if
             
-        BitBlt( lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, _
-                nWidth, nHeight, memDC, 0, 0, SRCCOPY )
+        b.EndDoubleBuffer()
 
-        ' Cleanup
-        RestoreDC(memDC, -1)
-        if hbit  then DeleteObject(hbit)
-        if memDC then DeleteDC(memDC)
     end if   
 
     function = true
@@ -390,6 +347,7 @@ function frmExplorerListBox_SubclassProc ( _
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMEXPLORER)
     static as long accumDelta
     
+    static as CWSTR wszPrevTooltip 
     static as HWND hTooltip
     if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
         
@@ -419,7 +377,7 @@ function frmExplorerListBox_SubclassProc ( _
                 accumDelta = 0
                 frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
-            
+
         Case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
@@ -459,11 +417,14 @@ function frmExplorerListBox_SubclassProc ( _
                 dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
                 if pDoc then wszTooltip = pDoc->DiskFilename
                 ' Display the tooltip
-                AfxSetTooltipText( hTooltip, hWin, wszTooltip )
-                AfxRedrawWindow( hWin )
+                if wszTooltip <> wszPrevTooltip then
+                    AfxSetTooltipText( hTooltip, hWin, wszTooltip )
+                    wszPrevTooltip = wszTooltip 
+                end if    
             end if
             
         case WM_MOUSELEAVE
+            wszPrevTooltip = ""
             nLastIdx = -1
             AfxRedrawWindow(hWin)
             

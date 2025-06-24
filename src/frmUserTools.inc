@@ -42,7 +42,7 @@ function updateUserToolsMenuItems() as long
             if gConfig.Tools(i).wszKey then
             wszText = wszText & chr(9) & gConfig.Tools(i).wszKey
             end if
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if   
     next
@@ -646,12 +646,10 @@ end function
 ' frmUserTools_Show
 ' ========================================================================================
 function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
-    dim hBitmap as HBITMAP
-    dim hCtrl as HWND
-    dim wszImage as wstring * 100
-    
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
+
+    dim as HFONT hFontSymbolLarge = pWindow->CreateFont(SYMBOLFONT, 12, FW_NORMAL)
 
     dim as HWND hForm = _
     pWindow->Create(hWndParent, L(289,"User Tools"), _
@@ -671,17 +669,17 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     
-    hCtrl = _
+    dim as HWND hCtrl = _
     pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDUP, wszIconChevronUp, 166, 388, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    AfxSetWindowFont( hCtrl, ghMenuBar.hFontSymbolLarge, false )     
+    AfxSetWindowFont( hCtrl, hFontSymbolLarge, false )     
 
     hCtrl = _
     pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDDOWN, wszIconChevronDown, 199, 388, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    AfxSetWindowFont( hCtrl, ghMenuBar.hFontSymbolLarge, false )     
+    AfxSetWindowFont( hCtrl, hFontSymbolLarge, false )     
 
     pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL1, L(290,"Tool Name") & ":", 230, 25, 95, 18, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
@@ -795,6 +793,7 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     
     ' Delete the frmUserTools CWindow class manually allocated memory 
     if pWindow then delete(pWindow)
+    if hFontSymbolLarge then DeleteObject(hFontSymbolLarge)
 
     function = 0
 end function

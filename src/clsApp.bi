@@ -55,18 +55,18 @@ type clsApp
 
         declare function IsValidDocumentPointer( byval pDocSearch as clsDocument ptr ) as boolean
         declare function RemoveAllSelectionAttributes() as long
-        Declare function AddNewDocument() as clsDocument ptr 
-        Declare function RemoveDocument( byval pDoc as clsDocument ptr ) as long
+        declare function AddNewDocument() as clsDocument ptr 
+        declare function RemoveDocument( byval pDoc as clsDocument ptr ) as long
         declare function RemoveAllDocuments() as long
-        Declare function GetDocumentCount() as long
+        declare function GetDocumentCount() as long
         declare function GetDocumentPtrByWindow( byval hWindow as hwnd) as clsDocument ptr
-        Declare function GetDocumentPtrByFilename( Byref wszName as wstring ) as clsDocument ptr
-        Declare function GetMainDocumentPtr() as clsDocument ptr
-        Declare function GetResourceDocumentPtr() as clsDocument ptr
+        declare function GetDocumentPtrByFilename( Byref wszName as wstring ) as clsDocument ptr
+        declare function GetMainDocumentPtr() as clsDocument ptr
+        declare function GetResourceDocumentPtr() as clsDocument ptr
         declare function GetSourceDocumentPtr( byval pDocIn as clsDocument ptr ) as clsDocument ptr
         declare function GetHeaderDocumentPtr( byval pDocIn as clsDocument ptr ) as clsDocument ptr
-        Declare function SaveProject( byval bSaveas as boolean = False ) as boolean
-        Declare function ProjectSetFileType( byval pDoc as clsDocument ptr, byval wszFiletype as CWSTR ) as LRESULT
+        declare function SaveProject( byval bSaveas as boolean = False ) as boolean
+        declare function ProjectSetFileType( byval pDoc as clsDocument ptr, byval wszFiletype as CWSTR ) as LRESULT
         declare function GetProjectCompiler() as long
         
 end type

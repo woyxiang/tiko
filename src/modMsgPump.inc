@@ -92,7 +92,7 @@ function handleMouseTopMenu( byval uMsg as MSG ) as boolean
     ' to close any open top menu popups.
 
     if uMsg.message = WM_LBUTTONDOWN then
-        if (uMsg.HWnd <> ghWndActiveMenuBarButton) andalso _
+        if (uMsg.HWnd <> gActiveMenuBarIndex) andalso _
             (uMsg.HWnd <> HWND_MENU(0)) andalso _
             (GetParent(uMsg.HWnd) <> HWND_MENU(0)) andalso _
             (uMsg.HWnd <> HWND_MENU(1)) andalso _
@@ -135,14 +135,14 @@ function handleAltKeyMenuBar( byval uMsg as MSG ) as boolean
 '      killPopupMenus()
 '      ' if active menubar exists then simply toggle it off and exit
 '      dim as HWND hCtrl 
-'      if ghWndActiveMenuBarButton then
-'         hCtrl = ghWndActiveMenuBarButton
-'         ghWndActiveMenuBarButton = 0
+'      if gActiveMenuBarIndex then
+'         hCtrl = gActiveMenuBarIndex
+'         gActiveMenuBarIndex = 0
 '         AfxRedrawWindow(hCtrl)
 '         return true
 '      else   
 '         hCtrl = GetDlgItem(HWND_FRMMAIN_MENUBAR, IDC_MENUBAR_FILE)
-'         ghWndActiveMenuBarButton = hCtrl
+'         gActiveMenuBarIndex = hCtrl
 '         AfxRedrawWindow(hCtrl)
 '         return true
 '      end if   
@@ -155,7 +155,7 @@ end function
 function handleKeysTopMenu( byval uMsg as MSG ) as boolean
     ' If topmenus or menubar are active then process all keyboard input for them rather than 
     ' passing it off to the system to process.
-    if (uMsg.message = WM_KEYDOWN) andalso (ghWndActiveMenuBarButton <> 0) then
+    if (uMsg.message = WM_KEYDOWN) andalso (gActiveMenuBarIndex <> -1) then
         if uMsg.wParam = VK_RETURN then
             ' simulate pressing ENTER on a menuitem by sending WM_LBUTTONUP message
             ' to the active popup menu or menubar button. If this item hasa submenu 
@@ -177,7 +177,7 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                     return true
                 end if   
             else   
-                SendMessage( ghWndActiveMenuBarButton, WM_LBUTTONDOWN, 0, 0 )
+                SendMessage( HWND_FRMMAIN_MENUBAR, WM_LBUTTONDOWN, 0, 0 )
                 return true
             end if
         end if
@@ -190,15 +190,14 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
             elseif IsWindowVisible( HWND_MENU(0) ) THEN
                 killPopupMenus()
                 return true
-            elseif ghWndActiveMenuBarButton <> 0 then
-                dim as HWND hCtrl = ghWndActiveMenuBarButton
-                ghWndActiveMenuBarButton = 0
-                AfxRedrawWindow(hCtrl)
+            elseif gActiveMenuBarIndex <> -1 then
+                gActiveMenuBarIndex = frmMenuBar_GetHotIndex(HWND_FRMMAIN_MENUBAR)
+                AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
                 return true
             end if   
     
             case VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
-            if IsWindowVisible(HWND_MENU(0)) orelse IsWindowVisible(HWND_MENU(1)) then   
+            if (IsWindowVisible(HWND_MENU(0))) orelse (IsWindowVisible(HWND_MENU(1))) then   
                 if uMsg.wParam = VK_DOWN then 
                     setNextMenuItemTabIndex(false)
                     return true
@@ -216,8 +215,10 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                 if uMsg.wParam = VK_RIGHT then
                     if IsWindowVisible(HWND_MENU(0)) then
                         dim as HWND hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
+                        dim as RECT rcItem
                         gMenuLastCurSel = ListBox_GetCurSel(hListBox)
-                        if frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hListBox ) then
+                        ListBox_GetItemRect(hListBox, gMenuLastCurSel, @rcItem)
+                        if frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hListBox, rcItem ) then
                         setNextMenuItemTabIndex(false)
                         return true
                         end if   
@@ -225,32 +226,32 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                 end if
             end if
         
-            if ghWndActiveMenuBarButton <> 0 then
-                dim as HWND prevCtrl = ghWndActiveMenuBarButton
+            if gActiveMenuBarIndex <> -1 then
                 if uMsg.wParam = VK_LEFT then 
-                    ghWndActiveMenuBarButton = GetNextDlgGroupItem( HWND_FRMMAIN_MENUBAR, ghWndActiveMenuBarButton, true )
+                    gActiveMenuBarIndex -= 1
+                    if gActiveMenuBarIndex < lbound(gMenuBar) then gActiveMenuBarIndex = ubound(gMenuBar)
                     ' if popup menus are already activated then continue to show them as
                     ' we move through the various menubar buttons.
                     if IsWindowVisible(HWND_MENU(0)) then
-                        frmPopupMenu_Show(ID_POPUP, 0, ghWndActiveMenuBarButton)
+                        frmPopupMenu_Show(ID_POPUP, 0, HWND_FRMMAIN_MENUBAR, gMenuBar(gActiveMenuBarIndex).rcItem)
                         setNextMenuItemTabIndex(false)
                     end if   
                 end if
                 if uMsg.wParam = VK_RIGHT then 
-                    ghWndActiveMenuBarButton = GetNextDlgGroupItem( HWND_FRMMAIN_MENUBAR, ghWndActiveMenuBarButton, false )
+                    gActiveMenuBarIndex += 1
+                    if gActiveMenuBarIndex > ubound(gMenuBar) then gActiveMenuBarIndex = lbound(gMenuBar)
                     ' if popup menus are already activated then continue to show them as
                     ' we move through the various menubar buttons.
                     if IsWindowVisible(HWND_MENU(0)) then
-                        frmPopupMenu_Show(ID_POPUP, 0, ghWndActiveMenuBarButton)
+                        frmPopupMenu_Show(ID_POPUP, 0, HWND_FRMMAIN_MENUBAR, gMenuBar(gActiveMenuBarIndex).rcItem)
                         setNextMenuItemTabIndex(false)
                     end if   
                 end if
                 if uMsg.wParam = VK_DOWN then 
-                    frmPopupMenu_Show(ID_POPUP, 0, ghWndActiveMenuBarButton)
+                    frmPopupMenu_Show(ID_POPUP, 0, HWND_FRMMAIN_MENUBAR, gMenuBar(gActiveMenuBarIndex).rcItem)
                     setNextMenuItemTabIndex(false)
                 end if   
-                AfxRedrawWindow(prevCtrl)
-                AfxRedrawWindow(ghWndActiveMenuBarButton)
+                AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
                 return true
             end if
         

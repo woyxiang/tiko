@@ -13,11 +13,11 @@
 
 #pragma once
 
-#Define IDC_FRMABOUT_LBLAPPNAME                     1000
-#Define IDC_FRMABOUT_LBLAPPVERSION                  1001
-#Define IDC_FRMABOUT_LBLAPPCOPYRIGHT                1002
-#Define IDC_FRMABOUT_IMAGE1                         1003
-#Define IDC_FRMABOUT_LBLJOSE                        1004
-#Define IDC_FRMABOUT_LBLOTHERS                      1005
+#define IDC_FRMABOUT_LBLAPPNAME                     1000
+#define IDC_FRMABOUT_LBLAPPVERSION                  1001
+#define IDC_FRMABOUT_LBLAPPCOPYRIGHT                1002
+#define IDC_FRMABOUT_IMAGE1                         1003
+#define IDC_FRMABOUT_LBLJOSE                        1004
+#define IDC_FRMABOUT_LBLOTHERS                      1005
 
 declare function frmAbout_Show( byval hWndParent as hwnd ) as LRESULT

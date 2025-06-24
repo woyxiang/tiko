@@ -152,44 +152,18 @@ function frmEditorVScroll_WndProc( _
             return true
 
         case WM_PAINT
-            dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
-            dim as PAINTSTRUCT ps
-            dim as HDC hDC
-            dim as RECT rc
+            dim as clsDoubleBuffer b
 
-            hDC = BeginPaint( hwnd, @ps )
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghEditor.BackColorScrollBar, ghEditor.BackColorScrollBar )
+            b.PaintClientRect()
+            b.SetPenColor( ghEditor.Divider )
+            b.PaintLine( 1, b.rcClient.left, b.rcClient.top, b.rcClient.left, b.rcClient.bottom )
+            b.SetBackColors( ghEditor.ForeColorScrollBar, ghEditor.ForeColorScrollBar )
+            b.PaintRect( @gEditorVScroll(idxWindow).rc )
 
-            GetClientRect(hwnd, @rc)
-            dim as long nWidth = rc.right - rc.left
-            dim as long nHeight = rc.bottom - rc.top
-
-            dim memDC as HDC      ' Double buffering
-            dim hbit as HBITMAP   ' Double buffering
+            b.EndDoubleBuffer()
             
-            memDC = CreateCompatibleDC( hDC )
-            hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-            
-            SaveDC(memDC)
-
-            if hbit then SelectObject( memDC, hbit )
-            FillRect( memDC, @rc, ghEditor.hBackBrushScrollBar )
-
-            dim as long penWidth = pWindow->ScaleX(1)
-            dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghEditor.Divider )
-            SelectObject( memDC, hPenSolid )
-            MoveToEx( memDC, rc.left, rc.top, null )
-            LineTo( memDC, rc.left, rc.bottom )   
-            FillRect( memDC, @gEditorVScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
-
-            BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
-
-            RestoreDC( memDC, -1 )
-
-            if hPenSolid then DeleteObject( hPenSolid )
-            if hbit      then DeleteObject( hbit )
-            if memDC     then DeleteDC( memDC )
-            
-            EndPaint( hwnd, @ps )
             return 0
     end Select
 

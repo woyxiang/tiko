@@ -80,7 +80,7 @@ function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
     
     gApp.wszPanelText = ""
     gApp.hIconPanel = 0
-        
+
     ' Clear any previous info from the Output windows
     frmOutput_ResetAllControls
     
@@ -97,7 +97,7 @@ function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
     
     frmMain_SetStatusbar
     frmMain_SetFocusToCurrentCodeWindow
-
+    
     function = true
 end function
 

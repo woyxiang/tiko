@@ -38,7 +38,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).rc.Left   = nLeft
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nLeft + _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.bottom = rc.bottom
     gSBPanels(i).nID       = IDM_GOTO
     nLeft = gSBPanels(i).rc.right + nSpacer
@@ -51,7 +51,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     i = CRLF_PANEL  ' CRLF 
     dim as long nRight = grcGripper.left
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -60,7 +60,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = UTF_PANEL  ' UTF-8
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight 
     gSBPanels(i).rc.bottom = rc.bottom
@@ -69,7 +69,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = SPACES_PANEL  ' Spaces
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -79,7 +79,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     i = FILETYPE_PANEL  ' Main/Resource/Module/Normal
     if gApp.IsProjectActive then
         gSBPanels(i).rc.Left   = nRight - _
-            pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+            pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
         gSBPanels(i).rc.top    = rc.top
         gSBPanels(i).rc.right  = nRight
         gSBPanels(i).rc.bottom = rc.bottom
@@ -91,7 +91,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     
     i = BUILD_POPUP_PANEL  ' Build Configuration
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -100,7 +100,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = BUILD_DIALOG_PANEL  ' Build Configuration dialog
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -109,7 +109,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = THEMES_DIALOG_PANEL  ' Themes/Colors dialog
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 4 ) )
+        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -159,8 +159,9 @@ function frmStatusBar_WndProc( _
     static as long curr_idxHot = -1
     static as boolean resizing
     static as point prev_pt
-    static as HWND hTooltip 
 
+    static as HWND hTooltip
+    if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
     
     Select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmStatusBar_OnSize)
@@ -253,61 +254,50 @@ function frmStatusBar_WndProc( _
         next   
 
     case WM_MOUSEHOVER
+        dim as CWSTR wszTooltip
         if IsMouseOverRECT(hwnd,  gSBPanels(BUILD_DIALOG_PANEL).rc ) then 
-            dim as CWSTR wszTooltip = L(277,"Build Configurations") & "..."
-            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
-            AfxRedrawWindow( hwnd )
+            wszTooltip = L(277,"Build Configurations") & "..."
         end if
         if IsMouseOverRECT(hwnd,  gSBPanels(THEMES_DIALOG_PANEL).rc ) then 
-            dim as CWSTR wszTooltip = L(111,"Themes and Fonts")
-            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
-            AfxRedrawWindow( hwnd )
+            wszTooltip = L(111,"Themes and Fonts")
         end if
         if IsMouseOverRECT(hwnd,  gSBPanels(COMPILE_STATUS_PANEL).rc ) then 
-            dim as CWSTR wszTooltip = L(251,"View Output Window")
-            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
-            AfxRedrawWindow( hwnd )
+            wszTooltip = L(251,"View Output Window")
         end if
+        if (wszTooltip = "") andalso (IsWindow(hToolTip)) then 
+            DestroyWindow(hToolTip)
+        else    
+            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+        end if
+        
 
     case WM_PAINT
-        dim as PAINTSTRUCT ps
-        dim as HDC hDC
-        dim as RECT rc
-
         dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_STATUSBAR)
-        if pWindow = 0 then exit function
-
-        hDC = BeginPaint(hwnd, @ps)
-
-        GetClientRect(hwnd, @rc)
-        dim as long nWidth = rc.right - rc.left
-        dim as long nHeight = rc.bottom - rc.top
-
-        dim memDC as HDC      ' Double buffering
-        dim hbit as HBITMAP   ' Double buffering
-
-        memDC = CreateCompatibleDC( hDC )
-        hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
+        dim as clsDoubleBuffer b
         
-        SaveDC(memDC)
-        
-        if hbit then SelectObject( memDC, hbit )
+        b.BeginDoubleBuffer(hwnd)
 
-        FillRect( memDC, @rc, ghStatusBar.hPanelBrush )
-        
+        ' Set default fore and back colors
+        b.SetForeColors( ghStatusBar.ForeColor, ghStatusBar.ForeColorHot )
+        b.SetBackColors( ghStatusBar.BackColor, ghStatusBar.BackColorHot )
+
+        ' Clear the entire back client area
+        b.PaintClientRect()
+      
         ' paint the panels
         for i as long = lbound(gSBPanels) to ubound(gSBPanels)
             if (i = BUILD_DIALOG_PANEL) orelse (i = THEMES_DIALOG_PANEL) then
-                SelectObject(memDC, ghMenuBar.hFontSymbol)
+                b.SetFont( SYMBOLFONT_9 )
             else
-                SelectObject(memDC, ghStatusBar.hFontStatusBar)
+                b.SetFont( GUIFONT_9 )
             end if
 
-            SetBkColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.BackColorHot, ghStatusBar.BackColor) )   
-            SetTextColor( memDC, iif( gSBPanels(i).isHot, ghStatusBar.ForeColorHot, ghStatusBar.ForeColor) )
-            FillRect( memDC, @gSBPanels(i).rc, iif( gSBPanels(i).isHot, ghStatusBar.hBackBrushHot, ghStatusBar.hBackBrush) )
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            DrawText( memDC, gSBPanels(i).wszText.sptr, -1, cast(lpRect, @gSBPanels(i).rc), wsStyle )
+            b.SetForeColors( ghStatusBar.ForeColor, ghStatusBar.ForeColorHot )
+            b.SetBackColors( ghStatusBar.BackColor, ghStatusBar.BackColorHot )
+
+            dim as boolean bHitTest = iif( i = COMPILE_STATUS_PANEL, false, true )
+            b.PaintRect(@gSBPanels(i).rc, bHitTest)
+            b.PaintText( gSBPanels(i).wszText, @gSBPanels(i).rc, DT_CENTER, bHitTest )
             
             ' if this is the compile result panel then display the green/success or red/failure "icon"
             if i = COMPILE_STATUS_PANEL then
@@ -315,28 +305,23 @@ function frmStatusBar_WndProc( _
                     dim as COLORREF clr = ghStatusBar.BackColor
                     if gApp.hIconPanel = ghIconGood then clr = ghGeneral.iconsuccess
                     if gApp.hIconPanel = ghIconBad then clr = ghGeneral.iconfail
-                    dim as long txtWidth = getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, ghStatusBar.hFontStatusBar, 0 ) 
-                    SetTextColor( memDC, clr )
-                    dim as RECT rcBitmap = gSBPanels(i).rc
-                    dim as long halfWidth = (rcBitmap.right-rcBitmap.left) / 2
-                    rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
-                    rcBitmap.left = rcBitmap.right - pWindow->ScaleX(16)
-
-                    if ghMenuBar.hFontSymbol then SelectObject(memDC, ghMenuBar.hFontSymbol)
-                    dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                    DrawText( memDC, wszIconCompileResult, -1, cast(lpRect, @rcBitmap), wsStyle )
+                    b.SetForeColors( clr, ghStatusBar.ForeColorHot )
+                    b.SetBackColors( ghStatusBar.BackColor, ghStatusBar.BackColorHot )
+                    if pWindow then
+                        dim as long txtWidth = getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 0 ) 
+                        dim as RECT rcBitmap = gSBPanels(i).rc
+                        dim as long halfWidth = (rcBitmap.right-rcBitmap.left) / 2
+                        rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
+                        rcBitmap.left = rcBitmap.right - pWindow->ScaleX(16)
+                        b.SetFont( SYMBOLFONT_9 )
+                        b.PaintText( wszIconCompileResult, @rcBitmap, DT_CENTER )
+                    end if
                 end if
             end if   
         next
+                                
+        b.EndDoubleBuffer()
 
-        BitBlt hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY 
-
-        ' Cleanup
-        RestoreDC(memDC, -1)
-        if hbit  then DeleteObject(hbit)
-        if memDC then DeleteDC(memDC)
-
-        EndPaint hwnd, @ps
         return 0
         
     end Select

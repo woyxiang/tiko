@@ -20,7 +20,7 @@
 #include once "frmFindReplace.bi"
 #include once "modMRU.bi"
 
-    
+
 ''
 ''
 destructor clsDocument
@@ -31,10 +31,7 @@ destructor clsDocument
     
     ' If a QuickRun filename exists for this document then delete
     ' that temporary disk file now.
-    AfxDeleteFile(this.QuickRunDiskFilename)
-
-    ' Repaint the main area because we don't want any splitter to show
-    AfxRedrawWindow(HWND_FRMMAIN)
+    if len(this.QuickRunDiskFilename) then AfxDeleteFile(this.QuickRunDiskFilename)
 
 end destructor
 

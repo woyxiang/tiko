@@ -212,13 +212,12 @@ function frmOutput_PositionWindows() as LRESULT
 
     dim wszText as wstring * 100
     dim as long nTextLen 
-    dim as HFONT hFontText = ghStatusBar.hFontStatusBar
     dim as long hmargin = pWindow->ScaleX(10) 
     rc.top = rc.top + pWindow->ScaleY(2)
     rc.left = rc.left + pWindow->ScaleX(10)
 
     wszText = ucase(L(191, "Compiler Results"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, hFontText, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
     gOutputTabs(0).wszText = wszText
     gOutputTabs(0).rcTab = rc: gOutputTabs(0).rcText = rc
     gOutputTabs(0).rcText.left = gOutputTabs(0).rcTab.left + hmargin 
@@ -226,7 +225,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(0).rcTab.right = gOutputTabs(0).rcText.right + hmargin
 
     wszText = ucase(L(252, "Compiler Log File"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, hFontText, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
     gOutputTabs(1).wszText = wszText
     gOutputTabs(1).rcTab = rc: gOutputTabs(1).rcText = rc
     gOutputTabs(1).rcTab.left = gOutputTabs(0).rcTab.right
@@ -235,7 +234,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(1).rcTab.right = gOutputTabs(1).rcText.right + hmargin
 
     wszText = ucase(L(262, "Search Results"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, hFontText, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
     gOutputTabs(2).wszText = wszText
     gOutputTabs(2).rcTab = rc: gOutputTabs(2).rcText = rc
     gOutputTabs(2).rcTab.left = gOutputTabs(1).rcTab.right
@@ -244,7 +243,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(2).rcTab.right = gOutputTabs(2).rcText.right + hmargin
 
     wszText = ucase(L(263, "TODO"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, hFontText, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
     gOutputTabs(3).wszText = wszText
     gOutputTabs(3).rcTab = rc: gOutputTabs(3).rcText = rc
     gOutputTabs(3).rcTab.left = gOutputTabs(2).rcTab.right
@@ -253,7 +252,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(3).rcTab.right = gOutputTabs(3).rcText.right + hmargin
 
     wszText = ucase(L(264, "Notes"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, hFontText, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
     gOutputTabs(4).wszText = wszText
     gOutputTabs(4).rcTab = rc: gOutputTabs(4).rcText = rc
     gOutputTabs(4).rcTab.left = gOutputTabs(3).rcTab.right
@@ -386,6 +385,8 @@ function frmOutput_Listview_SubclassProc ( _
                         select case ptnmcd->dwItemSpec
                             case 0, 1, 2, 3   ' columns
                             ' Paint the whole cell ourselves
+                            dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
+                            if pWindow = 0 then exit function
                             SaveDC(ptnmcd->hdc)
                             FillRect( ptnmcd->hdc, @ptnmcd->rc, ghOutput.hPanelBrush )
                             SetTextColor( ptnmcd->hdc, ghOutput.ForeColorHot )
@@ -394,10 +395,12 @@ function frmOutput_Listview_SubclassProc ( _
                             'Header_GetItemText is currently bugged. Report submitted to Jose to correct.
                             'Header_GetItemText( ptnmhdr->hwndFrom, ptnmcd->dwItemSpec, @wszText, MAX_PATH )
                             ListView_GetHeaderText( hwnd, ptnmcd->dwItemSpec, @wszText, MAX_PATH )
-                            SelectObject( ptnmcd->hdc, ghStatusBar.hFontStatusBar )
+                            dim as HFONT _hFont = pWindow->CreateFont(GUIFONT, 10, FW_NORMAL)
+                            if _hFont then SelectObject( ptnmcd->hdc, _hFont )
                             dim as long wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
                             DrawText( ptnmcd->hdc, wszText, -1, Cast(lpRect, @ptnmcd->rc), wsStyle )
                             RestoreDC(ptnmcd->hdc, -1)
+                            if _hFont then DeleteFont( _hFont )
                             return CDRF_SKIPDEFAULT
                         end select
                             
@@ -693,94 +696,56 @@ function frmOutputTabs_SubclassProc ( _
             return true
         
         case WM_PAINT
-            dim as PAINTSTRUCT ps
-            dim as HDC hDC
-            dim as RECT rc
-            hDC = BeginPaint( hWin, @ps )
+            dim as clsDoubleBuffer b
             
-            GetClientRect(hWin, @rc)
-            dim as long nWidth = rc.right - rc.left
-            dim as long nHeight = rc.bottom - rc.top
+            b.BeginDoubleBuffer(hWin)
 
-            dim memDC as HDC      ' Double buffering
-            dim hbit as HBITMAP   ' Double buffering
-            
-            memDC = CreateCompatibleDC( hDC )
-            hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-            
-            SaveDC(memDC)
+            ' Set default fore and back colors
+            b.SetForeColors( ghOutput.ForeColor, ghOutput.ForeColorHot )
+            b.SetBackColors( ghOutput.BackColor, ghOutput.BackColorHot )
 
-            if hbit then SelectObject( memDC, hbit )
-            FillRect( memDC, @rc, ghOutput.hPanelBrush )
-    
+            ' Clear the entire back client area
+            b.PaintClientRect()
+          
             for i as long = lbound(gOutputTabs) to ubound(gOutputTabs)
-                rc = gOutputTabs(i).rcTab
+                dim as RECT rc = gOutputTabs(i).rcTab
                 if (i = gOutputTabsCurSel) or (gOutputTabs(i).isHot = true) then
-                    SetBkColor( memDC, ghOutput.BackColorHot )
-                    SetTextColor( memDC, ghOutput.ForeColorHot )
-                    FillRect( memDC, @rc, ghOutput.hBackBrushHot )
+                    b.SetForeColors( ghOutput.ForeColorHot, ghOutput.ForeColorHot )
+                    b.SetBackColors( ghOutput.BackColorHot, ghOutput.BackColorHot )
                 else
-                    SetBkColor( memDC, ghOutput.BackColor )
-                    SetTextColor( memDC, ghOutput.ForeColor )
-                    FillRect( memDC, @rc, ghOutput.hBackBrush )
+                    b.SetForeColors( ghOutput.ForeColor, ghOutput.ForeColorHot )
+                    b.SetBackColors( ghOutput.BackColor, ghOutput.BackColorHot )
                 end if
-                dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-                SelectObject( memDC, ghStatusBar.hFontStatusBar )
-                DrawText( memDC, gOutputTabs(i).wszText.sptr, -1, Cast(lpRect, @rc), wsStyle )
+                b.SetFont( GUIFONT_9 )
+                b.PaintRect(@rc, true)
+                b.PaintText( gOutputTabs(i).wszText, @rc, DT_CENTER )
             next
 
-            dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-            dim as long wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            rc = gOutputCloseRect
-            SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-            SetTextColor( memDC, ghOutput.ForeColorHot )
-            DrawText( memDC, wszIconClose, -1, Cast(lpRect, @rc), wsStyle )
+            ' Draw the "X" close item
+            b.SetFont( SYMBOLFONT_10 )
+            b.SetForeColors( ghOutput.ForeColorHot, ghOutput.ForeColorHot )
+            b.SetBackColors( ghOutput.BackColor, ghOutput.CloseBackColorHot )
+            b.PaintRoundRect( @gOutputCloseRect, true )
+            b.PaintText( wszIconClose, @gOutputCloseRect, DT_CENTER, true )
             
-            if isMouseOverRECT( hWin, rc ) then
-                ' if we are hovered over the "X" close icon rect then highlight it
-                SelectObject( memDC, hPenNull )
-                SelectObject( memDC, ghOutput.hCloseBrushHot )
-                RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-                SetBkColor( memDC, ghOutput.CloseBackColorHot )
-                SetTextColor( memDC, ghOutput.ForeColorHot )
-                SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
-            end if   
-
             ' Paint a simple line under the currently active tab
-            dim as HPEN hPenSolid = CreatePen( PS_SOLID, pWindow->ScaleY(2), ghOutput.ForeColor )
             if gOutputTabsCurSel <> -1 then
-                rc = gOutputTabs(gOutputTabsCurSel).rcText
-                SetBkColor( memDC, ghOutput.ForeColor )
-                SelectPen( memDC, hPenSolid )
-                MoveToEx( memDC, rc.left, rc.bottom - pWindow->ScaleY(4), Null )
-                LineTo( memDC, rc.right, rc.bottom - pWindow->ScaleY(4) )
+                dim as RECT rc = gOutputTabs(gOutputTabsCurSel).rcText
+                b.SetPenColor( ghOutput.ForeColorHot )
+                b.PaintLine( 2, _
+                        rc.left, rc.bottom - pWindow->ScaleY(4), rc.right, rc.bottom - pWindow->ScaleY(4) )
             end if
             
             ' Paint a simple line at the top of the window that will act as a 
             ' visual separator between the Output window and the Scintilla window.
-            dim as HPEN hPenSolid2 = CreatePen( PS_SOLID, pWindow->ScaleY(1), ghOutput.Divider )
-            SetBkColor( memDC, ghOutput.BackColor )
-            SelectObject( memDC, hPenSolid2 )
-            GetClientRect(hWin, @rc)
-            MoveToEx( memDC, rc.left, rc.top, null )
-            LineTo( memDC, rc.right, rc.top )
-            
-            BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
+            dim as RECT rc = b.rcClient
+            b.SetPenColor( ghOutput.Divider )
+            b.PaintLine( 1, rc.left, rc.top, rc.right, rc.top )
+                                    
+            b.EndDoubleBuffer()
 
-            ' Cleanup
-            RestoreDC( memDC, -1 )
-            
-            if hPenSolid  then DeleteObject( hPenSolid )
-            if hPenSolid2 then DeleteObject( hPenSolid2 )
-            if hPenNull   then DeleteObject( hPenNull )
-            if hbit       then DeleteObject( hbit )
-            if memDC      then DeleteDC( memDC )
-            
-            EndPaint( hWin, @ps )
             return 0
-
-        
+    
         case WM_DESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmOutputTabs_SubclassProc, uIdSubclass )
@@ -865,18 +830,13 @@ function frmOutput_WndProc( _
         return true
 
     case WM_PAINT            
-        dim as PAINTSTRUCT ps
-        dim as HDC hDC
-        dim as RECT rc
-        
-        hDC = BeginPaint( hwnd, @ps )
-        SaveDC( hDC )
-        GetClientRect(hwnd, @rc)
-        FillRect( hDC, @rc, ghOutput.hPanelBrush )
-        RestoreDC( hDC, -1 )
-        EndPaint( hwnd, @ps )
-        exit function
-
+        dim as clsDoubleBuffer b
+        b.BeginDoubleBuffer(hwnd)
+        b.SetBackColors( ghOutput.BackColor, ghOutput.BackColorHot )
+        b.PaintClientRect()
+        b.EndDoubleBuffer()
+        return 0
+    
     end select
 
     function = DefWindowProc( hwnd, uMsg, wParam, lParam)
@@ -957,7 +917,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
                     ES_MULTILINE or ES_LEFT or ES_AUTOVSCROLL, _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTLOGFILE, null )
-        AfxSetWindowFont( hCtl, ghStatusBar.hFontStatusBar )
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
 
     hCtl = pWindow->AddControl("RICHEDIT", , IDC_FRMOUTPUT_TXTNOTES, "", _
@@ -966,7 +925,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
                     ES_MULTILINE or ES_LEFT or ES_AUTOVSCROLL or ES_WANTRETURN, _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTNOTES, null )
-        AfxSetWindowFont( hCtl, ghStatusBar.hFontStatusBar )
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
         frmOutput_ShowNotes()   
 
@@ -977,7 +935,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVRESULTS, cast(DWORD_PTR, @pWindow))
 
         ' Configure the ListView
-        AfxSetWindowFont( hLV, ghStatusBar.hFontStatusBar )
         dim as long dwExStyle = ListView_GetExtendedListViewStyle(hLV)
         dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
         ListView_SetExtendedListViewStyle(hLV, dwExStyle)
@@ -995,7 +952,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVSEARCH, cast(DWORD_PTR, @pWindow))
 
         ' Configure the ListView
-        AfxSetWindowFont( hLV, ghStatusBar.hFontStatusBar )
         dwExStyle = ListView_GetExtendedListViewStyle(hLV)
         dwExStyle = dwExStyle or LVS_EX_FULLROWselect or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
         ListView_SetExtendedListViewStyle(hLV, dwExStyle)
@@ -1013,7 +969,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVTODO, cast(DWORD_PTR, @pWindow))
                                         
         ' Configure the ListView
-        AfxSetWindowFont( hLV, ghStatusBar.hFontStatusBar )
         dwExStyle = ListView_GetExtendedListViewStyle(hLV)
         dwExStyle = dwExStyle or LVS_EX_FULLROWselect or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
         ListView_SetExtendedListViewStyle(hLV, dwExStyle)

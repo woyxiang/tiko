@@ -250,10 +250,10 @@ function frmBuildConfig_OnDrawItem( _
             nHeight = lpdis->rcItem.bottom-lpdis->rcItem.top 
             
             memDC = CreateCompatibleDC( lpdis->hDC )
-            hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
 
             SaveDC(memDC)
                                             
+            hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
             if hbit then SelectObject( memDC, hbit )
 
             ' Create our rect that works with the entire line
@@ -302,6 +302,7 @@ function frmBuildConfig_OnDrawItem( _
 
             ' Cleanup
             RestoreDC(memDC, -1)
+            
             if hbit  then DeleteObject(hbit)
             if memDC then DeleteDC(memDC)
 
@@ -682,13 +683,10 @@ end function
 ' frmBuildConfig_Show
 ' ========================================================================================
 function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
-
-    dim hBitmap as HBITMAP 
-    dim hCtrl as HWND
-    dim wszImage as wstring * 100
-
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
+
+    dim as HFONT hFontSymbolLarge = pWindow->CreateFont(SYMBOLFONT, 12, FW_NORMAL)
 
     dim as HWnd hForm = _
         pWindow->Create(hWndParent, L(277,"Build Configurations"), _
@@ -744,17 +742,17 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     
-    hCtrl = _
+    dim as HWND hCtrl = _
     pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDUP, wszIconChevronUp, 166, 388, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    AfxSetWindowFont( hCtrl, ghMenuBar.hFontSymbolLarge, false )     
+    AfxSetWindowFont( hCtrl, hFontSymbolLarge, false )     
 
     hCtrl = _
     pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDDOWN, wszIconChevronDown, 199, 388, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    AfxSetWindowFont( hCtrl, ghMenuBar.hFontSymbolLarge, false )     
+    AfxSetWindowFont( hCtrl, hFontSymbolLarge, false )     
 
     pWindow->AddControl("BUTTON", , IDOK, L(0,"OK"), 454, 388, 74, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
@@ -794,6 +792,7 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     
     ' Delete the frmBuildConfig CWindow class manually allocated memory 
     if pWindow then delete(pWindow)
-
+    if hFontSymbolLarge then DeleteObject(hFontSymbolLarge)
+    
 end function
 

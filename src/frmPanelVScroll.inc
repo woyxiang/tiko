@@ -153,23 +153,21 @@ function frmPanelVScroll_WndProc( _
             prev_pt.x = 0
             prev_pt.y = 0
             ReleaseCapture
-            
         
         case WM_ERASEBKGND
             return true
             
         case WM_PAINT
-            dim as PAINTSTRUCT ps
-            dim as HDC hDC
-            dim as RECT rc
-            
-            hDC = BeginPaint( hwnd, @ps )
-            SaveDC(hDC)
-            GetClientRect(hwnd, @rc)
-            FillRect( hDC, @rc, ghPanel.hBackBrushScrollBar )
-            FillRect( hDC, @gPanelVScroll.rc, ghPanel.hBackBrushThumb )
-            RestoreDC(hDC, -1)
-            EndPaint hwnd, @ps
+            dim as clsDoubleBuffer b
+
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghPanel.BackColorScrollBar, ghPanel.BackColorScrollBar )
+            b.PaintClientRect()
+            b.SetBackColors( ghEditor.ForeColorScrollBar, ghEditor.ForeColorScrollBar )
+            b.PaintRect( @gPanelVScroll.rc )
+
+            b.EndDoubleBuffer()
+
             return 0
 
     end select
@@ -193,7 +191,6 @@ function frmPanelVScroll_Show( byval hWndParent as HWND ) as LRESULT
         "", @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0, _
         WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_NOACTIVATE )
-    pWindow->Brush = ghPanel.hBackBrushScrollBar
 
     function = 0
     

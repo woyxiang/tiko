@@ -116,45 +116,25 @@ function frmEditorHScroll_WndProc( _
             return true
 
         case WM_PAINT
-            dim as PAINTSTRUCT ps
-            dim as HDC hDc
-            dim as RECT rc
-            
-            hDC = BeginPaint( hwnd, @ps )
-            
-            GetClientRect(hwnd, @rc)
-            dim as long nWidth = rc.right - rc.left
-            dim as long nHeight = rc.bottom - rc.top
+            dim as clsDoubleBuffer b
 
-            dim memDC as HDC      ' Double buffering
-            dim hbit as HBITMAP   ' Double buffering
-            
-            memDC = CreateCompatibleDC( hDC )
-            hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-            
-            SaveDC(memDC)
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghEditor.BackColorScrollBar, ghEditor.BackColorScrollBar )
+            b.PaintClientRect()
 
-            if hbit then SelectObject( memDC, hbit )
-            FillRect( memDC, @rc, ghEditor.hBackBrushScrollBar )
-            
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
-                GetClientRect( HWND_FRMEDITOR_HSCROLLBAR(idxWindow), @rc )
+                b.SetBackColors( ghEditor.ForeColorScrollBar, ghEditor.ForeColorScrollBar )
                 dim as long GetXOffset = SciExec( pDoc->hWindow(idxWindow), SCI_GETXOFFSET, 0, 0 )
-                gEditorHScroll(idxWindow).rc = rc
+                gEditorHScroll(idxWindow).rc = b.rcClient
                 gEditorHScroll(idxWindow).rc.left = GetXOffset
-                gEditorHScroll(idxWindow).rc.right = GetXOffset + ((rc.right / gEditorHScroll(idxWindow).lineLength) * rc.right)
-                FillRect( memDC, @gEditorHScroll(idxWindow).rc, ghEditor.hBackBrushThumb )
+                gEditorHScroll(idxWindow).rc.right = _
+                        GetXOffset + ((b.rcClient.right / gEditorHScroll(idxWindow).lineLength) * b.rcClient.right)
+                b.PaintRect( @gEditorHScroll(idxWindow).rc )
             end if
             
-            BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
+            b.EndDoubleBuffer()
 
-            RestoreDC( memDC, -1 )
-
-            if hbit      then DeleteObject( hbit )
-            if memDC     then DeleteDC( memDC )
-            
-            EndPaint( hwnd, @ps )
             return 0
 
     end Select

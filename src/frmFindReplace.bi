@@ -19,3 +19,4 @@
 declare function frmFindReplace_HighlightSearches( byval bRepositionCaret as boolean ) as long
 declare function frmFindReplace_PositionWindows() as LRESULT
 declare function frmFindReplace_Show( byval hWndParent as HWND, byval fShowReplace as boolean ) as LRESULT
+

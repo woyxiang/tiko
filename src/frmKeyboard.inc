@@ -717,7 +717,6 @@ function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
     hCtrl = pWindow->AddControl("LABEL", , IDC_FRMKEYBOARD_LBLCONFLICT, "", 168, 394, 350, 20, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_CENTER or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    AfxSetWindowFont( hCtrl, ghStatusBar.hFontStatusBar, true )
 
     ' Load the listview with these temp keys
     for i as long = lbound(gKeys) to ubound(gKeys)
@@ -732,8 +731,6 @@ function frmKeyboard_Show( byval hWndParent as HWND ) as LRESULT
         LV_InsertItem( hLV, i, 4, wszTemp ) 
         LV_InsertItem( hLV, i, 5, gKeys(i).wszUserKeys ) 
     next
-
-    AfxSetWindowFont( hLV, ghStatusBar.hFontStatusBar, true )
 
     ListView_SelectItem( hLV, 0 )
     SetFocus( hLV )    

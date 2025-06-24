@@ -50,7 +50,7 @@ function frmFindReplace_PositionWindows() as LRESULT
 
     dim wszText as wstring * 100 = gFind.wszResults
     dim as long nResultsWidth = _
-            getTextWidth(HWND_FRMFINDREPLACE, wszText, ghStatusBar.hFontStatusBar, 0) + 6
+            getTextWidth(HWND_FRMFINDREPLACE, wszText, GUIFONT_9, 0) + 6
 
     pWindow->SetClientSize( 350 + max(70, nResultsWidth), iif(gFind.bExpanded, 66, 33) )
             
@@ -454,271 +454,167 @@ end function
 ' ========================================================================================
 function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
             
-    dim as PAINTSTRUCT ps
-    dim as HPEN hPenNull
-    dim as HPEN hPenSolid
-    dim as HPEN hPenSolid2
-    dim as HWND hCtl
-    dim as HDC hDc
-    dim as RECT rc
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+            
+    dim as clsDoubleBuffer b
     
-    dim as long wsStyle
-    
-    dim pWindow as CWindow ptr = AfxCWindowOwnerPtr(hwnd)
-    if pWindow = 0 then exit function
+    b.BeginDoubleBuffer(hwnd)
 
-    hDC = BeginPaint( hwnd, @ps )
+    ' Set default fore and back colors
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.BackColorHot )
 
-    GetClientRect(hwnd, @rc)
-    dim as long nWidth = rc.right - rc.left
-    dim as long nHeight = rc.bottom - rc.top
-
-    dim memDC as HDC      ' Double buffering
-    dim hbit as HBITMAP   ' Double buffering
-
-    memDC = CreateCompatibleDC( hDC )
-
-    SaveDC( memDC )
-
-    hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-    if hbit then SelectObject( memDC, hbit )
-
-    SelectObject( memDC, ghFindReplace.hPanelBrush )
-
-    ' Fill in the entire back panel width across the top of the screen
-    FillRect( memDC, @rc, ghFindReplace.hPanelBrush )
+    ' Clear the entire back client area
+    b.PaintClientRect()
 
     ' Paint the left edge
-    hPenSolid = CreatePen( PS_SOLID, pWindow->ScaleY(2), ghFindReplace.leftedge ) 
-    SelectPen( memDC, hPenSolid )
-    MoveToEx( memDC, 0, 0, null )
-    LineTo( memDC, 0, rc.bottom )   
+    b.SetPenColor(ghFindReplace.leftedge)
+    b.PaintLine( 2, 0, 0, 0, b.rcClient.bottom )
 
+    
     ' Paint the Expand/Collapse button
-    if isMouseOverRECT( hwnd, gFind.rcExpand ) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        FillRect( memDC, @gFind.rcExpand, ghFindReplace.hIconBrushHot )
-    else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        FillRect( memDC, @gFind.rcExpand, ghFindReplace.hBackBrush )
-    end if
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
+    b.SetFont( SYMBOLFONT_10 )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.IconBackColorHot )
+    b.PaintRect( @gFind.rcExpand, true )
     dim as CWSTR wszText = iif( gFind.bExpanded, wszIconChevronDown, wszIconChevronRight )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszText.sptr, -1, cast(lpRect, @gFind.rcExpand), wsStyle )
+    b.PaintText( wszText, @gFind.rcExpand, DT_CENTER, true )
+
 
     ' Paint a rectangle around the textbox control that has focus.
-    hPenSolid2 = CreatePen( PS_SOLID, 1, BGR(0,0,255) )  ' blue
-    SelectPen( memDC, hPenSolid2 )
-    hCtl = GetFocus()
-    if hCtl = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND) then
-        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
-        GetWindowRect( GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND), @rc )
-        MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rc), 2)
-        Rectangle( memDC, rc.left - 1, rc.top - 1, rc.right + pWindow->ScaleX(49), rc.bottom + 1 )
-    elseif hCtl = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE) then
-        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
-        GetWindowRect( GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE), @rc )
-        MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rc), 2)
-        Rectangle( memDC, rc.left - 1, rc.top - 1, rc.right + pWindow->ScaleX(25), rc.bottom + 1 )
-    end if
+    b.SetPenColor( BGR(0,0,255) )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.TextBoxBackColor, ghFindReplace.TextBoxBackColor )
+    
+    dim as RECT rcTextFind = AfxGetWindowRect(GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND))
+    MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rcTextFind), 2)
+    rcTextFind.left -= 1: rcTextFind.top -= 1: rcTextFind.right += pWindow->ScaleX(49): rcTextFind.bottom += 1
+    b.PaintRect( @rcTextFind )
+    
+    dim as RECT rcTextReplace = AfxGetWindowRect(GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE))
+    MapWindowPoints( HWND_DESKTOP, hwnd, cast(LPPOINT, @rcTextReplace), 2)
+    rcTextReplace.left -= 1: rcTextReplace.top -= 1: rcTextReplace.right += pWindow->ScaleX(25): rcTextReplace.bottom += 1
+    b.PaintRect( @rcTextReplace )
+
+    if GetFocus() = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND) then b.PaintBorderRect( @rcTextFind, false, 1 )
+    if GetFocus() = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE) then b.PaintBorderRect( @rcTextReplace, false, 1 )
+    
     
     ' Match Case
-    hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-    SelectPen( memDC, hPenNull )
+    b.SetFont( GUIFONT_9 )
     if gFind.nMatchCase then 
-        SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconSelectedBackColor, ghFindReplace.IconSelectedBackColor )
     elseif isMouseOverRECT( hwnd, gFind.rcMatchCase ) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
+        b.SetForeColors( ghFindReplace.ForeColorHot, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconBackColorHot, ghFindReplace.IconBackColorHot )
     else
-        SetBkColor( memDC, ghFindReplace.TextBoxBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.TextBoxBackColor, ghFindReplace.TextBoxBackColor )
     end if
-    FillRect( memDC, @gFind.rcMatchCase, ghFindReplace.hBackBrushTextBox )
-    ' shrink the rectangle in order to fit within the textbox
-    rc = gFind.rcMatchCase
-    InflateRect( @rc, -(pWindow->ScaleX(2)), -(pWindow->ScaleY(2)) )
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject(memDC, ghStatusBar.hFontStatusBar)
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconMatchCase, -1, cast(lpRect, @rc), wsStyle )
+    b.PaintRoundRect( @gFind.rcMatchCase )
+    b.PaintText( wszIconMatchCase, @gFind.rcMatchCase, DT_CENTER )
+    
     
     ' Whole Word
+    b.SetFont( GUIFONT_9 )
     if gFind.nWholeWord then 
-        SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconSelectedBackColor, ghFindReplace.BackColorHot )
     elseif isMouseOverRECT( hwnd, gFind.rcWholeWord ) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
+        b.SetForeColors( ghFindReplace.ForeColorHot, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconBackColorHot, ghFindReplace.IconBackColorHot )
     else
-        SetBkColor( memDC, ghFindReplace.TextBoxBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColor )
+        b.SetBackColors( ghFindReplace.TextBoxBackColor, ghFindReplace.TextBoxBackColor )
     end if
-    rc = gFind.rcWholeWord
-    FillRect( memDC, @rc, ghFindReplace.hBackBrushTextBox )
-    ' shrink the rectangle in order to fit within the textbox
-    InflateRect( @rc, -(pWindow->ScaleX(2)), -(pWindow->ScaleY(2)) )
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject(memDC, ghStatusBar.hFontStatusBar)
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconWholeWord, -1, cast(lpRect, @rc), wsStyle )
+    b.PaintRoundRect( @gFind.rcWholeWord )
+    b.PaintText( wszIconWholeWord, @gFind.rcWholeWord, DT_CENTER )
+
 
     ' Paint the Results text
+    b.SetFont( GUIFONT_9 )
     if gFind.foundCount = 0 then 
-        SetTextColor( memDC, ghFindReplace.NotFoundForeColor )
+        b.SetForeColors( ghFindReplace.NotFoundForeColor, ghFindReplace.NotFoundForeColor )
     else
-        SetTextColor( memDC, ghFindReplace.ForeColor )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColor )
     end if
-    SetBkColor( memDC, ghFindReplace.BackColor )
-    SelectObject(memDC, ghStatusBar.hFontStatusBar)
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, gFind.wszResults.sptr, -1, cast(lpRect, @gFind.rcResults), wsStyle )
+    b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.BackColorHot )
+    b.PaintText( gFind.wszResults, @gFind.rcResults, DT_CENTER )
     
+
     ' Paint the Up Arrow
-    if isMouseOverRECT( hwnd, gFind.rcUpArrow ) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
-    else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrush )
-    end if
-    rc = gFind.rcUpArrow
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconUpArrow, -1, cast(lpRect, @rc), wsStyle )
+    b.SetFont( SYMBOLFONT_9 )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor,  ghFindReplace.IconBackColorHot )
+    b.PaintRoundRect( @gFind.rcUpArrow, true )
+    b.PaintText( wszIconUpArrow, @gFind.rcUpArrow, DT_CENTER )
+
     
     ' Paint the Down Arrow
-    if isMouseOverRECT( HWnd, gFind.rcDownArrow ) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
-    else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrush )
-    end if
-    rc = gFind.rcDownArrow
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconDownArrow, -1, cast(lpRect, @rc), wsStyle )
+    b.SetFont( SYMBOLFONT_9 )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor,  ghFindReplace.IconBackColorHot )
+    b.PaintRoundRect( @gFind.rcDownArrow, true )
+    b.PaintText( wszIconDownArrow, @gFind.rcDownArrow, DT_CENTER )
+
 
     ' Paint the Selection icon
+    b.SetFont( SYMBOLFONT_9 )
     if gFind.nSelection then 
-        SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconSelectedBackColor, ghFindReplace.IconSelectedBackColor )
     elseif isMouseOverRECT( hwnd, gFind.rcSelection) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
+        b.SetForeColors( ghFindReplace.ForeColorHot, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconBackColorHot, ghFindReplace.IconBackColorHot )
     else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrush )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.BackColorHot )
     end if
-    rc = gFind.rcSelection
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconSelection, -1, cast(lpRect, @rc), wsStyle )
+    b.PaintRoundRect( @gFind.rcSelection )
+    b.PaintText( wszIconSelection, @gFind.rcSelection, DT_CENTER )
+
 
     ' Paint the Close icon
-    if isMouseOverRECT( hwnd, gFind.rcClose) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
-    else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrush )
-    end if
-    rc = gFind.rcClose
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
+    b.SetFont( SYMBOLFONT_9 )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.IconBackColorHot  )
+    b.PaintRoundRect( @gFind.rcClose, true )
+    b.PaintText( wszIconClose, @gFind.rcClose, DT_CENTER )
+
 
     ' Preserve Case
+    b.SetFont( GUIFONT_9 )
     if gFind.nPreserve then 
-        SetBkColor( memDC, ghFindReplace.IconSelectedBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushIconSelected )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconSelectedBackColor, ghFindReplace.BackColorHot )
     elseif isMouseOverRECT( hwnd, gFind.rcPreserve ) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
+        b.SetForeColors( ghFindReplace.ForeColorHot, ghFindReplace.ForeColorHot )
+        b.SetBackColors( ghFindReplace.IconBackColorHot, ghFindReplace.IconBackColorHot )
     else
-        SetBkColor( memDC, ghFindReplace.TextBoxBackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrushTextBox )
+        b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColor )
+        b.SetBackColors( ghFindReplace.TextBoxBackColor, ghFindReplace.TextBoxBackColor )
     end if
-    FillRect( memDC, @gFind.rcPreserve, ghFindReplace.hBackBrushTextBox )
-    ' shrink the rectangle in order to fit within the textbox
-    rc = gFind.rcPreserve
-    InflateRect( @rc, -(pWindow->ScaleX(2)), -(pWindow->ScaleY(2)) )
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject(memDC, ghStatusBar.hFontStatusBar)
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconPreserveCase, -1, cast(lpRect, @rc), wsStyle )
+    b.PaintRoundRect( @gFind.rcPreserve )
+    b.PaintText( wszIconPreserveCase, @gFind.rcPreserve, DT_CENTER )
+
     
     ' Paint the Replace icon
-    if isMouseOverRECT( HWnd, gFind.rcReplace) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
-    else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrush )
-    end if
-    rc = gFind.rcReplace
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconReplace, -1, cast(lpRect, @rc), wsStyle )
+    b.SetFont( SYMBOLFONT_9 )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.IconBackColorHot  )
+    b.PaintRoundRect( @gFind.rcReplace, true )
+    b.PaintText( wszIconReplace, @gFind.rcReplace, DT_CENTER )
+
 
     ' Paint the ReplaceAll icon
-    if isMouseOverRECT( hwnd, gFind.rcReplaceAll) then
-        SetBkColor( memDC, ghFindReplace.IconBackColorHot )
-        SetTextColor( memDC, ghFindReplace.ForeColorHot )
-        SelectObject( memDC, ghFindReplace.hIconBrushHot )
-    else
-        SetBkColor( memDC, ghFindReplace.BackColor )
-        SetTextColor( memDC, ghFindReplace.ForeColor )
-        SelectObject( memDC, ghFindReplace.hBackBrush )
-    end if
-    rc = gFind.rcReplaceAll
-    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-    SelectObject( memDC, ghMenuBar.hFontSymbol )
-    wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-    DrawText( memDC, wszIconReplaceAll, -1, cast(lpRect, @rc), wsStyle )
+    b.SetFont( SYMBOLFONT_9 )
+    b.SetForeColors( ghFindReplace.ForeColor, ghFindReplace.ForeColorHot )
+    b.SetBackColors( ghFindReplace.BackColor, ghFindReplace.IconBackColorHot  )
+    b.PaintRoundRect( @gFind.rcReplaceAll, true )
+    b.PaintText( wszIconReplaceAll, @gFind.rcReplaceAll, DT_CENTER )
 
-    BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
-
-    ' Cleanup
-    RestoreDC( memDC, -1 )
-    
-    if hPenNull   then DeleteObject( hPenNull )
-    if hPenSolid  then DeleteObject( hPenSolid )
-    if hPenSolid2 then DeleteObject( hPenSolid2 )
-    if hbit       then DeleteObject( hbit )
-    if memDC      then DeleteDC( memDC )
-
-    EndPaint( hwnd, @ps )
+    b.EndDoubleBuffer()
     
     function = true
 end function
@@ -759,6 +655,9 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
     if pWindow then delete(pWindow)
     
     HWND_FRMFINDREPLACE = 0
+
+    ' ensure that the tabcontrol shadow is painted once the find dialog disappears
+    frmMain_PositionWindows()
     
     function = 0
 end function
@@ -946,7 +845,8 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
                 ' validates the update rect and would otherwise lead to drawing
                 ' nothing later because the region is empty. Also, grab it from
                 ' the cache so we don't mess with the EDIT's DC.
-                dim as HDC hdc = iif(uMsg = WM_PRINTCLIENT, cast(HDC, _wParam), _
+                dim as HDC hdc = _
+                    iif(uMsg = WM_PRINTCLIENT, GetDC(hWin), _
                         GetDCEx(hWin, 0, DCX_INTERSECTUPDATE or DCX_CACHE or DCX_CLIPCHILDREN or DCX_CLIPSIBLINGS) )
 
                 ' Call the EDIT control so that the caret is properly handled,
@@ -968,14 +868,15 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
                     cueBannerText = L(173,"Replace")
                 end if
 
-                SelectObject( hdc, ghStatusBar.hFontStatusBar )
+                dim as HFONT _hFont = pWindow->CreateFont(GUIFONT, 9, FW_NORMAL)
+                if _hFont then SelectObject( hdc, _hFont )
                 SetTextColor( hdc, ghFindReplace.CueBannerForeColor )
                 SetBkMode(hdc, TRANSPARENT)
                 dim as long wsStyle = DT_TOP or DT_LEFT or DT_NOPREFIX or DT_NOCLIP
                 DrawText(hdc, cueBannerText, -1, @editRect, wsStyle)
-
                 RestoreDC( hdc, -1 )
                 ReleaseDC( hWin, hdc )
+                if _hFont then DeleteObject( _hFont )
 
                 ' Return the EDIT's result (could probably safely just return zero here,
                 ' but seems safer to relay whatever value came from the edit).
@@ -1065,7 +966,6 @@ function frmFindReplace_Show( _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmFindReplace_RichEdit_SubclassProc, IDC_FRMFINDREPLACE_TXTFIND, null )
 
-        AfxSetWindowFont( hCtlFind, ghStatusBar.hFontStatusBar )
         SendMessage( hCtlFind, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
         SendMessage( hCtlFind, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghFindReplace.TextBoxBackColor) )
         GetClientRect( hCtlFind, @rc )
@@ -1078,7 +978,6 @@ function frmFindReplace_Show( _
                     WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmFindReplace_RichEdit_SubclassProc, IDC_FRMFINDREPLACE_TXTREPLACE, null )
-        AfxSetWindowFont( hCtlReplace, ghStatusBar.hFontStatusBar )
         SendMessage( hCtlReplace, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
         SendMessage( hCtlReplace, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghFindReplace.TextBoxBackColor) )
         GetClientRect( hCtlReplace, @rc )

@@ -189,21 +189,33 @@ end function
 function getTextWidth( _
             byval hwnd as HWND, _
             byref wszText as wstring, _
-            byval _hFont as HFONT, _
+            byval FontIndex as long, _
             byval nPadding as long _
             ) as long
-
+    
     dim size as SIZEL
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    if pWindow = 0 then exit function
+    
+    dim as HFONT _hFont
+    select case FontIndex
+        case GUIFONT_9:     _hFont = pWindow->CreateFont(GUIFONT, 9, FW_NORMAL) 
+        case GUIFONT_10:    _hFont = pWindow->CreateFont(GUIFONT, 10, FW_NORMAL)
+        case SYMBOLFONT_9:  _hFont = pWindow->CreateFont(SYMBOLFONT, 9, FW_NORMAL)
+        case SYMBOLFONT_10: _hFont = pWindow->CreateFont(SYMBOLFONT, 10, FW_NORMAL)
+        case SYMBOLFONT_12: _hFont = pWindow->CreateFont(SYMBOLFONT, 12, FW_NORMAL)
+        case else: exit function    
+    end select
     
     dim as HDC hDC = GetDC(hwnd)
     SaveDC(hDC)
     if _hFont then SelectObject(hDC, _hFont)
-    GetTextExtentpoint32( hDC, @wszText, len(wszText), @size )  'get text size
+    GetTextExtentpoint32( hDC, @wszText, len(wszText), @size )
     RestoreDC(hDC, -1)
-    ReleaseDC hwnd, hDC
+    if _hFont then DeleteObject(_hFont)
+    ReleaseDC(hwnd, hDC)
     
-    function = pWindow->UnScaleX(size.cx) + pWindow->ScaleX(nPadding)  ' add enough padding
+    function = pWindow->UnScaleX(size.cx) + pWindow->ScaleX(nPadding)  
 
 end function
 

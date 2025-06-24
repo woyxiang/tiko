@@ -48,7 +48,30 @@ end function
 ' ========================================================================================
 function frmAbout_OnDestroy( byval hwnd as HWND) as LRESULT
     Dim As HFONT hFont = AfxGetWindowFont(GetDlgItem(hwnd, IDC_FRMABOUT_LBLAPPNAME))
+    HWND_FRMABOUT = 0
     PostQuitMessage(0)
+    function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_COMMAND message for window/dialog: frmAbout
+' ========================================================================================
+function frmAbout_OnCommand( _
+            byval hwnd as HWND, _
+            byval id as long, _
+            byval hwndCtl as HWND, _
+            byval codeNotify As UINT _
+            ) as LRESULT
+
+    select case id
+        case IDCANCEL  ' Close
+            if codeNotify = BN_CLICKED then
+                SendMessage( HWnd, WM_CLOSE, 0, 0)
+                exit function
+            end if
+    end select
+    
     function = 0
 end function
 
@@ -67,6 +90,7 @@ function frmAbout_WndProc( _
         HANDLE_MSG (hwnd, WM_CREATE,  frmAbout_OnCreate)
         HANDLE_MSG (hwnd, WM_CLOSE,   frmAbout_OnClose)
         HANDLE_MSG (hwnd, WM_DESTROY, frmAbout_OnDestroy)
+        HANDLE_MSG (hwnd, WM_COMMAND, frmAbout_OnCommand)
     end select
 
     ' for messages that we don't deal with
@@ -82,7 +106,7 @@ function frmAbout_Show( byval hWndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
 
-    pWindow->Create( hWndParent, L(74,"About"), @frmAbout_WndProc, 0, 0, 0, 0, _
+    HWND_FRMABOUT = pWindow->Create( hWndParent, L(74,"About"), @frmAbout_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->SetClientSize(580, 280)

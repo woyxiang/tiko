@@ -14,11 +14,11 @@
 #pragma once
 
 
-#Define IDC_FRMGOTO_LBLLASTLINE                     1000
-#Define IDC_FRMGOTO_LBLCURRENTLINE                  1001
-#Define IDC_FRMGOTO_LBLGOTOLINE                     1002
-#Define IDC_FRMGOTO_TXTLINE                         1003
-#Define IDC_FRMGOTO_LBLLASTVALUE                    1004
-#Define IDC_FRMGOTO_LBLCURRENTVALUE                 1005
+#define IDC_FRMGOTO_LBLLASTLINE                     1000
+#define IDC_FRMGOTO_LBLCURRENTLINE                  1001
+#define IDC_FRMGOTO_LBLGOTOLINE                     1002
+#define IDC_FRMGOTO_TXTLINE                         1003
+#define IDC_FRMGOTO_LBLLASTVALUE                    1004
+#define IDC_FRMGOTO_LBLCURRENTVALUE                 1005
 
 declare function frmGoto_Show( byval hWndParent as HWND ) as LRESULT

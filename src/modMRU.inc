@@ -71,7 +71,7 @@ function updateMRUFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUBASE + i, 0, false, false )
             wszText = gConfig.MRU(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -110,7 +110,7 @@ function updateMRUSessionFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONBASE + i, 0, false, false )
             wszText = gConfig.MRUSESSION(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -149,7 +149,7 @@ function updateMRUProjectFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTBASE + i, 0, false, false )
             wszText = gConfig.MRUPROJECT(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, ghMenuBar.hFontMenuBar, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next

@@ -41,7 +41,7 @@ constructor clsConfig
     WinAPICodetipsFilename    = exe_path & "settings\keywords\codetips_winapi.ini" 
     WinFBXCodetipsFilename    = exe_path & "settings\keywords\codetips_winfbx.ini" 
     TikoHelpFile              = exe_path & "settings\help\tiko_help.txt" 
-    DefaultSessionFilename    = exe_path & "default.session" 
+    DefaultSessionFilename    = exe_path & "settings\default.session" 
 end constructor
 
 ''
@@ -716,7 +716,9 @@ function clsConfig.LoadConfigFile() as long
             select case wKey
             case "SettingsVersion":          this.SettingsVersion       = wData
             case "AskExit":                  this.AskExit               = nData
+#if ENABLE_AUTOSAVE
             case "AutoSaveFiles":            this.AutoSaveFiles         = nData
+#endif
             case "AutoSaveInterval":         this.AutoSaveInterval      = nData
             case "RestoreSession":           this.RestoreSession        = nData
             case "LastActiveSessionFile":    this.wszLastActiveSession  = ProcessFromCurdriveApp(wData)
@@ -1457,19 +1459,33 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
 
         if docData(i).bLoadInTab then
             iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
+            SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
+            SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
+            SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
+            SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
+            pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
         end if
 
-        ' Set the saved positions
+        ' Set the previously saved positions
         pDoc->SplitX = docData(i).nSplitPositionX
         pDoc->SplitY = docData(i).nSplitPositionY
         pDoc->EditorSplitMode = docData(i).nSplitMode
-        SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
-        SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
-        SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
-        SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
-        pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
         pDoc->SetBookmarks(docData(i).wszBookmarks)
         pDoc->SetFoldPoints(docData(i).wszFoldPoints)
+
+        ' All documents need to be initially loaded into a scintilla window because that
+        ' edit buffer is used for the parsing. However, once the parsing is complete then
+        ' pDoc's not showing in the tab control can have their scintilla windows destroyed
+        ' thereby saving memory and gdi resources.
+        ' The document will be loaded again via OpenSelectedDocument is needed.
+        if docData(i).bLoadInTab = 0 then
+print "1: "; pDoc->DiskFilename
+            DestroyWindow pDoc->hWindow(0)
+print "2: "; pDoc->DiskFilename
+            DestroyWindow pDoc->hWindow(1)
+print "3-removed"
+        end if
+
     next
                     
     gApp.IsProjectLoading = false

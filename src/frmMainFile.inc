@@ -456,6 +456,8 @@ end function
 ' original filename.
 ' ========================================================================================
 function OnCommand_FileAutoSaveFileCheck( byval wszInFilename as CWSTR ) as CWSTR
+
+#if ENABLE_AUTOSAVE
     dim as FILETIME ftOriginal
     dim as FILETIME ftAutoSave
     dim as CWSTR wszAutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszInFilename)
@@ -482,6 +484,7 @@ function OnCommand_FileAutoSaveFileCheck( byval wszInFilename as CWSTR ) as CWST
         end if   
         
     end if
+#endif
 
     ' No matter if the original or autosave file is selected by the
     ' user, the filename being returned will inevitably be the same
@@ -503,7 +506,8 @@ function OnCommand_FileAutoSaveTimerProc( _
     ' Iterate all of the documents and determine which ones need to have
     ' the special #filename# temporary file created.
     if gConfig.AutoSaveFiles = false then exit function
-    
+
+#if ENABLE_AUTOSAVE    
     dim pDoc as clsDocument ptr
     pDoc = gApp.pDocList
     do until pDoc = 0
@@ -515,6 +519,7 @@ function OnCommand_FileAutoSaveTimerProc( _
         end if
         pDoc = pDoc->pDocnext
     loop
+#endif
 
     function = 0
 end function

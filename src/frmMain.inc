@@ -585,37 +585,23 @@ end function
 ' Process WM_PAINT message for window/dialog: frmMain
 ' ========================================================================================
 function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
-            
-    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
-    if pWindow = 0 then exit function
+    dim as clsDoubleBuffer b
 
-    dim as PAINTSTRUCT ps
-    dim as HPEN hPen
-    dim as HDC hDC
-    dim as RECT rc
-    
-    hDC = BeginPaint(hwnd, @ps)
+    b.BeginDoubleBuffer(hwnd)
+    b.SetBackColors( ghMain.BackColor, ghMain.BackColor )
+    b.PaintClientRect()
 
-    SaveDC hDC
-    
-    GetClientRect(hwnd, @rc)    
-    FillRect( hDC, @rc, ghBrushMainBackground )
-
-    dim as HBRUSH hBackBrush = CreateSolidBrush( ghEditor.Divider )
-
-    ' Draw any horizontal splitter between the two edit windows
+    ' Draw any splitter between the two edit windows
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr
     if pDoc then
         if pDoc->EditorSplitMode <> SplitNone then
             frmMain_CalcSplitRect(pDoc)
-            FillRect( hDC, @pDoc->rcSplitButton, hBackBrush )
+            b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
+            b.PaintRect( @pDoc->rcSplitButton, ghEditor.Divider )
         end if    
     end if
     
-    RestoreDC hDC, -1 
-    EndPaint hwnd, @ps
-
-    DeleteObject( hBackBrush )
+    b.EndDoubleBuffer()
     
     function = 0
 end Function
@@ -901,6 +887,7 @@ function frmMain_PositionWindows() as LRESULT
         
         if pDoc->EditorSplitMode = SplitNone then 
             ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(0), SW_SHOW )
+            ShowWindow( HWND_FRMEDITOR_VSCROLLBAR(1), SW_HIDE )
             ShowWindow( pDoc->hWindow(1), SW_HIDE )      
             frmMain_PositionMainDocBottom(pDoc, rcDoc)
         end if

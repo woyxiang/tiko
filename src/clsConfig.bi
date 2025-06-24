@@ -96,7 +96,7 @@ type clsConfig
         WinApiKeywords            as string
         bKeywordsDirty            as boolean = true       ' not saved to file
         AskExit                   as long = false         ' use long so true/False string not written to file
-        AutoSaveFiles             as long = true
+        AutoSaveFiles             as long = false
         AutoSaveInterval          as long = 10            ' seconds between autosave checks
         idAutoSaveTimer           as long = 999           ' id of Autosave timer
         RestoreSession            as long = false

@@ -36,6 +36,11 @@ type GENERAL_HANDLES_TYPE
 end type
 dim shared ghGeneral as GENERAL_HANDLES_TYPE
 
+type MAIN_HANDLES_TYPE
+    BackColor as COLORREF
+end type
+dim shared ghMain as MAIN_HANDLES_TYPE
+
 type EDITOR_HANDLES_TYPE
     ForeColorCaret as COLORREF
     BackColorCurrentLine as COLORREF
@@ -94,20 +99,16 @@ type EDITOR_HANDLES_TYPE
     ForeColorBracegood as COLORREF
     ForeColorBracebad as COLORREF
     ForeColorOccurrence as COLORREF
-    hBackBrushScrollBar as HBRUSH
     BackColorScrollBar as COLORREF
     ForeColorScrollBar as COLORREF
-    hBackBrushThumb as HBRUSH
     Divider as COLORREF
 end type
 dim shared ghEditor as EDITOR_HANDLES_TYPE
 
 type PANEL_HANDLES_TYPE
-    hPanelBrush as HBRUSH
-    hBackBrushScrollBar as HBRUSH
+    hPanelBrush as HBRUSH          
     BackColorScrollBar as COLORREF
     ForeColorScrollBar as COLORREF
-    hBackBrushThumb as HBRUSH
     hBackBrush as HBRUSH
     BackColor as COLORREF
     ForeColor as COLORREF
@@ -124,26 +125,15 @@ end type
 dim shared ghPanel as PANEL_HANDLES_TYPE
 
 type MENUBAR_HANDLES_TYPE
-    hPanelBrush as HBRUSH
-    hBackBrush as HBRUSH
-    hBackBrushHot as HBRUSH
     BackColor as COLORREF
     BackColorHot as COLORREF
     ForeColor as COLORREF
     ForeColorHot as COLORREF
-    hFontMenuBar as HFONT
-    hFontSymbol as HFONT
-    hFontSymbolSmall as HFONT
-    hFontSymbolLarge as HFONT
 end type
 dim shared ghMenuBar as MENUBAR_HANDLES_TYPE
 
 type POPUPMENU_HANDLES_TYPE
     PanelColor as COLORREF
-    hPanelBrush as HBRUSH
-    hBackBrush as HBRUSH
-    hBackBrushHot as HBRUSH
-    hBackBrushDisabled as HBRUSH
     BackColor as COLORREF
     BackColorHot as COLORREF
     BackColorDisabled as COLORREF
@@ -175,8 +165,6 @@ type STATUSBAR_HANDLES_TYPE
     BackColorHot as COLORREF
     ForeColor as COLORREF
     ForeColorHot as COLORREF
-    hFontStatusBar as HFONT
-    hFontStatusBarBold as HFONT
 end type
 dim shared ghStatusBar as STATUSBAR_HANDLES_TYPE
 
@@ -215,6 +203,8 @@ type OUTPUT_HANDLES_TYPE
 end type
 dim shared ghOutput as OUTPUT_HANDLES_TYPE
 
+
+
 ''
 ''  RETRIEVE THEME ITEM FROM ARRAY
 ''
@@ -231,6 +221,16 @@ function getThemePtr( byval lookupKey as string ) as THEME_TYPE ptr
     next
     return @dummy
 end function
+
+
+'TODO: This PaintRect function will be able to be removed after refactoring
+function PaintRect( byval hDC as HDC, byval rc as RECT ptr, byval clr as COLORREF ) as long 
+    dim as COLORREF oldclr = SetBkColor(hDC, clr) 
+    ExtTextOut( hDC, 0, 0, ETO_OPAQUE, rc, "", 0, 0)
+    SetBkColor( hDC, oldclr )
+    function = 0
+end function
+
 
 
 ''
@@ -365,6 +365,11 @@ function LoadThemeFile() as boolean
     pTheme = getThemePtr("compile.iconfail")
     ghGeneral.iconfail = pTheme->foreground
 
+    ' set some global brush handles so that we don't always have to be
+    ' recreating them every time they are used.
+    pTheme = getThemePtr("main.panel")
+    ghMain.BackColor = pTheme->background
+
     pTheme = getThemePtr("editor.text")
     ghEditor.BackColorText = pTheme->background
     ghEditor.ForeColorText = pTheme->foreground
@@ -435,10 +440,6 @@ function LoadThemeFile() as boolean
     ghEditor.BackColorFoldsymbol = pTheme->background
     ghEditor.ForeColorFoldsymbol = pTheme->foreground
     pTheme = getThemePtr("editor.scrollbar")
-    if ghEditor.hBackBrushScrollBar then DeleteObject(ghEditor.hBackBrushScrollBar)
-    ghEditor.hBackBrushScrollBar = CreateSolidBrush(pTheme->background)
-    if ghEditor.hBackBrushThumb then DeleteObject(ghEditor.hBackBrushThumb)
-    ghEditor.hBackBrushThumb = CreateSolidBrush(pTheme->foreground)
     ghEditor.ForeColorScrollBar = pTheme->foreground
     ghEditor.BackColorScrollBar = pTheme->background
     pTheme = getThemePtr("editor.bracegood")
@@ -464,10 +465,6 @@ function LoadThemeFile() as boolean
     ghPanel.BackColorHot = pTheme->background
     ghPanel.ForeColorHot = pTheme->foreground
     pTheme = getThemePtr("panel.scrollbar")
-    if ghPanel.hBackBrushScrollBar then DeleteObject(ghPanel.hBackBrushScrollBar)
-    ghPanel.hBackBrushScrollBar = CreateSolidBrush(pTheme->background)
-    if ghPanel.hBackBrushThumb then DeleteObject(ghPanel.hBackBrushThumb)
-    ghPanel.hBackBrushThumb = CreateSolidBrush(pTheme->foreground)
     ghPanel.BackColorScrollBar = pTheme->background
     ghPanel.ForeColorScrollBar = pTheme->foreground
     pTheme = getThemePtr("panel.button")
@@ -483,35 +480,21 @@ function LoadThemeFile() as boolean
 
     pTheme = getThemePtr("topmenu.panel")
     ghPopup.PanelColor = pTheme->background
-    if ghPopup.hPanelBrush then DeleteObject(ghPopup.hPanelBrush)
-    ghPopup.hPanelBrush = CreateSolidBrush(ghPopup.PanelColor)
     pTheme = getThemePtr("topmenu.text")
-    if ghPopup.hBackBrush then DeleteObject(ghPopup.hBackBrush)
-    ghPopup.hBackBrush = CreateSolidBrush(pTheme->background)
     ghPopup.BackColor = pTheme->background
     ghPopup.ForeColor = pTheme->foreground
     pTheme = getThemePtr("topmenu.texthot")
-    if ghPopup.hBackBrushHot then DeleteObject(ghPopup.hBackBrushHot)
-    ghPopup.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghPopup.BackColorHot = pTheme->background
     ghPopup.ForeColorHot = pTheme->foreground
     pTheme = getThemePtr("topmenu.textdisabled")
-    if ghPopup.hBackBrushDisabled then DeleteObject(ghPopup.hBackBrushDisabled)
-    ghPopup.hBackBrushDisabled = CreateSolidBrush(pTheme->background)
     ghPopup.BackColorDisabled = pTheme->background
     ghPopup.ForeColorDisabled = pTheme->foreground
         
-    pTheme = getThemePtr("menubar.panel")
-    if ghMenuBar.hPanelBrush then DeleteObject(ghMenuBar.hPanelBrush)
-    ghMenuBar.hPanelBrush = CreateSolidBrush(pTheme->background)
+    'pTheme = getThemePtr("menubar.panel")
     pTheme = getThemePtr("menubar.text")
-    if ghMenuBar.hBackBrush then DeleteObject(ghMenuBar.hBackBrush)
-    ghMenuBar.hBackBrush = CreateSolidBrush(pTheme->background)
     ghMenuBar.BackColor = pTheme->background
     ghMenuBar.ForeColor = pTheme->foreground
     pTheme = getThemePtr("menubar.texthot")
-    if ghMenuBar.hBackBrushHot then DeleteObject(ghMenuBar.hBackBrushHot)
-    ghMenuBar.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghMenuBar.BackColorHot = pTheme->background
     ghMenuBar.ForeColorHot = pTheme->foreground
     
@@ -602,37 +585,7 @@ function LoadThemeFile() as boolean
     ghOutput.hCloseBrushHot = CreateSolidBrush(pTheme->background)
     ghOutput.CloseBackColorHot = pTheme->background
 
-    ' Set the default font names. The editor is only compatible with
-    ' Windows 10 and greater so we know the fonts that are present.
-    dim as CWSTR wszFontName = "Segoe UI"
-    dim as CWSTR wszSymbolFontName  = "Segoe Fluent Icons" 
-    
-    if ghMenuBar.hFontMenuBar = 0 then
-        ghMenuBar.hFontMenuBar = pWindow->CreateFont(wszFontName, 10, FW_NORMAL, , , , DEFAULT_CHARSET)
-    end if
-    if ghStatusBar.hFontStatusBar = 0 then
-        ghStatusBar.hFontStatusBar = pWindow->CreateFont(wszFontName, 9, FW_NORMAL, , , , DEFAULT_CHARSET)
-    end if
-    if ghStatusBar.hFontStatusBarBold = 0 then
-        ghStatusBar.hFontStatusBarBold = pWindow->CreateFont(wszFontName, 9, FW_BOLD, , , , DEFAULT_CHARSET)
-    end if
-    if ghMenuBar.hFontSymbol = 0 then
-        ghMenuBar.hFontSymbol = pWindow->CreateFont(wszSymbolFontName, 10, FW_NORMAL, , , , DEFAULT_CHARSET)
-    end if
-    if ghMenuBar.hFontSymbolSmall = 0 then
-        ghMenuBar.hFontSymbolSmall = pWindow->CreateFont(wszSymbolFontName, 9, FW_NORMAL, , , , DEFAULT_CHARSET)
-    end if
-    if ghMenuBar.hFontSymbolLarge = 0 then
-        ghMenuBar.hFontSymbolLarge = pWindow->CreateFont(wszSymbolFontName, 12, FW_NORMAL, , , , DEFAULT_CHARSET)
-    end if
-        
-    ' set some global brush handles so that we don't always have to be
-    ' recreating them every time they are used.
-    pTheme = getThemePtr("main.panel")
-    if ghBrushMainBackground then DeleteObject(ghBrushMainBackground)
-    ghBrushMainBackground = CreateSolidBrush(pTheme->background)
-    AfxRedrawWindow(HWND_FRMMAIN)
-
     function = false
+
 end function
 

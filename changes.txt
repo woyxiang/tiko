@@ -1,12 +1,12 @@
 Version 1.0.4 ()
-- Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon to top/bottom split.
+- Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
 - Added: Panel icon menu (located above the EXPLORER panel).
 - Added: Much improved brace highlighting.
 - Added: Codetips for WinFBX / Afx library.
 - Added: Button in Statusbar to quickly access 'Themes and Fonts'.
 - Added: A default.session file is saved if "Restore previous session/project on startup" is checked if user does not specify another name.
-- Changed: All icons now use SegoeFluentIcons. SegoeFluentIcons.ttf must now be located in same folder as the editor exe. SegoeFluentIcons is not part of Windows 10 by default.
-- Changed: Refactored how the Output window functionality.
+- Changed: All icons now use SegoeFluentIcons. SegoeFluentIcons.ttf must now be located in editor's \bin folder. SegoeFluentIcons is not part of Windows 10 by default.
+- Changed: Refactored the Output window functionality for opening/closing and resizing.
 - Changed: Removed the "+" Add New File button from the top tab bar (may implement it again in the future).
 - Changed: Drag top tab positions without having to hold down the SHIFT key.
 - Changed: The editor caret width from 1 pixel to 3 pixel. 

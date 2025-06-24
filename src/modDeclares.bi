@@ -151,7 +151,7 @@ dim shared as HWND HWND_FRMOPTIONS, HWND_FRMOPTIONSGENERAL, HWND_FRMOPTIONSEDITO
 dim shared as HWND HWND_FRMOPTIONSCOLORS, HWND_FRMOPTIONSCOMPILER, HWND_FRMOPTIONSLOCAL
 dim shared as HWND HWND_FRMOPTIONSKEYWORDS, HWND_FRMOPTIONSKEYWORDSWINAPI
 dim shared as HWND HWND_FRMFINDREPLACE, HWND_FRMFINDINFILES, HWND_FRMFINDREPLACE_SHADOW
-dim shared as HWND HWND_FRMBUILDCONFIG, HWND_FRMUSERTOOLS
+dim shared as HWND HWND_FRMBUILDCONFIG, HWND_FRMUSERTOOLS, HWND_FRMABOUT
 dim shared as HWND HWND_FRMKEYBOARD, HWND_FRMKEYBOARD_LISTVIEW, HWND_FRMKEYBOARDEDIT
 
 dim shared as HWND HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_TOPTABS_SHADOW
@@ -228,11 +228,15 @@ dim shared gFind as FINDREPLACE_TYPE
 dim shared gFindInFiles as FINDREPLACE_TYPE
 
 
-' Main frmMain app background
-dim shared ghBrushMainBackground as HBRUSH
+TYPE MENUBAR_ITEM
+    wszText as CWSTR
+    rcItem  as RECT
+    id      as long
+end type
 
 ' shared variables that control the state of what menubar button is active.
-dim shared as HWND ghWndActiveMenuBarButton
+dim shared gMenuBar(any) as MENUBAR_ITEM
+dim shared gActiveMenuBarIndex as long = -1
 dim shared as long gMenuLastCurSel = -1
 dim shared as boolean gPrevent_WM_NCACTIVATE = false
 
@@ -283,32 +287,7 @@ dim shared as wstring * 10 _
     wszIconSplitEditor, wszIconSplitLeftRight, wszIconSplitTopBottom, wszIconThemes, _
     wszIconSettings
 
-
 ' Symbol characters display in top menus, frmExplorer, and tab control
-
-'"Segoe UI Symbol"
-'    wszIconClose             = !"\u2715"      ' light X  
-'    wszIconChevronLeft       = !"\uE09A"
-'    wszIconChevronRight      = !"\uE097" 
-'    wszIconChevronUp         = !"\uE098"
-'    wszIconChevronDown       = !"\uE099"
-'    wszTriangleDown      = !"\u23F7"     ' triangle down
-'    wszTriangleUp        = !"\u23F6"     ' triangle up
-'    wszIconDocument      = !"\u22C5"     ' small dot
-'    wszIconUpArrow           = !"\uE1FE"     ' up arrow
-'    wszIconDownArrow         = !"\uE1FC"     ' down arrow
-'    wszIconSelection         = !"\uE1EE"     ' selection icon
-'    wszIconCheckmark         = !"\u2713"     ' narrow checkmark
-'    wszIconDirty             = !"\u2981"     ' larger dot
-'    wszIconCompileResult = !"\u25CF"     ' larger circle  
-'    wszIconMatchCase         = "Aa"          ' match case
-'    wszIconWholeWord         = "W"           ' whole word
-'    wszIconPreserveCase      = "AB"          ' preserve case
-'    wszIconReplace           = !"\uE297"     ' replace
-'    wszIconReplaceAll        = !"\uE299"     ' replace all
-'    wszIconMoreActions       = !"\u22EF"     ' ...
-'    wszIconAddFileButton     = !"\uE109"     ' plus sign (thicker)
-'    wszIconBuildExecute      = !"\uE102"
 
 '"Segoe Fluent Icons"
     wszIconClose             = !"\uE10A"      ' light X  
@@ -338,6 +317,8 @@ dim shared as wstring * 10 _
     wszIconSplitLeftRight    = !"\uF57C"   
     wszIconSplitTopBottom    = !"\uF16E"   
     wszIconSplitEditor       = wszIconSplitLeftRight
-    wszIconThemes            = !"\uF67B"   
     wszIconSettings          = !"\uE713"   
+    'wszIconThemes            = !"\uF67B"   
+    'wszIconThemes            = !"\uE70F"   
+    wszIconThemes            = !"\uE771"   
 

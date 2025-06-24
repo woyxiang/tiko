@@ -143,7 +143,7 @@ function frmTopTabs_PositionWindows() as LRESULT
         if pDoc then
             ' Determine the length of the text
             gTTabCtl.tabs(i).wszText = AfxStrPathname( "NAMEX", pDoc->DiskFilename )
-            nTextWidth = getTextWidth( HWND_FRMMAIN_TOPTABS, gTTabCtl.tabs(i).wszText, ghMenuBar.hFontMenuBar, 0 )
+            nTextWidth = getTextWidth( HWND_FRMMAIN_TOPTABS, gTTabCtl.tabs(i).wszText, GUIFONT_10, 0 )
             if nTextWidth < 70 then nTextWidth = 70
 
             ' calculate the various tab dimensions
@@ -337,7 +337,8 @@ function frmTopTabs_WndProc( _
 
     static as long curr_idxHot = -1
     
-    static hTooltip as HWND
+    static as CWSTR wszPrevTooltip 
+    static as HWND hTooltip 
     if (uMsg = WM_DESTROY) andalso (IsWindow(hToolTip)) then DestroyWindow(hToolTip)
 
     select Case uMsg
@@ -387,8 +388,12 @@ function frmTopTabs_WndProc( _
         
         
     case WM_MOUSELEAVE
-        ' this will reset all tabs isHot to -1 and curr_idxHot to -1
-        curr_idxHot = getHotTabHitTest( hwnd )
+        wszPrevTooltip = ""
+        ' this will reset all tabs isHot to false and curr_idxHot to -1
+        for i as long = lbound(gTTabCtl.tabs) to ubound(gTTabCtl.tabs)
+            gTTabCtl.tabs(i).isHot = false
+        next
+        curr_idxHot = -1
         AfxRedrawWindow( hwnd )
 
 
@@ -421,10 +426,12 @@ function frmTopTabs_WndProc( _
             if gTTabCtl.IsSafeIndex(curr_idxHot) = false then exit function
             wszTooltip = gTTabCtl.tabs(curr_idxHot).pDoc->DiskFilename   
         end if
+        
         ' Display the tooltip
-        AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
-        AfxRedrawWindow( hwnd )
-
+        if wszTooltip <> wszPrevTooltip then
+            AfxSetTooltipText( hTooltip, hwnd, wszTooltip )
+            wszPrevTooltip = wszTooltip 
+        end if    
 
     case WM_RBUTTONDOWN
         if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
@@ -532,61 +539,37 @@ function frmTopTabs_WndProc( _
         end if
 
     case WM_PAINT
-        dim as PAINTSTRUCT ps
-        dim as HDC hDC
-        dim as RECT rc
-
         dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN_TOPTABS)
         if pWindow = 0 then exit function
 
-        hDC = BeginPaint( hwnd, @ps )
+        dim as clsDoubleBuffer b
         
-        GetClientRect(hwnd, @rc)
-        dim as long nWidth = rc.right - rc.left
-        dim as long nHeight = rc.bottom - rc.top
+        b.BeginDoubleBuffer(hwnd)
 
-        dim memDC as HDC      ' Double buffering
-        dim hbit as HBITMAP   ' Double buffering
+        ' Set default fore and back colors
+        b.SetForeColors( ghTopTabs.ForeColor, ghTopTabs.ForeColorHot )
+        b.SetBackColors( ghTopTabs.BackColor, ghTopTabs.BackColorHot )
 
-        memDC = CreateCompatibleDC( hDC )
-
-        SaveDC(memDC)
-
-        hbit  = CreateCompatibleBitmap( hDC, nWidth, nHeight )
-        if hbit then SelectObject( memDC, hbit )
-
-        ' Fill in the entire back panel width across the top of the screen
-        FillRect( memDC, @rc, ghTopTabs.hPanelBrush )
-
-        ' Create a black pen that acts as the divider for each tab
-        dim as long penWidth = pWindow->ScaleX(1)
-        dim as HPEN hPenSolid = CreatePen( PS_SOLID, penWidth, ghTopTabs.Divider )
-        SelectObject( memDC, hPenSolid)
-        
-        dim as HPEN hPenNull = CreatePen( PS_NULL, 1, 0 )  ' null/invisible pen
-
-        dim as point pt: GetCursorPos( @pt )
-        dim as long wsStyle
-        
+        ' Clear the entire back client area
+        b.PaintClientRect()
+    
         ' All of the rc calculations have already been done in frmTopTabs_PostionWindows
         if gTTabCtl.FirstDisplayTab > ubound(gTTabCtl.tabs) then gTTabCtl.FirstDisplayTab = lbound(gTTabCtl.tabs)
         for i as long = gTTabCtl.FirstDisplayTab to ubound(gTTabCtl.tabs)
             ' paint this tab based on active/inactive status
             if i = gTTabCtl.CurSel then
-                SetBkColor( memDC, ghTopTabs.BackColorHot )
-                SetTextColor( memDC, ghTopTabs.ForeColorHot )
-                FillRect( memDC, @gTTabCtl.tabs(i).rcTab, ghTopTabs.hBackBrushHot )
+                b.SetForeColors( ghTopTabs.ForeColorHot, ghTopTabs.ForeColorHot )
+                b.SetBackColors( ghTopTabs.BackColorHot, ghTopTabs.BackColorHot )
             else
-                SetBkColor( memDC, ghTopTabs.BackColor )
-                SetTextColor( memDC, ghTopTabs.ForeColor )
-                FillRect( memDC, @gTTabCtl.tabs(i).rcTab, ghTopTabs.hBackBrush )
+                b.SetForeColors( ghTopTabs.ForeColor, ghTopTabs.ForeColor )
+                b.SetBackColors( ghTopTabs.BackColor, ghTopTabs.BackColor )
             end if
+            b.PaintRect( @gTTabCtl.tabs(i).rcTab )
             
             ' display the tab text
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontMenuBar)
-            DrawText( memDC, gTTabCtl.tabs(i).wszText.sptr, -1, cast(lpRect, @gTTabCtl.tabs(i).rcText), wsStyle )
-            
+            b.SetFont( GUIFONT_10 )
+            b.PaintText( gTTabCtl.tabs(i).wszText, @gTTabCtl.tabs(i).rcText, DT_CENTER )
+
             ' if this document is dirty then the dirty circle icon overrides the display of the close icon
             ' unless the tab isHot. The dirty icon displays always for active and inactive tabs.
             dim as boolean isDirty 
@@ -595,33 +578,30 @@ function frmTopTabs_WndProc( _
             
             if isDirty then
                 ' if mouse is over the rcClose then draw the close icon, otherwise draw the dirty circle
-                SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                DrawText( memDC, wszIconCompileResult, -1, cast(lpRect, @gTTabCtl.tabs(i).rcClose), wsStyle )
+                b.SetFont( SYMBOLFONT_9 )
+                b.PaintText( wszIconCompileResult, @gTTabCtl.tabs(i).rcClose, DT_CENTER )
             end if
             
             if (i = gTTabCtl.CurSel) or (gTTabCtl.tabs(i).isHot = true) then
                 ' if this is the active tab or it is mouse hot then display the close icon only 
                 ' if the dirty icon is not already being displayed
-                rc = gTTabCtl.tabs(i).rcClose
+                b.SetFont( SYMBOLFONT_9 )
                 if isDirty = false then
-                    SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                    DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
+                    b.PaintText( wszIconClose, @gTTabCtl.tabs(i).rcClose, DT_CENTER )
                 end if
                 if (isTabCloseHitTest( hwnd, i ) = i) andalso (gApp.bDragTabActive = false) then
                     ' if we are hovered over the "X" close icon rect then highlight it
-                    SelectObject( memDC, hPenNull )
-                    SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-                    RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-                    SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                    SelectObject( memDC, ghMenuBar.hFontSymbolSmall )
-                    DrawText( memDC, wszIconClose, -1, cast(lpRect, @rc), wsStyle )
+                    b.SetForeColors( ghTopTabs.ForeColorHot, ghTopTabs.ForeColorHot )
+                    b.SetBackColors( ghTopTabs.CloseBackColorHot, ghTopTabs.CloseBackColorHot )
+                    b.PaintRoundRect( @gTTabCtl.tabs(i).rcClose, true )
+                    b.PaintText( wszIconClose, @gTTabCtl.tabs(i).rcClose, DT_CENTER )
                 end if   
             end if
             
             ' Draw the righthand side black divider
-            SelectObject( memDC, hPenSolid )
-            MoveToEx( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.top, null )
-            LineTo( memDC, gTTabCtl.tabs(i).rcTab.right - penWidth, gTTabCtl.tabs(i).rcTab.bottom )   
+            b.SetPenColor( ghTopTabs.Divider )
+            b.PaintLine( 1, gTTabCtl.tabs(i).rcTab.right - 1, gTTabCtl.tabs(i).rcTab.top, _
+                            gTTabCtl.tabs(i).rcTab.right - 1, gTTabCtl.tabs(i).rcTab.bottom )
             
             ' Do the calculation of the LastDisplayTab here because we need to
             ' do testing of when the tab rect goes beyond the visual area.
@@ -630,85 +610,37 @@ function frmTopTabs_WndProc( _
             end if
 
         next
-        
+
         ' Lastly, draw the TopTabs Action Area (basically, the little panel to the
         ' right of all of the top tabs that has the "..." icon.
         if gTTabCtl.GetItemCount then
+            b.SetFont( SYMBOLFONT_10 )
+            b.SetForeColors( ghTopTabs.ForeColorHot, ghTopTabs.ForeColorHot )
+            b.SetBackColors( ghTopTabs.BackColor, ghTopTabs.CloseBackColorHot )
+
             ' paint the full Action Panel
-            FillRect( memDC, @gTTabCtl.rcActionPanel, ghTopTabs.hPanelBrush )
+            b.PaintRect( @gTTabCtl.rcActionPanel )
             
             ' Draw the PrevTabs button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
-            SetBkColor( memDC, ghTopTabs.BackColor )
-            SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isMouseOverRECT(hwnd, gTTabCtl.rcPrevTabs) then
-                SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-            end if
-            rc = gTTabCtl.rcPrevTabs
-            SelectObject( memDC, hPenNull )
-            RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszIconChevronLeft, -1, cast(lpRect, @rc), wsStyle )
+            b.PaintRoundRect( @gTTabCtl.rcPrevTabs, true )
+            b.PaintText( wszIconChevronLeft, @gTTabCtl.rcPrevTabs, DT_CENTER, true )
 
             ' Draw the NextTabs button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
-            SetBkColor( memDC, ghTopTabs.BackColor )
-            SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isMouseOverRECT(hwnd, gTTabCtl.rcNextTabs) then
-                SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-            end if
-            rc = gTTabCtl.rcNextTabs
-            SelectObject( memDC, hPenNull )
-            RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszIconChevronRight, -1, cast(lpRect, @rc), wsStyle )
+            b.PaintRoundRect( @gTTabCtl.rcNextTabs, true )
+            b.PaintText( wszIconChevronRight, @gTTabCtl.rcNextTabs, DT_CENTER, true )
 
             ' Draw the SplitEditor button
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
-            SetBkColor( memDC, ghTopTabs.BackColor )
-            SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isMouseOverRECT(hwnd, gTTabCtl.rcSplitEditor) then
-                SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-            end if
-            rc = gTTabCtl.rcSplitEditor
-            SelectObject( memDC, hPenNull )
-            RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbol)
-            DrawText( memDC, wszIconSplitEditor, -1, cast(lpRect, @rc), wsStyle )
+            b.PaintRoundRect( @gTTabCtl.rcSplitEditor, true )
+            b.PaintText( wszIconSplitEditor, @gTTabCtl.rcSplitEditor, DT_CENTER, true )
             
             ' Draw the Action buttom "..."
-            SelectObject( memDC, ghTopTabs.hPanelBrush )
-            SetBkColor( memDC, ghTopTabs.BackColor )
-            SetTextColor( memDC, ghTopTabs.ForeColorHot )
-            if isMouseOverRECT(hwnd, gTTabCtl.rcActionButton) then
-                SetBkColor( memDC, ghTopTabs.CloseBackColorHot )
-                SelectObject( memDC, ghTopTabs.hCloseBrushHot )
-            end if
-            rc = gTTabCtl.rcActionButton
-            SelectObject( memDC, hPenNull )
-            RoundRect( memDC, rc.left, rc.top, rc.right, rc.bottom, 20, 20 )
-            wsStyle = DT_NOPREFIX or DT_CENTER or DT_VCENTER or DT_SINGLELINE
-            SelectObject(memDC, ghMenuBar.hFontSymbolLarge)
-            DrawText( memDC, wszIconMoreActions, -1, cast(lpRect, @rc), wsStyle )
+            b.PaintRoundRect( @gTTabCtl.rcActionButton, true )
+            b.PaintText( wszIconMoreActions, @gTTabCtl.rcActionButton, DT_CENTER, true )
         end if
     
-        BitBlt( hDC, 0, 0, nWidth, nHeight, memDC, 0, 0, SRCCOPY )
-
-        ' Cleanup
-        RestoreDC( memDC, -1 )
+        b.EndDoubleBuffer()
         
-        if hPenSolid then DeleteObject( hPenSolid )
-        if hPenNull  then DeleteObject( hPenNull )
-        if hbit      then DeleteObject( hbit )
-        if memDC     then DeleteDC( memDC )
-
-        EndPaint( hwnd, @ps )
+        return 0
     
     end select
     

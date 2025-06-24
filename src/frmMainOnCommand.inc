@@ -56,14 +56,6 @@ function frmMain_OnCommand( _
     end select
     
     select case id
-        ' show any topmenu that were activated via keyboard Alt+ sequences     
-        case IDC_MENUBAR_FILE to IDC_MENUBAR_HELP
-            killAllPopupMenus()
-            dim as HWND hCtrl = GetDlgItem(HWND_FRMMAIN_MENUBAR, id)
-            ghWndActiveMenuBarButton = hCtrl
-            SendMessage( hCtrl, WM_LBUTTONDOWN, 0, 0)     
-            setNextMenuItemTabIndex(false)
-
         case IDM_THEMES
             OptionsDialogLastOpened = 3
             frmOptions_Show( hwnd )
