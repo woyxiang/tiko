@@ -336,8 +336,12 @@ function OnCommand_FileClose( _
 
         pDoc = gTTabCtl.GetDocumentPtr(i)
         if pDoc = 0 then return true
+
+        if IsWindow(pDoc->hWindow(0)) = 0 then continue for
     
-        if cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) or pDoc->UserModified then
+        if cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0)) orelse _
+            (pDoc->UserModified = true) then
+            
             gTTabCtl.SetFocusTab(i)
             r = MessageBox( hwnd, L(76,"Save current changes?") & wstr(" ") & wText, @wstr(APPNAME), _
                             MB_YESNOCANCEL Or MB_ICONQUESTION)
@@ -540,10 +544,12 @@ end function
 ' ========================================================================================
 function OnCommand_FileAutoSaveStartTimer() as LRESULT
     if gConfig.AutoSaveFiles = false then exit function
+#if AUTOSAVE_ENABLE
     OnCommand_FileAutoSaveKillTimer()
     SetTimer( HWND_FRMMAIN, gConfig.idAutoSaveTimer, _
                 gConfig.AutoSaveInterval * 1000, _
                 cast(TimerProc, @OnCommand_FileAutoSaveTimerProc) )       
+#endif
     function = 0
 end function
 
@@ -552,6 +558,7 @@ end function
 ' ========================================================================================
 function OnCommand_FileAutoSave( byval hwnd as HWND ) as LRESULT
     ' if AutoSave is enabled then start timer that checks for AutoSave conditions
+#if AUTOSAVE_ENABLE
     if gConfig.AutoSaveFiles then 
         ' any files that were dirty prior to Autosave being enabled should
         ' now get processed by the new timer when it fires.
@@ -568,7 +575,7 @@ function OnCommand_FileAutoSave( byval hwnd as HWND ) as LRESULT
         loop
     
     end if
-    
+#endif    
     function = 0
 end function
 

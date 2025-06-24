@@ -26,7 +26,7 @@
 destructor clsDocument
     ' Delete any manually allocated scintilla edit windows in the editor
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
-        DestroyWindow this.hWindow(i)
+        if this.hWindow(i) then DestroyWindow( this.hWindow(i) )
     next
     
     ' If a QuickRun filename exists for this document then delete
@@ -96,10 +96,10 @@ end function
 function clsDocument.GetActiveScintillaPtr() as any ptr
     dim as HWND hEdit = this.hWndActiveScintilla
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
-        if this.hWindow(i) = hEdit then return m_pSci(i)
+        if this.hWindow(i) = hEdit then return pSci(i)
     next
     ' if no other matches then return 
-    function = m_pSci(0)
+    function = pSci(0)
 end function
 
 
@@ -152,19 +152,19 @@ function clsDocument.CreateCodeWindow( _
                 SciMsg = cast( Scintilla_Directfunction, SendMessage( this.hWindow(0), SCI_GETDIRECTFUNCTION, 0, 0 ) )
             end if
             ' Call the direct function for speed purposes rather than relying on the traditional SendMessage method.
-            m_pSci(i) = cast(any ptr, SendMessage( this.hWindow(i), SCI_GETDIRECTPOINTER, 0, 0 )) 
+            pSci(i) = cast(any ptr, SendMessage( this.hWindow(i), SCI_GETDIRECTPOINTER, 0, 0 )) 
         end if
     next
 
     ' Disable scintilla vertical scroll bar (wParam = 1 to enable)
-    SciMsg( m_pSci(0), SCI_SETVSCROLLBAR, 0, 0 )
-    SciMsg( m_pSci(0), SCI_SETHSCROLLBAR, 0, 0 )
-    SciMsg( m_pSci(1), SCI_SETVSCROLLBAR, 0, 0 )
-    SciMsg( m_pSci(1), SCI_SETHSCROLLBAR, 0, 0 )
+    SciMsg( pSci(0), SCI_SETVSCROLLBAR, 0, 0 )
+    SciMsg( pSci(0), SCI_SETHSCROLLBAR, 0, 0 )
+    SciMsg( pSci(1), SCI_SETVSCROLLBAR, 0, 0 )
+    SciMsg( pSci(1), SCI_SETHSCROLLBAR, 0, 0 )
     
     ' Get the document pointer from our main control and assign it to the other split windows
-    dim as any ptr pDoc = cast(any ptr, SciMsg(m_pSci(0), SCI_GETDOCPOINTER, 0, 0))
-    if pDoc then SciMsg( m_pSci(1), SCI_SETDOCPOINTER, 0, cast(LPARAM, pDoc)) 
+    dim as any ptr pDoc = cast(any ptr, SciMsg(pSci(0), SCI_GETDOCPOINTER, 0, 0))
+    if pDoc then SciMsg( pSci(1), SCI_SETDOCPOINTER, 0, cast(LPARAM, pDoc)) 
             
 
     ' if a disk file was specified then open it and load it into the editor
@@ -184,11 +184,11 @@ function clsDocument.CreateCodeWindow( _
             if GetFileToString(wszFile, sText, @this) = false then
                 ' Take this opportunity to determine the text line endings
                 if instr(sText, chr(13,10)) then
-                    SciMsg( m_pSci(0), SCI_SETEOLMODE, SC_EOL_CRLF, 0)
+                    SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CRLF, 0)
                 elseif instr(sText, chr(10)) then
-                    SciMsg( m_pSci(0), SCI_SETEOLMODE, SC_EOL_LF, 0)
+                    SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_LF, 0)
                 elseif instr(sText, chr(13)) then
-                    SciMsg( m_pSci(0), SCI_SETEOLMODE, SC_EOL_CR, 0)
+                    SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CR, 0)
                 end if
                 this.SetText( sText ) 
                 this.DateFileTime = AfxGetFileLastWriteTime( wszFile )
@@ -198,8 +198,8 @@ function clsDocument.CreateCodeWindow( _
             
 
             this.LoadingFromFile = false
-            SciMsg( m_pSci(0), SCI_SETSAVEPOINT, 0, 0)
-            SciMsg( m_pSci(0), SCI_EMPTYUNDOBUFFER, 0, 0)
+            SciMsg( pSci(0), SCI_SETSAVEPOINT, 0, 0)
+            SciMsg( pSci(0), SCI_EMPTYUNDOBUFFER, 0, 0)
             this.UserModified = false
             this.AutoSaveRequired = false
             this.AutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszFile)
@@ -1295,7 +1295,7 @@ function clsDocument.ApplyProperties() as long
     dim ryRatio     as single = 1
 
     
-    if m_pSci(0) = 0 then exit function
+    if pSci(0) = 0 then exit function
 
     ' Determine the pWindow parent of the Scintilla window in order
     ' to ensure that DPI ratios are correctly used.
@@ -1307,9 +1307,9 @@ function clsDocument.ApplyProperties() as long
     
     ' if this is a read-only file then set the flag so that the document can not be edited.
     if AfxIsReadOnlyFile( this.DiskFilename ) then
-        SciMsg( m_pSci(0), SCI_SETREADONLY, 1, 0)
+        SciMsg( pSci(0), SCI_SETREADONLY, 1, 0)
     else
-        SciMsg( m_pSci(0), SCI_SETREADONLY, 0, 0)
+        SciMsg( pSci(0), SCI_SETREADONLY, 0, 0)
     end if
 
     strFontName = str(gConfig.EditorFontname)
@@ -1327,160 +1327,160 @@ function clsDocument.ApplyProperties() as long
     ' Must apply all settings/styles to each Scintilla split window to ensure that
     ' they all appear and act the same. 
     
-    for i as long = lbound(m_pSci) to ubound(m_pSci)
+    for i as long = lbound(pSci) to ubound(pSci)
 
-		SciMsg( m_pSci(i), SCI_SETFONTQUALITY, SC_EFF_QUALITY_LCD_OPTIMIZED, 0)
+		SciMsg( pSci(i), SCI_SETFONTQUALITY, SC_EFF_QUALITY_LCD_OPTIMIZED, 0)
 
         ' Add Brace Highlighting functionality:
         ' We use indicators because the lexer can overwrite the colors set STYLE_BRACELIGHT and
         ' STYLE_BRACEBAD once they are outputted to the screen.
         ' First, we set the style of the indicator number we want to use to the Box style
-        SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_BOX )
-        'SciMsg( m_pSci(i), SCI_INDICSETSTYLE, 9, INDIC_PLAIN) 
+        SciMsg( pSci(i), SCI_INDICSETSTYLE, 9, INDIC_BOX )
+        'SciMsg( pSci(i), SCI_INDICSETSTYLE, 9, INDIC_PLAIN) 
         ' then, we make that indicator the current one
-        SciMsg( m_pSci(i), SCI_SETINDICATORCURRENT, 9, 0 )
+        SciMsg( pSci(i), SCI_SETINDICATORCURRENT, 9, 0 )
         ' Lastly, we apply the indicator (in this case), to a single char
-        SciMsg( m_pSci(i), SCI_BRACEHIGHLIGHTINDICATOR, 1, 9 )  ' use indicator for SCI_BRACEHIGHLIGHTINDICATOR
-        SciMsg( m_pSci(i), SCI_BRACEBADLIGHTINDICATOR, 1, 9 )   ' and SCI_BRACEBADLIGHTINDICATOR
+        SciMsg( pSci(i), SCI_BRACEHIGHLIGHTINDICATOR, 1, 9 )  ' use indicator for SCI_BRACEHIGHLIGHTINDICATOR
+        SciMsg( pSci(i), SCI_BRACEBADLIGHTINDICATOR, 1, 9 )   ' and SCI_BRACEBADLIGHTINDICATOR
 
-        SciMsg( m_pSci(i), SCI_STYLESETFONT, STYLE_DEFAULT, cast(LPARAM, strptr(strFontName)) )
-        SciMsg( m_pSci(i), SCI_STYLESETSIZE, STYLE_DEFAULT, nFontSize )
-        SciMsg( m_pSci(i), SCI_SETEXTRAASCENT, nFontExtraSpace, 0 )
-        SciMsg( m_pSci(i), SCI_SETEXTRADESCENT, nFontExtraSpace, 0 )
-        SciMsg( m_pSci(i), SCI_STYLESETCHARACTERSET, STYLE_DEFAULT, GetFontCharSetID(gConfig.EditorFontCharset) )
+        SciMsg( pSci(i), SCI_STYLESETFONT, STYLE_DEFAULT, cast(LPARAM, strptr(strFontName)) )
+        SciMsg( pSci(i), SCI_STYLESETSIZE, STYLE_DEFAULT, nFontSize )
+        SciMsg( pSci(i), SCI_SETEXTRAASCENT, nFontExtraSpace, 0 )
+        SciMsg( pSci(i), SCI_SETEXTRADESCENT, nFontExtraSpace, 0 )
+        SciMsg( pSci(i), SCI_STYLESETCHARACTERSET, STYLE_DEFAULT, GetFontCharSetID(gConfig.EditorFontCharset) )
 
-        SciMsg( m_pSci(i), SCI_STYLESETFORE, STYLE_DEFAULT, ghEditor.ForeColorText)
-        SciMsg( m_pSci(i), SCI_STYLESETBACK, STYLE_DEFAULT, ghEditor.BackColorText)
-        SciMsg( m_pSci(i), SCI_STYLESETBOLD, STYLE_DEFAULT, ghEditor.TextBold )
-        SciMsg( m_pSci(i), SCI_STYLESETITALIC, STYLE_DEFAULT, ghEditor.TextItalic )
-        SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, STYLE_DEFAULT, ghEditor.TextUnderline )
-        SciMsg( m_pSci(i), SCI_STYLECLEARALL, 0, 0 )  ' Copies global style to all others
+        SciMsg( pSci(i), SCI_STYLESETFORE, STYLE_DEFAULT, ghEditor.ForeColorText)
+        SciMsg( pSci(i), SCI_STYLESETBACK, STYLE_DEFAULT, ghEditor.BackColorText)
+        SciMsg( pSci(i), SCI_STYLESETBOLD, STYLE_DEFAULT, ghEditor.TextBold )
+        SciMsg( pSci(i), SCI_STYLESETITALIC, STYLE_DEFAULT, ghEditor.TextItalic )
+        SciMsg( pSci(i), SCI_STYLESETUNDERLINE, STYLE_DEFAULT, ghEditor.TextUnderline )
+        SciMsg( pSci(i), SCI_STYLECLEARALL, 0, 0 )  ' Copies global style to all others
             
         ' Set the style for the AutoComplete popup list
-        SciMsg( m_pSci(i), SCI_STYLESETFONT, STYLE_AUTOCOMPLETE, cast(LPARAM, pWindow->DefaultFontName) )
-        SciMsg( m_pSci(i), SCI_STYLESETSIZE, STYLE_AUTOCOMPLETE, pWindow->DefaultFontSize)
-        SciMsg( m_pSci(i), SCI_STYLESETCHARACTERSET, STYLE_AUTOCOMPLETE, GetFontCharSetID(gConfig.EditorFontCharset) )
+        SciMsg( pSci(i), SCI_STYLESETFONT, STYLE_AUTOCOMPLETE, cast(LPARAM, pWindow->DefaultFontName) )
+        SciMsg( pSci(i), SCI_STYLESETSIZE, STYLE_AUTOCOMPLETE, pWindow->DefaultFontSize)
+        SciMsg( pSci(i), SCI_STYLESETCHARACTERSET, STYLE_AUTOCOMPLETE, GetFontCharSetID(gConfig.EditorFontCharset) )
 
         ''
         ''  MARGIN 0: Line Numbering (defaults to width 0)
-        nPixels = SciMsg( m_pSci(i), SCI_TEXTWIDTH, 0, cast(LPARAM, @"_99999"))
-        SciMsg( m_pSci(i), SCI_SETMARGINTYPEN, 0, SC_MARGIN_NUMBER )
-        SciMsg( m_pSci(i), SCI_STYLESETFORE, STYLE_LINENUMBER, ghEditor.ForeColorLinenumbers )
-        SciMsg( m_pSci(i), SCI_STYLESETBACK, STYLE_LINENUMBER, ghEditor.BackColorLinenumbers )
-        SciMsg( m_pSci(i), SCI_SETMARGINWIDTHN, 0, iif(gConfig.LineNumbering, nPixels, 0) )
-        SciMsg( m_pSci(i), SCI_STYLESETBOLD, STYLE_LINENUMBER, ghEditor.LineNumbersBold )
-        SciMsg( m_pSci(i), SCI_STYLESETITALIC, STYLE_LINENUMBER, ghEditor.LineNumbersItalic )
-        SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, STYLE_LINENUMBER, ghEditor.LineNumbersUnderline )
+        nPixels = SciMsg( pSci(i), SCI_TEXTWIDTH, 0, cast(LPARAM, @"_99999"))
+        SciMsg( pSci(i), SCI_SETMARGINTYPEN, 0, SC_MARGIN_NUMBER )
+        SciMsg( pSci(i), SCI_STYLESETFORE, STYLE_LINENUMBER, ghEditor.ForeColorLinenumbers )
+        SciMsg( pSci(i), SCI_STYLESETBACK, STYLE_LINENUMBER, ghEditor.BackColorLinenumbers )
+        SciMsg( pSci(i), SCI_SETMARGINWIDTHN, 0, iif(gConfig.LineNumbering, nPixels, 0) )
+        SciMsg( pSci(i), SCI_STYLESETBOLD, STYLE_LINENUMBER, ghEditor.LineNumbersBold )
+        SciMsg( pSci(i), SCI_STYLESETITALIC, STYLE_LINENUMBER, ghEditor.LineNumbersItalic )
+        SciMsg( pSci(i), SCI_STYLESETUNDERLINE, STYLE_LINENUMBER, ghEditor.LineNumbersUnderline )
     
         ''
         ''  MARGIN 1: Non-Folding symbols (defaults to width 16) (Bookmark symbol, etc) (will be same color as line numbering)
-        SciMsg( m_pSci(i), SCI_SETMARGINTYPEN, 1, SC_MARGIN_TEXT )
-        SciMsg( m_pSci(i), SCI_SETMARGINSENSITIVEN, 1, 1 )
-        SciMsg( m_pSci(i), SCI_SETMARGINWIDTHN, 1, iif(gConfig.LeftMargin, 16 * rxRatio, 0) )
+        SciMsg( pSci(i), SCI_SETMARGINTYPEN, 1, SC_MARGIN_TEXT )
+        SciMsg( pSci(i), SCI_SETMARGINSENSITIVEN, 1, 1 )
+        SciMsg( pSci(i), SCI_SETMARGINWIDTHN, 1, iif(gConfig.LeftMargin, 16 * rxRatio, 0) )
                     
         ''
         ''  MARGIN 2: Folding symbols (defaults to width 0)
-        SciMsg( m_pSci(i), SCI_SETMARGINTYPEN, 2, SC_MARGIN_SYMBOL )
-        SciMsg( m_pSci(i), SCI_SETMARGINMASKN, 2, SC_MASK_FOLDERS )
-        SciMsg( m_pSci(i), SCI_SETFOLDMARGINCOLOUR, Ctrue, ghEditor.ForeColorFoldmargin )
-        SciMsg( m_pSci(i), SCI_SETFOLDMARGINHICOLOUR, Ctrue, ghEditor.ForeColorFoldmargin )
-        SciMsg( m_pSci(i), SCI_SETMARGINSENSITIVEN, 2, 1 )
-        SciMsg( m_pSci(i), SCI_SETMARGINWIDTHN, 2, iif(gConfig.FoldMargin, 16 * rxRatio, 0) )
+        SciMsg( pSci(i), SCI_SETMARGINTYPEN, 2, SC_MARGIN_SYMBOL )
+        SciMsg( pSci(i), SCI_SETMARGINMASKN, 2, SC_MASK_FOLDERS )
+        SciMsg( pSci(i), SCI_SETFOLDMARGINCOLOUR, Ctrue, ghEditor.ForeColorFoldmargin )
+        SciMsg( pSci(i), SCI_SETFOLDMARGINHICOLOUR, Ctrue, ghEditor.ForeColorFoldmargin )
+        SciMsg( pSci(i), SCI_SETMARGINSENSITIVEN, 2, 1 )
+        SciMsg( pSci(i), SCI_SETMARGINWIDTHN, 2, iif(gConfig.FoldMargin, 16 * rxRatio, 0) )
 
         ''
         ''  MARGIN 3: Small margin to offset left margins from actual text (4 pixels)
-        SciMsg( m_pSci(i), SCI_SETMARGINTYPEN, 3, SC_MARGIN_TEXT )
-        SciMsg( m_pSci(i), SCI_SETMARGINWIDTHN, 3, 4 * rxRatio )
-        SciMsg( m_pSci(i), SCI_SETMARGINTYPEN, 3, SC_MARGIN_FORE )
-        SciMsg( m_pSci(i), SCI_SETMARGINTYPEN, 3, SC_MARGIN_BACK )
+        SciMsg( pSci(i), SCI_SETMARGINTYPEN, 3, SC_MARGIN_TEXT )
+        SciMsg( pSci(i), SCI_SETMARGINWIDTHN, 3, 4 * rxRatio )
+        SciMsg( pSci(i), SCI_SETMARGINTYPEN, 3, SC_MARGIN_FORE )
+        SciMsg( pSci(i), SCI_SETMARGINTYPEN, 3, SC_MARGIN_BACK )
                 
         ''
         ''  CONFINE CARET to TEXT
         if gConfig.ConfineCaret then
-            SciMsg( m_pSci(i), SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0 )
+            SciMsg( pSci(i), SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0 )
         else
-            SciMsg( m_pSci(i), SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION or SCVS_USERACCESSIBLE, 0 )
+            SciMsg( pSci(i), SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION or SCVS_USERACCESSIBLE, 0 )
         end if
     
         ''
         ''  TABS as SPACES
         if gConfig.TabIndentSpaces then
-            SciMsg( m_pSci(i), SCI_SETUSETABS, false, 0 )
+            SciMsg( pSci(i), SCI_SETUSETABS, false, 0 )
         else
-            SciMsg( m_pSci(i), SCI_SETUSETABS, Ctrue, 0 )
+            SciMsg( pSci(i), SCI_SETUSETABS, Ctrue, 0 )
         end if
         
         ''
         ''  SELECTIONS FILL ENTIRE SCREEN SPACE
-        SciMsg( m_pSci(i), SCI_SETSELEOLFILLED, Ctrue, 0 )
+        SciMsg( pSci(i), SCI_SETSELEOLFILLED, Ctrue, 0 )
             
         ''
         ''  TAB WIDTH 
-        SciMsg( m_pSci(i), SCI_SETTABWIDTH, val(gConfig.TabSize), 0 )
-        SciMsg( m_pSci(i), SCI_SETINDENT, val(gConfig.TabSize), 0 )
+        SciMsg( pSci(i), SCI_SETTABWIDTH, val(gConfig.TabSize), 0 )
+        SciMsg( pSci(i), SCI_SETINDENT, val(gConfig.TabSize), 0 )
     
         ''
         ''  INDENTATION GUIDES
         if gConfig.IndentGuides then
-            SciMsg( m_pSci(i), SCI_SETINDENTATIONGUIDES, Ctrue, 0)
+            SciMsg( pSci(i), SCI_SETINDENTATIONGUIDES, Ctrue, 0)
         else
-            SciMsg( m_pSci(i), SCI_SETINDENTATIONGUIDES, false, 0)
+            SciMsg( pSci(i), SCI_SETINDENTATIONGUIDES, false, 0)
         end if
-        SciMsg( m_pSci(i), SCI_STYLESETFORE, STYLE_INDENTGUIDE, ghEditor.ForeColorIndentguides )
-        SciMsg( m_pSci(i), SCI_STYLESETBACK, STYLE_INDENTGUIDE, ghEditor.BackColorIndentguides )
+        SciMsg( pSci(i), SCI_STYLESETFORE, STYLE_INDENTGUIDE, ghEditor.ForeColorIndentguides )
+        SciMsg( pSci(i), SCI_STYLESETBACK, STYLE_INDENTGUIDE, ghEditor.BackColorIndentguides )
         
         ''
         ''  CARET
-        SciMsg( m_pSci(i), SCI_SETCARETFORE, ghEditor.ForeColorCaret, 0 )
-        SciMsg( m_pSci(i), SCI_SETCARETWIDTH, 3, 0 )   '(1,2,3  Default is 1)
+        SciMsg( pSci(i), SCI_SETCARETFORE, ghEditor.ForeColorCaret, 0 )
+        SciMsg( pSci(i), SCI_SETCARETWIDTH, 3, 0 )   '(1,2,3  Default is 1)
 
         ''
         ''  SHOW CARET LINE
         if gConfig.HighlightCurrentLine then
-            SciMsg( m_pSci(i), SCI_SETCARETLINEVISIBLE, Ctrue, 0 )
-            SciMsg( m_pSci(i), SCI_SETCARETLINEBACK, ghEditor.BackColorCurrentline, 0 )
+            SciMsg( pSci(i), SCI_SETCARETLINEVISIBLE, Ctrue, 0 )
+            SciMsg( pSci(i), SCI_SETCARETLINEBACK, ghEditor.BackColorCurrentline, 0 )
         else
-            SciMsg( m_pSci(i), SCI_SETCARETLINEVISIBLE, false, 0 )
+            SciMsg( pSci(i), SCI_SETCARETLINEVISIBLE, false, 0 )
         end if
         
         ''
         ''  SELECTION COLORS
-        SciMsg( m_pSci(i), SCI_SETSELFORE, Ctrue, ghEditor.ForeColorSelection )
-        SciMsg( m_pSci(i), SCI_SETSELBACK, Ctrue, ghEditor.BackColorSelection )
+        SciMsg( pSci(i), SCI_SETSELFORE, Ctrue, ghEditor.ForeColorSelection )
+        SciMsg( pSci(i), SCI_SETSELBACK, Ctrue, ghEditor.BackColorSelection )
     
         ''
         ''  MULTIPLE SELECTIONS
-        SciMsg( m_pSci(i), SCI_SETMULTIPLESELECTION, Ctrue, 0 ) 
+        SciMsg( pSci(i), SCI_SETMULTIPLESELECTION, Ctrue, 0 ) 
                 
         ''
         ''  ALWAYS KEEP THE CARET LINE VISIBLE
-        SciMsg( m_pSci(i), SCI_SETCARETLINEVISIBLEALWAYS, Ctrue, 0 )
+        SciMsg( pSci(i), SCI_SETCARETLINEVISIBLEALWAYS, Ctrue, 0 )
         
         ''
         ''  DISABLE RIGHT CLICK POPUP MENU
-        SciMsg( m_pSci(i), SCI_USEPOPUP, false, 0 )
+        SciMsg( pSci(i), SCI_USEPOPUP, false, 0 )
 
         ''
         ''  IDENTIFY CHARACTERS to BE USED IN WORDS
-        SciMsg( m_pSci(i), SCI_SETWORDCHARS, 0, cast(LPARAM, @"~_\abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") )
+        SciMsg( pSci(i), SCI_SETWORDCHARS, 0, cast(LPARAM, @"~_\abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") )
 
 
         ''  UNICODE (UTF-8 encoding)
         if this.FileEncoding = FILE_ENCODING_ANSI then
-            SciMsg( m_pSci(i), SCI_SETCODEPAGE, 0, 0 )
+            SciMsg( pSci(i), SCI_SETCODEPAGE, 0, 0 )
         else
             ' UTF8 or UTF16 would have been converted to UTF8 in order to display in the editor.
-            SciMsg( m_pSci(i), SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
+            SciMsg( pSci(i), SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
         end if
 
     
         '' RIGHT EDGE COLUMN
-        SciMsg( m_pSci(i), SCI_SETEDGEMODE, iif(gConfig.RightEdge, EDGE_LINE, EDGE_NONE), 0 )
-        SciMsg( m_pSci(i), SCI_SETEDGECOLUMN, val(gConfig.RightEdgePosition), 0 )
+        SciMsg( pSci(i), SCI_SETEDGEMODE, iif(gConfig.RightEdge, EDGE_LINE, EDGE_NONE), 0 )
+        SciMsg( pSci(i), SCI_SETEDGECOLUMN, val(gConfig.RightEdgePosition), 0 )
 
         ''
         ''  OTHER
-        SciMsg( m_pSci(i), SCI_SETADDITIONALSELECTIONTYPING, true, 0 )
+        SciMsg( pSci(i), SCI_SETADDITIONALSELECTIONTYPING, true, 0 )
     
 
         ''
@@ -1491,91 +1491,91 @@ function clsDocument.ApplyProperties() as long
         if cbool(wFileExt = ".BAS") orelse cbool(wFileExt = ".INC") _
             orelse cbool(wFileExt = ".BI") orelse (this.IsNewFlag = true) then
 
-            bitsNeeded = SciMsg( m_pSci(i), SCI_GETSTYLEBITSNEEDED, 0, 0)
-            SciMsg( m_pSci(i), SCI_SETSTYLEBITS, bitsNeeded, 0 )
+            bitsNeeded = SciMsg( pSci(i), SCI_GETSTYLEBITSNEEDED, 0, 0)
+            SciMsg( pSci(i), SCI_SETSTYLEBITS, bitsNeeded, 0 )
 
             ' Set FreeBASIC Keywords
             if len(gConfig.FBKeywords) then
-                SciMsg( m_pSci(i), SCI_SETKEYWORDS, 0, cast(LPARAM, strptr(gConfig.FBKeywords)) )
+                SciMsg( pSci(i), SCI_SETKEYWORDS, 0, cast(LPARAM, strptr(gConfig.FBKeywords)) )
             end if
 
             ' Set Windows Api Keywords
             if len(gConfig.WinApiKeywords) then
-                SciMsg( m_pSci(i), SCI_SETKEYWORDS, 1, cast(LPARAM, strptr(gConfig.WinApiKeywords)) )
+                SciMsg( pSci(i), SCI_SETKEYWORDS, 1, cast(LPARAM, strptr(gConfig.WinApiKeywords)) )
             end if
             
             if gConfig.SyntaxHighlighting then
             ' Set the Default text colors
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_DEFAULT, ghEditor.ForeColorText)
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_DEFAULT, ghEditor.BackColorText)
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_DEFAULT, ghEditor.TextBold )
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_DEFAULT, ghEditor.TextItalic )
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_DEFAULT, ghEditor.TextUnderline )
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_DEFAULT, ghEditor.ForeColorText)
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_DEFAULT, ghEditor.BackColorText)
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_DEFAULT, ghEditor.TextBold )
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_DEFAULT, ghEditor.TextItalic )
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_DEFAULT, ghEditor.TextUnderline )
 
             ' Set the Multiline Comments style
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_MULTILINECOMMENT, ghEditor.ForeColorComments )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_MULTILINECOMMENT, ghEditor.BackColorComments )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_MULTILINECOMMENT, ghEditor.CommentsBold )
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_MULTILINECOMMENT, ghEditor.CommentsItalic )
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_MULTILINECOMMENT, ghEditor.CommentsUnderline )
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_MULTILINECOMMENT, ghEditor.ForeColorComments )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_MULTILINECOMMENT, ghEditor.BackColorComments )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_MULTILINECOMMENT, ghEditor.CommentsBold )
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_MULTILINECOMMENT, ghEditor.CommentsItalic )
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_MULTILINECOMMENT, ghEditor.CommentsUnderline )
 
             ' Set the Comments style
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_COMMENT, ghEditor.ForeColorComments )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_COMMENT, ghEditor.BackColorComments )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_COMMENT, ghEditor.CommentsBold )
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_COMMENT, ghEditor.CommentsItalic )
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_COMMENT, ghEditor.CommentsUnderline )
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_COMMENT, ghEditor.ForeColorComments )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_COMMENT, ghEditor.BackColorComments )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_COMMENT, ghEditor.CommentsBold )
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_COMMENT, ghEditor.CommentsItalic )
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_COMMENT, ghEditor.CommentsUnderline )
 
             ' Set the Keywords style (FreeBasic)
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_KEYWORD, ghEditor.ForeColorKeyword )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_KEYWORD, ghEditor.BackColorKeyword )
-            SciMsg( m_pSci(i), SCI_STYLESETCASE, SCE_B_KEYWORD, nFontcase )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_KEYWORD, ghEditor.KeywordBold )
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_KEYWORD, ghEditor.KeywordItalic )
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_KEYWORD, ghEditor.KeywordUnderline )
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_KEYWORD, ghEditor.ForeColorKeyword )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_KEYWORD, ghEditor.BackColorKeyword )
+            SciMsg( pSci(i), SCI_STYLESETCASE, SCE_B_KEYWORD, nFontcase )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_KEYWORD, ghEditor.KeywordBold )
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_KEYWORD, ghEditor.KeywordItalic )
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_KEYWORD, ghEditor.KeywordUnderline )
 
             ' Set the Keywords style (Windows Api)
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_KEYWORD2, ghEditor.ForeColorKeyword2 )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_KEYWORD2, ghEditor.BackColorKeyword2 )
-            SciMsg( m_pSci(i), SCI_STYLESETCASE, SCE_B_KEYWORD2, nFontcase )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_KEYWORD2, ghEditor.KeywordBold2 )
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_KEYWORD2, ghEditor.KeywordItalic2 )
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_KEYWORD2, ghEditor.KeywordUnderline2 )
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_KEYWORD2, ghEditor.ForeColorKeyword2 )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_KEYWORD2, ghEditor.BackColorKeyword2 )
+            SciMsg( pSci(i), SCI_STYLESETCASE, SCE_B_KEYWORD2, nFontcase )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_KEYWORD2, ghEditor.KeywordBold2 )
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_KEYWORD2, ghEditor.KeywordItalic2 )
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_KEYWORD2, ghEditor.KeywordUnderline2 )
 
             ' Set the Numbers style
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_NUMBER, ghEditor.ForeColorNumbers )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_NUMBER, ghEditor.BackColorNumbers )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_NUMBER, ghEditor.NumbersBold )
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_NUMBER, ghEditor.NumbersItalic)
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_NUMBER, ghEditor.NumbersUnderline)
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_NUMBER, ghEditor.ForeColorNumbers )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_NUMBER, ghEditor.BackColorNumbers )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_NUMBER, ghEditor.NumbersBold )
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_NUMBER, ghEditor.NumbersItalic)
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_NUMBER, ghEditor.NumbersUnderline)
 
             ' Set the Operators style
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_OPERATOR, ghEditor.ForeColorOperators )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_OPERATOR, ghEditor.BackColorOperators )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_OPERATOR, ghEditor.OperatorsBold)
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_OPERATOR, ghEditor.OperatorsItalic)
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_OPERATOR, ghEditor.OperatorsUnderline)
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_OPERATOR, ghEditor.ForeColorOperators )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_OPERATOR, ghEditor.BackColorOperators )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_OPERATOR, ghEditor.OperatorsBold)
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_OPERATOR, ghEditor.OperatorsItalic)
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_OPERATOR, ghEditor.OperatorsUnderline)
 
 '            ' Set the "date" style. We use this for @()[]{} brace characters
-'            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_DATE, ghEditor.ForeColorBraceGood)
-'            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_DATE, ghEditor.BackColorText)
-'            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_DATE, ghEditor.TextBold )
-'            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_DATE, ghEditor.TextItalic )
-'            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_DATE, ghEditor.TextUnderline )
+'            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_DATE, ghEditor.ForeColorBraceGood)
+'            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_DATE, ghEditor.BackColorText)
+'            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_DATE, ghEditor.TextBold )
+'            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_DATE, ghEditor.TextItalic )
+'            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_DATE, ghEditor.TextUnderline )
 
             ' Set the Preprocessor style
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_PREPROCESSOR, ghEditor.ForeColorPreprocessor )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_PREPROCESSOR, ghEditor.BackColorPreprocessor )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_PREPROCESSOR, ghEditor.PreprocessorBold)
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_PREPROCESSOR, ghEditor.PreprocessorItalic)
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_PREPROCESSOR, ghEditor.PreprocessorUnderline)
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_PREPROCESSOR, ghEditor.ForeColorPreprocessor )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_PREPROCESSOR, ghEditor.BackColorPreprocessor )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_PREPROCESSOR, ghEditor.PreprocessorBold)
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_PREPROCESSOR, ghEditor.PreprocessorItalic)
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_PREPROCESSOR, ghEditor.PreprocessorUnderline)
 
             ' Set the strings style
-            SciMsg( m_pSci(i), SCI_STYLESETFORE, SCE_B_STRING, ghEditor.ForeColorStrings )
-            SciMsg( m_pSci(i), SCI_STYLESETBACK, SCE_B_STRING, ghEditor.BackColorStrings )
-            SciMsg( m_pSci(i), SCI_STYLESETBOLD, SCE_B_STRING, ghEditor.StringsBold)
-            SciMsg( m_pSci(i), SCI_STYLESETITALIC, SCE_B_STRING, ghEditor.StringsItalic)
-            SciMsg( m_pSci(i), SCI_STYLESETUNDERLINE, SCE_B_STRING, ghEditor.StringsUnderline)
+            SciMsg( pSci(i), SCI_STYLESETFORE, SCE_B_STRING, ghEditor.ForeColorStrings )
+            SciMsg( pSci(i), SCI_STYLESETBACK, SCE_B_STRING, ghEditor.BackColorStrings )
+            SciMsg( pSci(i), SCI_STYLESETBOLD, SCE_B_STRING, ghEditor.StringsBold)
+            SciMsg( pSci(i), SCI_STYLESETITALIC, SCE_B_STRING, ghEditor.StringsItalic)
+            SciMsg( pSci(i), SCI_STYLESETUNDERLINE, SCE_B_STRING, ghEditor.StringsUnderline)
 
             end if
         end if
@@ -1584,51 +1584,51 @@ function clsDocument.ApplyProperties() as long
         ''  CODE FOLDING
         if gConfig.FoldMargin then
             ' Enable folding of the procedures and functions
-            SciMsg( m_pSci(i), SCI_SETPROPERTY, cast(WPARAM, @"fold"), cast(LPARAM, @"1") )
+            SciMsg( pSci(i), SCI_SETPROPERTY, cast(WPARAM, @"fold"), cast(LPARAM, @"1") )
 
             ' Initialize fold symbols for folding - Box tree
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN,    SC_MARK_BOXMINUS )
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDER,        SC_MARK_BOXPLUS )
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB,     SC_MARK_VLINE)
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDERTAIL,    SC_MARK_LCORNER)
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEREND,     SC_MARK_BOXPLUSCONNECTED)
-            'SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_EMPTY)   ' SC_MARK_BOXMINUSCONNECTED
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_BOXMINUSCONNECTED)
-            SciMsg( m_pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDERMIDTAIL, SC_MARK_TCORNER)
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN,    SC_MARK_BOXMINUS )
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDER,        SC_MARK_BOXPLUS )
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB,     SC_MARK_VLINE)
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDERTAIL,    SC_MARK_LCORNER)
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEREND,     SC_MARK_BOXPLUSCONNECTED)
+            'SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_EMPTY)   ' SC_MARK_BOXMINUSCONNECTED
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_BOXMINUSCONNECTED)
+            SciMsg( pSci(i), SCI_MARKERDEFINE, SC_MARKNUM_FOLDERMIDTAIL, SC_MARK_TCORNER)
 
             ' Draw line below if not expanded
-            SciMsg( m_pSci(i), SCI_SETFOLDFLAGS, 16, 0 )
+            SciMsg( pSci(i), SCI_SETFOLDFLAGS, 16, 0 )
 
             ' Colors for folders closed and folders opened
             dim as COLORREF clrFore = ghEditor.ForeColorFoldsymbol
             dim as COLORREF clrBack = ghEditor.BackColorFoldsymbol
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDER, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDER, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDER, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDER, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDERSUB, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDERSUB, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDERSUB, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDERSUB, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDERTAIL, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDERTAIL, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDERTAIL, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDERTAIL, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDEREND, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDEREND, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDEREND, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDEREND, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPENMID, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPENMID, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPENMID, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPENMID, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDERMIDTAIL, clrBack)
-            SciMsg( m_pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDERMIDTAIL, clrFore)
+            SciMsg( pSci(i), SCI_MARKERSETFORE, SC_MARKNUM_FOLDERMIDTAIL, clrBack)
+            SciMsg( pSci(i), SCI_MARKERSETBACK, SC_MARKNUM_FOLDERMIDTAIL, clrFore)
 
-            SciMsg( m_pSci(i), SCI_MARKERENABLEHIGHLIGHT, false, 0)
+            SciMsg( pSci(i), SCI_MARKERENABLEHIGHLIGHT, false, 0)
         
         else
             ' Disable folding of the procedures and functions
-            SciMsg( m_pSci(i), SCI_SETPROPERTY, cast(WPARAM, @"fold"), cast(LPARAM, @"0") )
+            SciMsg( pSci(i), SCI_SETPROPERTY, cast(WPARAM, @"fold"), cast(LPARAM, @"0") )
         end if
     
     next

@@ -1175,7 +1175,7 @@ function frmMain_OnClose( byval hwnd as HWND ) as LRESULT
     
     ' Close any open files asking to save any that are dirty 
     if OnCommand_FileClose(HWnd, EFC_CLOSEALL) = 0 then return 0
-    
+
     DestroyWindow(hwnd)
     
     function = 0
@@ -1637,7 +1637,7 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Process windows events
     dim uMsg as MSG
-    
+
     ' Message loop
     do while GetMessage(@uMsg, null, 0, 0)
 

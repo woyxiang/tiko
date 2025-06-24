@@ -72,7 +72,6 @@ end type
 type clsDocument
     private:
     ' 2 Scintilla direct pointers to accommodate split editing
-    m_pSci(1)             as any ptr      
     m_hWndActiveScintilla as HWND
     m_UserModified        as boolean               ' user manually changes state outside of Scintilla changes
         
@@ -87,6 +86,7 @@ type clsDocument
     ' hWindow(0) is our MAIN control (main bottom)
     ' hWindow(1) is our split control (top or left)
     hWindow(1)            as HWND   ' Scintilla split edit windows 
+    pSci(1)               as any ptr      
     
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED

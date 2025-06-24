@@ -1459,11 +1459,6 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
 
         if docData(i).bLoadInTab then
             iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
-            SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
-            SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
-            SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
-            SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
-            pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
         end if
 
         ' Set the previously saved positions
@@ -1472,22 +1467,14 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
         pDoc->EditorSplitMode = docData(i).nSplitMode
         pDoc->SetBookmarks(docData(i).wszBookmarks)
         pDoc->SetFoldPoints(docData(i).wszFoldPoints)
-
-        ' All documents need to be initially loaded into a scintilla window because that
-        ' edit buffer is used for the parsing. However, once the parsing is complete then
-        ' pDoc's not showing in the tab control can have their scintilla windows destroyed
-        ' thereby saving memory and gdi resources.
-        ' The document will be loaded again via OpenSelectedDocument is needed.
-        if docData(i).bLoadInTab = 0 then
-print "1: "; pDoc->DiskFilename
-            DestroyWindow pDoc->hWindow(0)
-print "2: "; pDoc->DiskFilename
-            DestroyWindow pDoc->hWindow(1)
-print "3-removed"
-        end if
+        SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
+        SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
+        SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
+        SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
+        pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
 
     next
-                    
+
     gApp.IsProjectLoading = false
     gApp.IsProjectActive = true
     gApp.wszPanelText = ""   ' reset filename parsing text that displays in StatusBar panel
@@ -1507,7 +1494,7 @@ print "3-removed"
 
     ' Load all of the functions into the Function List listbox. 
     LoadFunctionsFiles()
-    
+
     ' Display the active editing window
     if gTTabCtl.IsSafeIndex(nActiveTab) = false then 
         ' active tab as stored in the config file is not valid. Could be that the
