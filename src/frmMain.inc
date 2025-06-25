@@ -544,6 +544,9 @@ end Function
 ' This is used in WM_PAINT via pDoc-rcSplitButton
 ' ========================================================================================
 function frmMain_CalcSplitRect( byval pDoc as clsDocument ptr ) as long
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
+    if pWindow = 0 then exit function
+
     dim as long nSplitSize
     
     if pDoc->EditorSplitMode = SplitLeftRight then
@@ -557,6 +560,7 @@ function frmMain_CalcSplitRect( byval pDoc as clsDocument ptr ) as long
                 rc.left = rc.left + AfxGetWindowWidth( HWND_FRMEDITOR_VSCROLLBAR(1) )
             end if   
             rc.right = rc.left + pWindow->ScaleX(SPLITSIZE)
+            rc.bottom = rc.bottom + pWindow->ScaleY(SCROLLBAR_HEIGHT)
             MapWindowpoints( HWND_DESKTOP, HWND_FRMMAIN, cast( point ptr, @rc), 2 )
             pDoc->rcSplitButton = rc   ' must convert to client coordinates
             nSplitSize = rc.right - rc.left
@@ -633,18 +637,23 @@ end function
 ' Position Left split document window
 ' ========================================================================================
 function frmMain_PositionSplitDocLeft( byval pDoc as clsDocument ptr, byval rcDoc as RECT ) as LRESULT
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
+    if pWindow = 0 then exit function
     
     dim as long iVScrollbarWidth = AfxGetWindowWidth(HWND_FRMEDITOR_VSCROLLBAR(0)) 
     if IsWindowVisible(HWND_FRMEDITOR_VSCROLLBAR(0)) = 0 then iVScrollbarWidth = 0
-    dim as long iHScrollbarHeight = AfxGetWindowHeight(HWND_FRMEDITOR_HSCROLLBAR(1))
-    if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) = 0 then iHScrollbarHeight = 0
+    dim as long iHScrollbarHeight = pWindow->ScaleY(SCROLLBAR_HEIGHT)
 
+    ' Always reduce the height of the edit window by the height of the horizontal
+    ' scrollbar regardless if that scrollbar is visible. This ensures that the vertical
+    ' scrollbar will not be "janky" due to the edit window height being adjusted 
+    ' shorter everytime the horizontal scrollbar appears.
     ' Position the document window
     dim as long nWidth = pDoc->SplitX - rcDoc.left - iVScrollbarWidth
-    dim as long nHeight = rcDoc.bottom - rcDoc.top - iHScrollbarHeight
+    dim as long nHeight = rcDoc.bottom - rcDoc.top
     SetWindowPos( pDoc->hWindow(1), 0, _
                 rcDoc.left, rcDoc.top, _
-                nWidth, nHeight, _
+                nWidth, nHeight  - iHScrollbarHeight, _
                 SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
 
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) then
@@ -671,11 +680,16 @@ end function
 ' Position Top split document window
 ' ========================================================================================
 function frmMain_PositionSplitDocTop( byval pDoc as clsDocument ptr, byval rcDoc as RECT ) as LRESULT
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
+    if pWindow = 0 then exit function
 
     dim as long iVScrollbarWidth = AfxGetWindowWidth(HWND_FRMEDITOR_VSCROLLBAR(0)) 
-    dim as long iHScrollbarHeight = AfxGetWindowHeight(HWND_FRMEDITOR_HSCROLLBAR(1))
-    if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(1)) = 0 then iHScrollbarHeight = 0
+    dim as long iHScrollbarHeight = pWindow->ScaleY(SCROLLBAR_HEIGHT)
 
+    ' Always reduce the height of the edit window by the height of the horizontal
+    ' scrollbar regardless if that scrollbar is visible. This ensures that the vertical
+    ' scrollbar will not be "janky" due to the edit window height being adjusted 
+    ' shorter everytime the horizontal scrollbar appears.
     ' Position the document window
     SetWindowPos( pDoc->hWindow(1), 0, _
                 rcDoc.left, rcDoc.top, _
@@ -695,8 +709,10 @@ function frmMain_PositionSplitDocTop( byval pDoc as clsDocument ptr, byval rcDoc
     ' Determine if the VScrollBar should be displayed
     if pDoc->GetLineCount > pDoc->LinesPerPage(1) then
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(1), 0, _ 
-                        rcDoc.right - iVScrollbarWidth, rcDoc.top, _
-                        iVScrollbarWidth, pDoc->SplitY - rcDoc.top, _ 
+                        rcDoc.right - iVScrollbarWidth, _
+                        rcDoc.top, _
+                        iVScrollbarWidth, _
+                        AfxGetWindowHeight(pDoc->hWindow(1)), _ 
                         SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
         AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(1))
     end if
@@ -710,20 +726,25 @@ end function
 ' ========================================================================================
 function frmMain_PositionMainDocRight( byval pDoc as clsDocument ptr, byval rcDoc as RECT ) as LRESULT
     ' Position the MAIN editing document taking into account any split windows
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
+    if pWindow = 0 then exit function
     
     dim as long nSplitSize = frmMain_CalcSplitRect(pDoc)
     dim as long nLeft = Max( rcDoc.left, pDoc->SplitX + nSplitSize )
 
     dim as long iVScrollbarWidth = AfxGetWindowWidth(HWND_FRMEDITOR_VSCROLLBAR(0)) 
     if IsWindowVisible(HWND_FRMEDITOR_VSCROLLBAR(0)) = 0 then iVScrollbarWidth = 0
-    dim as long iHScrollbarHeight = AfxGetWindowHeight(HWND_FRMEDITOR_HSCROLLBAR(0))
-    if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) = 0 then iHScrollbarHeight = 0
+    dim as long iHScrollbarHeight = pWindow->ScaleY(SCROLLBAR_HEIGHT)
 
+    ' Always reduce the height of the edit window by the height of the horizontal
+    ' scrollbar regardless if that scrollbar is visible. This ensures that the vertical
+    ' scrollbar will not be "janky" due to the edit window height being adjusted 
+    ' shorter everytime the horizontal scrollbar appears.
     dim as long nWidth = rcDoc.right - nLeft - iVScrollbarWidth
-    dim as long nHeight = rcDoc.bottom - rcDoc.top - iHScrollbarHeight
+    dim as long nHeight = rcDoc.bottom - rcDoc.top
     SetWindowPos( pDoc->hWindow(0), 0, _
                 nLeft, rcDoc.top, _
-                nWidth, nHeight, _
+                nWidth, nHeight - iHScrollbarHeight, _
                 SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
 
     if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) then
@@ -750,14 +771,18 @@ end function
 ' ========================================================================================
 function frmMain_PositionMainDocBottom( byval pDoc as clsDocument ptr, byval rcDoc as RECT ) as LRESULT
     ' Position the MAIN editing document taking into account any split windows
-    
-    dim as long nSplitSize = frmMain_CalcSplitRect(pDoc)
-    dim as long nTop = Max( rcDoc.top, pDoc->SplitY + nSplitSize )
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
+    if pWindow = 0 then exit function
+
+    dim as long nTop = Max( rcDoc.top, pDoc->SplitY )
 
     dim as long iVScrollbarWidth = AfxGetWindowWidth(HWND_FRMEDITOR_VSCROLLBAR(0)) 
-    dim as long iHScrollbarHeight = AfxGetWindowHeight(HWND_FRMEDITOR_HSCROLLBAR(0)) 
-    if IsWindowVisible(HWND_FRMEDITOR_HSCROLLBAR(0)) = 0 then iHScrollbarHeight = 0
+    dim as long iHScrollbarHeight = pWindow->ScaleY(SCROLLBAR_HEIGHT)
 
+    ' Always reduce the height of the edit window by the height of the horizontal
+    ' scrollbar regardless if that scrollbar is visible. This ensures that the vertical
+    ' scrollbar will not be "janky" due to the edit window height being adjusted 
+    ' shorter everytime the horizontal scrollbar appears.
     SetWindowPos( pDoc->hWindow(0), 0, _
                 rcDoc.left, nTop, _
                 rcDoc.right - rcDoc.left - iVScrollbarWidth, _
@@ -776,9 +801,9 @@ function frmMain_PositionMainDocBottom( byval pDoc as clsDocument ptr, byval rcD
     ' Determine if the VScrollBar should be displayed
     if pDoc->GetLineCount > pDoc->LinesPerPage(0) then
         SetWindowPos( HWND_FRMEDITOR_VSCROLLBAR(0), 0, _ 
-                    rcDoc.right - iVScrollbarWidth, nTop + SPLITSIZE, _
+                    rcDoc.right - iVScrollbarWidth, nTop, _
                     iVScrollbarWidth, _
-                    rcDoc.bottom - nTop, _ 
+                    AfxGetWindowHeight(pDoc->hWindow(0)) + iHScrollbarHeight, _ 
                     SWP_SHOWWINDOW or SWP_NOZORDER or SWP_NOOWNERZORDER or SWP_NOACTIVATE )
         AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(0))
     else
@@ -1269,7 +1294,6 @@ function frmMain_OnLButtonDown( _
     ' HITTEST (DOCUMENT SPLITTER)
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc then 
-        dim as Rect rc 
         dim as point pt = (x, y)
         if PtInRect(@pDoc->rcSplitButton, pt) then 
             pDoc->bSizing = true
@@ -1293,6 +1317,52 @@ function frmMain_OnLButtonDown( _
     function = 0
 end function
 
+
+sub frmMain_HandleSingleClick(hwnd as HWND)
+    ' HITTEST (DOCUMENT SPLITTER)
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then 
+        if pDoc->bSizing then
+            pDoc->bSizing = false
+            frmMain_PositionWindows
+            ReleaseCapture
+        end if
+    end if   
+    SetCursor( LoadCursor( null, IDC_ARROW ))
+end sub
+
+
+sub frmMain_HandleDoubleClick(hwnd as HWND)
+    ' HITTEST (DOCUMENT SPLITTER)
+    ' Are we over a split edit area (toggle off the split)
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then 
+        dim as point pt = pDoc->ptClick 
+        if PtInRect(@pDoc->rcSplitButton, pt) then 
+            pDoc->bSizing = false
+            pDoc->SplitX = 0
+            pDoc->SplitY = 0
+            pDoc->EditorSplitMode = SplitNone
+            ReleaseCapture
+            frmMain_PositionWindows
+        end if
+    end if
+end sub
+
+
+' ========================================================================================
+' Timer callback function for differentiating between sing/double click
+' ========================================================================================
+sub TimerProc(hwnd as HWND, uMsg as UINT, idEvent as UINT_PTR, dwTime as DWORD)
+    KillTimer(hwnd, idEvent)
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
+        if pDoc->doubleClickReceived = false then
+            frmMain_HandleSingleClick(hwnd)
+        end if
+    end if
+end sub
+
             
 ' ========================================================================================
 ' Process WM_LBUTTONUP message for window/dialog: frmMain
@@ -1304,16 +1374,15 @@ function frmMain_OnLButtonUp( _
             byval keyflags as UINT _
             ) as long
 
-    ' HITTEST (DOCUMENT SPLITTER)
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-    if pDoc then 
-        if pDoc->bSizing then
-            pDoc->bSizing = false
-            frmMain_PositionWindows
-            ReleaseCapture
-        end if
-    end if   
-    SetCursor( LoadCursor( null, IDC_ARROW ))
+    if pDoc then
+        pDoc->ptClick.x = x
+        pDoc->ptClick.y = y
+        ' Start a timer to delay single-click action and distinguish between
+        ' the single click and doubleclick
+        pDoc->doubleClickReceived = false
+        SetTimer(hwnd, pDoc->idTimer, 100, @TimerProc)
+    end if
             
     function = 0
 end function
@@ -1330,22 +1399,15 @@ function frmMain_OnLButtonDblClk( _
             byval keyflags as UINT _
             ) as long
 
-    if gApp.bDragActive = false then
-        ' Are we over a split edit area (toggle off the split)
-        dim as point pt = (x, y)
-        dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-        if pDoc then 
-            if PtInRect(@pDoc->rcSplitButton, pt) then 
-                pDoc->bSizing = false
-                pDoc->SplitX = 0
-                pDoc->SplitY = 0
-                pDoc->EditorSplitMode = SplitNone
-                ReleaseCapture
-                frmMain_PositionWindows
-            end if
-        end if
+    if gApp.bDragActive then exit function
+
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc then
+        KillTimer(hwnd, pDoc->idTimer)
+        pDoc->doubleClickReceived = true
+        frmMain_HandleDoubleClick(hwnd)
     end if
-    
+                
     function = 0
 end function
 

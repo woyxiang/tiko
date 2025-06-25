@@ -119,6 +119,9 @@ type clsDocument
     bSizing               as boolean
     ptPrev                as POINT
     rcDocSplitArea        as rect               ' entire rc client area for one or both edit windows + scrollbars
+    ptClick               as POINT              ' Used for differentiating between single/double clicks
+    idTimer               as long = 100         ' Used for differentiating between single/double clicks
+    doubleClickReceived   as boolean = false    ' Used for differentiating between single/double clicks
     
     static NextFileNum as long
     

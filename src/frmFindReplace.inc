@@ -499,7 +499,6 @@ function frmFindReplace_OnPaint( byval hwnd as HWND) as LRESULT
     if GetFocus() = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTFIND) then b.PaintBorderRect( @rcTextFind, false, 1 )
     if GetFocus() = GetDlgItem(hwnd, IDC_FRMFINDREPLACE_TXTREPLACE) then b.PaintBorderRect( @rcTextReplace, false, 1 )
     
-    
     ' Match Case
     b.SetFont( GUIFONT_9 )
     if gFind.nMatchCase then 
@@ -650,6 +649,11 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
         frmMain_SetFocusToCurrentCodeWindow
     end if
         
+    ' Destroy the CueBannerFont. We need to keep this font alive throughout the
+    ' the life of the popup otherwise the cuebanner text will not show. We can
+    ' not create the font everytine in paint.
+    if gFind.hCueBannerFont then DeleteObject(gFind.hCueBannerFont)
+
     ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow then delete(pWindow)
@@ -867,16 +871,13 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
                 elseif hWin = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE ) then
                     cueBannerText = L(173,"Replace")
                 end if
-
-                dim as HFONT _hFont = pWindow->CreateFont(GUIFONT, 9, FW_NORMAL)
-                if _hFont then SelectObject( hdc, _hFont )
+                SelectObject( hdc, gFind.hCueBannerFont )
                 SetTextColor( hdc, ghFindReplace.CueBannerForeColor )
                 SetBkMode(hdc, TRANSPARENT)
-                dim as long wsStyle = DT_TOP or DT_LEFT or DT_NOPREFIX or DT_NOCLIP
+                dim as long wsStyle = DT_TOP or DT_LEFT or DT_NOPREFIX or DT_NOCLIP or DT_SINGLELINE 
                 DrawText(hdc, cueBannerText, -1, @editRect, wsStyle)
                 RestoreDC( hdc, -1 )
                 ReleaseDC( hWin, hdc )
-                if _hFont then DeleteObject( _hFont )
 
                 ' Return the EDIT's result (could probably safely just return zero here,
                 ' but seems safer to relay whatever value came from the edit).
@@ -952,6 +953,11 @@ function frmFindReplace_Show( _
             WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR )
         pWindow->ClassStyle = CS_DBLCLKS
         
+        
+        if gFind.hCueBannerFont = 0 then 
+            gFind.hCueBannerFont = pWindow->CreateFont(GUIFONT, 9, FW_NORMAL, , , , DEFAULT_CHARSET)
+        end if
+
         ' we use RichEdit controls because regular Edit controls can not easily have
         ' their text vertically centered.
         dim as RECT rc

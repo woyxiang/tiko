@@ -16,6 +16,7 @@ declare function DwmSetWindowAttribute lib "Dwmapi.dll" alias "DwmSetWindowAttri
     hwnd as HWND, dwAttribute as DWORD, pvAttribute as LPCVOID, cbAttribute as DWORD) as HRESULT
 const DWMWA_USE_IMMERSIVE_DARK_MODE = 20
 
+
 type THEME_TYPE
     keyValue as CWSTR
     keyData as CWSTR 

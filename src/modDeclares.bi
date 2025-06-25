@@ -192,6 +192,7 @@ redim shared LL(any) as wstring * MAX_PATH
 ''
 type FINDREPLACE_TYPE
     bFirstTimeInvoked   as boolean = true
+    hCueBannerFont      as HFONT
     foundCount          as long 
     txtFind             as CWSTR
     txtReplace          as CWSTR
