@@ -1004,10 +1004,6 @@ function frmFindReplace_Show( _
         SetLayeredWindowAttributes( HWND_FRMFINDREPLACE_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 80, LWA_ALPHA ) 
     end if
 
-    ' Fills the search box with the selected word.
-    ' if there are carriage returns or/and line feeds, this mean that
-    ' there is a block selected.
-
     gFind.wszResults = L(269, "No results")
 
     frmFindReplace_PositionWindows
@@ -1031,6 +1027,9 @@ function frmFindReplace_Show( _
                     rc.bottom, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE or SWP_NOZORDER)
 
 
+    ' Fills the search box with the selected word.
+    ' if there are carriage returns or/and line feeds, this mean that
+    ' there is a block selected.
     sFindText = pDoc->GetSelText
     if pDoc->IsMultilineSelection = false then
         hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )

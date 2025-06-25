@@ -377,6 +377,14 @@ function Scintilla_OnNotify( _
                             end if
                         end if
                         
+                        '// We are typing in the editor so ensure that no active index
+                        '// or focus remains on the menubar
+                        if gActiveMenuBarIndex <> -1 then
+                            gActiveMenuBarIndex = -1
+                            AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
+                        end if
+
+                        
                         '// Update any brace highlighting
                         frmMain_DoBraceMatching( pDoc->hWndActiveScintilla )
 

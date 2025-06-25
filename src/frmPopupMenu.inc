@@ -161,7 +161,7 @@ function paintLayeredWindow( byval hwnd as HWND, byval clrRGBA as integer ) as l
     sBI.bmiHeader.biCompression = BI_RGB
 
     dim as HBITMAP hBmp = CreateDIBSection(hDC, @sBI, DIB_RGB_COLORS, null, null, 0)
-    SelectObject(hDC, hBmp)
+    dim as HBITMAP hOldBmp = SelectObject(hDC, hBmp)
 
     dim as boolean bFillAlphaOK = bitmapFillAlpha(hBmp, clrRGBA)
     dim as BLENDfunction blend
@@ -180,10 +180,12 @@ function paintLayeredWindow( byval hwnd as HWND, byval clrRGBA as integer ) as l
 
     UpdateLayeredWindow(hwnd, hdcScreen, @ptPos, @sizeWnd, hDC, @ptSrc, 0, @blend, ULW_ALPHA) 
 
+    SelectObject(hDC, hOldBmp)
+    
     RestoreDC(hDC, -1)
-    DeleteObject(hBmp)
     DeleteDC(hDC)
     ReleaseDC(0, hdcScreen)
+    if hBmp then DeleteObject(hBmp)
 
     function = 0
 end function
@@ -394,7 +396,7 @@ function frmPopupMenu_SubclassProc ( _
             ) as LRESULT
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(hWin)
-
+    
     ' save the most recent selected line for the listbox on the main popup
     ' menu. We need this to ensure that the listbox line is highlighted
     ' when we mouseover the listbox in the child submenu popup.
@@ -410,7 +412,7 @@ function frmPopupMenu_SubclassProc ( _
             tme.cbSize = sizeof(TrackMouseEvent)
             tme.dwFlags = TME_HOVER or TME_LEAVE
             tme.hwndTrack = hWin
-            tme.dwHoverTime = 200    ' system default is 400ms
+            tme.dwHoverTime = 1    ' system default is 400ms
             TrackMouseEvent(@tme) 
 
             ' get the item rect that the mouse is over and only invalidate
@@ -442,13 +444,18 @@ function frmPopupMenu_SubclassProc ( _
             ' test if this menu item has a submenu then show it now if not already shown
             dim as HWND hListBox = GetDlgItem( HWND_MENU(0), IDC_MENU_LISTBOX )
             if hWin = hListBox then 
+                ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
+                ' if the specified point is in the client area of the list box, or one if it is outside the 
+                ' client area.
                 dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
-                dim as RECT rc
-                ListBox_GetItemRect( hWin, idx, @rc )
-                gMenuLastCurSel = idx
-                frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hWin, rc )
+                if hiword(idx) <> 1 then
+                    dim as RECT rc
+                    ListBox_GetItemRect( hWin, idx, @rc )
+                    gMenuLastCurSel = idx
+                    frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hWin, rc )
+                end if
             end if
-
+            
         case WM_ERASEBKGND
             ' we paint the listbox via WM_DRAWITEM so no need to erase and paint
             ' the background here causing unnecessary flicker.

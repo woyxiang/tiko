@@ -901,7 +901,7 @@ function clsDocument.GetSelectedLineRange( _
     endLine   = SciMsg( pSci, SCI_LINEFROMPOSITION, endPos, 0) 
 
     dim nCol as long = SciMsg( pSci, SCI_GETCOLUMN, endPos, 0)
-    if (nCol = 0) and (endLine > startLine) then endLine = endLine - 1
+    if (nCol = 0) andalso (endLine > startLine) then endLine = endLine - 1
 
     function = 0
 end function
