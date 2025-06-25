@@ -1382,6 +1382,7 @@ function frmMain_OnLButtonUp( _
         ' the single click and doubleclick
         pDoc->doubleClickReceived = false
         SetTimer(hwnd, pDoc->idTimer, 100, @TimerProc)
+        ReleaseCapture
     end if
             
     function = 0
