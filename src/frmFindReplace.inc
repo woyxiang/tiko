@@ -652,7 +652,10 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
     ' Destroy the CueBannerFont. We need to keep this font alive throughout the
     ' the life of the popup otherwise the cuebanner text will not show. We can
     ' not create the font everytine in paint.
-    if gFind.hCueBannerFont then DeleteObject(gFind.hCueBannerFont)
+    if gFind.hCueBannerFont then 
+        DeleteObject(gFind.hCueBannerFont)
+        gFind.hCueBannerFont = 0
+    end if
 
     ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
