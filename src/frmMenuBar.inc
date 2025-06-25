@@ -141,7 +141,7 @@ function frmMenuBar_WndProc( _
             ' for the newly selected menubar button.
             gActiveMenuBarIndex = CurHotIndex 
             PrevHotIndex = CurHotIndex
-            if IsWindowVisible(HWND_MENU(0)) then
+            if isPopupMenuOpen() then
                 frmPopupMenu_Show( ID_POPUP, 0, hwnd, gMenuBar(gActiveMenuBarIndex).rcItem )
             end if   
             ' Track that we are over the control in order to catch the 
@@ -157,20 +157,23 @@ function frmMenuBar_WndProc( _
         
         
     case WM_MOUSELEAVE
-        if IsWindow(HWND_MENU(0)) = 0 then
+        if isPopupMenuOpen() = false then
             gActiveMenuBarIndex = -1
             PrevHotIndex = -1
             AfxRedrawWindow(hwnd)
         end if   
         
     case WM_LBUTTONDOWN
-        ' Get the button index of the current hot state button
-        gActiveMenuBarIndex = frmMenuBar_GetHotIndex(hwnd)
+        ' Get the button index of the current hot state button or the wParam
+        ' if this button press was sent by an ENTER keypress originating from
+        ' handleKeysTopMenu() in modMsgPunp.
+        if (cint(wParam) <> -1) then   ' ENTER will send wParam = -1
+            gActiveMenuBarIndex = frmMenuBar_GetHotIndex(hwnd)
+        end if    
         
         ' activate the popup menu or toggle an existing one off 
-        if IsWindow(HWND_MENU(0)) then
-            killPopupMenus()
-            killPopupSubMenus()
+        if isPopupMenuOpen() then
+            killAllPopupMenus()
         else   
             frmPopupMenu_Show( ID_POPUP, 0, hwnd, gMenuBar(gActiveMenuBarIndex).rcItem )
         end if

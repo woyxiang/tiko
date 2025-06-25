@@ -1704,7 +1704,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     ' Message loop
     do while GetMessage(@uMsg, null, 0, 0)
 
-        if handleMouseScrollBar(uMsg) then continue do
         if handleMouseShowScrollBar(uMsg) then continue do
         if handleMouseTopMenu(uMsg) then continue do
         if handleAltKeyMenuBar(uMsg) then continue do

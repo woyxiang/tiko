@@ -15,32 +15,6 @@
 ''  HANDLE RAW INCOMING MESSAGES IN THE MESSAGE PUMP
 
 
-function handleMouseScrollBar( byval uMsg as MSG ) as boolean
-    if (gApp.IsProjectLoading) orelse (gApp.IsFileLoading) then return false
-    if HWND_FRMPANEL_VSCROLLBAR = 0 then return false
-
-    ' Determine if the mouse message should be intercepted by the 
-    ' transparent WS_EX_LAYERED scrollbar
-    select case uMsg.message 
-        case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP
-            if IsWindowVisible( HWND_FRMPANEL_VSCROLLBAR ) then
-                dim as point pt: GetCursorPos( @pt )
-                dim as RECT rc = AfxGetWindowRect(HWND_FRMPANEL_VSCROLLBAR)
-                if PtInRect( @rc, pt ) orelse _
-                    GetCapture() = HWND_FRMPANEL_VSCROLLBAR then 
-                    ' forward the message to the scrollbar instead of say 
-                    ' the Explorer listbox that is underneath it
-                    AfxRedrawWindow( gPanelVScroll.hListBox )
-                    SendMessage( HWND_FRMPANEL_VSCROLLBAR, uMsg.message, uMsg.wParam, uMsg.lParam )
-                    return true
-                end if
-            end if
-    end select
-    ' we want our mouse message to continue so return FALSE
-    return false
-end function
-
-
 function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     if (gApp.IsProjectLoading) orelse (gApp.IsFileLoading) then return false
 
@@ -90,10 +64,8 @@ end function
 function handleMouseTopMenu( byval uMsg as MSG ) as boolean
     ' Handle any mouse clicks that are outside of a popup menu in order
     ' to close any open top menu popups.
-
     if uMsg.message = WM_LBUTTONDOWN then
-        if (uMsg.HWnd <> gActiveMenuBarIndex) andalso _
-            (uMsg.HWnd <> HWND_MENU(0)) andalso _
+        if (uMsg.HWnd <> HWND_MENU(0)) andalso _
             (GetParent(uMsg.HWnd) <> HWND_MENU(0)) andalso _
             (uMsg.HWnd <> HWND_MENU(1)) andalso _
             (GetParent(uMsg.HWnd) <> HWND_MENU(1)) then
@@ -161,8 +133,8 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
             ' to the active popup menu or menubar button. If this item hasa submenu 
             ' then convert the key from ENTER to RIGHT ARROW.
             dim as HWND hListBox
-            if IsWindowVisible( HWND_MENU(0) ) then hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
-            if IsWindowVisible( HWND_MENU(1) ) then hListBox = GetDlgItem(HWND_MENU(1), IDC_MENU_LISTBOX)
+            if isPopupMenuOpen() then hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
+            if isSubPopupMenuOpen() then hListBox = GetDlgItem(HWND_MENU(1), IDC_MENU_LISTBOX)
             ' If we have a valid listbox then process the action on the current listbox selection, otherwise
             ' no popup menu exists so simulate pressing enter on the active menubar button.
             if hListBox then
@@ -176,28 +148,33 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                     SendMessage( hListBox, WM_LBUTTONUP, 0, 0 )
                     return true
                 end if   
-            else   
-                SendMessage( HWND_FRMMAIN_MENUBAR, WM_LBUTTONDOWN, 0, 0 )
+            else
+                ' Tell the menubar to activate the popupmenu for the currently
+                ' selected menubar item. Send wParam = -1 to indicate not do any
+                ' hot hittesting in the popupmenu LBUTTONDOWN message handler.
+                SendMessage( HWND_FRMMAIN_MENUBAR, WM_LBUTTONDOWN, cast(WPARAM, cint(-1)), 0 )
                 return true
             end if
         end if
         
         select case uMsg.wParam
             case VK_ESCAPE
-            if IsWindowVisible( HWND_MENU(1) ) THEN 
+            if isSubPopupMenuOpen() then 
                 killPopupSubMenus()
                 return true
-            elseif IsWindowVisible( HWND_MENU(0) ) THEN
+            elseif isPopupMenuOpen() then
                 killPopupMenus()
                 return true
-            elseif gActiveMenuBarIndex <> -1 then
+            else
+                ' No popup menus are open but if a menubar item is hot then
+                ' set the selected index.
                 gActiveMenuBarIndex = frmMenuBar_GetHotIndex(HWND_FRMMAIN_MENUBAR)
                 AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
                 return true
             end if   
     
             case VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
-            if (IsWindowVisible(HWND_MENU(0))) orelse (IsWindowVisible(HWND_MENU(1))) then   
+            if isAnyPopupMenuOpen() then   
                 if uMsg.wParam = VK_DOWN then 
                     setNextMenuItemTabIndex(false)
                     return true
@@ -207,21 +184,23 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                     return true
                 end if
                 if uMsg.wParam = VK_LEFT then 
-                    if IsWindowVisible(HWND_MENU(1)) then
+                    if isSubPopupMenuOpen() then
                         killPopupSubMenus()
                         return true
                     end if   
                 end if
                 if uMsg.wParam = VK_RIGHT then
-                    if IsWindowVisible(HWND_MENU(0)) then
+                    if isPopupMenuOpen() then
                         dim as HWND hListBox = GetDlgItem(HWND_MENU(0), IDC_MENU_LISTBOX)
                         dim as RECT rcItem
                         gMenuLastCurSel = ListBox_GetCurSel(hListBox)
-                        ListBox_GetItemRect(hListBox, gMenuLastCurSel, @rcItem)
-                        if frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hListBox, rcItem ) then
-                        setNextMenuItemTabIndex(false)
-                        return true
-                        end if   
+                        if gMenuLastCurSel <> -1 then
+                            ListBox_GetItemRect(hListBox, gMenuLastCurSel, @rcItem)
+                            if frmPopupMenu_Show( ID_SUBPOPUP, gMenuLastCurSel, hListBox, rcItem ) then
+                                setNextMenuItemTabIndex(false)
+                                return true
+                            end if
+                        end if       
                     end if
                 end if
             end if
@@ -232,7 +211,7 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                     if gActiveMenuBarIndex < lbound(gMenuBar) then gActiveMenuBarIndex = ubound(gMenuBar)
                     ' if popup menus are already activated then continue to show them as
                     ' we move through the various menubar buttons.
-                    if IsWindowVisible(HWND_MENU(0)) then
+                    if isPopupMenuOpen() then
                         frmPopupMenu_Show(ID_POPUP, 0, HWND_FRMMAIN_MENUBAR, gMenuBar(gActiveMenuBarIndex).rcItem)
                         setNextMenuItemTabIndex(false)
                     end if   
@@ -242,7 +221,7 @@ function handleKeysTopMenu( byval uMsg as MSG ) as boolean
                     if gActiveMenuBarIndex > ubound(gMenuBar) then gActiveMenuBarIndex = lbound(gMenuBar)
                     ' if popup menus are already activated then continue to show them as
                     ' we move through the various menubar buttons.
-                    if IsWindowVisible(HWND_MENU(0)) then
+                    if isPopupMenuOpen() then
                         frmPopupMenu_Show(ID_POPUP, 0, HWND_FRMMAIN_MENUBAR, gMenuBar(gActiveMenuBarIndex).rcItem)
                         setNextMenuItemTabIndex(false)
                     end if   

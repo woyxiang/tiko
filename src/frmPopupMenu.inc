@@ -86,11 +86,22 @@ function killAllPopupMenus() as boolean
     killPopupMenus()
     gMenuLastCurSel = -1
     gPrevent_WM_NCACTIVATE = false
-    ' unhighlight any previous hot menubar button
-    gActiveMenuBarIndex = -1
     AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
     return true
 end function
+
+function isPopupMenuOpen() as boolean
+    return iif( IsWindowVisible(HWND_MENU(0)), true, false ) 
+end function
+
+function isSubPopupMenuOpen() as boolean
+    return iif( IsWindowVisible(HWND_MENU(1)), true, false ) 
+end function
+
+function isAnyPopupMenuOpen() as boolean
+    return iif( isPopupMenuOpen() orelse isPopupMenuOpen(), true, false )
+end function
+
 
 
 ' ========================================================================================
@@ -330,8 +341,14 @@ function frmPopupMenu_WndProc( _
 
         case WM_DESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-            if hwnd = HWND_MENU(0) then DestroyWindow(HWND_SHADOW(0))
-            if hwnd = HWND_MENU(1) then DestroyWindow(HWND_SHADOW(1))
+            if hwnd = HWND_MENU(0) then 
+                DestroyWindow(HWND_SHADOW(0)): HWND_SHADOW(0) = 0
+                HWND_MENU(0) = 0
+            end if
+            if hwnd = HWND_MENU(1) then 
+                DestroyWindow(HWND_SHADOW(1)): HWND_SHADOW(1) = 0
+                HWND_MENU(1) = 0
+            end if
             if pWindow then delete(pWindow)
             
         ' prevent this popup menu from stealing focus from main app
