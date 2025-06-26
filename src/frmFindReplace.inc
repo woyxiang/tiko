@@ -169,10 +169,17 @@ function frmFindReplace_NextSelection( _
     dim as long mainIdx, lenFind, endPos, nPos, iStart, iEnd
     
     dim as hwnd hEdit = pDoc->hWndActiveScintilla
-    dim as hwnd hWndFind = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
-    dim txtFind as string = str(AfxGetWindowText(hWndFind))
+
+    dim txtFind as string = gFind.txtFind
     lenFind = len(txtFind)
-    endPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
+
+    ' Are we searching a selection or the whole document
+    if pDoc->CurrentSelection.isInitialized then   
+        endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->CurrentSelection.endpos, 0)
+    else
+        endPos = SciExec( hEdit, SCI_GETLENGTH, 0, 0)
+    end if
+
     if endPos = 0 then exit function
  
     ' Build an array holding all of the selection positions
@@ -362,7 +369,7 @@ function frmFindReplace_HighlightSearches( byval bRepositionCaret as boolean ) a
     SciExec( hEdit, SCI_INDICSETFORE, 8, ghEditor.ForeColorOccurrence ) 
     SciExec( hEdit, SCI_INDICSETALPHA, 8, 60 )   
     
-    dim txtFind as string = str(AfxGetWindowText(hWndFind))
+    dim txtFind as string = gFind.txtFind
         
     if gFind.nMatchCase then findFlags = (findFlags or SCFIND_MATCHCASE)
     if gFind.nWholeWord then findFlags = (findFlags or SCFIND_WHOLEWORD)
@@ -788,11 +795,13 @@ function frmFindReplace_WndProc( _
             PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDPREV, 0), 0 )
 
         elseif isMouseOverRECT( hwnd, gFind.rcDownArrow ) then
-            PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDnext, 0), 0 )
+            PostMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDNEXT, 0), 0 )
 
         elseif isMouseOverRECT( hwnd, gFind.rcSelection ) then
-            if pDoc = 0 then exit function   
-            if (pDoc->IsMultilineSelection) or (pDoc->HasMarkerHighlight) then
+            if pDoc = 0 then exit function 
+            dim as boolean isOriginalSelectionMultiline = _
+                (pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline)  
+            if (isOriginalSelectionMultiline) orelse (pDoc->HasMarkerHighlight) then
                 gFind.nSelection = not gFind.nSelection
             else
                 gFind.nSelection = false
@@ -1002,7 +1011,20 @@ function frmFindReplace_Show( _
         pWindow->ClassStyle = CS_DBLCLKS
         pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
         SetLayeredWindowAttributes( HWND_FRMFINDREPLACE_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 80, LWA_ALPHA ) 
+
+        ' Save the current selection. This is needed because Find/Replace does incremental searches
+        ' that set the selection points when new matches are found. When the Find/Replace dialog
+        ' and setfocus returns to the edit window then this saved position is restored.
+        dim as long startline, endline, startpos, endpos
+        pDoc->GetSelectedLineRange(startLine, endLine, startPos, endPos )
+        pDoc->CurrentSelection.isInitialized = true
+        pDoc->CurrentSelection.startline = startline
+        pDoc->CurrentSelection.endline = endline
+        pDoc->CurrentSelection.startpos = startpos
+        pDoc->CurrentSelection.endpos = endpos
+
     end if
+
 
     gFind.wszResults = L(269, "No results")
 
@@ -1027,17 +1049,20 @@ function frmFindReplace_Show( _
                     rc.bottom, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE or SWP_NOZORDER)
 
 
+    dim as boolean isOriginalMultilineSelection = _
+                    cbool(pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline)
+    
     ' Fills the search box with the selected word.
     ' if there are carriage returns or/and line feeds, this mean that
     ' there is a block selected.
     sFindText = pDoc->GetSelText
-    if pDoc->IsMultilineSelection = false then
+    if isOriginalMultilineSelection then
+        gFind.nSelection = true   
+        pDoc->SetMarkerHighlight
+    else
         hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )
         AfxSetWindowText( hCtl, sFindText )
         gFind.txtFind = sFindtext
-    else
-        gFind.nSelection = true   
-        pDoc->SetMarkerHighlight
     end if   
 
     if gFind.bExpanded then

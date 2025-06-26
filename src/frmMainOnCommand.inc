@@ -29,6 +29,13 @@ function frmMain_OnCommand( _
             byval hwndCtl as HWND, _
             byval codeNotify as UINT _
             ) as LRESULT
+            
+    ' Deselect any active menubar item        
+    if gActiveMenuBarIndex > -1 then
+        gActiveMenuBarIndex = -1
+        AfxRedrawWindow( HWND_FRMMAIN_MENUBAR )
+    end if
+    
     dim as HWND hEdit 
 
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()

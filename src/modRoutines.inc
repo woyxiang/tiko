@@ -51,10 +51,10 @@ function SpawnPreviousInstance() as boolean
                             wszArg
             i += 1
         loop
-
+        
         dim as COPYDATASTRUCT cds
         cds.dwData = IDM_COPYDATA_COMMANDLINE
-        cds.cbData = len(wszSendString) * 2  ' unicode
+        cds.cbData = (len(wszSendString) + 1) * 2  ' unicode
         cds.lpData = wszSendString.vptr
         SendMessage(hWindow, WM_COPYDATA, 0, cast(LPARAM, @cds))
         return true

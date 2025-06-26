@@ -256,73 +256,32 @@ function OnCommand_EditFindActions( _
             ) as LRESULT
 
     dim as HWND hEdit = pDoc->hWndActiveScintilla
+    dim as HWND hWndFind = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
+
+    if GetFocus() = hWndFind then
+        gFind.txtFind = AfxGetWindowText(hWndFind)
+    elseif GetFocus() = hEdit then    
+        dim as string sFindText = pDoc->GetSelText
+        if (len(sFindText) = 0) andalso len(gFind.txtFind > 0) then 
+            sFindText = gFind.txtFind
+        end if
+        gFind.txtFind = sFindText
+    end if
 
     select case id
-        case IDM_FINDPREV
-            if (GetForeGroundWindow = HWND_FRMFINDREPLACE) then
-                if gFind.foundCount = 0 then exit function
-                dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) 
-                if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
-                AfxRedrawWindow( HWND_FRMFINDREPLACE )
-            end if
+        case IDM_FINDPREV, IDM_FINDPREVACCEL
+            if gFind.foundCount = 0 then frmFindReplace_HighlightSearches(true)
+            if gFind.foundCount = 0 then exit function
+            dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) 
+            if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
+            if IsWindowVisible(HWND_FRMFINDREPLACE) then AfxRedrawWindow( HWND_FRMFINDREPLACE )
 
-        case IDM_FINDNEXT
-            if (GetForeGroundWindow = HWND_FRMFINDREPLACE) then
-                if gFind.foundCount = 0 then exit function
-                dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
-                if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
-                AfxRedrawWindow( HWND_FRMFINDREPLACE )
-            end if
-
-        case IDM_FINDNEXTACCEL, IDM_FINDPREVACCEL   ' F3/Shift+F3
-            dim as long startPos, endPos, curPos, mainSel, r
-            dim as string sFindText = pDoc->GetSelText
-            
-            if len(sFindText) = 0 then
-                if len(gFind.txtFind) then 
-                    sFindText = gFind.txtFind
-                end if   
-            end if
-            gFind.txtFind = sFindText
-            
-            if len(sFindText) then
-                curPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) 
-                if id = IDM_FINDNEXTACCEL then
-                    startPos = curPos + 1
-                    endPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
-                    SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-                    SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-                    ' Search for the text to find
-                    r = SciExec( hEdit, SCI_SEARCHINTARGET, len(sFindText), strptr(sFindText))
-                    if r = -1 then
-                        ' No match found. Do search starting from the beginning of the file.
-                        SciExec( hEdit, SCI_SETTARGETSTART, 0, 0)
-                        r = SciExec( hEdit, SCI_SEARCHINTARGET, Len(sFindText), strptr(sFindText))
-                    end if
-                    If r <> -1 then 
-                        SciExec( hEdit, SCI_SETSEL, r, r + len(sFindText)) 
-                        pDoc->CenterCurrentLine
-                    end if
-                    
-                elseif id = IDM_FINDPREVACCEL then
-                    startPos = curPos - 1
-                    endPos = 0
-                    SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-                    SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-                    ' Search for the text to find
-                    r = SciExec( hEdit, SCI_SEARCHINTARGET, len(sFindText), strptr(sFindText))
-                    if r = -1 then
-                        ' No match found. Do search starting from the end of the file.
-                        startPos = SciExec( hEdit, SCI_GETTEXTLENGTH, 0, 0)
-                        SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-                        r = SciExec( hEdit, SCI_SEARCHINTARGET, len(sFindText), strptr(sFindText))
-                    end if
-                    if r <> -1 then 
-                        SciExec( hEdit, SCI_SETSEL, r, r + len(sFindText)) 
-                        pDoc->CenterCurrentLine
-                    end if
-                end if
-            end if
+        case IDM_FINDNEXT, IDM_FINDNEXTACCEL
+            if gFind.foundCount = 0 then frmFindReplace_HighlightSearches(true)
+            if gFind.foundCount = 0 then exit function
+            dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+            if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
+            if IsWindowVisible(HWND_FRMFINDREPLACE) then AfxRedrawWindow( HWND_FRMFINDREPLACE )
     
     end select
     

@@ -384,7 +384,6 @@ function Scintilla_OnNotify( _
                             AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
                         end if
 
-                        
                         '// Update any brace highlighting
                         frmMain_DoBraceMatching( pDoc->hWndActiveScintilla )
 

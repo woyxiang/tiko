@@ -1517,8 +1517,10 @@ function frmMain_WndProc( _
             if pDataToGet then
                 if pDataToGet->dwData = IDM_COPYDATA_COMMANDLINE then  
                     dim as CWSTR wszCommandLine = *cast(wstring ptr, pDataToGet->lpData)
+                    
                     dim as integer numfiles = AfxStrParseCount(wszCommandLine, ";")
                     dim wszFiles(numfiles) as CWSTR
+
                     for i as integer = 1 to numfiles
                         wszFiles(i) = AfxStrParse(wszCommandLine, i, ";")
                     next
@@ -1560,6 +1562,14 @@ function frmMain_WndProc( _
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
                 SetFocus( pDoc->hWndActiveScintilla )
+                ' Restore any original selection area that the Find/Replace dialog may have 
+                ' changed due to its incremental search
+                 if pDoc->CurrentSelection.isInitialized then   
+                    dim as any ptr pSci = pDoc->GetActiveScintillaPtr()
+                    SciMsg( pSci, SCI_SETSELECTIONSTART, pDoc->CurrentSelection.startpos, 0) 
+                    SciMsg( pSci, SCI_SETSELECTIONEND, pDoc->CurrentSelection.endpos, 0) 
+                    pDoc->CurrentSelection.isInitialized = false
+                end if
             end if
 
         case MSG_USER_PROCESS_COMMANDLINE 

@@ -68,6 +68,13 @@ type PROJECT_FILELOAD_DATA
     nFocusEdit      as long         ' View 0 or View 1
 end type
 
+type SELECTION_INFO
+    isInitialized   as boolean = false
+    startline       as long
+    endline         as long
+    startpos        as long
+    endpos          as long
+end type
 
 type clsDocument
     private:
@@ -110,6 +117,7 @@ type clsDocument
     LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
     bIsHelpFile           as boolean = false
     wszEOL                as CWSTR              ' used in replace in files when constructing each line of new file
+    CurrentSelection      as SELECTION_INFO     ' set during scintilla wm_notfy and used in Find/Replace dialog
     
     ' Following used for split edit views
     rcSplitButton         as RECT               ' Split gripper vertical for Scintilla window (client coordinates)
