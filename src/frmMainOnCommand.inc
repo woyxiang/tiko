@@ -99,6 +99,14 @@ function frmMain_OnCommand( _
     end select
     
     select case id
+        ' show any topmenu that were activated via keyboard Alt+ sequences     
+        case IDC_MENUBAR_FILE to IDC_MENUBAR_HELP
+            killAllPopupMenus()
+            gActiveMenuBarIndex = (id - IDC_MENUBAR_FILE)
+            frmPopupMenu_Show( ID_POPUP, 0, HWND_FRMMAIN_MENUBAR, gMenuBar(gActiveMenuBarIndex).rcItem )
+            setNextMenuItemTabIndex(false)
+            AfxRedrawWindow( HWND_FRMMAIN_MENUBAR )
+         
         case IDM_THEMES
             OptionsDialogLastOpened = 3
             frmOptions_Show( hwnd )
