@@ -174,7 +174,7 @@ function frmFindReplace_NextSelection( _
     lenFind = len(txtFind)
 
     ' Are we searching a selection or the whole document
-    if pDoc->CurrentSelection.isInitialized then   
+    if (pDoc->CurrentSelection.isInitialized = true) andalso (gFind.nSelection = true) then   
         endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->CurrentSelection.endpos, 0)
     else
         endPos = SciExec( hEdit, SCI_GETLENGTH, 0, 0)
@@ -800,7 +800,8 @@ function frmFindReplace_WndProc( _
         elseif isMouseOverRECT( hwnd, gFind.rcSelection ) then
             if pDoc = 0 then exit function 
             dim as boolean isOriginalSelectionMultiline = _
-                (pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline)  
+                (pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline) 
+            if pDoc->CurrentSelection.isInitialized = false then isOriginalSelectionMultiline = false
             if (isOriginalSelectionMultiline) orelse (pDoc->HasMarkerHighlight) then
                 gFind.nSelection = not gFind.nSelection
             else
@@ -1055,12 +1056,12 @@ function frmFindReplace_Show( _
     frmFindReplace_PositionMainWindow
     
 
-    dim as boolean isOriginalMultilineSelection = _
+    dim as boolean isOriginalSelectionMultiline = _
                     cbool(pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline)
-
+    if pDoc->CurrentSelection.isInitialized = false then isOriginalSelectionMultiline = false
     
     sFindText = pDoc->GetSelText
-    if isOriginalMultilineSelection then
+    if isOriginalSelectionMultiline then
         sFindText = ""
         gFind.nSelection = true   
         pDoc->SetMarkerHighlight
