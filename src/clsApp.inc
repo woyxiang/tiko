@@ -327,15 +327,9 @@ function clsApp.RemoveAllSelectionAttributes() as long
     ' occurs when the FindReplace dialog is closed. Therefore we need to apply
     ' it to all documents in all projects.
     dim pDoc as clsDocument ptr = this.pDocList
-    dim as long startPos, endPos
     
     do until pDoc = 0
-        SendMessage( pDoc->hWindow(0), SCI_INDICSETSTYLE, 8, INDIC_STRAIGHTBOX)
-        SendMessage( pDoc->hWindow(0), SCI_SETINDICATORCURRENT, 8, 0)
-        SendMessage( pDoc->hWindow(0), SCI_TARGETWHOLEDOCUMENT, 0, 0)
-        startPos = SendMessage( pDoc->hWindow(0), SCI_GETTARGETSTART, 0, 0)
-        endPos =  SendMessage( pDoc->hWindow(0), SCI_GETTARGETEND, 0, 0)
-        SendMessage( pDoc->hWindow(0), SCI_INDICATORCLEARRANGE, startPos, cast(LPARAM, endPos))
+        pDoc->RemoveSelectionAttributes()
         pDoc = pDoc->pDocNext
     loop   
     function = 0

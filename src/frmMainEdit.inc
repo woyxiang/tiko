@@ -262,10 +262,10 @@ function OnCommand_EditFindActions( _
         gFind.txtFind = AfxGetWindowText(hWndFind)
     elseif GetFocus() = hEdit then    
         dim as string sFindText = pDoc->GetSelText
-        if (len(sFindText) = 0) andalso len(gFind.txtFind > 0) then 
-            sFindText = gFind.txtFind
+        if len(sFindText) then 
+            gFind.foundCount = 0
+            gFind.txtFind = sFindText
         end if
-        gFind.txtFind = sFindText
     end if
 
     select case id
@@ -275,6 +275,8 @@ function OnCommand_EditFindActions( _
             dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) 
             if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
             if IsWindowVisible(HWND_FRMFINDREPLACE) then AfxRedrawWindow( HWND_FRMFINDREPLACE )
+            if (id = IDM_FINDPREVACCEL) andalso _
+                (IsWindowVisible(HWND_FRMFINDREPLACE) = 0) then pDoc->RemoveSelectionAttributes()
 
         case IDM_FINDNEXT, IDM_FINDNEXTACCEL
             if gFind.foundCount = 0 then frmFindReplace_HighlightSearches(true)
@@ -282,6 +284,8 @@ function OnCommand_EditFindActions( _
             dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
             if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
             if IsWindowVisible(HWND_FRMFINDREPLACE) then AfxRedrawWindow( HWND_FRMFINDREPLACE )
+            if (id = IDM_FINDNEXTACCEL) andalso _
+                (IsWindowVisible(HWND_FRMFINDREPLACE) = 0) then pDoc->RemoveSelectionAttributes()
     
     end select
     

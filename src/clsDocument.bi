@@ -187,6 +187,7 @@ type clsDocument
     declare function SetMarkerHighlight() as long
     declare function RemoveMarkerHighlight() as long
     declare function IsMultiLineSelection() as boolean
+    declare function RemoveSelectionAttributes() as long
     declare function HasMarkerHighlight() as boolean
     declare function FirstMarkerHighlight() as long
     declare function LastMarkerHighlight() as long

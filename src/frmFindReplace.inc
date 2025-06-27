@@ -1017,6 +1017,7 @@ function frmFindReplace_Show( _
 
     gFind.wszResults = L(269, "No results")
 
+    ' position the child windows of the find/replace dialog
     frmFindReplace_PositionWindows
     
     ' find/replace is a popup window so we need to use screen coordinates. Place the 
@@ -1040,19 +1041,18 @@ function frmFindReplace_Show( _
 
     dim as boolean isOriginalMultilineSelection = _
                     cbool(pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline)
+
     
-    ' Fills the search box with the selected word.
-    ' if there are carriage returns or/and line feeds, this mean that
-    ' there is a block selected.
     sFindText = pDoc->GetSelText
     if isOriginalMultilineSelection then
+        sFindText = ""
         gFind.nSelection = true   
         pDoc->SetMarkerHighlight
     else
-        hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )
-        AfxSetWindowText( hCtl, sFindText )
         gFind.txtFind = sFindtext
     end if   
+    hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )
+    AfxSetWindowText( hCtl, sFindText )
 
     if gFind.bExpanded then
         hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE )

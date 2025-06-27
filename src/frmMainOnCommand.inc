@@ -49,18 +49,19 @@ function frmMain_OnCommand( _
             pDoc->RemoveMarkerHighlight
 
             ' Restore any original selection area that the Find/Replace dialog may have 
-            ' changed due to its incremental search. 
+            ' changed due to its incremental search, but only if it is a multiline selection.
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
-                 if pDoc->CurrentSelection.isInitialized then
+                if (pDoc->CurrentSelection.isInitialized) andalso _
+                    (pDoc->CurrentSelection.endline > pDoc->CurrentSelection.startline) then
                     dim as any ptr pSci = pDoc->GetActiveScintillaPtr()
                     SciMsg( pSci, SCI_SETSELECTIONSTART, pDoc->CurrentSelection.startpos, 0) 
                     SciMsg( pSci, SCI_SETSELECTIONEND, pDoc->CurrentSelection.endpos, 0) 
                     if pDoc->CurrentSelection.startpos = pDoc->CurrentSelection.endpos then
                         SciMsg( pSci, SCI_SETEMPTYSELECTION, pDoc->CurrentSelection.endpos, 0) 
                     end if
-                    pDoc->CurrentSelection.isInitialized = false
                 end if
+                pDoc->CurrentSelection.isInitialized = false
             end if
 
 

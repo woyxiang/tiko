@@ -507,6 +507,21 @@ function clsDocument.ChangeSelectionCase( byval fcase as long) as long
     function = 0
 end function
 
+
+''
+''
+function clsDocument.RemoveSelectionAttributes() as long
+    ' Remove all Attribute #8 selection highlights from this document.
+    dim as long startPos, endPos
+    SendMessage( this.hWindow(0), SCI_INDICSETSTYLE, 8, INDIC_STRAIGHTBOX)
+    SendMessage( this.hWindow(0), SCI_SETINDICATORCURRENT, 8, 0)
+    SendMessage( this.hWindow(0), SCI_TARGETWHOLEDOCUMENT, 0, 0)
+    startPos = SendMessage( this.hWindow(0), SCI_GETTARGETSTART, 0, 0)
+    endPos =  SendMessage( this.hWindow(0), SCI_GETTARGETEND, 0, 0)
+    SendMessage( this.hWindow(0), SCI_INDICATORCLEARRANGE, startPos, cast(LPARAM, endPos))
+    function = 0
+end function
+
 ''
 ''
 function clsDocument.SetMarkerHighlight() as long

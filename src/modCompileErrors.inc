@@ -498,7 +498,11 @@ function ParseLogForError( _
                         AfxLocalTimeStr( "hh:mm:ss" ) & "]"
         gCompile.wszOutputMsg = L(229,"Failed Compile")  & " (" & wszIconCompileMsg & ")" & vbcrlf
         SetCompileStatusBarMessage( wszIconCompileMsg, ghIconBad )
-        MessageBeep(MB_ICONWARNING)
+        
+        ' only beep on errors
+        if (NumErrors > 0) andalso (NumWarnings = 0) andalso (NumDirectives = 0) then 
+            MessageBeep(MB_ICONWARNING)
+        end if
         
         ' Position the Compiler Log to the first error/warning
         ListView_SelectItem( hLV, 0 )
@@ -537,8 +541,6 @@ function ParseLogForError( _
                             rtrim(AfxStrFormatKBSize(nFileSize)) & " (" & _
                             nFileSize & " " & L(199,"bytes") & ") ]"
             SetCompileStatusBarMessage( wszIconCompileMsg, ghIconGood )
-            ' 2018-12-13: No longer offer the option to show the popup successful dialog.
-            ' Simply sound a success
             if gConfig.DisableCompileBeep = false then
                 MessageBeep(MB_OK)
             end if
