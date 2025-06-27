@@ -1474,8 +1474,14 @@ function frmMain_WndProc( _
             
         case WM_MOVE
             ' Ensure that if the Find/Replace dialog is open that it moves with
-            ' underlying main editor window.     
-            frmFindReplace_Show( hwnd, gFind.bExpanded )
+            ' underlying main editor window.   
+            if IsWindowVisible( HWND_FRMFINDREPLACE ) then  
+                frmFindReplace_Show( hwnd, gFind.bExpanded )
+            end if
+            if IsWindowVisible( HWND_FRMMAIN_TOPTABS ) then
+                frmTopTabs_ShowShadow()
+            end if
+                
         
         case WM_NCACTIVATE
             ' if wParam is false then the system wants to draw an inactive title bar. we
