@@ -933,6 +933,36 @@ end function
 
 
 ' ========================================================================================
+' frmFindReplace_PositionMainWindow
+' ========================================================================================
+function frmFindReplace_PositionMainWindow() as LRESULT
+    ' find/replace is a popup window so we need to use screen coordinates. Place the 
+    ' window just below the toptabs or the menubar if the toptabs are not showing.
+    ' Place the window the width of 2 scrollbars from the right of the main window.
+    dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
+                                HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
+
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMFINDREPLACE )
+
+    dim as RECT rc = AfxGetWindowRect( hCtrl )
+    SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, 0, _
+                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - _
+                        pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR*3) - pWindow->ScaleX(3), _
+                    rc.bottom, _
+                    AfxGetWindowWidth(HWND_FRMFINDREPLACE) + pWindow->ScaleY(6), _
+                    AfxGetWindowHeight(HWND_FRMFINDREPLACE) + pWindow->ScaleY(3), _
+                    SWP_SHOWWINDOW or SWP_NOZORDER)
+    SetWindowPos( HWND_FRMFINDREPLACE, 0, _
+                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR * 3), _
+                    rc.bottom, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE or SWP_NOZORDER)
+
+    AfxRedrawWindow(HWND_FRMFINDREPLACE)
+
+    function = 0
+end function
+
+
+' ========================================================================================
 ' frmFindReplace_Show
 ' ========================================================================================
 function frmFindReplace_Show( _
@@ -1020,24 +1050,10 @@ function frmFindReplace_Show( _
     ' position the child windows of the find/replace dialog
     frmFindReplace_PositionWindows
     
-    ' find/replace is a popup window so we need to use screen coordinates. Place the 
-    ' window just below the toptabs or the menubar if the toptabs are not showing.
-    ' Place the window the width of 2 scrollbars from the right of the main window.
-    dim as HWND hCtrl = iif( IsWindowVisible(HWND_FRMMAIN_TOPTABS), _
-                                HWND_FRMMAIN_TOPTABS, HWND_FRMMAIN_MENUBAR )  
-
-    dim as RECT rc = AfxGetWindowRect( hCtrl )
-    SetWindowPos( HWND_FRMFINDREPLACE_SHADOW, 0, _
-                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - _
-                        pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR*3) - pWindow->ScaleX(3), _
-                    rc.bottom, _
-                    AfxGetWindowWidth(HWND_FRMFINDREPLACE) + pWindow->ScaleY(6), _
-                    AfxGetWindowHeight(HWND_FRMFINDREPLACE) + pWindow->ScaleY(3), _
-                    SWP_SHOWWINDOW or SWP_NOZORDER)
-    SetWindowPos( HWND_FRMFINDREPLACE, 0, _
-                    rc.right - AfxGetWindowWidth(HWND_FRMFINDREPLACE) - pWindow->ScaleX(SCROLLBAR_WIDTH_EDITOR * 3), _
-                    rc.bottom, 0, 0, SWP_SHOWWINDOW or SWP_NOSIZE or SWP_NOZORDER)
-
+    ' Position this Find/Replace popup window separately because this
+    ' function is also used during WM_MOVE of frmMain.
+    frmFindReplace_PositionMainWindow
+    
 
     dim as boolean isOriginalMultilineSelection = _
                     cbool(pDoc->CurrentSelection.endline - pDoc->CurrentSelection.startline)
