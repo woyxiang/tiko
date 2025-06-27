@@ -99,7 +99,7 @@ type clsConfig
         AutoSaveFiles             as long = false
         AutoSaveInterval          as long = 10            ' seconds between autosave checks
         idAutoSaveTimer           as long = 999           ' id of Autosave timer
-        RestoreSession            as long = false
+        RestoreSession            as long = true
         wszLastActiveSession      as CWSTR
         CompactMenus              as long = false
         ShowPanel                 as long = true

@@ -474,7 +474,8 @@ function frmExplorerListBox_SubclassProc ( _
                         if pDocArray(i) = 0 then continue for
                         select case id
                             case IDM_FILEOPEN_EXPLORERLISTBOX, IDM_FILECLOSE_EXPLORERLISTBOX, _
-                                IDM_FILESAVE_EXPLORERLISTBOX, IDM_FILESAVEAS_EXPLORERLISTBOX
+                                IDM_FILESAVE_EXPLORERLISTBOX, IDM_FILESAVEAS_EXPLORERLISTBOX, _
+                                IDM_FILERENAME_EXPLORERLISTBOX
                                 OnCommand_FileExplorerMessage( id, pDocArray(i) )
                             case IDM_REMOVEFILEFROMPROJECT_EXPLORERLISTBOX
                                 OnCommand_ProjectRemove( id, pDocArray(i) )

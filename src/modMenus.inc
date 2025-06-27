@@ -452,6 +452,7 @@ function CreateTopTabCtlContextMenu( byval idx as long ) as HMENU
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, ""
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE,   L(7,"Save") 
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS, L(8,"Save As") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILERENAME, L(21,"Rename") 
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, ""
     AppendMenu hPopUpMenu, iif(MaxiTab > 0, MF_ENABLED,MF_DISABLED), IDM_FILECLOSEALL, L(6,"Close All")
     AppendMenu hPopUpMenu, iif(MaxiTab > 0, MF_ENABLED,MF_DISABLED), IDM_FILECLOSEALLOTHERS, L(354,"Close Others")
@@ -516,28 +517,6 @@ function CreateScintillaContextMenu() as HMENU
     AppendMenu hPopupMenu, MF_SEPARATOR, 0, ""
     AppendMenu hPopupMenu, MF_ENABLED, IDM_SELECTALL, L(40,"Select All")
 
-'    ' Determine if the text under the cursor is an #Include file. if yes, then add a
-'    ' menu option to allow to open it.
-'    if IsCurrentLineIncludeFilename() then
-'        AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_OPENINCLUDE, L(75,"Open") + chr(32, 34) + gApp.IncludeFilename + chr(34)
-'        AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
-'    end if
-    
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_UNDO, L(15,"Undo")
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_REDO, L(16,"Redo")
-'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_CUT, L(17,"Cut")
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_COPY, L(18,"Copy")
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_PASTE, L(19,"Paste")
-'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_INDENTBLOCK, L(23,"Block Indent") 
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_UNINDENTBLOCK, L(24,"Block Unindent")
-'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_COMMENTBLOCK, L(25,"Block Comment") 
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_UNCOMMENTBLOCK, L(26,"Block Uncomment")
-'    AppendMenu hPopupMenu, MF_SEPARATOR or MF_OWNERDRAW, 0, ""
-'    AppendMenu hPopupMenu, MF_ENABLED or MF_OWNERDRAW, IDM_SELECTALL, L(40,"Select All")
-    
     function = hPopupMenu
 
 end function
@@ -567,6 +546,7 @@ function CreateExplorerContextMenu(byval pDoc as clsDocument ptr ) as HMENU
             if nSelCount = 1 then
                 AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE_EXPLORERLISTBOX,   L(7,"Save") 
                 AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS_EXPLORERLISTBOX, L(8,"Save As") 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILERENAME_EXPLORERLISTBOX, L(21,"Rename") 
                 AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
             end if
             wszText = L(190,"Remove from project") 
@@ -578,6 +558,7 @@ function CreateExplorerContextMenu(byval pDoc as clsDocument ptr ) as HMENU
                 AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
                 AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVE_EXPLORERLISTBOX,   L(7,"Save") 
                 AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILESAVEAS_EXPLORERLISTBOX, L(8,"Save As") 
+                AppendMenu hPopUpMenu, MF_ENABLED, IDM_FILERENAME_EXPLORERLISTBOX, L(21,"Rename") 
             end if
         end if
     end if
@@ -603,7 +584,7 @@ end function
 
 ''
 ''
-function CreatefunctionsActionButtonContextMenu() as HMENU
+function CreateFunctionsActionButtonContextMenu() as HMENU
     dim hPopUpMenu as HMENU
     dim as CWSTR wszCaption
     

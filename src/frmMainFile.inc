@@ -430,6 +430,9 @@ function OnCommand_FileExplorerMessage( _
     elseif id = IDM_FILESAVEAS_EXPLORERLISTBOX then
         OnCommand_FileSave( HWND_FRMMAIN, pDoc, true )
 
+    elseif id = IDM_FILERENAME_EXPLORERLISTBOX then
+        OnCommand_FileRename( HWND_FRMMAIN, pDoc )
+
     elseif IDM_FILECLOSE_EXPLORERLISTBOX then
         dim as long nCurSel = gTTabCtl.GetTabIndexByDocumentPtr( pDoc )
         if nCurSel <> -1 then

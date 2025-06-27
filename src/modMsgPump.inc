@@ -69,9 +69,11 @@ function handleMouseTopMenu( byval uMsg as MSG ) as boolean
             (GetParent(uMsg.HWnd) <> HWND_MENU(0)) andalso _
             (uMsg.HWnd <> HWND_MENU(1)) andalso _
             (GetParent(uMsg.HWnd) <> HWND_MENU(1)) then
+            gActiveMenuBarIndex = -1
             killAllPopupMenus()
         end if
     elseif uMsg.message = WM_NCLBUTTONDOWN then
+        gActiveMenuBarIndex = -1
         killAllPopupMenus()
     end if
     ' we want our mouse message to continue so return FALSE
