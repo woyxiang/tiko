@@ -5,7 +5,7 @@ Version 1.0.4 ()
 - Added: Codetips for WinFBX / Afx library.
 - Added: Button in Statusbar to quickly access 'Themes and Fonts'.
 - Added: A default.session file is saved if "Restore previous session/project on startup" is checked if user does not specify another name.
-- Added: Norwegian language file contrubuted by Tor Hagland.
+- Added: Norwegian language file contributed by Tor Hagland.
 - Changed: All icons now use SegoeFluentIcons. SegoeFluentIcons.ttf must now be located in editor's \bin folder. SegoeFluentIcons is not part of Windows 10 by default.
 - Changed: Refactored the Output window functionality for opening/closing and resizing.
 - Changed: Removed the "+" Add New File button from the top tab bar (may implement it again in the future).
@@ -13,6 +13,7 @@ Version 1.0.4 ()
 - Changed: The editor caret width from 1 pixel to 3 pixel. 
 - Changed: Brace highlighting uses box around glyph (will need to use the latest \themes\*.* files to ensure color of box is correct).
 - Changed: Win64 Console (Release) is now the default build configuration for new installations.
+- Changed: Scintilla and Lexilla dll's are now compiled with C++ runtime embedded. DLL's moved to \bin folder.
 - Fixed: Find popup dialog flickering
 - Fixed: Find popup dialog losing focus after entering several characters into the textbox.
 - Fixed: Split editor window flickering.

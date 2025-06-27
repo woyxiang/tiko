@@ -134,8 +134,9 @@ function frmMenuBar_WndProc( _
     case WM_MOUSEMOVE
         ' Get the button index of the current hot state button
         dim as integer CurHotIndex = frmMenuBar_GetHotIndex(hwnd)
-
-        if CurHotIndex <> PrevHotIndex then   
+        if CurHotIndex = -1 then PrevHotIndex = -1
+        
+        if CurHotIndex <> PrevHotIndex  then   
             ' A new menubar button has been moused over. If a previous popup
             ' menu exists then we will automatically continue to show a popup menu
             ' for the newly selected menubar button.
