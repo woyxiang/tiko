@@ -519,7 +519,7 @@ function frmOutput_OnLButtonDown( _
     rc.Bottom = rc.Top + pWindow->ScaleY(3)
     GetCursorPos(@pt)
     if PtInRect( @rc, pt ) then
-        if WindowFrompoint(pt) = HWND_FRMOUTPUT then
+        if WindowFromPoint(pt) = HWND_FRMOUTPUT then
             SetCursor( ghCursorSizeNS )
             gApp.bDragActive = true 
             gApp.hwndPanel   = HWND_FRMOUTPUT

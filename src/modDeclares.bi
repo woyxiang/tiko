@@ -319,7 +319,5 @@ dim shared as wstring * 10 _
     wszIconSplitTopBottom    = !"\uF16E"   
     wszIconSplitEditor       = wszIconSplitLeftRight
     wszIconSettings          = !"\uE713"   
-    'wszIconThemes            = !"\uF67B"   
-    'wszIconThemes            = !"\uE70F"   
     wszIconThemes            = !"\uE771"   
 
