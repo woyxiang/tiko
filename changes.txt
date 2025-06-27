@@ -21,6 +21,7 @@ Version 1.0.4 ()
 - Fixed: Command line not being sent to existing instance of the editor when option "Allow Multiple Instances" unchecked.
 - Fixed: UnComment Block now correctly handles comment characters not located at the first position of the line.
 - Fixed: Vertical scrollbar in edit window would jitter every time the horizontal scrollbar became visible.
+- Fixed: Selection is restored when the Find/Replace dialog is closed (via ESC or the 'X' button).
 
 Version 1.0.3 (June 16, 2025)
 - Added a "Build and Execute" icon to the left side Panel.

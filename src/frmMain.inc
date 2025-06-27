@@ -1351,9 +1351,9 @@ end sub
 
 
 ' ========================================================================================
-' Timer callback function for differentiating between sing/double click
+' Timer callback function for differentiating between single/double click
 ' ========================================================================================
-sub TimerProc(hwnd as HWND, uMsg as UINT, idEvent as UINT_PTR, dwTime as DWORD)
+sub frmMain_TimerProc(hwnd as HWND, uMsg as UINT, idEvent as UINT_PTR, dwTime as DWORD)
     KillTimer(hwnd, idEvent)
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc then
@@ -1381,7 +1381,7 @@ function frmMain_OnLButtonUp( _
         ' Start a timer to delay single-click action and distinguish between
         ' the single click and doubleclick
         pDoc->doubleClickReceived = false
-        SetTimer(hwnd, pDoc->idTimer, 100, @TimerProc)
+        SetTimer(hwnd, pDoc->idTimer, 100, @frmMain_TimerProc)
         ReleaseCapture
     end if
             
@@ -1561,12 +1561,7 @@ function frmMain_WndProc( _
             ' display such as Line#, Col#, Filename, etc.
             frmMain_SetStatusbar
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-            if pDoc then
-'                dim as long startline, endline, startpos, endpos
-'                pDoc->GetSelectedLineRange(startLine, endLine, startPos, endPos )
-                SetFocus( pDoc->hWndActiveScintilla )
-                
-            end if
+            if pDoc then SetFocus( pDoc->hWndActiveScintilla )
 
         case MSG_USER_PROCESS_COMMANDLINE 
             ' process any command line arguments that may have been passed to the program.

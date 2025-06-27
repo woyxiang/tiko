@@ -532,6 +532,33 @@ function frmOutput_OnLButtonDown( _
 end function
 
 
+sub frmOutput_HandleSingleClick(hwnd as HWND)
+    if gApp.bDragActive then
+        gConfig.ShowOutputPanelHeight = AfxGetWindowHeight(hwnd)
+        gApp.bDragActive = False 
+        gApp.hwndPanel = 0
+    end if    
+    ReleaseCapture()
+end sub
+
+
+sub frmOutput_HandleDoubleClick(hwnd as HWND)
+    OnCommand_ViewOutput()   ' toggle the Output window off
+    ReleaseCapture()
+end sub
+
+
+' ========================================================================================
+' Timer callback function for differentiating between single/double click
+' ========================================================================================
+sub frmOutput_TimerProc(hwnd as HWND, uMsg as UINT, idEvent as UINT_PTR, dwTime as DWORD)
+    KillTimer(hwnd, idEvent)
+    if gApp.doubleClickReceived = false then
+        frmOutput_HandleSingleClick(hwnd)
+    end if
+end sub
+
+
 ' ========================================================================================
 ' Process WM_LBUTTONUP message for window/dialog: frmOutput
 ' ========================================================================================
@@ -542,15 +569,33 @@ function frmOutput_OnLButtonUp( _
             byval keyflags as UINT _
             ) as long
 
-    ' HITTEST (PANELS TOP/BOTTOM SPLITTER)
-    if gApp.bDragActive then
-        gConfig.ShowOutputPanelHeight = AfxGetWindowHeight(hwnd)
-        gApp.bDragActive = False 
-        gApp.hwndPanel = 0
-        ReleaseCapture()
-    end if
+    ' Start a timer to delay single-click action and distinguish between
+    ' the single click and doubleclick
+    gApp.doubleClickReceived = false
+    SetTimer(hwnd, gApp.idTimerOutputPanel, 100, @frmOutput_TimerProc)
+    ReleaseCapture
     SetCursor( LoadCursor( null, IDC_ARROW ))
-    
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_LBUTTONDBLCLK message for window/dialog: frmOutput
+' ========================================================================================
+function frmOutput_OnLButtonDblClk( _
+            byval hwnd as HWND, _
+            byval fDoubleClick as boolean, _
+            byval x as long, _
+            byval y as long, _
+            byval keyflags as UINT _
+            ) as long
+
+    if gApp.bDragActive then gApp.bDragActive = false
+    KillTimer(hwnd, gApp.idTimerOutputPanel)
+    gApp.doubleClickReceived = true
+    frmOutput_HandleDoubleClick(hwnd)
+
     function = 0
 end function
 
@@ -825,6 +870,7 @@ function frmOutput_WndProc( _
         HANDLE_MSG (hwnd, WM_LBUTTONUP,     frmOutput_OnLButtonUp)
         HANDLE_MSG (hwnd, WM_LBUTTONDOWN,   frmOutput_OnLButtonDown)
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,     frmOutput_OnMouseMove)
+        HANDLE_MSG (hwnd, WM_LBUTTONDBLCLK, frmOutput_OnLButtonDblClk)
     
     case WM_ERASEBKGND
         return true
