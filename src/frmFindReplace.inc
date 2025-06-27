@@ -852,7 +852,7 @@ Function frmFindReplace_RichEdit_SubclassProc ( _
     dim pWindow as CWindow ptr = AfxCWindowPtr(hWin)
 
     select case uMsg
-        
+                            
         case WM_PRINTCLIENT, WM_PAINT
             dim as long textLength = AfxGetWindowTextLength(hWin)
             if (textLength = 0 ) then 
@@ -1011,17 +1011,6 @@ function frmFindReplace_Show( _
         pWindow->ClassStyle = CS_DBLCLKS
         pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT + 1)   ' black background
         SetLayeredWindowAttributes( HWND_FRMFINDREPLACE_SHADOW, GetSysColor(COLOR_WINDOWTEXT + 1) , 80, LWA_ALPHA ) 
-
-        ' Save the current selection. This is needed because Find/Replace does incremental searches
-        ' that set the selection points when new matches are found. When the Find/Replace dialog
-        ' and setfocus returns to the edit window then this saved position is restored.
-        dim as long startline, endline, startpos, endpos
-        pDoc->GetSelectedLineRange(startLine, endLine, startPos, endPos )
-        pDoc->CurrentSelection.isInitialized = true
-        pDoc->CurrentSelection.startline = startline
-        pDoc->CurrentSelection.endline = endline
-        pDoc->CurrentSelection.startpos = startpos
-        pDoc->CurrentSelection.endpos = endpos
 
     end if
 

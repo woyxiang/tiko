@@ -48,7 +48,42 @@ function frmMain_OnCommand( _
             ' entire lines (used for Selected text searching).
             pDoc->RemoveMarkerHighlight
 
+            ' Restore any original selection area that the Find/Replace dialog may have 
+            ' changed due to its incremental search. 
+            dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+            if pDoc then
+                 if pDoc->CurrentSelection.isInitialized then
+                    dim as any ptr pSci = pDoc->GetActiveScintillaPtr()
+                    SciMsg( pSci, SCI_SETSELECTIONSTART, pDoc->CurrentSelection.startpos, 0) 
+                    SciMsg( pSci, SCI_SETSELECTIONEND, pDoc->CurrentSelection.endpos, 0) 
+                    if pDoc->CurrentSelection.startpos = pDoc->CurrentSelection.endpos then
+                        SciMsg( pSci, SCI_SETEMPTYSELECTION, pDoc->CurrentSelection.endpos, 0) 
+                    end if
+                    pDoc->CurrentSelection.isInitialized = false
+                end if
+            end if
+
+
+            case SCEN_KILLFOCUS
+            ' Save the current selection from the active document. 
+            ' This is needed because Find/Replace does incremental searches
+            ' that set the selection points when new matches are found. When the Find/Replace dialog
+            ' and setfocus returns to the edit window then this saved position is restored.
+            dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+            if pDoc then
+                if pDoc->CurrentSelection.isInitialized = false then
+                    dim as long startline, endline, startpos, endpos
+                    pDoc->GetSelectedLineRange(startLine, endLine, startPos, endPos )
+                    pDoc->CurrentSelection.startline = startline
+                    pDoc->CurrentSelection.endline = endline
+                    pDoc->CurrentSelection.startpos = startpos
+                    pDoc->CurrentSelection.endpos = endpos
+                    pDoc->CurrentSelection.isInitialized = true
+                end if
+            end if
+
         end select      
+
         hEdit = pDoc->hWndActiveScintilla
     end if   
 

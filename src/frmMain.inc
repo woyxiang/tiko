@@ -1552,6 +1552,7 @@ function frmMain_WndProc( _
             frmMain_SetFocusToCurrentCodeWindow()
             exit function
 
+
         case WM_SETFOCUS
             frmMain_SetFocusToCurrentCodeWindow
 
@@ -1561,15 +1562,10 @@ function frmMain_WndProc( _
             frmMain_SetStatusbar
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
             if pDoc then
+'                dim as long startline, endline, startpos, endpos
+'                pDoc->GetSelectedLineRange(startLine, endLine, startPos, endPos )
                 SetFocus( pDoc->hWndActiveScintilla )
-                ' Restore any original selection area that the Find/Replace dialog may have 
-                ' changed due to its incremental search
-                 if pDoc->CurrentSelection.isInitialized then   
-                    dim as any ptr pSci = pDoc->GetActiveScintillaPtr()
-                    SciMsg( pSci, SCI_SETSELECTIONSTART, pDoc->CurrentSelection.startpos, 0) 
-                    SciMsg( pSci, SCI_SETSELECTIONEND, pDoc->CurrentSelection.endpos, 0) 
-                    pDoc->CurrentSelection.isInitialized = false
-                end if
+                
             end if
 
         case MSG_USER_PROCESS_COMMANDLINE 
