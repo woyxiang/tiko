@@ -3,20 +3,19 @@
 ## Programmer's Code Editor for the FreeBASIC Compiler
 
 
-This editor is small, fast, and easy to use code editor.
+Tiko is a small, fast, and easy to use code editor.
 
-tiko is the replacement for the WinFBE Editor https://github.com/PaulSquires/WinFBE project which will be deprecated. 
+Tiko is an all-in-one package including the latest Tiko editor, FreeBASIC compiler (32 and 64 bit compilers), Jose Roca's WinFBX (AFX) and WinFBX2 (AFX2) libraries, several Help files and all the necessary compiler Include files.
 
-This repository contains the code for the tiko editor itself. Check the releases https://github.com/PaulSquires/tiko/releases section for downloads of the editor itself or the editor bundled with the complete FreeBasic Compiler (tiko_suite).
+Includes the complete FreeBASIC compiler and toolchain. Tiko Editor is preconfigured to work perfectly with the included compiler toolchain thus enabling you to be immediately productive with the FreeBASIC language. 
 
+Source code is written using the FreeBASIC language and uses the Scintilla editing library (in 64 bit DLL form).
+
+Tiko is the replacement for the WinFBE Editor https://github.com/PaulSquires/WinFBE project which will soon be deprecated. 
 
 
 **Requirements:**
 - Windows 10 or later operating system because many newer API's are used in the source code.
-- FreeBASIC Compiler http://www.freebasic.net/
-
-
-**NOTE:** If you get a crash while trying to open a document or create a new document, or if you get a popup warning message box from the operating system saying that "a DLL is not found and reinstalling the program may fix this problem", then it means that you are missing the Visual C++ redistributable package that is normally available on most Windows 10 and Windows 11 machines. Download and install it from this Microsoft page:  https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170   Here is the direct link to the file: https://aka.ms/vs/17/release/vc_redist.x64.exe  
 
 
 
