@@ -268,25 +268,29 @@ function OnCommand_EditFindActions( _
         end if
     end if
 
-    select case id
-        case IDM_FINDPREV, IDM_FINDPREVACCEL
-            if gFind.foundCount = 0 then frmFindReplace_HighlightSearches(true)
-            if gFind.foundCount = 0 then exit function
-            dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) 
-            if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
-            if IsWindowVisible(HWND_FRMFINDREPLACE) then AfxRedrawWindow( HWND_FRMFINDREPLACE )
-            if (id = IDM_FINDPREVACCEL) andalso _
-                (IsWindowVisible(HWND_FRMFINDREPLACE) = 0) then pDoc->RemoveSelectionAttributes()
+    dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
 
-        case IDM_FINDNEXT, IDM_FINDNEXTACCEL
-            if gFind.foundCount = 0 then frmFindReplace_HighlightSearches(true)
-            if gFind.foundCount = 0 then exit function
-            dim as long startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+    select case id
+        case IDM_FINDPREV
+            frmFindReplace_HighlightSearches()
+            if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
+            AfxRedrawWindow( HWND_FRMFINDREPLACE )
+
+        case IDM_FINDNEXT
+            frmFindReplace_HighlightSearches()
             if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
-            if IsWindowVisible(HWND_FRMFINDREPLACE) then AfxRedrawWindow( HWND_FRMFINDREPLACE )
-            if (id = IDM_FINDNEXTACCEL) andalso _
-                (IsWindowVisible(HWND_FRMFINDREPLACE) = 0) then pDoc->RemoveSelectionAttributes()
-    
+            AfxRedrawWindow( HWND_FRMFINDREPLACE )
+
+        case IDM_FINDPREVACCEL
+            frmFindReplace_HighlightSearches()
+            if frmFindReplace_NextSelection(startPos, false, true) then pDoc->CenterCurrentLine
+            pDoc->RemoveSelectionAttributes()
+
+        case IDM_FINDNEXTACCEL
+            frmFindReplace_HighlightSearches()
+            if frmFindReplace_NextSelection(startPos, true, true) then pDoc->CenterCurrentLine
+            pDoc->RemoveSelectionAttributes()
+
     end select
     
     function = 0
@@ -314,7 +318,7 @@ function OnCommand_EditReplaceActions( _
                 elseif id = IDM_REPLACEALL then 
                     frmFindReplace_DoReplace( true, true )
                 end if   
-                frmFindReplace_HighlightSearches( true )
+                frmFindReplace_HighlightSearches()
                 pDoc->CenterCurrentLine
                 AfxRedrawWindow( HWND_FRMFINDREPLACE )
             end if

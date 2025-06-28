@@ -158,8 +158,8 @@ end function
 ' Find next/prev selection based on current document position
 ' ========================================================================================
 function frmFindReplace_NextSelection( _
-            byval StartPos as long, _
-            byval bGetnext as boolean, _
+            byval startPos as long, _
+            byval bGetNext as boolean, _
             byval bRepositionCaret as boolean _
             ) as boolean
 
@@ -182,7 +182,7 @@ function frmFindReplace_NextSelection( _
 
     if endPos = 0 then exit function
  
-    ' Build an array holding all of the selection positions
+    ' Build an array holding all of the positions
     redim iPositions(100) as long
     
     gFind.foundCount = 0 
@@ -199,44 +199,108 @@ function frmFindReplace_NextSelection( _
             iPositions(gFind.foundCount) = iStart - lenFind 
         end if
         nPos = iEnd + 1
-    Wend    
+    wend    
     
     ' Determine the next/prev selection that we should position to.
-    if bGetnext then
+    if bGetNext then
         ' next selection
-        mainIdx = 1
+        mainIdx = 0
         for i as long = 1 to gFind.foundCount
-            if iPositions(i) > startPos then
-                mainIdx = i: exit for
+            if iPositions(i) > startPos then 
+                mainIdx = i:
+                exit for
             end if
         next
+
+        ' If searching past end of buffer without a match then wrap around
+        ' to the first selection (mainIdx = 1)
+        if mainIdx = 0 then mainIdx = 1
     else
         ' Previous selection 
-        mainIdx = gFind.foundCount
+        mainIdx = 0
         for i as long = 1 to gFind.foundCount
-            if iPositions(i) < startPos then
-                mainIdx = i
-            end if
+            if iPositions(i) >= (startPos - lenFind) then exit for
+            mainIdx = i
         next
+        ' If searching past start of buffer without a match then wrap around
+        ' to the last selection.
+        if mainIdx = 0 then mainIdx = gFind.foundCount 
     end if
 
-    ' Highlight the selection
-    if gFind.foundCount > 0 then
+    if (mainIdx > 0) andalso (gFind.foundCount > 0) then
+        gFind.wszResults = mainIdx & " of " & gFind.foundCount 
         ' make sure target line is unfolded
         if bRepositionCaret then
             dim as long currentLine = SciExec( hEdit, SCI_LINEFROMPOSITION, iPositions(mainIdx), 0)
             SciExec( hEdit, SCI_ENSUREVISIBLE, currentLine, 0) 
             SciExec( hEdit, SCI_SETSEL, iPositions(mainIdx), iPositions(mainIdx) + lenFind)
         end if
-        gFind.wszResults = mainIdx & " of " & gFind.foundCount
-        frmFindReplace_PositionWindows
-        return true
-    else
+    else    
         SciExec( hEdit, SCI_SETSEL, startPos, startPos)
         gFind.wszResults = L(269, "No results")
-        frmFindReplace_PositionWindows
-        return false
     end if
+    frmFindReplace_PositionWindows
+    
+    return iif(mainIdx > 0, true, false)
+    
+end function
+
+
+' ========================================================================================
+' Highlight the found selections
+' ========================================================================================
+function frmFindReplace_HighlightSearches() as long
+    
+    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+    if pDoc = 0 then exit function
+
+    dim as long r, startPos, endPos, findFlags, nLength
+
+    dim as HWND hEdit = pDoc->hWndActiveScintilla
+    SciExec( hEdit, SCI_SETADDITIONALCARETSVISIBLE, false, 0) 
+    SciExec( hEdit, SCI_INDICSETSTYLE, 8, INDIC_STRAIGHTBOX)
+    SciExec( hEdit, SCI_SETINDICATORCURRENT, 8, 0)
+    SciExec( hEdit, SCI_INDICSETFORE, 8, ghEditor.ForeColorOccurrence ) 
+    SciExec( hEdit, SCI_INDICSETALPHA, 8, 60 )   
+    
+    dim txtFind as string = gFind.txtFind
+        
+    if IsWindowVisible(HWND_FRMFINDREPLACE) then
+        if gFind.nMatchCase then findFlags = (findFlags or SCFIND_MATCHCASE)
+        if gFind.nWholeWord then findFlags = (findFlags or SCFIND_WHOLEWORD)
+        SciExec( hEdit, SCI_SETSEARCHFLAGS, findFlags, 0)
+    end if
+        
+    ' Remove all existing selection indicators
+    nLength = SendMessage( hEdit, SCI_GETTEXTLENGTH, 0, 0)
+    SciExec( hEdit, SCI_INDICATORCLEARRANGE, 0, nLength)
+    
+    ' Are we searching a selection or the whole document
+    if pDoc->HasMarkerHighlight then
+        startPos = SciExec( hEdit, SCI_POSITIONFROMLINE, pDoc->FirstMarkerHighlight, 0)
+        endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->LastMarkerHighlight, 0)
+    else
+        startPos = 0
+        endPos = SciExec( hEdit, SCI_GETLENGTH, 0, 0)
+    end if
+
+    if len(txtFind) then
+        do
+            SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
+            SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
+            r = SciExec( hEdit, SCI_SEARCHINTARGET, len(txtFind), strptr(txtFind))
+            if r = -1 then exit do
+            
+            SciExec( hEdit, SCI_SETINDICATORVALUE, 8, 0 )
+            SciExec( hEdit, SCI_INDICATORFILLRANGE, r, len(txtFind))
+
+            ' Move start position after the replaced text
+            startPos = SendMessage(hEdit, SCI_GETTARGETEND, 0, 0)
+        loop
+    end if
+        
+    function = 0
+
 end function
 
 
@@ -317,7 +381,7 @@ function frmFindReplace_DoReplace( _
         ' Need to ensure that the current cursor/selection is actually the find
         ' phrase that we want to replace. if not, then move to the closest selection.
         if ucase(pDoc->GetSelText) <> ucase(txtFind) then
-            startPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+            startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
             frmFindReplace_NextSelection(startPos, fMoveNext, true)
             exit function
         end if
@@ -335,11 +399,10 @@ function frmFindReplace_DoReplace( _
                 sReplaceText = txtReplace
             end if
             SciExec( hEdit, SCI_REPLACETARGET, len(sReplaceText), strptr(sReplaceText) )
-            startPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) + len(sReplaceText)
         else            
             SciExec( hEdit, SCI_REPLACETARGET, len(txtReplace), strptr(txtReplace) )
-            startPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) + len(txtReplace)
         end if
+        startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
         frmFindReplace_NextSelection(startPos, fMoveNext, true)
     end if
         
@@ -348,75 +411,6 @@ function frmFindReplace_DoReplace( _
     pDoc->ParseDocument()
 
     function = 0
-end function
-
-
-' ========================================================================================
-' Highlight the found selections
-' ========================================================================================
-function frmFindReplace_HighlightSearches( byval bRepositionCaret as boolean ) as long
-
-    dim as long r, startPos, endPos, findFlags, nLength
-    dim as HWND hWndFind = GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND)
-    
-    dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-    if pDoc = 0 then exit function
-
-    dim as HWND hEdit = pDoc->hWndActiveScintilla
-    SciExec( hEdit, SCI_SETADDITIONALCARETSVISIBLE, false, 0) 
-    SciExec( hEdit, SCI_INDICSETSTYLE, 8, INDIC_STRAIGHTBOX)
-    SciExec( hEdit, SCI_SETINDICATORCURRENT, 8, 0)
-    SciExec( hEdit, SCI_INDICSETFORE, 8, ghEditor.ForeColorOccurrence ) 
-    SciExec( hEdit, SCI_INDICSETALPHA, 8, 60 )   
-    
-    dim txtFind as string = gFind.txtFind
-        
-    if gFind.nMatchCase then findFlags = (findFlags or SCFIND_MATCHCASE)
-    if gFind.nWholeWord then findFlags = (findFlags or SCFIND_WHOLEWORD)
-    SciExec( hEdit, SCI_SETSEARCHFLAGS, findFlags, 0)
-    
-    ' Remove all existing selection indicators
-    nLength = SendMessage( hEdit, SCI_GETTEXTLENGTH, 0, 0)
-    SciExec( hEdit, SCI_INDICATORCLEARRANGE, 0, nLength)
-    
-    ' Are we searching a selection or the whole document
-    if pDoc->HasMarkerHighlight then
-        startPos = SciExec( hEdit, SCI_POSITIONFROMLINE, pDoc->FirstMarkerHighlight, 0)
-        endPos = SciExec( hEdit, SCI_GETLINEENDPOSITION, pDoc->LastMarkerHighlight, 0)
-    else
-        startPos = 0
-        endPos = SciExec( hEdit, SCI_GETLENGTH, 0, 0)
-    end if
-
-    ' Search for the text to find
-    if len(txtFind) then
-        SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-        SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-        do 
-            r = SciExec( hEdit, SCI_SEARCHINTARGET, len(txtFind), strptr(txtFind))
-            if r = -1 then exit do
-            
-            SciExec( hEdit, SCI_SETINDICATORVALUE, 8, 0 )
-            SciExec( hEdit, SCI_INDICATORFILLRANGE, r, len(txtFind))
-            startPos = r + len(txtFind)
-            
-            ' Adjust the searching positions
-            SciExec( hEdit, SCI_SETTARGETSTART, startPos, 0)
-            SciExec( hEdit, SCI_SETTARGETEND, endPos, 0)
-        loop
-        startPos = SciExec( hEdit, SCI_GETANCHOR, 0, 0) 
-        endPos = SciExec( hEdit, SCI_GETCURRENTPOS, 0, 0) 
-        if endPos < startPos then startPos = endPos
-        startPos = startPos - 1
-    else
-        startPos = SciExec( hEdit, SCI_GETANCHOR, 0, 0) 
-    end if
-
-    startPos = iif(startPos < 0, 0, startPos)
-    frmFindReplace_NextSelection(startPos, true, bRepositionCaret)
-    
-    function = 0
-
 end function
 
 
@@ -440,7 +434,9 @@ function frmFindReplace_OnCommand( _
         case IDC_FRMFINDREPLACE_TXTFIND
             if (codeNotify = EN_CHANGE) then
                 gFind.txtFind = AfxGetWindowText(hwndCtl)
-                frmFindReplace_HighlightSearches( true )
+                frmFindReplace_HighlightSearches()
+                dim as long startPos = SendMessage( hEdit, SCI_GETANCHOR, 0, 0) - 1
+                frmFindReplace_NextSelection(startPos, true, true)
             elseif (codeNotify = EN_SETFOCUS) then
                 AfxRedrawWindow( hwnd )
             end if
@@ -783,12 +779,12 @@ function frmFindReplace_WndProc( _
 
         elseif isMouseOverRECT( hwnd, gFind.rcMatchCase ) then
             gFind.nMatchCase = not gFind.nMatchCase
-            frmFindReplace_HighlightSearches( true )
+            frmFindReplace_HighlightSearches()
             AfxRedrawWindow(hwnd)
 
         elseif isMouseOverRECT( hwnd, gFind.rcWholeWord ) then
             gFind.nWholeWord = not gFind.nWholeWord
-            frmFindReplace_HighlightSearches( true )
+            frmFindReplace_HighlightSearches()
             AfxRedrawWindow(hwnd)
 
         elseif isMouseOverRECT( hwnd, gFind.rcUpArrow ) then
@@ -812,7 +808,7 @@ function frmFindReplace_WndProc( _
             else   
                 pDoc->RemoveMarkerHighlight
             end if
-            frmFindReplace_HighlightSearches( true )
+            frmFindReplace_HighlightSearches()
             AfxRedrawWindow(hwnd)
 
         elseif isMouseOverRECT( hwnd, gFind.rcPreserve ) then
@@ -1077,7 +1073,7 @@ function frmFindReplace_Show( _
         hCtl = GetDlgItem( HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND )
     end if   
 
-    frmFindReplace_HighlightSearches( true )
+    frmFindReplace_HighlightSearches()
     if len(AfxGetWindowText(hCtl)) then Edit_SetSel(hCtl, 0, -1)
 
     SetFocus hCtl 
