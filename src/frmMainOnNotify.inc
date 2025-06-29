@@ -405,7 +405,7 @@ function Scintilla_OnNotify( _
             ' Show line and column. Only do on modification of text otherwise we will have
             ' a huge slowdown when notifications sent for UI updates.
             
-            if (pNSC->modificationType and SC_MOD_INSERTTEXT) orelse _
+            if ( pNSC->modificationType and SC_MOD_INSERTTEXT) orelse _
                     (pNSC->modificationType and SC_MOD_DELETETEXT) then
 
                 ' Set parsing flag to true. We use a parse flag rather than depending on the dirty
@@ -421,8 +421,21 @@ function Scintilla_OnNotify( _
                 if pDoc then 
                     if pDoc->LoadingFromFile = false then
                         pDoc->AutoSaveRequired = true
-                    end if   
+                    end if
+                       
                     frmMain_SetStatusbar
+                            
+                    ' If text was pasted ensure that the scrollbars are updated because it could be the 
+                    ' situation where there no scrollbars (new file) and the amount of text pasted would 
+                    ' overflow the currtent page linecount thereby necessitating the scrollbars. 
+                    dim as long nShowScrollbar = iif( pDoc->GetLineCount > pDoc->LinesPerPage(0), SW_SHOW, SW_HIDE )
+                    if (IsWindowVisible(HWND_FRMEDITOR_VSCROLLBAR(0)) = 0) andalso (nShowScrollbar = SW_SHOW) then
+                        ShowWindow(HWND_FRMEDITOR_VSCROLLBAR(0), SW_SHOW)
+                        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(0))
+                    elseif (IsWindowVisible(HWND_FRMEDITOR_VSCROLLBAR(0))) andalso (nShowScrollbar = SW_HIDE) then    
+                        ShowWindow(HWND_FRMEDITOR_VSCROLLBAR(0), SW_HIDE)
+                    end if
+
 
                     pDoc->bNeedsParsing = true
                     if (pNSC->modificationType and SC_MOD_DELETETEXT) then

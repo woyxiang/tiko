@@ -38,10 +38,9 @@ using Afx
 #define APPNAME        wstr("Tiko Editor")
 #define APPNAMESHORT   wstr("Tiko")
 #define APPCLASSNAME   wstr("tiko_editor_class")
-'#define APPVERSION     wstr("1.1.0") 
-#define APPVERSION     wstr("1.0.4") 
+#define APPVERSION     wstr("1.1.0") 
 #define APPEXTENSION   wstr(".tiko") 
-#define APPBITS wstr(" (64-bit)")
+#define APPBITS        wstr(" (64-bit)")
 
 #define APPCOPYRIGHT   wstr("Paul Squires, PlanetSquires Software, Copyright (C) 2016-2025") 
 dim shared as CWSTR gwszDefaultToolchain = "FreeBASIC-1.10.1-winlibs-gcc-9.3.0"

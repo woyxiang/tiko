@@ -1,4 +1,4 @@
-Version 1.0.4 ()
+Version 1.1.0 (June 29, 2025)
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
 - Added: Panel icon menu (located above the EXPLORER panel).
 - Added: Much improved brace highlighting.
@@ -17,12 +17,14 @@ Version 1.0.4 ()
 - Fixed: Find popup dialog flickering
 - Fixed: Find popup dialog losing focus after entering several characters into the textbox.
 - Fixed: Split editor window flickering.
+- Fixed: Compile autosave and WM_ACTIVATEAPP focus issue asking to save files under wrong circumstances.
 - Fixed: autoinsert after ENTER at end of Function line would not move existing code down one line.
 - Fixed: WinAPI codetips not displaying.
 - Fixed: Command line not being sent to existing instance of the editor when option "Allow Multiple Instances" unchecked.
 - Fixed: UnComment Block now correctly handles comment characters not located at the first position of the line.
 - Fixed: Vertical scrollbar in edit window would jitter every time the horizontal scrollbar became visible.
 - Fixed: Selection is restored when the Find/Replace dialog is closed (via ESC or the 'X' button).
+- Fixed: Various refactoring and improvements too many to list.
 
 Version 1.0.3 (June 16, 2025)
 - Added a "Build and Execute" icon to the left side Panel.

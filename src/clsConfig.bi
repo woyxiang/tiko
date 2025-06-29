@@ -137,7 +137,7 @@ type clsConfig
         CompilerSwitches          as CWSTR
         CompilerIncludes          as CWSTR
         CompilerHelpfile          as CWSTR
-        RunViaCommandWindow       as long = false
+        RunViaCommandWindow       as long = true
         DisableCompileBeep        as long = false
         MRU(9)                    as CWSTR
         MRUProject(9)             as CWSTR
