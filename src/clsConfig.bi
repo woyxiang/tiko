@@ -45,7 +45,6 @@ end type
 type TYPE_CATEGORIES
     idFileType     as string    ' GUID or special node value (FILETYPE_*)
     wszDescription as CWSTR
-    hNodeExplorer  as HTREEITEM
     bShow          as boolean = true
 end type
 
@@ -59,16 +58,6 @@ end type
     #define CATINDEX_HEADER            3
     #define CATINDEX_MODULE            4
     #define CATINDEX_NORMAL            5
-
-' Structure used to save codetip cache database information to disk. This
-' data is checked when loading the codetip cache to see if any of the original
-' codetip files had changed since the cache was created. If yes, then that
-' codetip file needs to be reparsed.
-type CODETIP_META_DATA
-    nFiletype    as long           ' refer to DB2_FILETYPE_*  (filenames are not stored)
-    DateFileTime as FILETIME       ' DateTime of original codetip file
-    filler(1024) as ubyte          ' extra space for possible future expansion
-end type
 
 type clsConfig
     public:

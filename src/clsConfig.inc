@@ -601,7 +601,7 @@ function clsConfig.LoadConfigFile() as long
 
     ' Remove any existing Builds
     ' We can not recreate the Categories each time the config reloads because the
-    ' structure contains references to existing hNodeExplorer nodes.
+    ' structure contains references to existing nodes.
     erase this.Builds
     
     if AfxFileExists(this.ConfigFilename) = 0 then

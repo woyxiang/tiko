@@ -138,7 +138,6 @@ function WinMain( _
             byval nCmdShow      as long _
             ) as long
 
-
     ' Load configuration files 
     gConfig.LoadConfigFile()
     gConfig.LoadKeywords()
@@ -184,12 +183,6 @@ function WinMain( _
     end if
 
 
-    ' Load default Explorer Categories should none exist. Need to do it here
-    ' rather than from within Config because the localization file must be 
-    ' loaded first.
-    gConfig.SetCategoryDefaults()
-
-
     ' If multiple editor instances is disallowed then bring the current active
     ' instance to the foreground and pass it whatever command line was intended
     ' for this instance.
@@ -198,6 +191,12 @@ function WinMain( _
     end if
 
     
+    ' Load default Explorer Categories should none exist. Need to do it here
+    ' rather than from within Config because the localization file must be 
+    ' loaded first.
+    gConfig.SetCategoryDefaults()
+
+
     ' Initialize the COM library
     CoInitialize(null)
 
@@ -205,7 +204,6 @@ function WinMain( _
     ' Load the Scintilla code editing dll
     dim as any ptr pLibLexilla = dylibload("bin\Lexilla64.dll")
     dim as any ptr pLibScintilla = dylibload("bin\Scintilla64.dll")
-    gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
 
     if (pLibLexilla = 0) orelse (pLibScintilla = 0) then
         MessageBox( 0, _
@@ -215,6 +213,8 @@ function WinMain( _
                     MB_OK or MB_ICONWARNING or MB_DEFBUTTON1 or MB_APPLMODAL )
         return 1
     end if
+    gApp.pfnCreateLexerfn = cast(CreateLexerFn , GetProcAddress(pLibLexilla, "CreateLexer"))
+
 
     ' Load the HTML help library for displaying FreeBASIC help *.chm file
     gpHelpLib = dylibload( "hhctrl.ocx" )

@@ -932,6 +932,8 @@ function frmMain_PositionWindows() as LRESULT
             
         ' Update editor vertical scrollbars
         frmEditorVScroll_calcVThumbRect( pDoc )
+        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(0))
+        AfxRedrawWindow(HWND_FRMEDITOR_VSCROLLBAR(1))
         
         ' if the FIND/REPLACE window is open then ensure that it is positioned correctly
         ' especially important if the Main window is resized.
