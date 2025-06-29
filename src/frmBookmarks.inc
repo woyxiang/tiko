@@ -468,7 +468,7 @@ function frmBookmarksListBox_SubclassProc ( _
 
             if rc.top < rc.bottom then
                 dim as HDC _hDC = cast(HDC, _wParam)
-                FillRect( _hDC, @rc, ghPanel.hPanelBrush )
+                PaintRect( _hDC, @rc, ghPanel.BackColor )
             end if
 
             ValidateRect( hWin, @rc )

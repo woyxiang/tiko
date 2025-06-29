@@ -388,7 +388,7 @@ function frmOutput_Listview_SubclassProc ( _
                             dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
                             if pWindow = 0 then exit function
                             SaveDC(ptnmcd->hdc)
-                            FillRect( ptnmcd->hdc, @ptnmcd->rc, ghOutput.hPanelBrush )
+                            PaintRect( ptnmcd->hdc, @ptnmcd->rc, ghOutput.BackColor)
                             SetTextColor( ptnmcd->hdc, ghOutput.ForeColorHot )
                             SetBkColor( ptnmcd->hdc, ghOutput.BackColor )
                             dim wszText as wstring * MAX_PATH

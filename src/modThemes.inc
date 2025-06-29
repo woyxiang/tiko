@@ -107,19 +107,14 @@ end type
 dim shared ghEditor as EDITOR_HANDLES_TYPE
 
 type PANEL_HANDLES_TYPE
-    hPanelBrush as HBRUSH          
     BackColorScrollBar as COLORREF
     ForeColorScrollBar as COLORREF
-    hBackBrush as HBRUSH
     BackColor as COLORREF
     ForeColor as COLORREF
-    hBackBrushHot as HBRUSH
     BackColorHot as COLORREF
     ForeColorHot as COLORREF
-    hBackBrushButton as HBRUSH
     BackColorButton as COLORREF
     ForeColorButton as COLORREF
-    hBackBrushButtonHot as HBRUSH
     BackColorButtonHot as COLORREF
     ForeColorButtonHot as COLORREF
 end type
@@ -145,23 +140,16 @@ end type
 dim shared ghPopup as POPUPMENU_HANDLES_TYPE
 
 type TOPTABS_HANDLES_TYPE
-    hPanelBrush as HBRUSH
-    hBackBrush as HBRUSH
-    hBackBrushHot as HBRUSH
     BackColor as COLORREF
     BackColorHot as COLORREF
     ForeColor as COLORREF
     ForeColorHot as COLORREF
     Divider as COLORREF
-    hCloseBrushHot as HBRUSH
     CloseBackColorHot as COLORREF
 end type
 dim shared ghTopTabs as TOPTABS_HANDLES_TYPE
 
 type STATUSBAR_HANDLES_TYPE
-    hPanelBrush as HBRUSH
-    hBackBrush as HBRUSH
-    hBackBrushHot as HBRUSH
     BackColor as COLORREF
     BackColorHot as COLORREF
     ForeColor as COLORREF
@@ -170,36 +158,26 @@ end type
 dim shared ghStatusBar as STATUSBAR_HANDLES_TYPE
 
 type FINDREPLACE_HANDLES_TYPE
-    hPanelBrush as HBRUSH
-    hBackBrush as HBRUSH
-    hBackBrushHot as HBRUSH
     BackColor as COLORREF
     BackColorHot as COLORREF
     ForeColor as COLORREF
     ForeColorHot as COLORREF
     leftedge as COLORREF
-    hIconBrushHot as HBRUSH
     IconBackColorHot as COLORREF
     NotFoundForeColor as COLORREF
-    hBackBrushTextBox as HBRUSH
     TextBoxForeColor as COLORREF
     TextBoxBackColor as COLORREF
-    hBackBrushIconSelected as HBRUSH
     IconSelectedBackColor as COLORREF
     CueBannerForeColor as COLORREF
 end type
 dim shared ghFindReplace as FINDREPLACE_HANDLES_TYPE
 
 type OUTPUT_HANDLES_TYPE
-    hPanelBrush as HBRUSH
-    hBackBrush as HBRUSH
-    hBackBrushHot as HBRUSH
     BackColor as COLORREF
     BackColorHot as COLORREF
     ForeColor as COLORREF
     ForeColorHot as COLORREF
     Divider as COLORREF
-    hCloseBrushHot as HBRUSH
     CloseBackColorHot as COLORREF
 end type
 dim shared ghOutput as OUTPUT_HANDLES_TYPE
@@ -224,7 +202,6 @@ function getThemePtr( byval lookupKey as string ) as THEME_TYPE ptr
 end function
 
 
-'TODO: This PaintRect function will be able to be removed after refactoring
 function PaintRect( byval hDC as HDC, byval rc as RECT ptr, byval clr as COLORREF ) as long 
     dim as COLORREF oldclr = SetBkColor(hDC, clr) 
     ExtTextOut( hDC, 0, 0, ETO_OPAQUE, rc, "", 0, 0)
@@ -453,29 +430,19 @@ function LoadThemeFile() as boolean
     ghEditor.Divider = pTheme->foreground
 
     pTheme = getThemePtr("panel.panel")
-    if ghPanel.hPanelBrush then DeleteObject(ghPanel.hPanelBrush)
-    ghPanel.hPanelBrush = CreateSolidBrush(pTheme->background)
     pTheme = getThemePtr("panel.text")
-    if ghPanel.hBackBrush then DeleteObject(ghPanel.hBackBrush)
-    ghPanel.hBackBrush = CreateSolidBrush(pTheme->background)
     ghPanel.BackColor = pTheme->background
     ghPanel.ForeColor = pTheme->foreground
     pTheme = getThemePtr("panel.texthot")
-    if ghPanel.hBackBrushHot then DeleteObject(ghPanel.hBackBrushHot)
-    ghPanel.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghPanel.BackColorHot = pTheme->background
     ghPanel.ForeColorHot = pTheme->foreground
     pTheme = getThemePtr("panel.scrollbar")
     ghPanel.BackColorScrollBar = pTheme->background
     ghPanel.ForeColorScrollBar = pTheme->foreground
     pTheme = getThemePtr("panel.button")
-    if ghPanel.hBackBrushButton then DeleteObject(ghPanel.hBackBrushButton)
-    ghPanel.hBackBrushButton = CreateSolidBrush(pTheme->background)
     ghPanel.BackColorButton = pTheme->background
     ghPanel.ForeColorButton = pTheme->foreground
     pTheme = getThemePtr("panel.buttonhot")
-    if ghPanel.hBackBrushButtonHot then DeleteObject(ghPanel.hBackBrushButtonHot)
-    ghPanel.hBackBrushButtonHot = CreateSolidBrush(pTheme->background)
     ghPanel.BackColorButtonHot = pTheme->background
     ghPanel.ForeColorButtonHot = pTheme->foreground
 
@@ -500,90 +467,56 @@ function LoadThemeFile() as boolean
     ghMenuBar.ForeColorHot = pTheme->foreground
     
     pTheme = getThemePtr("toptabs.panel")
-    if ghTopTabs.hPanelBrush then DeleteObject(ghTopTabs.hPanelBrush)
-    ghTopTabs.hPanelBrush = CreateSolidBrush(pTheme->background)
     pTheme = getThemePtr("toptabs.text")
-    if ghTopTabs.hBackBrush then DeleteObject(ghTopTabs.hBackBrush)
-    ghTopTabs.hBackBrush = CreateSolidBrush(pTheme->background)
     ghTopTabs.BackColor = pTheme->background
     ghTopTabs.ForeColor = pTheme->foreground
     pTheme = getThemePtr("toptabs.texthot")
-    if ghTopTabs.hBackBrushHot then DeleteObject(ghTopTabs.hBackBrushHot)
-    ghTopTabs.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghTopTabs.BackColorHot = pTheme->background
     ghTopTabs.ForeColorHot = pTheme->foreground
     pTheme = getThemePtr("toptabs.divider")
     ghTopTabs.Divider = pTheme->foreground
     pTheme = getThemePtr("toptabs.closehot")
-    if ghTopTabs.hCloseBrushHot then DeleteObject(ghTopTabs.hCloseBrushHot)
-    ghTopTabs.hCloseBrushHot = CreateSolidBrush(pTheme->background)
     ghTopTabs.CloseBackColorHot = pTheme->background
 
     pTheme = getThemePtr("statusbar.panel")
-    if ghStatusBar.hPanelBrush then DeleteObject(ghStatusBar.hPanelBrush)
-    ghStatusBar.hPanelBrush = CreateSolidBrush(pTheme->background)
     pTheme = getThemePtr("statusbar.text")
-    if ghStatusBar.hBackBrush then DeleteObject(ghStatusBar.hBackBrush)
-    ghStatusBar.hBackBrush = CreateSolidBrush(pTheme->background)
     ghStatusBar.BackColor = pTheme->background
     ghStatusBar.ForeColor = pTheme->foreground
     pTheme = getThemePtr("statusbar.texthot")
-    if ghStatusBar.hBackBrushHot then DeleteObject(ghStatusBar.hBackBrushHot)
-    ghStatusBar.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghStatusBar.BackColorHot = pTheme->background
     ghStatusBar.ForeColorHot = pTheme->foreground
 
     pTheme = getThemePtr("findreplace.panel")
-    if ghFindReplace.hPanelBrush then DeleteObject(ghFindReplace.hPanelBrush)
-    ghFindReplace.hPanelBrush = CreateSolidBrush(pTheme->background)
     pTheme = getThemePtr("findreplace.text")
-    if ghFindReplace.hBackBrush then DeleteObject(ghFindReplace.hBackBrush)
-    ghFindReplace.hBackBrush = CreateSolidBrush(pTheme->background)
     ghFindReplace.BackColor = pTheme->background
     ghFindReplace.ForeColor = pTheme->foreground
     pTheme = getThemePtr("findreplace.texthot")
-    if ghFindReplace.hBackBrushHot then DeleteObject(ghFindReplace.hBackBrushHot)
-    ghFindReplace.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghFindReplace.BackColorHot = pTheme->background
     ghFindReplace.ForeColorHot = pTheme->foreground
     pTheme = getThemePtr("findreplace.leftedge")
     ghFindReplace.LeftEdge = pTheme->foreground
     pTheme = getThemePtr("findreplace.iconhot")
-    if ghFindReplace.hIconBrushHot then DeleteObject(ghFindReplace.hIconBrushHot)
-    ghFindReplace.hIconBrushHot = CreateSolidBrush(pTheme->background)
     ghFindReplace.IconBackColorHot = pTheme->background
     pTheme = getThemePtr("findreplace.textnotfound")
     ghFindReplace.NotFoundForeColor = pTheme->foreground
     pTheme = getThemePtr("findreplace.textbox")
-    if ghFindReplace.hBackBrushTextBox then DeleteObject(ghFindReplace.hBackBrushTextBox)
-    ghFindReplace.hBackBrushTextBox = CreateSolidBrush(pTheme->background)
     ghFindReplace.TextBoxBackColor = pTheme->background
     ghFindReplace.TextBoxForeColor = pTheme->foreground
     pTheme = getThemePtr("findreplace.iconselected")
-    if ghFindReplace.hBackBrushIconSelected then DeleteObject(ghFindReplace.hBackBrushIconSelected)
-    ghFindReplace.hBackBrushIconSelected = CreateSolidBrush(pTheme->background)
     ghFindReplace.IconSelectedBackColor = pTheme->background
     pTheme = getThemePtr("findreplace.cuebanner")
     ghFindReplace.CueBannerForeColor = pTheme->foreground
 
     pTheme = getThemePtr("output.panel")
-    if ghOutput.hPanelBrush then DeleteObject(ghOutput.hPanelBrush)
-    ghOutput.hPanelBrush = CreateSolidBrush(pTheme->background)
     pTheme = getThemePtr("output.text")
-    if ghOutput.hBackBrush then DeleteObject(ghOutput.hBackBrush)
-    ghOutput.hBackBrush = CreateSolidBrush(pTheme->background)
     ghOutput.BackColor = pTheme->background
     ghOutput.ForeColor = pTheme->foreground
     pTheme = getThemePtr("output.texthot")
-    if ghOutput.hBackBrushHot then DeleteObject(ghOutput.hBackBrushHot)
-    ghOutput.hBackBrushHot = CreateSolidBrush(pTheme->background)
     ghOutput.BackColorHot = pTheme->background
     ghOutput.ForeColorHot = pTheme->foreground
     pTheme = getThemePtr("output.divider")
     ghOutput.Divider = pTheme->foreground
     pTheme = getThemePtr("output.closehot")
-    if ghOutput.hCloseBrushHot then DeleteObject(ghOutput.hCloseBrushHot)
-    ghOutput.hCloseBrushHot = CreateSolidBrush(pTheme->background)
     ghOutput.CloseBackColorHot = pTheme->background
 
     function = false
