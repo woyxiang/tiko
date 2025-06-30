@@ -60,7 +60,7 @@ function updateMRUFilesItems() as long
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
-    dim as long padding = AfxScaleX(12)
+    dim as long margin_width = 40
 
     for i as long = 0 To 9
         ' if the file no longer exists then remove it from the MRU list
@@ -71,7 +71,7 @@ function updateMRUFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUBASE + i, 0, false, false )
             wszText = gConfig.MRU(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -83,7 +83,7 @@ function updateMRUFilesItems() as long
         setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUCLEAR, 0, false, false )
     end if   
     
-    function = nMenuWidth + padding
+    function = nMenuWidth + (margin_width * 2)  ' unscaled value
 end function
 
 
@@ -99,7 +99,7 @@ function updateMRUSessionFilesItems() as long
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
-    dim as long padding = AfxScaleX(12)
+    dim as long margin_width = 40
 
     for i as long = 0 To 9
         ' if the file no longer exists then remove it from the MRU list
@@ -110,7 +110,7 @@ function updateMRUSessionFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONBASE + i, 0, false, false )
             wszText = gConfig.MRUSESSION(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -122,7 +122,7 @@ function updateMRUSessionFilesItems() as long
         setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONCLEAR, 0, false, false )
     end if   
     
-    function = nMenuWidth + padding
+    function = nMenuWidth + (margin_width * 2)  ' unscaled value
 end function
 
 
@@ -138,8 +138,8 @@ function updateMRUProjectFilesItems() as long
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
-    dim as long padding = AfxScaleX(12)
-
+    dim as long margin_width = 40
+    
     for i as long = 0 To 9
         ' if the file no longer exists then remove it from the MRU list
         gConfig.MRUPROJECT(i) = ProcessFromCurdriveApp( gConfig.MRUPROJECT(i) )
@@ -149,7 +149,7 @@ function updateMRUProjectFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTBASE + i, 0, false, false )
             wszText = gConfig.MRUPROJECT(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -161,7 +161,7 @@ function updateMRUProjectFilesItems() as long
         setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTCLEAR, 0, false, false )
     end if   
     
-    function = nMenuWidth + padding
+    function = nMenuWidth + (margin_width * 2)   ' unscaled value
 end function
 
 

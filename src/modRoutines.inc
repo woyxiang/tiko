@@ -189,8 +189,7 @@ end function
 function getTextWidth( _
             byval hwnd as HWND, _
             byref wszText as wstring, _
-            byval FontIndex as long, _
-            byval nPadding as long _
+            byval FontIndex as long _
             ) as long
     
     dim size as SIZEL
@@ -198,6 +197,7 @@ function getTextWidth( _
     if pWindow = 0 then exit function
     
     dim as HFONT _hFont
+    dim as HFONT oldFont 
     select case FontIndex
         case GUIFONT_9:     _hFont = pWindow->CreateFont(GUIFONT, 9, FW_NORMAL) 
         case GUIFONT_10:    _hFont = pWindow->CreateFont(GUIFONT, 10, FW_NORMAL)
@@ -208,14 +208,17 @@ function getTextWidth( _
     end select
     
     dim as HDC hDC = GetDC(hwnd)
-    SaveDC(hDC)
-    if _hFont then SelectObject(hDC, _hFont)
-    GetTextExtentpoint32( hDC, @wszText, len(wszText), @size )
-    RestoreDC(hDC, -1)
-    if _hFont then DeleteObject(_hFont)
-    ReleaseDC(hwnd, hDC)
     
-    function = pWindow->UnScaleX(size.cx) + pWindow->ScaleX(nPadding)  
+    SaveDC(hDC)
+    if _hFont then oldFont = SelectObject(hDC, _hFont)
+    GetTextExtentpoint32( hDC, @wszText, len(wszText), @size )
+    SelectObject(hDC, oldFont)
+    RestoreDC(hDC, -1)
+    
+    ReleaseDC(hwnd, hDC)
+    if _hFont then DeleteObject(_hFont)
+    
+    function = pWindow->UnScaleX(size.cx)
 
 end function
 

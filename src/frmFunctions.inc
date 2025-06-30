@@ -514,13 +514,9 @@ end function
 function frmFunctions_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
 
-    HWND_FRMFUNCTIONS = pWindow->Create( hWndParent, "Function List", @frmFunctions_WndProc, _
-        0, 0, 0, 0, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-
+    HWND_FRMFUNCTIONS = pWindow->Create( hWndParent, @frmFunctions_WndProc )
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
 

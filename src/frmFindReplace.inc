@@ -49,8 +49,7 @@ function frmFindReplace_PositionWindows() as LRESULT
     if pWindow = 0 then exit function
 
     dim wszText as wstring * 100 = gFind.wszResults
-    dim as long nResultsWidth = _
-            getTextWidth(HWND_FRMFINDREPLACE, wszText, GUIFONT_9, 0) + 6
+    dim as long nResultsWidth = getTextWidth(HWND_FRMFINDREPLACE, wszText, GUIFONT_9) + 10
 
     pWindow->SetClientSize( 350 + max(70, nResultsWidth), iif(gFind.bExpanded, 66, 33) )
             

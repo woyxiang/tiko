@@ -66,6 +66,7 @@ dim shared gConfig  as clsConfig
 dim shared gTTabCtl as clsTopTabCtl
 
 
+#include once "modCWindow.inc"
 #include once "modThemes.inc"
 #include once "clsDB2.inc"
 #include once "clsConfig.inc"

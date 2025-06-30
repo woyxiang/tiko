@@ -492,12 +492,12 @@ function frmPopupMenu_GetMaxMenuWidth( byval nCtrlID as long ) as long
     ' Calculate the width of the menu based on the caption text, keyboard shortcut,
     ' and any padding. Need to do this calculation because menu widths will vary
     ' based on the language used.
+    ' Returns an unscaled value.
     dim as CWSTR wszText
     dim as long max_left_width
     dim as long max_right_width
     dim as long left_width
     dim as long right_width
-    dim as long padding = AfxScaleX(30)
     dim as long interior_width = 0
     dim as CWSTR wszLeft
     dim as CWSTR wszRight
@@ -507,24 +507,24 @@ function frmPopupMenu_GetMaxMenuWidth( byval nCtrlID as long ) as long
             wszText = getMenuText(gTopMenu(i).nID)
             ' if an embedded tab character then this menu item has a caption and a keyboard
             ' accelerator so add extra internal space to expand the tab.
-            if instr(wszText, chr(9)) then 
-                interior_width = AfxScaleX(20)
+            if instr(wszText, wchr(9)) then 
+                interior_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wchr(9), GUIFONT_10 )
 
-                wszLeft = AfxStrParse(wszText, 1, chr(9))
-                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszLeft, GUIFONT_10, 0 )
+                wszLeft = AfxStrParse(wszText, 1, wchr(9))
+                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszLeft, GUIFONT_10 )
                 if left_width > max_left_width then max_left_width = left_width
                 
-                wszRight = AfxStrParse(wszText, 2, chr(9))
-                right_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszRight, GUIFONT_10, 0 )
+                wszRight = AfxStrParse(wszText, 2, wchr(9))
+                right_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszRight, GUIFONT_10 )
                 if right_width > max_right_width then max_right_width = right_width
             else   
-                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 0 )
+                left_width = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
                 if left_width > max_left_width then max_left_width = left_width
             end if
         end if   
     next
     
-    function = max_left_width + interior_width + max_right_width + padding
+    function = max_left_width + interior_width + max_right_width  ' unscaled value
 end function
 
 
@@ -538,7 +538,7 @@ function frmPopupMenu_Show( _
                 byval rcParent as RECT _      ' listbox or menubar RECT
                 ) as HWND
 
-    dim pWindow as CWindow ptr 
+    dim pWindow as CPanelWindow ptr 
     dim as long nMenuLeft, nMenuTop, nMenuWidth, nMenuHeight
     dim as long nCtrlID
     dim as RECT rc
@@ -563,7 +563,7 @@ function frmPopupMenu_Show( _
         ' re-displayed causing unnecessary flicker. The nCtrlID is stored
         ' in the UserData section of the CWindow form.
         if IsWindowVisible(HWND_MENU(1)) then
-            pWindow = AfxCWindowPtr(HWND_MENU(1))
+            pWindow = cast(CPanelWindow ptr, AfxCWindowPtr(HWND_MENU(1)))
             if pWindow->UserData(0) = nCtrlID then exit function
         end if
         
@@ -579,7 +579,7 @@ function frmPopupMenu_Show( _
         ' re-displayed causing unnecessary flicker. The nCtrlID is stored
         ' in the UserData section of the CWindow form.
         if IsWindowVisible(HWND_MENU(0)) then
-            pWindow = AfxCWindowPtr(HWND_MENU(0))
+            pWindow = cast(CPanelWindow ptr, AfxCWindowPtr(HWND_MENU(0)))
             if pWindow->UserData(0) = nCtrlID then exit function
         end if
     end if
@@ -590,7 +590,7 @@ function frmPopupMenu_Show( _
     gPrevent_WM_NCACTIVATE = true
     
     '  Popup menus are non-modal (modeless) windows
-    pWindow = New CWindow
+    pWindow = New CPanelWindow
     nMenuLeft = pWindow->UnScaleX(nMenuLeft)
     nMenuTop = pWindow->UnScaleY(nMenuTop)
 
@@ -601,7 +601,7 @@ function frmPopupMenu_Show( _
     if nPopupType = ID_POPUP and IsWindow(HWND_MENU(0)) then prevPopup = HWND_MENU(0)
     if nPopupType = ID_SUBPOPUP and IsWindow(HWND_MENU(1)) then prevPopup = HWND_MENU(1)
 
-    dim as HWND hPopupMenu = pWindow->Create( HWND_FRMMAIN, "", @frmPopupMenu_WndProc, _
+    dim as HWND hPopupMenu = pWindow->Create( HWND_FRMMAIN, @frmPopupMenu_WndProc, _
         nMenuLeft, nMenuTop, 0, 0, WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->UserData(0) = nCtrlID
@@ -615,7 +615,9 @@ function frmPopupMenu_Show( _
         LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmPopupMenu_SubclassProc), IDC_MENU_LISTBOX, cast(DWORD_PTR, @pWindow))
 
-    nMenuWidth = frmPopupMenu_GetMaxMenuWidth(nCtrlID)
+    dim as long margin_width = 40
+    ' get unscaled text width and add left/right margin areas
+    nMenuWidth = frmPopupMenu_GetMaxMenuWidth(nCtrlID) + (margin_width * 2)  
     select case nCtrlID
         case IDM_MRU
             ' update the list of filenames with the most current data
@@ -667,8 +669,8 @@ function frmPopupMenu_Show( _
     end if      
     
     ' Create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
-    pWindow = new CWindow
-    dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, "", _
+    pWindow = new CPanelWindow
+    dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, _
         @frmPopupMenuShadow_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
     pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT)   ' black background

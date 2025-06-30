@@ -217,7 +217,7 @@ function frmOutput_PositionWindows() as LRESULT
     rc.left = rc.left + pWindow->ScaleX(10)
 
     wszText = ucase(L(191, "Compiler Results"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(0).wszText = wszText
     gOutputTabs(0).rcTab = rc: gOutputTabs(0).rcText = rc
     gOutputTabs(0).rcText.left = gOutputTabs(0).rcTab.left + hmargin 
@@ -225,7 +225,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(0).rcTab.right = gOutputTabs(0).rcText.right + hmargin
 
     wszText = ucase(L(252, "Compiler Log File"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(1).wszText = wszText
     gOutputTabs(1).rcTab = rc: gOutputTabs(1).rcText = rc
     gOutputTabs(1).rcTab.left = gOutputTabs(0).rcTab.right
@@ -234,7 +234,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(1).rcTab.right = gOutputTabs(1).rcText.right + hmargin
 
     wszText = ucase(L(262, "Search Results"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(2).wszText = wszText
     gOutputTabs(2).rcTab = rc: gOutputTabs(2).rcText = rc
     gOutputTabs(2).rcTab.left = gOutputTabs(1).rcTab.right
@@ -243,7 +243,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(2).rcTab.right = gOutputTabs(2).rcText.right + hmargin
 
     wszText = ucase(L(263, "TODO"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(3).wszText = wszText
     gOutputTabs(3).rcTab = rc: gOutputTabs(3).rcText = rc
     gOutputTabs(3).rcTab.left = gOutputTabs(2).rcTab.right
@@ -252,7 +252,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(3).rcTab.right = gOutputTabs(3).rcText.right + hmargin
 
     wszText = ucase(L(264, "Notes"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(4).wszText = wszText
     gOutputTabs(4).rcTab = rc: gOutputTabs(4).rcText = rc
     gOutputTabs(4).rcTab.left = gOutputTabs(3).rcTab.right

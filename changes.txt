@@ -1,3 +1,8 @@
+Version 1.1.1 ()
+- Fixed: Default config build description for "Win64 Static Library".
+- Fixed: Saved several hFont gdi resources by using modified CWindow class.
+- Fixed: Menu text and keyboard accelerator text possibly squishing into each other in the top menu.
+
 Version 1.1.0 (June 29, 2025)
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
 - Added: Panel icon menu (located above the EXPLORER panel).

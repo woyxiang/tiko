@@ -28,8 +28,14 @@ function updateUserToolsMenuItems() as long
     
     dim wszText as wstring * 256
     dim as boolean hasTools = false
-    dim as long txtWidth = 0
-    dim as long nMenuWidth = -1
+    dim as long txtWidth 
+    dim as long nMenuWidth 
+    dim as long max_left_width
+    dim as long max_right_width
+    dim as long left_width
+    dim as long right_width
+    dim as long interior_width = 0
+    dim as long margin_width = 40
 
     setTopMenuMRUItem( getNextFreeMRUindex(), IDM_USERTOOLS, IDM_USERTOOLSDIALOG, 0, false, false )
     setTopMenuMRUItem( getNextFreeMRUindex(), IDM_USERTOOLS, 0, 0, false, true )
@@ -38,12 +44,13 @@ function updateUserToolsMenuItems() as long
         if gConfig.Tools(i).IsDisplayMenu then
             hasTools = true
             setTopMenuMRUItem( getNextFreeMRUindex(), IDM_USERTOOLS, IDM_USERTOOLSBASE + i, 0, false, false )
-            wszText = gConfig.Tools(i).wszDescription
+            left_width = getTextWidth(HWND_FRMMAIN_MENUBAR, gConfig.Tools(i).wszDescription, GUIFONT_10)
+            if left_width > max_left_width then max_left_width = left_width
             if gConfig.Tools(i).wszKey then
-            wszText = wszText & chr(9) & gConfig.Tools(i).wszKey
+                interior_width = getTextWidth(HWND_FRMMAIN_MENUBAR, wchr(9), GUIFONT_10)
+                right_width = getTextWidth(HWND_FRMMAIN_MENUBAR, gConfig.Tools(i).wszKey, GUIFONT_10)
+                if right_width > max_right_width then max_right_width = right_width
             end if
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
-            if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if   
     next
 
@@ -51,7 +58,8 @@ function updateUserToolsMenuItems() as long
         setTopMenuMRUItem( getNextFreeMRUindex(), IDM_USERTOOLS, IDM_USERTOOLSLIST, 0, false, false )  ' (empty)
     end if   
     
-    function = nMenuWidth
+    function = max_left_width + interior_width + max_right_width + (margin_width * 2) ' unscaled value
+
 end function
 
 

@@ -910,7 +910,7 @@ function clsConfig.LoadConfigFile() as long
         this.Builds(10).ExcludeInPopup = 1
 
         this.Builds(11).id = AfxGuidText(AfxGuid())
-        this.Builds(11).wszDescription = "Win64 Static Library -gen gas64"
+        this.Builds(11).wszDescription = "Win64 Static Library"
         this.Builds(11).wszOptions = "-lib"
         this.Builds(11).Is32bit = 0
         this.Builds(11).Is64bit = 1
