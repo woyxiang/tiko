@@ -266,9 +266,12 @@ end function
 function frmPanelMenu_Show( byval hwndParent as hwnd ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CPanelWindow ptr = new CPanelWindow
+    dim pWindow as CWindow ptr = new CWindow
 
-    HWND_FRMPANEL_MENU = pWindow->Create( hwndParent, @frmPanelMenu_WndProc )
+    HWND_FRMPANEL_MENU = pWindow->Create( hwndParent, "Panel Menu", @frmPanelMenu_WndProc, _
+        0, 0, 0, 0, _
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
 

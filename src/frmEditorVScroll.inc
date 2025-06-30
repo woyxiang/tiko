@@ -179,12 +179,13 @@ end function
 function frmEditorVScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CPanelWindow ptr 
+    dim pWindow as CWindow ptr 
 
     for i as long = 0 to 1
-        pWindow = new CPanelWindow
+        pWindow = new CWindow
         HWND_FRMEDITOR_VSCROLLBAR(i) = pWindow->Create( hWndParent, _
-            @frmEditorVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR + 1, 0, , WS_EX_NOACTIVATE )
+            "", @frmEditorVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR + 1, 0, _
+            WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_NOACTIVATE )
     next
 
     function = 0

@@ -538,7 +538,7 @@ function frmPopupMenu_Show( _
                 byval rcParent as RECT _      ' listbox or menubar RECT
                 ) as HWND
 
-    dim pWindow as CPanelWindow ptr 
+    dim pWindow as CWindow ptr 
     dim as long nMenuLeft, nMenuTop, nMenuWidth, nMenuHeight
     dim as long nCtrlID
     dim as RECT rc
@@ -563,7 +563,7 @@ function frmPopupMenu_Show( _
         ' re-displayed causing unnecessary flicker. The nCtrlID is stored
         ' in the UserData section of the CWindow form.
         if IsWindowVisible(HWND_MENU(1)) then
-            pWindow = cast(CPanelWindow ptr, AfxCWindowPtr(HWND_MENU(1)))
+            pWindow = AfxCWindowPtr(HWND_MENU(1))
             if pWindow->UserData(0) = nCtrlID then exit function
         end if
         
@@ -579,7 +579,7 @@ function frmPopupMenu_Show( _
         ' re-displayed causing unnecessary flicker. The nCtrlID is stored
         ' in the UserData section of the CWindow form.
         if IsWindowVisible(HWND_MENU(0)) then
-            pWindow = cast(CPanelWindow ptr, AfxCWindowPtr(HWND_MENU(0)))
+            pWindow = AfxCWindowPtr(HWND_MENU(0))
             if pWindow->UserData(0) = nCtrlID then exit function
         end if
     end if
@@ -590,7 +590,7 @@ function frmPopupMenu_Show( _
     gPrevent_WM_NCACTIVATE = true
     
     '  Popup menus are non-modal (modeless) windows
-    pWindow = New CPanelWindow
+    pWindow = New CWindow
     nMenuLeft = pWindow->UnScaleX(nMenuLeft)
     nMenuTop = pWindow->UnScaleY(nMenuTop)
 
@@ -601,8 +601,9 @@ function frmPopupMenu_Show( _
     if nPopupType = ID_POPUP and IsWindow(HWND_MENU(0)) then prevPopup = HWND_MENU(0)
     if nPopupType = ID_SUBPOPUP and IsWindow(HWND_MENU(1)) then prevPopup = HWND_MENU(1)
 
-    dim as HWND hPopupMenu = pWindow->Create( HWND_FRMMAIN, @frmPopupMenu_WndProc, _
-        nMenuLeft, nMenuTop, 0, 0, WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN )
+    dim as HWND hPopupMenu = pWindow->Create( HWND_FRMMAIN, "", @frmPopupMenu_WndProc, _
+        nMenuLeft, nMenuTop, 0, 0, WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->UserData(0) = nCtrlID
 
     ' Disable background erasing by only assigning the one style
@@ -666,8 +667,8 @@ function frmPopupMenu_Show( _
     end if      
     
     ' Create semi-transparent window slightly offset under our popup menu in order to simulate a shadow.
-    pWindow = new CPanelWindow
-    dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, _
+    pWindow = new CWindow
+    dim as HWND hPopupShadow = pWindow->Create( HWND_FRMMAIN, "", _
         @frmPopupMenuShadow_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
     pWindow->Brush = GetSysColorBrush(COLOR_WINDOWTEXT)   ' black background

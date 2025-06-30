@@ -194,11 +194,14 @@ end function
 function frmMenuBar_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CPanelWindow ptr = new CPanelWindow
+    dim pWindow as CWindow ptr = new CWindow
 
     dim as long nHeight = iif(gConfig.CompactMenus, MENUBAR_HEIGHT_COMPACT, MENUBAR_HEIGHT)
 
-    HWND_FRMMAIN_MENUBAR = pWindow->Create( hWndParent, @frmMenuBar_WndProc, 0, 0, 0, nHeight )
+    HWND_FRMMAIN_MENUBAR = pWindow->Create( hWndParent, "", @frmMenuBar_WndProc, _
+        0, 0, 0, nHeight, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS

@@ -422,18 +422,20 @@ end function
 function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CPanelWindow ptr = new CPanelWindow
+    dim pWindow as CWindow ptr = new CWindow
 
     ' Only make the Panel initially visible if it was already visible
     ' when the most previous instance of the program closed. Also, set the width of
     ' the window to the last used visible width.
     dim as long nWidth = iif(gConfig.ShowPanel, gConfig.ShowPanelWidth, 250)
     
-    HWND_FRMPANEL = pWindow->Create( hwndParent, @frmPanel_WndProc, 0, 0, nWidth, 0 )
+    HWND_FRMPANEL = pWindow->Create( hwndParent, "Panel Window", @frmPanel_WndProc, _
+        0, 0, nWidth, 0, _
+        WS_CHILD or iif(gConfig.ShowPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
-    ShowWindow( HWND_FRMPANEL, iif(gConfig.ShowPanel, SW_SHOW, SW_HIDE) )
-    
+
     ' Create the child windows
     frmPanelMenu_Show( HWND_FRMPANEL )
     frmExplorer_Show( HWND_FRMPANEL )

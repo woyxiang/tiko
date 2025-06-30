@@ -76,9 +76,11 @@ end function
 function frmOptionsKeywords_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CPanelWindow ptr = new CPanelWindow
+    dim pWindow as CWindow ptr = new CWindow
 
-    HWND_FRMOPTIONSKEYWORDS = pWindow->Create( hwndParent, @frmOptionsKeywords_WndProc )
+    HWND_FRMOPTIONSKEYWORDS = pWindow->Create( hwndParent, "", @frmOptionsKeywords_WndProc, 0, 0, 0, 0, _
+        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING )
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
     dim as HWND hTextBox = _

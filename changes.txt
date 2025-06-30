@@ -1,7 +1,3 @@
-Version 1.1.1 (unreleased)
-- Fixed: Reduced font GDI handle usage.
-
-
 Version 1.1.0 (June 29, 2025)
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
 - Added: Panel icon menu (located above the EXPLORER panel).
