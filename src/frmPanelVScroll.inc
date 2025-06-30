@@ -185,11 +185,10 @@ function frmPanelVScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     ' Pointer destroyed at end of frmMain prior to application end
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
 
-    HWND_FRMPANEL_VSCROLLBAR = pWindow->Create( hWndParent, _
-        "", @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0, _
-        WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+    HWND_FRMPANEL_VSCROLLBAR = pWindow->Create( hWndParent, @frmPanelVScroll_WndProc, _
+        0, 0, SCROLLBAR_WIDTH_PANEL, 0, WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_NOACTIVATE )
 
     function = 0

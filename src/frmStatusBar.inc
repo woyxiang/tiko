@@ -338,17 +338,16 @@ end function
 function frmStatusBar_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = New CWindow
+    dim pWindow as CPanelWindow ptr = New CPanelWindow
 
-    HWND_FRMMAIN_STATUSBAR = pWindow->Create( hwndParent, "", @frmStatusBar_WndProc, _
-        0, 0, 0, STATUSBAR_HEIGHT, _
-        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMMAIN_STATUSBAR = pWindow->Create( hwndParent, @frmStatusBar_WndProc, _
+            0, 0, 0, STATUSBAR_HEIGHT)
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
     
     frmStatusBar_PositionWindows()
+
     function = 0
     
 end function

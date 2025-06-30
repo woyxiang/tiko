@@ -70,10 +70,9 @@ end function
 function frmOptionsCompiler_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
     
-    HWND_FRMOPTIONSCOMPILER = pWindow->Create( hWndParent, "", @frmOptionsCompiler_WndProc, 0, 0, 0, 0, _
-        WS_CHILD, WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMOPTIONSCOMPILER = pWindow->Create( hWndParent, @frmOptionsCompiler_WndProc )
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
 

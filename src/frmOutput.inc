@@ -930,7 +930,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     '  This pointer destroyed at end of frmMain ends before application ends.
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
 
     ' Only make the Output panel initially visible if it was already visible
     ' when the most previous instance of the program closed. Also, set the height of
@@ -938,10 +938,12 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     dim as long nHeight = _
         iif(gConfig.ShowOutputPanel, gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
     
-    HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, nHeight, _
-        WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+'    HWND_FRMOUTPUT = pWindow->Create( hwndParent, @frmOutput_WndProc, 0, 0, 0, nHeight, _
+'        WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+'        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMOUTPUT = pWindow->Create( hwndParent, @frmOutput_WndProc, 0, 0, 0, nHeight )
     pWindow->ClassStyle = CS_DBLCLKS
+    ShowWindow( HWND_FRMOUTPUT, iif(gConfig.ShowOutputPanel, SW_SHOW, SW_HIDE) )
 
     ' Need to scale up the user defined panel height because it is saved to the config
     ' file in unscaled value.

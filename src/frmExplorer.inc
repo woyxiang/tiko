@@ -597,12 +597,9 @@ end function
 function frmExplorer_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = New CWindow
+    dim pWindow as CPanelWindow ptr = New CPanelWindow
 
-    HWND_FRMEXPLORER = pWindow->Create( hWndParent, "Explorer Window", @frmExplorer_WndProc, _
-        0, 0, 0, 0, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMEXPLORER = pWindow->Create( hWndParent, @frmExplorer_WndProc )
 
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS

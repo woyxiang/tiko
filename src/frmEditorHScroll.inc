@@ -151,13 +151,12 @@ end function
 function frmEditorHScroll_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr
+    dim pWindow as CPanelWindow ptr
 
     for i as long = 0 to 1
-        pWindow = new CWindow
+        pWindow = new CPanelWindow
         HWND_FRMEDITOR_HSCROLLBAR(i) = pWindow->Create( hWndParent, _
-            "", @frmEditorHScroll_WndProc, 0, 0, 0, SCROLLBAR_HEIGHT, _
-            WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_NOACTIVATE )
+            @frmEditorHScroll_WndProc, 0, 0, 0, SCROLLBAR_HEIGHT, , WS_EX_NOACTIVATE )
     next
     
     function = 0

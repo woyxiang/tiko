@@ -68,11 +68,9 @@ end function
 function frmOptionsEditor2_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
 
-    HWND_FRMOPTIONSEDITOR2 = pWindow->Create( hwndParent, "", @frmOptionsEditor2_WndProc, 0, 0, 0, 0, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    HWND_FRMOPTIONSEDITOR2 = pWindow->Create( hwndParent, @frmOptionsEditor2_WndProc )
     ' Height and width of this child form is set in frmOptions_OnNotify when the treeview option is selected.
     
     pWindow->AddControl("CHECKBOX", , IDC_FRMOPTIONSEDITOR2_CHKCODETIPS, L(115,"Enable CodeTips"), 0, 0, 400, 20, _
