@@ -164,7 +164,7 @@ function RunEXE( _
             ) as long
                             
     dim as CWSTR wszPath = AfxStrPathname("PATH", wszFileExe)
-    dim as CWSTR wszBatchFile = AfxGetExePathName + AfxStrPathname("NAME", wszFileExe) + ".bat"
+    dim as CWSTR wszBatchFile = GetTemporaryFilename(gCompile.MainFolder, "bat")
     dim as CWSTR wszQuickRunExe = wszFileExe
     
     ' if option is specified to launch command window prior to running the
@@ -172,6 +172,9 @@ function RunEXE( _
     ' This allows being able to see any runtime errors that might be thrown.
     ' Otherwise, simple shell to the program.
     if gConfig.RunViaCommandWindow then
+        if (pDocMain <> 0) andalso (AfxFileExists(pDocMain->RunViaBatFilename)) then 
+            AfxDeleteFile( pDocMain->RunViaBatFilename )
+        end if
         dim pStream as CTextStream
         if pStream.Create(wszBatchFile) = S_OK then
             pStream.WriteLine "@echo off"
@@ -179,12 +182,11 @@ function RunEXE( _
             pStream.WriteLine "cd " & chr(34) & wszPath & chr(34)   ' change to correct folder
             pStream.WriteLine chr(34) & wszFileExe & chr(34) & " " & wszParam
             pStream.WriteLine "pause"
-            ' pStream.WriteLine "del " & chr(34) & wszBatchFile & chr(34) & " >> nul"
         end if
         pStream.Close
         wszFileExe = wszBatchFile
         wszParam = ""
-        if pDocMain then pDocMain->QuickRunBatFilename = wszBatchFile
+        if pDocMain then pDocMain->RunViaBatFilename  = wszBatchFile
     end if
     
 

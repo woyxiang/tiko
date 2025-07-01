@@ -29,13 +29,17 @@ destructor clsDocument
         if this.hWindow(i) then DestroyWindow( this.hWindow(i) )
     next
     
-    ' If a QuickRun filename exists for this document then delete
-    ' that temporary disk file now.
-    if len(this.QuickRunDiskFilename) then AfxDeleteFile(this.QuickRunDiskFilename)
-    if len(this.QuickRunBatFilename) then AfxDeleteFile(this.QuickRunBatFilename)
-
+    ' Delete any temp files associated with this document (eg. QuickRun)
+    this.DeleteTempFiles()
 end destructor
 
+
+function clsDocument.DeleteTempFiles() as long
+    if AfxFileExists(this.QuickRunDiskFilename) then AfxDeleteFile(this.QuickRunDiskFilename)
+    if AfxFileExists(this.RunViaBatFilename) then AfxDeleteFile(this.RunViaBatFilename)
+    function = 0
+end function    
+    
 
 ''
 ''  Returns true/False indicating whether user manual changes were made

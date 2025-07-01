@@ -98,7 +98,7 @@ type clsDocument
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
     QuickRunDiskFilename  as wstring * MAX_PATH
-    QuickRunBatFilename   as wstring * MAX_PATH
+    RunViaBatFilename     as wstring * MAX_PATH
     DiskFilename          as wstring * MAX_PATH
     AutoSaveFilename      as wstring * MAX_PATH    ' #filename#
     AutoSaveRequired      as boolean
@@ -140,6 +140,7 @@ type clsDocument
     declare property UserModified() as boolean
     declare property UserModified( byval nModified as boolean )
     
+    declare function DeleteTempFiles() as long
     declare function ParseDocument() as boolean
     declare function IsValidScintillaID( byval idScintilla as long ) as boolean
     declare function GetActiveScintillaPtr() as any ptr
