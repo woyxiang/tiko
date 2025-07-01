@@ -525,9 +525,7 @@ function ParseLogForError( _
         end select
         
         gConfig.ShowOutputPanelMinimized = 0
-        frmOutput_ActivatePanelHeight
-        ShowWindow( HWND_FRMOUTPUT, SW_SHOW)
-        frmMain_PositionWindows
+        frmOutput_RestorePanel()
         ' Set to error line position only after all windows have been shown and resized
         SetDocumentErrorPosition(hLV, wID)
     end if

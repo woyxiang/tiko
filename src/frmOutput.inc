@@ -115,11 +115,8 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
     AfxDeleteFile( wszResultFile )
     
     ' Show the search results
-    gOutputTabsCurSel = 2 
-    ShowWindow( HWND_FRMOUTPUT, SW_SHOW )
-    gConfig.ShowOutputPanelMinimized = 0
-    frmOutput_ActivatePanelHeight
-    frmMain_PositionWindows
+    gOutputTabsCurSel = 2
+    frmOutput_RestorePanel() 
     frmOutput_PositionWindows
 
     function = 0
@@ -620,27 +617,45 @@ end function
 
 
 ' ========================================================================================
-' If the Output panel is "minimized" at only OUTPUT_TABS_HEIGHT then
-' we expand the height to 4x OUTPUT_TABS_HEIGHT.
+' Minimize the Output window
+' Result of double clicking an Output panel tab or clicking the "X' close icon.
 ' ========================================================================================
-function frmOutput_ActivatePanelHeight() as long
+function frmOutput_MinimizePanel() as long
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
     if pWindow = 0 then exit function
-
-    dim as long nHeight
+    gConfig.ShowOutputPanelMinimized = 1
     dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
-    dim as long nDefaultHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
+    dim as long nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight)
+    frmMain_PositionWindows()
+    function = 0
+end function
 
-    if gConfig.ShowOutputPanelMinimized then
-        nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
-    else
-        if gConfig.ShowOutputPanelHeight <= nDefaultHeight then
-            gConfig.ShowOutputPanelHeight = nDefaultHeight
-        end if
-        nHeight = gConfig.ShowOutputPanelHeight
+
+' ========================================================================================
+' Restore the Output window to user controlled height
+' Result of double clicking an Output panel tab.
+' ========================================================================================
+function frmOutput_RestorePanel() as long
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
+    if pWindow = 0 then exit function
+    
+    gConfig.ShowOutputPanelMinimized = 0
+    
+    dim as long nDefaultHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
+    dim as long nHeight = gConfig.ShowOutputPanelHeight
+    
+    if nHeight <= nDefaultHeight then
+        gConfig.ShowOutputPanelHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
+        nHeight = nDefaultHeight
     end if
    
+    ' Ensure that window is visible. Compile or Find results need a visible
+    ' window in order to display results.
     AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight)
+    ShowWindow( HWND_FRMOUTPUT, SW_SHOW)
+    frmMain_PositionWindows()
     
     function = 0
 end function
@@ -711,27 +726,28 @@ function frmOutputTabs_SubclassProc ( _
         
         case WM_LBUTTONUP
             if isMouseOverRECT( hWin, gOutputCloseRect ) = true then
-                OnCommand_ViewOutput()   ' toggle the Output window off
+                frmOutput_MinimizePanel()
             else
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
-                gConfig.ShowOutputPanelMinimized = 0
-                frmOutput_ActivatePanelHeight()
-                frmMain_PositionWindows()
+                frmOutput_RestorePanel()
                 gOutputTabsCurSel = idx
                 AfxRedrawWindow(hWin)   
                 frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
             end if
 
         case WM_LBUTTONDBLCLK
+            ' One of the Output window tabs has been doubleclicked.
             ' Toggle the Output window between "minimized" state and the height
             ' that the user has manually resized the window to.
             if isMouseOverRECT( hWin, gOutputCloseRect ) = false then
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
-                gConfig.ShowOutputPanelMinimized = iif(gConfig.ShowOutputPanelMinimized = 1, 0, 1)
-                frmOutput_ActivatePanelHeight()
-                frmMain_PositionWindows()
+                if gConfig.ShowOutputPanelMinimized then
+                    frmOutput_RestorePanel()
+                else
+                    frmOutput_MinimizePanel()
+                end if
                 gOutputTabsCurSel = idx
                 AfxRedrawWindow(hWin)   
                 frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
@@ -931,20 +947,28 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     '  This pointer destroyed at end of frmMain ends before application ends.
     dim pWindow as CWindow ptr = new CWindow
+    dim as long nHeight
+    
+    ' Set the height of the window to the last used visible height or to the
+    ' default height if gConfig.ShowOutputPanelHeight is less than it.
+    gConfig.ShowOutputPanelHeight = max(gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
+    nHeight = gConfig.ShowOutputPanelHeight
+    
+    ' If the Output window was in minimized state when use the default tabs height
+    ' for showing the initial height of the window.
+    if gConfig.ShowOutputPanelMinimized <> 0 then nHeight = OUTPUT_TABS_HEIGHT
 
     ' Only make the Output panel initially visible if it was already visible
-    ' when the most previous instance of the program closed. Also, set the height of
-    ' the window to the last used visible height.
-    dim as long nHeight = _
-        iif(gConfig.ShowOutputPanel, gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
-    
+    ' when the most previous instance of the program closed. 
     HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, nHeight, _
         WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->ClassStyle = CS_DBLCLKS
 
-    ' Need to scale up the user defined panel height because it is saved to the config
-    ' file in unscaled value.
+    ' Now that the Output window has been created using the unscaled height from the
+    ' config file, we need to scale up the user defined panel height because future psoitioning
+    ' of the window depends on scaled values. However, it is unscaled prior to saving the
+    ' value back to the config file on program exit.
     gConfig.ShowOutputPanelHeight = pWindow->ScaleY(gConfig.ShowOutputPanelHeight)
     
     dim as HWND hCtl, hLV, hLB
@@ -1024,7 +1048,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
         ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
 
-    frmOutput_ActivatePanelHeight
     frmOutput_SetControlColors
     frmOutput_PositionWindows
     

@@ -361,12 +361,14 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine "Theme="                 & this.ThemeShortFilename
     pStream.WriteLine "ExplorerPositionRight=" & this.ExplorerPositionRight
     pStream.WriteLine ""
+    ' Note: Main window StartUp positions are in scaled screen coordinates.
     pStream.WriteLine "[Startup]" 
     pStream.WriteLine "StartupLeft="              & this.StartupLeft          
     pStream.WriteLine "StartupTop="               & this.StartupTop           
     pStream.WriteLine "StartupRight="             & this.StartupRight         
     pStream.WriteLine "StartupBottom="            & this.StartupBottom        
     pStream.WriteLine "StartupMaximized="         & this.StartupMaximized     
+    ' Note: SidePanel and OutputPanel positions are in unscaled screen coordinates.
     pStream.WriteLine "ShowPanel="                & this.ShowPanel
     pStream.WriteLine "ShowPanelWidth="           & this.ShowPanelWidth    
     pStream.WriteLine "ShowOutputPanel="          & this.ShowOutputPanel
