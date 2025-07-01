@@ -13,7 +13,7 @@
 
 
 ' =====================================================================================
-' CPanelWindow class
+' CPanelWindow class (extends the Afx base CWindow class)
 ' Creates a generic window with no extra GDI reources.
 ' =====================================================================================
 type CPanelWindow extends CWindow

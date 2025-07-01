@@ -158,6 +158,7 @@ end function
 ''
 ''
 function RunEXE( _
+            byval pDocMain as clsDocument ptr, _
             byref wszFileExe as CWSTR, _
             byref wszParam as CWSTR _
             ) as long
@@ -178,11 +179,12 @@ function RunEXE( _
             pStream.WriteLine "cd " & chr(34) & wszPath & chr(34)   ' change to correct folder
             pStream.WriteLine chr(34) & wszFileExe & chr(34) & " " & wszParam
             pStream.WriteLine "pause"
-            pStream.WriteLine "del " & chr(34) & wszBatchFile & chr(34) & " >> nul"
+            ' pStream.WriteLine "del " & chr(34) & wszBatchFile & chr(34) & " >> nul"
         end if
         pStream.Close
         wszFileExe = wszBatchFile
         wszParam = ""
+        if pDocMain then pDocMain->QuickRunBatFilename = wszBatchFile
     end if
     
 

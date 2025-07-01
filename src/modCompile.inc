@@ -431,12 +431,15 @@ function code_Compile( byval wID as long ) as boolean
             if wID = IDM_QUICKRUN then 
                 dim pDocMain as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
                 if pDocMain then
-                    AfxDeleteFile(pDocMain->QuickRunDiskFilename)   ' delete any already existing file
+                    AfxDeleteFile(pDocMain->QuickRunDiskFilename)   ' delete any existing temp exe file
+                    AfxDeleteFile(pDocMain->QuickRunBatFilename)    ' delete any existing batch file (if applicable)
                     pDocMain->QuickRunDiskFilename = gCompile.OutputFilename  ' set with new temp filename
+                    ' temp batch filename (if applicable) is set in RunEXE below.
                 end if
             end if
 
             RunEXE( _
+                pDocMain, _
                 gCompile.OutputFilename,    _
                 iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
             )

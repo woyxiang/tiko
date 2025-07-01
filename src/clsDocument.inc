@@ -32,6 +32,7 @@ destructor clsDocument
     ' If a QuickRun filename exists for this document then delete
     ' that temporary disk file now.
     if len(this.QuickRunDiskFilename) then AfxDeleteFile(this.QuickRunDiskFilename)
+    if len(this.QuickRunBatFilename) then AfxDeleteFile(this.QuickRunBatFilename)
 
 end destructor
 
