@@ -920,17 +920,21 @@ function frmOutput_SetControlColors() as long
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE )
     SendMessage( hCtl, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
     SendMessage( hCtl, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghOutput.backcolor) )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES )
     SendMessage( hCtl, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
     SendMessage( hCtl, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghOutput.backcolor) )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVRESULTS )
     ListView_SetBkColor( hCtl, ghOutput.BackColor )
     ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
     ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVSEARCH )
     ListView_SetBkColor( hCtl, ghOutput.BackColor )
     ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
     ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVTODO )
     ListView_SetBkColor( hCtl, ghOutput.BackColor )
     ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
@@ -1023,7 +1027,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
 
         ' Configure the ListView
         dwExStyle = ListView_GetExtendedListViewStyle(hLV)
-        dwExStyle = dwExStyle or LVS_EX_FULLROWselect or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
+        dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
         ListView_SetExtendedListViewStyle(hLV, dwExStyle)
         ListView_MakeHeaderFlat(hLV)
         ListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
