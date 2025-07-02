@@ -593,7 +593,7 @@ end function
 ''
 ''  LOAD CONFIGURATION FROM DISK FILE
 ''
-function clsConfig.LoadConfigFile() as long
+function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as long
 
     dim as CWSTR wst, wKey, wData, wData2
     dim nData  as long  
@@ -685,7 +685,7 @@ function clsConfig.LoadConfigFile() as long
                 this.Builds(i).IsDefault      = val(AfxStrParse(wData, 4, "|-|"))
                 this.Builds(i).Is32bit        = val(AfxStrParse(wData, 5, "|-|"))
                 this.Builds(i).Is64bit        = val(AfxStrParse(wData, 6, "|-|"))
-                this.Builds(i).ExcludeInPopup    = val(AfxStrParse(wData, 7, "|-|"))
+                this.Builds(i).ExcludeInPopup = val(AfxStrParse(wData, 7, "|-|"))
                 continue do
             end If
             end If
@@ -755,17 +755,6 @@ function clsConfig.LoadConfigFile() as long
             case "Theme":                    this.ThemeShortFilename    = wData
             case "ExplorerPositionRight":    this.ExplorerPositionRight = nData
             case "KeywordCase":              this.KeywordCase           = nData
-            case "StartupLeft":              this.StartupLeft           = nData
-            case "StartupTop":               this.StartupTop            = nData
-            case "StartupRight":             this.StartupRight          = nData
-            case "StartupBottom":            this.StartupBottom         = nData
-            case "StartupMaximized":         this.StartupMaximized      = nData
-            case "ShowPanel":                this.ShowPanel             = nData
-            case "ShowPanelWidth":           this.ShowPanelWidth        = nData
-            case "ShowOutputPanel":          this.ShowOutputPanel       = nData
-            case "ShowOutputPanelHeight":    this.ShowOutputPanelHeight = nData
-            case "ShowOutputPanelMinimized": this.ShowOutputPanelMinimized = nData
-            case "ShowOutputPanelIndex":     gOutputTabsCurSel          = nData
             case "FBWINCompiler32":          this.FBWINCompiler32       = ProcessFromCurdriveApp(wData)
             case "FBWINCompiler64":          this.FBWINCompiler64       = ProcessFromCurdriveApp(wData)
             case "CompilerBuild":            this.CompilerBuild         = wData
@@ -776,6 +765,26 @@ function clsConfig.LoadConfigFile() as long
             case "DisableCompileBeep":       this.DisableCompileBeep    = nData
             end select
         
+            ' Only reload data affect instance states for heights and positions if
+            ' this is not a hot reload. A hot reload is when the message loop detects
+            ' that the config file has been externally modified (eg by a User Tool)
+            ' and then will be reloaded on the fly.
+            if isHotReload = false then
+                select case wKey
+                    case "StartupLeft":              this.StartupLeft           = nData
+                    case "StartupTop":               this.StartupTop            = nData
+                    case "StartupRight":             this.StartupRight          = nData
+                    case "StartupBottom":            this.StartupBottom         = nData
+                    case "StartupMaximized":         this.StartupMaximized      = nData
+                    case "ShowPanel":                this.ShowPanel             = nData
+                    case "ShowPanelWidth":           this.ShowPanelWidth        = nData
+                    case "ShowOutputPanel":          this.ShowOutputPanel       = nData
+                    case "ShowOutputPanelHeight":    this.ShowOutputPanelHeight = nData
+                    case "ShowOutputPanelMinimized": this.ShowOutputPanelMinimized = nData
+                    case "ShowOutputPanelIndex":     gOutputTabsCurSel          = nData
+                end select
+            end if
+            
         loop
         pStream.Close
     end if
@@ -1539,7 +1548,7 @@ function clsConfig.ReloadConfigFileTest() as boolean
     ' Compare the disk file date time to the value currently stored in static variable.
     ft = AfxGetFileLastWriteTime(this.ConfigFilename)
     if AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(this.DateFileTime) then
-        gConfig.LoadConfigFile()  ' this function also updates the _DateFileTime value
+        gConfig.LoadConfigFile(true)  ' this function also updates the _DateFileTime value
         ' Apply the newly saved options to all open Scintilla windows
         dim pDoc as clsDocument ptr = gApp.pDocList
         do until pDoc = 0
