@@ -1,6 +1,8 @@
 Version 1.1.1 ()
 - Changed: RunViaCommandWindow defaults to false for new settings.ini.
 - Changed: Silently switch to "Build and Execute" for "Quick Run" compiles on already saved source files.
+- Changed: Beep only on compile errors only (no beep if only warnings).
+- Changed: Pop open the Output window only if errors (no pop open if only warnings).
 - Fixed: Output window minimize, restore, and close logic respecting user defined panel height.
 - Fixed: Default config build description for "Win64 Static Library".
 - Fixed: Saved several hFont gdi resources by using modified CWindow class.

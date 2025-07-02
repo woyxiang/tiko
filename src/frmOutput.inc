@@ -723,10 +723,10 @@ function frmOutputTabs_SubclassProc ( _
             frmOutputTabs_getHotTabHitTest( hWin )
             nLastIdx = -1
             AfxRedrawWindow(hWin)   
-        
+       
         case WM_LBUTTONUP
             if isMouseOverRECT( hWin, gOutputCloseRect ) = true then
-                frmOutput_MinimizePanel()
+                OnCommand_ViewOutput()   ' toggle the Output window off
             else
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
