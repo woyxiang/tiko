@@ -374,6 +374,8 @@ function frmFindReplace_DoReplace( _
         SendMessage( hEdit, SCI_ENDUNDOACTION, 0, 0)
         SetWindowRedraw( hEdit, true )
         gApp.SuppressNotify = false
+        startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+        frmFindReplace_NextSelection(startPos, fMoveNext, true)
         AfxRedrawWindow( hEdit )
 
     else   
