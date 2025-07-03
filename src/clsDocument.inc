@@ -18,6 +18,7 @@
 
 #include once "clsDocument.bi"
 #include once "frmFindReplace.bi"
+#include once "frmBuildConfig.bi"
 #include once "modMRU.bi"
 
 
@@ -51,7 +52,6 @@ end property
 
 property clsDocument.UserModified( byval nModified as boolean ) 
     m_UserModified = nModified
-    if nModified = true then this.AutoSaveRequired = true
 end property
 
 
@@ -117,21 +117,32 @@ property clsDocument.hWndActiveScintilla(byval hWindow as HWND)
     m_hWndActiveScintilla = hWindow
 end property
 
-''
-''
-function clsDocument.CreateCodeWindow( _
-            byval hWndParent as HWND, _
-            byval IsNewFile  as boolean, _     
-            byval IsTemplate as boolean = false, _
-            byref wszFile    as wstring = "" _
-            ) as HWND   
 
-    ' Creates a Scintilla editing window (initially not visible). Optionally, load a diskfile
-    ' into the window and apply properties to it.
+' ========================================================================================
+' Set the Build configuration to use for this document. 
+' ========================================================================================
+function clsDocument.SetDocumentBuild() as long
+    ' Set the default build configuration for this document. If no IsDefault option
+    ' has been checked then we simply use whatever the current selected build is.
+    if this.DocumentBuild = "" then 
+        this.DocumentBuild = frmBuildConfig_GetDefaultBuildGUID()
+        if this.DocumentBuild = "" then 
+            this.DocumentBuild = frmBuildConfig_GetSelectedBuildGUID()
+        end if
+    end if      
+    function = 0
+end function
+
+
+' ========================================================================================
+' Create the Scintilla editing windows for this document
+' ========================================================================================
+function clsDocument.CreateScintillaWindows() as long
+    ' Creates two Scintilla editing windows (initially not visible).
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
         this.hWindow(i) = CreateWindowEx( 0, "Scintilla", "", _
                         WS_CHILD or WS_TABSTOP or WS_CLIPCHILDREN, _
-                        0,0,0,0,hWndParent, _
+                        0,0,0,0, HWND_FRMMAIN, _
                         cast(HMENU, IDC_SCINTILLA+i), GetModuleHandle(null), null)
 
         SendMessage( this.hWindow(i), SCI_SETMODEVENTMASK, _
@@ -171,51 +182,51 @@ function clsDocument.CreateCodeWindow( _
     dim as any ptr pDoc = cast(any ptr, SciMsg(pSci(0), SCI_GETDOCPOINTER, 0, 0))
     if pDoc then SciMsg( pSci(1), SCI_SETDOCPOINTER, 0, cast(LPARAM, pDoc)) 
             
+    function = 0
 
+end function
+
+
+''
+''
+function clsDocument.LoadDiskFile( byref wszFile as wstring ) as long
     ' if a disk file was specified then open it and load it into the editor
-    if len(wszFile) then   
-        ' do not use Dir() > "" here b/c if incoming file originated from a Do/loop 
-        ' of files using Dir() then there will be problems.
+    if len(wszFile) = 0 then exit function   
+    if AfxFileExists(wszFile) = 0 then exit function
+        
+    dim sText as string  ' this will be an UTF-8 encoded string
 
-        if AfxFileExists(wszFile) then     
-            dim as string st
-            dim as long idx
-            
-            this.LoadingFromFile = true
-            this.DiskFilename = wszFile   ' assign before GetFileTostring because needed for RelativeFile calculation.
-            
-            dim sText as string  ' this will be an UTF-8 encoded string
-
-            if GetFileToString(wszFile, sText, @this) = false then
-                ' Take this opportunity to determine the text line endings
-                if instr(sText, chr(13,10)) then
-                    SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CRLF, 0)
-                elseif instr(sText, chr(10)) then
-                    SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_LF, 0)
-                elseif instr(sText, chr(13)) then
-                    SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CR, 0)
-                end if
-                this.SetText( sText ) 
-                this.DateFileTime = AfxGetFileLastWriteTime( wszFile )
-            else
-                print "Error opening: "; wszFile
-            end if
-            
-
-            this.LoadingFromFile = false
-            SciMsg( pSci(0), SCI_SETSAVEPOINT, 0, 0)
-            SciMsg( pSci(0), SCI_EMPTYUNDOBUFFER, 0, 0)
-            this.UserModified = false
-            this.AutoSaveRequired = false
-            this.AutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszFile)
-            ' Update the most recently used file list (only for non-IsNewFlag files)
-            ' Only add file to MRU list if it is not part of an active Project.
-            if gApp.IsProjectActive = false then 
-                UpdateMRUList(wszFile)
-            end if
-        end if   
+    if GetFileToString(wszFile, sText, @this) = false then
+        ' Take this opportunity to determine the text line endings
+        if instr(sText, chr(13,10)) then
+            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CRLF, 0)
+        elseif instr(sText, chr(10)) then
+            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_LF, 0)
+        elseif instr(sText, chr(13)) then
+            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CR, 0)
+        end if
+        this.DateFileTime = AfxGetFileLastWriteTime( wszFile )
     end if
 
+    this.DiskFilename = wszFile
+    this.TextBuffer = sText 
+
+    function = 0
+end function    
+    
+
+''
+''
+function clsDocument.CreateCodeWindow( _
+            byval hWndParent as HWND, _
+            byval IsNewFile  as boolean, _     
+            byval IsTemplate as boolean = false, _
+            byref wszFile    as wstring = "" _
+            ) as HWND   
+
+    this.CreateScintillaWindows()
+    this.LoadDiskFile( wszFile )
+    
     ' Set the IsNewFlag after the above load file code. This is because the load
     ' code could load a file as template but is then still considered a "new file"/
     this.IsNewFlag = IsNewFile
@@ -230,11 +241,18 @@ function clsDocument.CreateCodeWindow( _
     ' it under a new name.
     if IsTemplate then
         this.UserModified = IsTemplate
-        this.AutoSaveRequired = false
     end if
         
-    ' Apply code editor properties to the edit window
+    ' Set the text and apply properties to the edit window
+    this.SetText( this.TextBuffer )
     this.ApplyProperties
+    this.TextBuffer = ""
+
+    ' Update the most recently used file list (only for non-IsNewFlag files)
+    ' Only add file to MRU list if it is not part of an active Project.
+    if gApp.IsProjectActive = false then 
+        UpdateMRUList(wszFile)
+    end if
 
     function = this.hWindow(0)
 end function
@@ -305,32 +323,17 @@ end function
 
 ''
 ''
-function clsDocument.SaveFile( _
-            byval bSaveAs as boolean = false, _
-            byval bAutoSaveOnly as boolean = false _
-            ) as boolean
-
+function clsDocument.SaveFile( byval bSaveAs as boolean = false ) as boolean
     dim sText        as string
     dim wszFilename  as wstring * MAX_PATH
-    dim wszAutoSaveFilename  as wstring * MAX_PATH
     dim wszExtension as wstring * MAX_PATH
     dim wszText      as wstring * MAX_PATH  
     dim wst          as CWSTR
     
-    ' don't allow the AutoSave timer to be re-entrant on this function
-    ' while a save is currently taking place.
-    static bAutoSaveIsActive as boolean
-    if bAutoSaveOnly andalso bAutoSaveIsActive then exit function
-    bAutoSaveIsActive = true
-    
     ' if this is a new Untitled document then set flag to display SaveAs dialog.
     if this.IsNewFlag then bSaveAs = true
         
-    ' Don't let AutoSave allow bSaveAs
-    if bAutoSaveOnly then bSaveAs = false
-
     wszFilename = this.Diskfilename
-    wszAutoSaveFilename = this.AutoSaveFilename
         
     if bSaveAs then
         ' Display the Save File Dialog
@@ -356,17 +359,8 @@ function clsDocument.SaveFile( _
     dim as long sciCodePage = SciMsg(pSci, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
 
     dim as CWSTR wszSaveFilename
-    if bAutoSaveOnly then 
-        if AfxFileExists(wszAutoSaveFilename) then AfxDeleteFile(wszAutoSaveFilename)
-        wszSaveFilename = wszAutoSaveFilename
-    else   
-        ' ensure any previously created AutoSave files are delete should 
-        ' the user had chosen a new filename
-        if AfxFileExists(wszFilename) then AfxDeleteFile(wszFilename)
-        if AfxFileExists(wszAutoSaveFilename) then AfxDeleteFile(wszAutoSaveFilename)
-        wszSaveFilename = wszFilename
-    end if   
-        
+    if AfxFileExists(wszFilename) then AfxDeleteFile(wszFilename)
+    wszSaveFilename = wszFilename
 
     dim pStream as CFileStream
     if pStream.Open(wszSaveFilename, STGM_CREATE or STGM_WRITE) = S_OK then
@@ -423,9 +417,7 @@ function clsDocument.SaveFile( _
     pStream.Close
     
     this.DiskFilename = wszFilename
-    this.AutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszFilename)
     this.DateFileTime = AfxGetFileLastWriteTime( wszFilename )
-    this.AutoSaveRequired = false
     
     ' if this was a new document then it needs to be saved to Recent File list.
     if this.IsNewFlag then 
@@ -436,12 +428,8 @@ function clsDocument.SaveFile( _
     this.IsNewFlag = false
     
     ' Set the current state of the document to unmodified
-    if bAutoSaveOnly = false then 
-        this.UserModified = false   
-        SciMsg( pSci, SCI_SETSAVEPOINT, 0, 0)
-    end if
-    
-    bAutoSaveIsActive = false
+    this.UserModified = false   
+    SciMsg( pSci, SCI_SETSAVEPOINT, 0, 0)
     
     function = false
 end function
@@ -664,8 +652,12 @@ end function
 ''
 ''
 function clsDocument.SetText( byref sText as const string ) as long 
+    ' Set the text into the scintilla buffer and make the buffer not dirty
     dim as any ptr pSci = this.GetActiveScintillaPtr()
     SciMsg( pSci, SCI_SETTEXT, 0, cast(LPARAM, strptr(sText)) )
+    SciMsg( pSci, SCI_SETSAVEPOINT, 0, 0)
+    SciMsg( pSci, SCI_EMPTYUNDOBUFFER, 0, 0)
+    this.UserModified = false
     SciMsg( pSci, SCI_COLOURISE, 0, -1 )
     function = 0
 end function

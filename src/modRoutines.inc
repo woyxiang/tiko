@@ -74,8 +74,6 @@ function ReloadDocument( byref wszFilename as wstring ) as long
     pDoc = gApp.GetDocumentPtrByFilename( wszFilename )
 
     if pDoc then
-        pDoc->LoadingFromFile = true
-        
         dim as string sText
         if GetFileToString(wszFilename, sText, pDoc) = false then
             pDoc->SetText( sText ) 
@@ -83,12 +81,6 @@ function ReloadDocument( byref wszFilename as wstring ) as long
         else
             print "Error opening: "; wszFilename
         end if
-        
-        pDoc->LoadingFromFile = false
-        SendMessage(pDoc->hWindow(0), SCI_SETSAVEPOINT, 0, 0)
-        SendMessage(pDoc->hWindow(0), SCI_EMPTYUNDOBUFFER, 0, 0)
-        pDoc->UserModified = false
-        pDoc->AutoSaveRequired = false
         
         ' If the document is also already displaying in an open tab then
         ' we need to update the display.
@@ -360,7 +352,8 @@ function ConvertTextBuffer( _
    
    ' Set the new buffer
    pDoc->SetText(txtBuffer)
-    
+   pDoc->UserModified = false
+
    SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
    SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
    

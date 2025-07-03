@@ -85,7 +85,7 @@ type clsDocument
     public:
     pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
     IsNewFlag             as boolean
-    LoadingFromFile       as boolean
+    TextBuffer            as string
     
     docData               as PROJECT_FILELOAD_DATA    ' loaded from project files
     
@@ -100,8 +100,6 @@ type clsDocument
     QuickRunDiskFilename  as wstring * MAX_PATH
     RunViaBatFilename     as wstring * MAX_PATH
     DiskFilename          as wstring * MAX_PATH
-    AutoSaveFilename      as wstring * MAX_PATH    ' #filename#
-    AutoSaveRequired      as boolean
     DateFileTime          as FILETIME  
     bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
     bFunctionsExpanded    as boolean = true     ' Functions list expand/collapse state
@@ -140,14 +138,17 @@ type clsDocument
     declare property UserModified() as boolean
     declare property UserModified( byval nModified as boolean )
     
+    declare function SetDocumentBuild() as long
     declare function DeleteTempFiles() as long
     declare function ParseDocument() as boolean
     declare function IsValidScintillaID( byval idScintilla as long ) as boolean
     declare function GetActiveScintillaPtr() as any ptr
+    declare function LoadDiskFile( byref wszFile as wstring ) as long
+    declare function CreateScintillaWindows() as long
     declare function CreateCodeWindow( byval hWndParent as HWnd, byval IsNewFile as boolean, byval IsTemplate as boolean = False, byref wszFileName as wstring = "") as HWnd
     declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long
     declare function InsertFile() as boolean
-    declare function SaveFile(byval bSaveAs as boolean = False, byval bAutoSaveOnly as boolean = false) as boolean
+    declare function SaveFile(byval bSaveAs as boolean = false ) as boolean
     declare function ApplyProperties() as long
     declare function GetTextRange( byval cpMin as long, byval cpMax as long) as string
     declare function ChangeSelectionCase( byval fCase as long) as long 

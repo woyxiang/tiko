@@ -42,6 +42,23 @@ end function
 
 ''
 ''
+function clsApp.CreateEmptyDocument( byval IsNewFile as boolean = false ) as clsDocument ptr   
+    dim pDoc as clsDocument ptr = this.AddNewDocument()
+    pDoc->IsNewFlag = IsNewFile
+    pDoc->CreateScintillaWindows()
+    if IsNewFile then
+        pDoc->NextFileNum += 1
+        pDoc->DiskFilename = "Untitled" & pDoc->NextFileNum
+    end if
+    pDoc->ProjectFileType = FILETYPE_UNDEFINED
+    pDoc->SetDocumentBuild()
+    pDoc->ApplyProperties()
+    function = pDoc
+end function
+
+
+''
+''
 function clsApp.AddNewDocument() as clsDocument ptr 
     ' Add it to the start of the linked list
     dim pDoc as clsDocument ptr = new clsDocument

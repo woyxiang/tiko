@@ -162,7 +162,7 @@ function FindInFiles_ProcessFile( _
         if bSaveReplaceFile then
             gReplaceResults.pDoc->IsNewFlag = false
             gReplaceResults.pDoc->SetText(gReplaceResults.wszFileText)
-            gReplaceResults.pDoc->SaveFile(false, false)
+            gReplaceResults.pDoc->SaveFile(false)
             gReplaceResults.pDoc->SetText("")
             ' If the file is loaded in the editor then needs to be updated.
             ReloadDocument(gReplaceResults.pDoc->DiskFilename)

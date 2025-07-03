@@ -718,10 +718,6 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
             select case wKey
             case "SettingsVersion":          this.SettingsVersion       = wData
             case "AskExit":                  this.AskExit               = nData
-#if ENABLE_AUTOSAVE
-            case "AutoSaveFiles":            this.AutoSaveFiles         = nData
-#endif
-            case "AutoSaveInterval":         this.AutoSaveInterval      = nData
             case "RestoreSession":           this.RestoreSession        = nData
             case "LastActiveSessionFile":    this.wszLastActiveSession  = ProcessFromCurdriveApp(wData)
             case "CompactMenus":             this.CompactMenus          = nData
@@ -1412,8 +1408,6 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
                 wszFilename = AfxPathCombine( AfxStrPathName("PATH", gApp.ProjectFilename), wszFilename)
             end if
             if AfxFileExists(wszFilename) then
-
-                wszFilename = OnCommand_FileAutoSaveFileCheck( wszFilename )
 
                 nFileIndex = nFileIndex + 1
                 if nFileIndex > ubound(docData) then

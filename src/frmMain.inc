@@ -106,7 +106,6 @@ function frmMain_OpenFileSafely( _
                     bIsTemplate, _
                     iif(bIsTemplate, wszName, wstr(""))) 
         else
-            wszName = OnCommand_FileAutoSaveFileCheck( wszName )
             pDoc->CreateCodeWindow( hwnd, false, bIsTemplate, wszName )
             pDoc->bNeedsParsing = true
             pDoc->ParseDocument()
@@ -608,7 +607,7 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
     b.EndDoubleBuffer()
     
     function = 0
-end Function
+end function
 
 
 ' ========================================================================================
@@ -1214,9 +1213,6 @@ end Function
 ' ========================================================================================
 function frmMain_OnDestroy( byval hwnd as HWND ) as LRESULT
 
-    ' Kill any existing AutoSave timer
-    OnCommand_FileAutoSaveKillTimer()
-
     ' Output the config settings to disk file
     gConfig.SaveConfigFile
 
@@ -1703,9 +1699,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Post a message to process any User Tools that must start after the editor displays.
     PostMessage( pWindow->hWindow, MSG_USER_PROCESS_STARTUPUSERTOOLS, 0, 0 )
-
-    ' Start AutoSave timer if that option is enabled
-    OnCommand_FileAutoSaveStartTimer()
 
     ' Process windows events
     dim uMsg as MSG

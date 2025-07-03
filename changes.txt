@@ -1,5 +1,5 @@
 Version 1.1.1 ()
-- Changed: RunViaCommandWindow defaults to false for new settings.ini.
+- Changed: RunViaCommandWindow now defaults to false for new settings.ini.
 - Changed: Silently switch to "Build and Execute" for "Quick Run" compiles on already saved source files.
 - Changed: Beep only on compile errors only (no beep if only warnings).
 - Changed: Pop open the Output window only if errors (no pop open if only warnings).
@@ -9,6 +9,7 @@ Version 1.1.1 ()
 - Fixed: Menu text and keyboard accelerator text possibly squishing into each other in the top menu.
 - Fixed: Quick Run produced temporary .bat file now deleted in same manner as temp .exe file.
 - Fixed: Prevent certain config file data from being hot reloaded (eg. SidePanel width and OutputPanel height).
+- Fixed: Replace All not resetting displayed find count.
 
 Version 1.1.0 (June 29, 2025)
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
