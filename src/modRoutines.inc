@@ -74,18 +74,11 @@ function ReloadDocument( byref wszFilename as wstring ) as long
     pDoc = gApp.GetDocumentPtrByFilename( wszFilename )
 
     if pDoc then
-        dim as string sText
-        if GetFileToString(wszFilename, sText, pDoc) = false then
-            pDoc->SetText( sText ) 
-            pDoc->DateFileTime = AfxGetFileLastWriteTime( wszFilename )
-        else
-            print "Error opening: "; wszFilename
-        end if
-        
+        pDoc->LoadDiskFile( wszFilename )
         ' If the document is also already displaying in an open tab then
         ' we need to update the display.
-        AfxRedrawWindow( pDoc->hWindow(0))
-        AfxRedrawWindow( pDoc->hWindow(1))
+        if IsWindow(pDoc->hWindow(0)) then AfxRedrawWindow( pDoc->hWindow(0))
+        if IsWindow(pDoc->hWindow(1)) then AfxRedrawWindow( pDoc->hWindow(1))
     end if
     
     function = 0
@@ -660,12 +653,12 @@ end function
 ' ========================================================================================
 function OpenSelectedDocument( _
             byref wszFilename as wstring, _
-            byref wszfunctionName as wstring = "", _
+            byref wszFunctionName as wstring = "", _
             byval nLineNumber as long = -1 _
             ) as clsDocument ptr
 
     ' This function is called in the following situations:
-    '   1. When a selection is made in the function List.
+    '   1. When a selection is made in the Function List.
     '   2. When a selection is made through the Explorer treeview.
     '   3. When a Find In Files line is selected.
     '   4. When a Goto Definition word is clicked on.
@@ -675,9 +668,9 @@ function OpenSelectedDocument( _
     
     ' if incoming functionName then search for filename and line number.
     dim pData as DB2_DATA ptr    
-    if len( wszfunctionName ) andalso nLineNumber = -1 then
+    if len( wszFunctionName ) andalso nLineNumber = -1 then
         ' Search for function, sub, or property (get/set)
-        pData = gdb2.dbFindfunction( wszfunctionName, wszFilename) 
+        pData = gdb2.dbFindFunction( wszFunctionName, wszFilename) 
         if pData then
             wszFilename = pData->fileName
             nLineNumber = pData->nLineStart
@@ -686,35 +679,31 @@ function OpenSelectedDocument( _
     
     ' Not all documents exist on disk file. for example, a QuickRun file will exist in
     ' the editor but may never have a disk footprint. We need to search the project to
-    ' determine if the filename has a pDoc already associated with it. if it does, then
+    ' determine if the filename has a pDoc already associated with it. If it does, then
     ' pass that pDoc rather than looking for a disk filename.
     dim pDoc as clsDocument ptr
     pDoc = gApp.GetDocumentPtrByFilename( wszFilename )
 
-    if pDoc then
-        pDoc = frmMain_OpenFileSafely( _
-                    HWND_FRMMAIN, _
-                    false, _    ' bIsNewFile
-                    false, _    ' bIsTemplate
-                    true, _     ' bShowInTab
-                    false, _    ' bIsInclude
-                    "", _       ' wszFileName
-                    pDoc )      ' pDocIn
-    else   
+    if pDoc = 0 then
         if AfxFileExists(wszFilename) = false then exit function
-        ' Display the document containing the selected sub/function       
-        pDoc = frmMain_OpenFileSafely(HWND_FRMMAIN, _
-                                false, _    ' bIsNewFile
-                                false, _    ' bIsTemplate
-                                true, _     ' bShowInTab
-                                false, _    ' bIsInclude
-                                wszFilename, _  ' wszFileName
-                                0 )         ' pDocIn
+        pDoc = gApp.CreateEmptyDocument()
+        pDoc->LoadDiskFile( wszFilename )
     end if
 
-    ' Set the top line to display in the editor. I chose to start 3 lines before the
-    ' function just to make it visually more appealing.
     if pDoc then
+        ' if the document is already open and loaded then simply switch to
+        ' that document in the top tabcontrol, otherwise load the Explorer 
+        ' files list, create a new tab, and switch to it.
+        dim as long iTab = gTTabCtl.GetTabIndexByDocumentPtr( pDoc )
+
+        ' Add the new document to the top tabcontrol
+        if iTab = -1 then iTab = gTTabCtl.AddTab( pDoc )  
+        pDoc->AssignTextBuffer()
+        LoadExplorerFiles()
+        gTTabCtl.SetFocusTab(iTab)
+
+        ' Set the top line to display in the editor. I chose to start 3 lines before the
+        ' function just to make it visually more appealing.
         ' do not reposition if incoming LineNumber is -1 because that value represents
         ' the caller specifically not wanting a repositioning.
         if nLineNumber <> -1 then 

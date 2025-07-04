@@ -27,7 +27,10 @@
 destructor clsDocument
     ' Delete any manually allocated scintilla edit windows in the editor
     for i as long = lbound(this.hWindow) to ubound(this.hWindow)
-        if this.hWindow(i) then DestroyWindow( this.hWindow(i) )
+        if this.hWindow(i) then 
+            DestroyWindow( this.hWindow(i) )
+            this.hWindow(i) = 0
+        end if
     next
     
     ' Delete any temp files associated with this document (eg. QuickRun)
@@ -69,7 +72,7 @@ function clsDocument.ParseDocument() as boolean
     ' Prevent any potential recursive parsing 
     if bInParseDocument then exit function
     bInParseDocument = true
-    
+
     ' Delete any existing data related to this pDoc
     gdb2.dbDeleteByDocumentPtr(@this)
     
@@ -135,6 +138,46 @@ end function
 
 
 ' ========================================================================================
+' Set the Project Filetype for this document depending on file extension.
+' ========================================================================================
+function clsDocument.SetProjectFileType() as long
+    ' Give this document a default project type depending on its file extension
+    if (this.IsNewFlag = false) andalso (this.ProjectFileType = FILETYPE_UNDEFINED) then
+        if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
+            gApp.ProjectSetFileType( @this, this.ProjectFileType )
+        end if   
+    end if
+    function = 0
+end function
+
+
+' ========================================================================================
+' Set the members of the DocInfo structure. 
+' Used for restoring the caret position of the document on load/save.
+' ========================================================================================
+function clsDocument.SetDocInfo() as long
+    this.docData.bIsValidData = true
+    if IsWindow(this.hWindow(0)) then    
+       this.docData.wszBookmarks = this.GetBookmarks()
+       this.docData.wszFoldPoints =this.GetFoldPoints()
+       this.docData.nFirstLine = SendMessage( this.hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
+       this.docData.nPosition = SendMessage( this.hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
+       this.docData.nFirstLine1 = 0
+       this.docData.nPosition1 = 0
+       this.docData.nSplitMode = this.EditorSplitMode
+       this.docData.nSplitPositionX = this.SplitX
+       this.docData.nSplitPositionY = this.SplitY
+       this.docData.nFocusEdit = iif(this.hWndActiveScintilla = this.hWindow(0), 0, 1)
+    end if
+    if IsWindow(this.hWindow(1)) then    
+       this.docData.nFirstLine1 = SendMessage( this.hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
+       this.docData.nPosition1 = SendMessage( this.hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
+    end if
+    function = 0
+end function    
+    
+
+' ========================================================================================
 ' Create the Scintilla editing windows for this document
 ' ========================================================================================
 function clsDocument.CreateScintillaWindows() as long
@@ -187,29 +230,71 @@ function clsDocument.CreateScintillaWindows() as long
 end function
 
 
+' ========================================================================================
+' Assign/Move the TextBuffer into the Scintilla editing window for this document
+' ========================================================================================
+function clsDocument.AssignTextBuffer() as long
+    if IsWindow(this.hWindow(0)) = 0 then
+        this.CreateScintillaWindows()
+        ' Take this opportunity to determine the text line endings
+        if instr(this.TextBuffer, chr(13,10)) then
+            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CRLF, 0)
+        elseif instr(this.TextBuffer, chr(10)) then
+            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_LF, 0)
+        elseif instr(this.TextBuffer, chr(13)) then
+            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CR, 0)
+        end if
+    end if
+    if IsWindow(this.hWindow(0)) then
+        this.SetText(this.TextBuffer)
+        this.TextBuffer = ""
+        ' Set the previously saved positions
+        if this.docData.bIsValidData then
+            this.SplitX = this.docData.nSplitPositionX
+            this.SplitY = this.docData.nSplitPositionY
+            this.EditorSplitMode = this.docData.nSplitMode
+            this.SetBookmarks(this.docData.wszBookmarks)
+            this.SetFoldPoints(this.docData.wszFoldPoints)
+            SciExec( this.hWindow(0), SCI_SETFIRSTVISIBLELINE, this.docData.nFirstLine, 0) 
+            SciExec( this.hWindow(0), SCI_GOTOPOS, this.docData.nPosition, 0) 
+            SciExec( this.hWindow(1), SCI_SETFIRSTVISIBLELINE, this.docData.nFirstLine1, 0) 
+            SciExec( this.hWindow(1), SCI_GOTOPOS, this.docData.nPosition1, 0) 
+        end if
+        this.ApplyProperties()
+    end if
+    function = 0
+end function
+
+
 ''
 ''
-function clsDocument.LoadDiskFile( byref wszFile as wstring ) as long
+function clsDocument.LoadDiskFile( _
+            byref wszFile as wstring, _
+            byval bForceParse as boolean = true, _
+            byval bIsTemplate as boolean = false _
+            ) as long
     ' if a disk file was specified then open it and load it into the editor
     if len(wszFile) = 0 then exit function   
     if AfxFileExists(wszFile) = 0 then exit function
         
-    dim sText as string  ' this will be an UTF-8 encoded string
+    ' this will be an UTF-8 encoded string
+    dim sText as string  
 
     if GetFileToString(wszFile, sText, @this) = false then
-        ' Take this opportunity to determine the text line endings
-        if instr(sText, chr(13,10)) then
-            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CRLF, 0)
-        elseif instr(sText, chr(10)) then
-            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_LF, 0)
-        elseif instr(sText, chr(13)) then
-            SciMsg( pSci(0), SCI_SETEOLMODE, SC_EOL_CR, 0)
-        end if
         this.DateFileTime = AfxGetFileLastWriteTime( wszFile )
     end if
 
-    this.DiskFilename = wszFile
     this.TextBuffer = sText 
+    
+    ' If this is text being loaded to be used as a Template then do not
+    ' set the diskfilename. The original CreateEmptyDocument would have
+    ' already set the filename to Untitled.
+    if bIsTemplate = false then
+        this.DiskFilename = wszFile
+    end if
+    
+    this.bNeedsParsing = bForceParse
+    this.ParseDocument()
 
     function = 0
 end function    
@@ -244,9 +329,7 @@ function clsDocument.CreateCodeWindow( _
     end if
         
     ' Set the text and apply properties to the edit window
-    this.SetText( this.TextBuffer )
-    this.ApplyProperties
-    this.TextBuffer = ""
+    this.AssignTextBuffer()
 
     ' Update the most recently used file list (only for non-IsNewFlag files)
     ' Only add file to MRU list if it is not part of an active Project.

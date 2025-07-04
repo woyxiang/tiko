@@ -234,7 +234,8 @@ function UpdateMRUList( byref wzFilename as wstring ) as long
     dim wzFile      as wstring * MAX_PATH
     
     if gApp.IsProjectLoading then exit function
-
+    if gApp.IsProjectActive then exit function
+     
     ' Search the 10 MRU items to see if the filename already exists and
     ' also for an available entry to put the filename in.
     for i = 0 To 9

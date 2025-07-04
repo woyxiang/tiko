@@ -53,9 +53,10 @@ end enum
 ' type that holds data for all project files as it they are loaded from
 ' the project file.
 type PROJECT_FILELOAD_DATA
+    bIsValidData   as boolean       ' True set on projectload. Checked in AssignTextBuffer.
+    bLoadInTab      as boolean
     wszFilename     as CWSTR        ' full path and filename
     wszFiletype     as CWSTR        ' pDoc->ProjectFileType
-    bLoadInTab      as boolean
     wszBookmarks    as CWSTR        ' pDoc->GetBookmarks()
     wszFoldPoints   as CWSTR        ' pDoc->GetFoldPoints()
     nFirstLine      as long         ' first line of main view 
@@ -138,12 +139,15 @@ type clsDocument
     declare property UserModified() as boolean
     declare property UserModified( byval nModified as boolean )
     
+    declare function SetDocInfo() as long
+    declare function SetProjectFileType() as long
     declare function SetDocumentBuild() as long
     declare function DeleteTempFiles() as long
     declare function ParseDocument() as boolean
     declare function IsValidScintillaID( byval idScintilla as long ) as boolean
     declare function GetActiveScintillaPtr() as any ptr
-    declare function LoadDiskFile( byref wszFile as wstring ) as long
+    declare function AssignTextBuffer() as long
+    declare function LoadDiskFile( byref wszFile as wstring, byval bForceParse as boolean = true, byval bIsTemplate as boolean = false ) as long
     declare function CreateScintillaWindows() as long
     declare function CreateCodeWindow( byval hWndParent as HWnd, byval IsNewFile as boolean, byval IsTemplate as boolean = False, byref wszFileName as wstring = "") as HWnd
     declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long

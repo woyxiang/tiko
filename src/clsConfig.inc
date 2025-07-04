@@ -1237,25 +1237,26 @@ function clsConfig.ProjectSaveToFile() as boolean
         
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
+            pDoc->SetDocInfo()   
             wszText = pDoc->DiskFilename
             cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)
             if len(cwzRelative) then
                 if AfxPathIsRelative(cwzRelative) then wszText = cwzRelative
-            end if   
+            end if
             wszText = ProcessToCurdriveProject(wszText)
             pStream.WriteLine "File=" & wszText
             pStream.WriteLine "FileType=" & pDoc->ProjectFileType
-            pStream.WriteLine "TabIndex=" & -1     ' use -1 rather than true
-            pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
-            pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
-            pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-            pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-            pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
-            pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
-            pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
-            pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
+            pStream.WriteLine "TabIndex=" & "-1"     ' use -1 rather than true
+            pStream.WriteLine "Bookmarks=" & pDoc->docData.wszBookmarks
+            pStream.WriteLine "FoldPoints=" & pDoc->docData.wszFoldPoints
+            pStream.WriteLine "FirstLine=" & pDoc->docData.nFirstLine 
+            pStream.WriteLine "Position=" & pDoc->docData.nPosition  
+            pStream.WriteLine "FirstLine1=" & pDoc->docData.nFirstLine1  
+            pStream.WriteLine "Position1=" & pDoc->docData.nPosition1  
+            pStream.WriteLine "SplitMode=" & pDoc->docData.nSplitMode
+            pStream.WriteLine "SplitPositionX=" & pDoc->docData.nSplitPositionX
+            pStream.WriteLine "SplitPositionY=" & pDoc->docData.nSplitPositionY
+            pStream.WriteLine "FocusEdit=" & pDoc->docData.nFocusEdit
             pStream.WriteLine "FileEnd=[-]" 
         end if
     next
@@ -1273,17 +1274,17 @@ function clsConfig.ProjectSaveToFile() as boolean
                 wszText = ProcessToCurdriveProject(wszText)
                 pStream.WriteLine "File=" & wszText
                 pStream.WriteLine "FileType=" & pDoc->ProjectFileType
-                pStream.WriteLine "TabIndex=" & 0    
-                pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
-                pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
-                pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-                pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
-                pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-                pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-                pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
-                pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
-                pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
-                pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
+                pStream.WriteLine "TabIndex=" & "0"
+                pStream.WriteLine "Bookmarks=" & pDoc->docData.wszBookmarks
+                pStream.WriteLine "FoldPoints=" & pDoc->docData.wszFoldPoints
+                pStream.WriteLine "FirstLine=" & pDoc->docData.nFirstLine 
+                pStream.WriteLine "Position=" & pDoc->docData.nPosition  
+                pStream.WriteLine "FirstLine1=" & pDoc->docData.nFirstLine1  
+                pStream.WriteLine "Position1=" & pDoc->docData.nPosition1  
+                pStream.WriteLine "SplitMode=" & pDoc->docData.nSplitMode
+                pStream.WriteLine "SplitPositionX=" & pDoc->docData.nSplitPositionX
+                pStream.WriteLine "SplitPositionY=" & pDoc->docData.nSplitPositionY
+                pStream.WriteLine "FocusEdit=" & pDoc->docData.nFocusEdit
                 pStream.WriteLine "FileEnd=[-]"
             end If
         end if
@@ -1415,6 +1416,7 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
                 end If
 
                 with docData(nFileIndex)
+                    .bIsValidData    = true
                     .wszFilename     = wszFilename
                     .wszFileType     = wszFileType
                     .bLoadInTab      = bLoadInTab
@@ -1452,31 +1454,14 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
         gApp.wszPanelText = docData(i).wszFilename
         frmMain_SetStatusbar
 
-        pDoc = frmMain_OpenFileSafely( _
-                    HWND_FRMMAIN, _
-                    false, _    ' bIsNewFile
-                    false, _    ' bIsTemplate
-                    false, _    ' bShowInTab (we'll manually add new tab below)
-                    false, _    ' bIsInclude
-                    docData(i).wszFilename, _  ' wszName
-                    0, _        ' pDocIn
-                    docData(i).wszFileType )
-
+        pDoc = gApp.CreateEmptyDocument()
+        pDoc->LoadDiskFile( docData(i).wszFilename )
+        pDoc->ProjectFiletype = docData(i).wszFileType
+        pDoc->docData = docData(i)
         if docData(i).bLoadInTab then
+            pDoc->AssignTextBuffer()
             iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
         end if
-
-        ' Set the previously saved positions
-        pDoc->SplitX = docData(i).nSplitPositionX
-        pDoc->SplitY = docData(i).nSplitPositionY
-        pDoc->EditorSplitMode = docData(i).nSplitMode
-        pDoc->SetBookmarks(docData(i).wszBookmarks)
-        pDoc->SetFoldPoints(docData(i).wszFoldPoints)
-        SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
-        SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
-        SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
-        SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
-        pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
 
     next
 

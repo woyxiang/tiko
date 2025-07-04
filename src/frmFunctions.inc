@@ -635,7 +635,6 @@ function LoadFilesAndFunctions() as long
     for i as long = lbound(pDocs) to ubound(pDocs)
     
         dim as CWSTR wszFilename = ucase(pDocs(i)->DiskFilename)
-
         wszText = wstr(pDocs(i)->bFunctionsExpanded)
         idx = Listbox_AddString( hList, @wszText )
         ListBox_SetItemData( hList, idx, pDocs(i) )
@@ -644,24 +643,24 @@ function LoadFilesAndFunctions() as long
         if pDocs(i)->bFunctionsExpanded then
             gdb2.dbRewind()
             do 
-            pData = gdb2.dbGetNext
-            if pData = 0 then exit do
-            if pData->deleted then continue do
-            if pData->nFileType <> DB2_FILETYPE_USERCODE then continue do
-            select case pData->id 
-                case DB2_FUNCTION
-                    if wszFilename = ucase(pData->fileName) then
-                        wszNodeName = pData->ElementName
-                        if len(pData->GetSet) then 
-                            wszNodeName = wszNodeName & " " & pData->GetSet
+                pData = gdb2.dbGetNext
+                if pData = 0 then exit do
+                if pData->deleted then continue do
+                if pData->nFileType <> DB2_FILETYPE_USERCODE then continue do
+                select case pData->id 
+                    case DB2_FUNCTION
+                        if wszFilename = ucase(pData->fileName) then
+                            wszNodeName = pData->ElementName
+                            if len(pData->GetSet) then 
+                                wszNodeName = wszNodeName & " " & pData->GetSet
+                            end if
+                            ub = ubound(arrFuncs) + 1
+                            redim preserve arrFuncs(ub)
+                            arrFuncs(ub).wszFunctionName = wszNodeName
+                            arrFuncs(ub).wszPrototype = pData->CallTip
+                            arrFuncs(ub).nLineNumber = pData->nLineStart
                         end if
-                        ub = ubound(arrFuncs) + 1
-                        redim preserve arrFuncs(ub)
-                        arrFuncs(ub).wszFunctionName = wszNodeName
-                        arrFuncs(ub).wszPrototype = pData->CallTip
-                        arrFuncs(ub).nLineNumber = pData->nLineStart
-                    end if
-            end select
+                end select
             loop      
             
             quickSortFuncs( arrFuncs(), lbound(arrFuncs), ubound(arrFuncs) )
