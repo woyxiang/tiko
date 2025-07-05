@@ -543,7 +543,7 @@ function frmExplorerListBox_SubclassProc ( _
                     dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
                     if pDoc then
                         wszFilename = pDoc->DiskFilename
-                        OpenSelectedDocument( wszFilename, "" )
+                        OpenSelectedDocument( wszFilename )
                     end if   
                 end if
             end if

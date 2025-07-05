@@ -171,32 +171,13 @@ function OpenMRUFile( _
             byval hwnd as HWND, _
             byval wID as long _
             ) as long
-    dim wszFile as wstring * MAX_PATH
     dim pDoc as clsDocument ptr
-    dim pDocIn as clsDocument ptr
+    dim wszFile as wstring * MAX_PATH
+
     wszFile = gConfig.MRU(wID - IDM_MRUBASE)
     
-    ' if file is already loaded then simply switch to that file
-    ' within the editor.
-    pDocIn = gApp.GetDocumentPtrByFilename( wszFile )
-
-    pDoc = frmMain_OpenFileSafely( _
-                    HWND_FRMMAIN, _
-                    false, _    ' bIsNewFile
-                    false, _    ' bIsTemplate
-                    true, _     ' bShowInTab
-                    false, _    ' bIsInclude
-                    wszFile, _  ' wszName
-                    pDocIn, _   ' pDocIn
-                    false _
-                    )
-
-    ' Give this document a default project type depending on its file extension
-    if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
-        if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
-            gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
-        end if   
-    end if
+    pDoc = OpenSelectedDocument( wszFile )
+    if pDoc then pDoc->SetProjectFileType
 
     LoadExplorerFiles()
     LoadFunctionsFiles()

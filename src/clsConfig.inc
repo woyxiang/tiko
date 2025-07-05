@@ -1120,16 +1120,9 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
             
             case "FileEnd":
             if AfxFileExists(wszFilename) then
-                pDoc = frmMain_OpenFileSafely( _
-                        HWND_FRMMAIN, _
-                        false, _        ' bIsNewFile
-                        false, _        ' bIsTemplate
-                        false, _        ' bShowInTab (we'll manually add new tab below)
-                        false, _        ' bIsInclude
-                        wszFilename, _  ' wszName
-                        0, _            ' pDocIn
-                        wszFileType )
-    
+                pDoc = gApp.CreateEmptyDocument()
+                pDoc->LoadDiskFile( wszFilename )
+                pDoc->AssignTextBuffer()
                 iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
                 
                 ' Set the saved positions

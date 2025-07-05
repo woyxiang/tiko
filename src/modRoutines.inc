@@ -75,6 +75,7 @@ function ReloadDocument( byref wszFilename as wstring ) as long
 
     if pDoc then
         pDoc->LoadDiskFile( wszFilename )
+        pDoc->AssignTextBuffer()
         ' If the document is also already displaying in an open tab then
         ' we need to update the display.
         if IsWindow(pDoc->hWindow(0)) then AfxRedrawWindow( pDoc->hWindow(0))
@@ -662,11 +663,10 @@ function OpenSelectedDocument( _
     '   2. When a selection is made through the Explorer treeview.
     '   3. When a Find In Files line is selected.
     '   4. When a Goto Definition word is clicked on.
-    '   5. When OnActivateApp needs to reload a document.
-    '   6. When a compile error occurs and need to position to the error line.
-    '   7. When right-click select #Include file to open. 
+    '   5. When a compile error occurs and need to position to the error line.
+    '   6. When right-click select #Include file to open. 
     
-    ' if incoming functionName then search for filename and line number.
+    ' if incoming FunctionName then search for filename and line number.
     dim pData as DB2_DATA ptr    
     if len( wszFunctionName ) andalso nLineNumber = -1 then
         ' Search for function, sub, or property (get/set)

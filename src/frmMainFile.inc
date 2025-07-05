@@ -424,7 +424,7 @@ function OnCommand_FileExplorerMessage( _
             ) as LRESULT
     
     if id = IDM_FILEOPEN_EXPLORERLISTBOX then
-        OpenSelectedDocument( pDoc->DiskFilename, "" )
+        OpenSelectedDocument( pDoc->DiskFilename )
 
     elseif id = IDM_FILESAVE_EXPLORERLISTBOX then
         OnCommand_FileSave( HWND_FRMMAIN, pDoc, false )

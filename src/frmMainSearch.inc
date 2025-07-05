@@ -126,7 +126,7 @@ end function
 
 
 ' ========================================================================================
-' Return to most previous position (invoked when "Last Position" is selected
+' Return to most previous position (invoked when "Last Position" is selected)
 ' ========================================================================================
 function OnCommand_SearchGotoLastPosition() as LRESULT
 
@@ -134,13 +134,7 @@ function OnCommand_SearchGotoLastPosition() as LRESULT
     if gLastPosition.pDoc = 0 then exit function
 
     ' Position ourselves to the correct previous position.
-    frmMain_OpenFileSafely(HWND_FRMMAIN, _
-            false, _    ' bIsNewFile
-            false, _    ' bIsTemplate
-            true,  _    ' bShowInTab
-            false, _    ' bIsInclude
-            gLastPosition.pDoc->DiskFilename, _ ' wszFileName
-            gLastPosition.pDoc )  ' pDocIn
+    OpenSelectedDocument( gLastPosition.pDoc->DiskFilename )
     SciExec( GetFocus, SCI_SETFIRSTVISIBLELINE, gLastPosition.nFirstLine, 0) 
     SciExec( GetFocus, SCI_GOTOPOS, gLastPosition.nPosition, 0) 
     
