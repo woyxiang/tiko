@@ -668,7 +668,7 @@ function OpenSelectedDocument( _
     
     ' if incoming FunctionName then search for filename and line number.
     dim pData as DB2_DATA ptr    
-    if len( wszFunctionName ) andalso nLineNumber = -1 then
+    if len( wszFunctionName ) andalso (nLineNumber = -1) then
         ' Search for function, sub, or property (get/set)
         pData = gdb2.dbFindFunction( wszFunctionName, wszFilename) 
         if pData then
@@ -713,7 +713,7 @@ function OpenSelectedDocument( _
                 ' unfold the block that contains this hidden line
                 pDoc->FoldToggle( nLineNumber )
             end if
-            SciExec( hEdit, SCI_SETFIRSTVISIBLELINE, Max(nLineNumber - 3, 0), 0) 
+            SciExec( hEdit, SCI_SETFIRSTVISIBLELINE, max(nLineNumber - 3, 0), 0) 
             SciExec( hEdit, SCI_GOTOLINE, nLineNumber, 0) 
             pDoc->CenterCurrentLine
         end if

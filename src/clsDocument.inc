@@ -234,6 +234,11 @@ end function
 ' Assign/Move the TextBuffer into the Scintilla editing window for this document
 ' ========================================================================================
 function clsDocument.AssignTextBuffer() as long
+    ' If a valid scintilla window already exists then this means that a previous
+    ' function has already assigned the buffer text to the scintilla window so we
+    ' can not do it a second time/
+    if IsWindow(this.hWindow(0)) then exit function
+    
     if IsWindow(this.hWindow(0)) = 0 then
         this.CreateScintillaWindows()
         ' Take this opportunity to determine the text line endings

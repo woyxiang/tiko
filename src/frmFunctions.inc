@@ -454,7 +454,7 @@ function frmFunctionsListBox_SubclassProc ( _
                 dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
                 dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
                 if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
-                    OpenSelectedDocument( pDoc->DiskFilename, "", -1 )
+                    OpenSelectedDocument( pDoc->DiskFilename )
                 else
                     ' Attempt to show the function name
                     dim as long nLineNum = getFunctionsLinenumber( wszCaption )
@@ -464,7 +464,8 @@ function frmFunctionsListBox_SubclassProc ( _
                     OpenSelectedDocument( wszDiskFilename, wszFunctionName, nLineNum )
                 end if
             end if
-                        
+
+                                    
         case WM_ERASEBKGND
             ' if the number of lines in the listbox maybe less than the number per page then 
             ' calculate from last item to bottom of listbox, otherwise calculate based on

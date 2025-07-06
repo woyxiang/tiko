@@ -13,6 +13,7 @@ Version 1.1.1 ()
 - Fixed: Replace All not resetting displayed find count.
 - Fixed: Parsing TYPE ALIAS's failed and caused incorrect parsing of remainder of the source file.
 - Fixed: File/Rename would fail if trying to rename to an already existing file name.
+- Fixed: Various refactoring and improvements too many to list.
 
 Version 1.1.0 (June 29, 2025)
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
