@@ -1,5 +1,5 @@
 Version 1.1.1 ()
-- Changed: Substantial file management refactor. Reduce resource usage by up to 400% for large projects.
+- Changed: Substantial file management refactor. Reduce resource usage (especially font handles) by up to 400% for large projects.
 - Changed: RunViaCommandWindow now defaults to false for new settings.ini.
 - Changed: Silently switch to "Build and Execute" for "Quick Run" compiles on already saved source files.
 - Changed: Beep only on compile errors only (no beep if only warnings).
