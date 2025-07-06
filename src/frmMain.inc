@@ -894,6 +894,10 @@ function frmMain_OnActivateApp( _
             byval dwThreadId as DWORD _
             ) as LRESULT
 
+    ' Reset top menubar active selection if we lose or gain app focus.
+    gActiveMenuBarIndex = -1
+    AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
+    
     ' If app is losing focus then there is nothing we need to do
     if fActivate = false then exit function
 
