@@ -74,12 +74,10 @@ function ReloadDocument( byref wszFilename as wstring ) as long
     pDoc = gApp.GetDocumentPtrByFilename( wszFilename )
 
     if pDoc then
+        pDoc->DestroyScintillaWindows()
         pDoc->LoadDiskFile( wszFilename )
         pDoc->AssignTextBuffer()
-        ' If the document is also already displaying in an open tab then
-        ' we need to update the display.
-        if IsWindow(pDoc->hWindow(0)) then AfxRedrawWindow( pDoc->hWindow(0))
-        if IsWindow(pDoc->hWindow(1)) then AfxRedrawWindow( pDoc->hWindow(1))
+        frmMain_PositionWindows()
     end if
     
     function = 0

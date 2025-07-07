@@ -26,12 +26,7 @@
 ''
 destructor clsDocument
     ' Delete any manually allocated scintilla edit windows in the editor
-    for i as long = lbound(this.hWindow) to ubound(this.hWindow)
-        if this.hWindow(i) then 
-            DestroyWindow( this.hWindow(i) )
-            this.hWindow(i) = 0
-        end if
-    next
+    this.DestroyScintillaWindows()
     
     ' Delete any temp files associated with this document (eg. QuickRun)
     this.DeleteTempFiles()
@@ -176,6 +171,22 @@ function clsDocument.SetDocInfo() as long
     function = 0
 end function    
     
+
+' ========================================================================================
+' Destroy existing Scintilla editing windows for this document
+' Called from Destructor and from ReloadDocument (because in order to force the new
+' text to be set to the scintilla window they need to be recreated).
+' ========================================================================================
+function clsDocument.DestroyScintillaWindows() as long
+    for i as long = lbound(this.hWindow) to ubound(this.hWindow)
+        if this.hWindow(i) then 
+            DestroyWindow( this.hWindow(i) )
+            this.hWindow(i) = 0
+        end if
+    next
+    function = 0
+end function
+
 
 ' ========================================================================================
 ' Create the Scintilla editing windows for this document

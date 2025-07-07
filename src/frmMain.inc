@@ -960,7 +960,7 @@ function frmMain_OnActivateApp( _
         if (AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(pDoc->DateFileTime)) andalso _
             (pDoc->IsNewFlag <> true) then
             
-            OpenSelectedDocument( pDoc->DiskFilename, "" )
+            OpenSelectedDocument( pDoc->DiskFilename )
             dim as long res = MessageBox( HWND_FRMMAIN, _
                             pDoc->DiskFilename & vbCrLf & _ 
                             L(266, "File was changed by another application. Reload it?"), _
