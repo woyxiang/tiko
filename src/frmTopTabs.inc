@@ -143,7 +143,7 @@ function frmTopTabs_PositionWindows() as LRESULT
         if pDoc then
             ' Determine the length of the text
             gTTabCtl.tabs(i).wszText = AfxStrPathname( "NAMEX", pDoc->DiskFilename )
-            nTextWidth = getTextWidth( HWND_FRMMAIN_TOPTABS, gTTabCtl.tabs(i).wszText, GUIFONT_10, 0 )
+            nTextWidth = getTextWidth( HWND_FRMMAIN_TOPTABS, gTTabCtl.tabs(i).wszText, GUIFONT_10 )
             if nTextWidth < 70 then nTextWidth = 70
 
             ' calculate the various tab dimensions
@@ -657,9 +657,9 @@ end function
 function frmTopTabs_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
 
-    HWND_FRMMAIN_TOPTABS = pWindow->Create( hwndParent, "", @frmTopTabs_WndProc, _
+    HWND_FRMMAIN_TOPTABS = pWindow->Create( hwndParent, @frmTopTabs_WndProc, _
         0, 0, 0, TOPTABS_HEIGHT, _
         WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
@@ -668,8 +668,8 @@ function frmTopTabs_Show( byval hwndParent as HWND ) as LRESULT
     pWindow->ClassStyle = CS_DBLCLKS
 
     ' create semi-transparent window offset under our tabcontrol in order to simulate a shadow.
-    pWindow = New CWindow
-    HWND_FRMMAIN_TOPTABS_SHADOW = pWindow->Create( HWND_FRMMAIN, "", _
+    pWindow = New CPanelWindow
+    HWND_FRMMAIN_TOPTABS_SHADOW = pWindow->Create( HWND_FRMMAIN, _
         @frmTopTabsShadow_WndProc, 0, 0, 0, pWindow->ScaleY(1), _
         WS_POPUP or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, WS_EX_LAYERED or WS_EX_NOACTIVATE )
     pWindow->ClassStyle = CS_DBLCLKS

@@ -158,12 +158,13 @@ end function
 ''
 ''
 function RunEXE( _
+            byval pDocMain as clsDocument ptr, _
             byref wszFileExe as CWSTR, _
             byref wszParam as CWSTR _
             ) as long
                             
     dim as CWSTR wszPath = AfxStrPathname("PATH", wszFileExe)
-    dim as CWSTR wszBatchFile = AfxGetExePathName + AfxStrPathname("NAME", wszFileExe) + ".bat"
+    dim as CWSTR wszBatchFile = GetTemporaryFilename(gCompile.MainFolder, "bat")
     dim as CWSTR wszQuickRunExe = wszFileExe
     
     ' if option is specified to launch command window prior to running the
@@ -171,6 +172,9 @@ function RunEXE( _
     ' This allows being able to see any runtime errors that might be thrown.
     ' Otherwise, simple shell to the program.
     if gConfig.RunViaCommandWindow then
+        if (pDocMain <> 0) andalso (AfxFileExists(pDocMain->RunViaBatFilename)) then 
+            AfxDeleteFile( pDocMain->RunViaBatFilename )
+        end if
         dim pStream as CTextStream
         if pStream.Create(wszBatchFile) = S_OK then
             pStream.WriteLine "@echo off"
@@ -178,11 +182,11 @@ function RunEXE( _
             pStream.WriteLine "cd " & chr(34) & wszPath & chr(34)   ' change to correct folder
             pStream.WriteLine chr(34) & wszFileExe & chr(34) & " " & wszParam
             pStream.WriteLine "pause"
-            pStream.WriteLine "del " & chr(34) & wszBatchFile & chr(34) & " >> nul"
         end if
         pStream.Close
         wszFileExe = wszBatchFile
         wszParam = ""
+        if pDocMain then pDocMain->RunViaBatFilename  = wszBatchFile
     end if
     
 
@@ -476,14 +480,13 @@ function ParseLogForError( _
     ' the Output window (log file).
     if fGoodCompile = false then NumErrors = NumErrors + 1
 
-
     dim as CWSTR wszIconCompileMsg
 
     ' if the EXE output file was never created then throw an error
     if fCompilingObjFiles = false then
         if (NumWarnings = 0) andalso (NumErrors = 0) then
             if Filelen(gCompile.OutputFilename) = 0 then 
-            NumErrors = NumErrors + 1
+                NumErrors = NumErrors + 1
             end if
         end if
     end if
@@ -500,9 +503,7 @@ function ParseLogForError( _
         SetCompileStatusBarMessage( wszIconCompileMsg, ghIconBad )
         
         ' only beep on errors
-        if (NumErrors > 0) andalso (NumWarnings = 0) andalso (NumDirectives = 0) then 
-            MessageBeep(MB_ICONWARNING)
-        end if
+        if NumErrors > 0 then MessageBeep(MB_ICONWARNING)
         
         ' Position the Compiler Log to the first error/warning
         ListView_SelectItem( hLV, 0 )
@@ -511,7 +512,7 @@ function ParseLogForError( _
         if fGoodCompile = false then
             frmOutput_PositionWindows
         end if
-        
+      
         ' if the Search Results, TODO, Notes tab is active then reposition to 
         ' the first tab for error listview
         select case gOutputTabsCurSel 
@@ -520,44 +521,41 @@ function ParseLogForError( _
             frmOutput_PositionWindows
         end select
         
-        gConfig.ShowOutputPanelMinimized = 0
-        frmOutput_ActivatePanelHeight
-        ShowWindow( HWND_FRMOUTPUT, SW_SHOW)
-        frmMain_PositionWindows
+        ' Only retore the Output window if Errors exist. Warnings only will not trigger
+        ' the Output window to open but the user can see how many warnings exist via the
+        ' statusbar results message and then they can manually open the Output window
+        ' to view the warning message (simply clicking on the statusbar message should
+        ' do that).
+        if NumErrors > 0 then frmOutput_RestorePanel()
+        
         ' Set to error line position only after all windows have been shown and resized
         SetDocumentErrorPosition(hLV, wID)
     end if
     
-    if NumErrors = 0 then 
-        ' 2018-08-29: Show popup compile message in cases where no errors but warnings may exist.
-        ' Hide the Output window is already open but there is no longer any warnings
-        ' or errors to show in the listview. Only close if the listview is active. Do not
-        ' close if the user is looking at the logfile textbox.
-        if bAllowSuccessMessage then  ' we are not compiling modules
-            dim as long nFileSize = AfxGetFileSize(gCompile.OutputFilename)
-            wszIconCompileMsg = L(193, "Errors") & " " & NumErrors & "  " & _
-                            L(192, "Warnings") & " " & NumWarnings & _
-                            "  [ " & AfxStrPathname("NAMEX", gCompile.OutputFilename) & "  " & _
-                            rtrim(AfxStrFormatKBSize(nFileSize)) & " (" & _
-                            nFileSize & " " & L(199,"bytes") & ") ]"
-            SetCompileStatusBarMessage( wszIconCompileMsg, ghIconGood )
-            if gConfig.DisableCompileBeep = false then
-                MessageBeep(MB_OK)
-            end if
-           
-            gCompile.wszOutputMsg = _   ' this gets output to the Output window
-                L(228,"Successful Compile")  & " (" & _
-                L(193,"Errors")              & " " & NumErrors & " " & _
-                L(192,"Warnings")            & " " & NumWarnings & ")" & vbcrlf & vbcrlf & _
-                L(194,"Primary Source:")     & " " & gCompile.MainFilename & vbCrLf & _
-                L(195,"Target Compilation:") & " " & gCompile.OutputFilename & " (" & _
-                                        rtrim(AfxStrFormatKBSize(nFileSize)) & ", " & _
-                                        nFileSize & " " & L(199,"bytes") & ")" & vbcrlf & _
-                L(196,"Compile Time:")       & " " & format(gCompile.EndTime-gCompile.StartTime, "###0.0") & _
-                                        " " & L(198,"seconds") & " (" & _
-                                        AfxSystemTimeToDateStr( gCompile.SystemTime, "yyyy-MM-dd" ) & " " & _
-                                        AfxSystemTimeToTimeStr( gCompile.SystemTime, "hh:mm:ss" ) & ")" & vbcrlf
-        end if 
+    if (NumErrors = 0) andalso (bAllowSuccessMessage = true) then 
+        ' we are not compiling modules
+        dim as long nFileSize = AfxGetFileSize(gCompile.OutputFilename)
+        wszIconCompileMsg = L(193, "Errors") & " " & NumErrors & "  " & _
+                        L(192, "Warnings") & " " & NumWarnings & _
+                        "  [ " & AfxStrPathname("NAMEX", gCompile.OutputFilename) & "  " & _
+                        rtrim(AfxStrFormatKBSize(nFileSize)) & " (" & _
+                        nFileSize & " " & L(199,"bytes") & ") ]"
+        SetCompileStatusBarMessage( wszIconCompileMsg, ghIconGood )
+        
+        if gConfig.DisableCompileBeep = false then MessageBeep(MB_OK)
+       
+        gCompile.wszOutputMsg = _   ' this gets output to the Output window
+            L(228,"Successful Compile")  & " (" & _
+            L(193,"Errors")              & " " & NumErrors & " " & _
+            L(192,"Warnings")            & " " & NumWarnings & ")" & vbcrlf & vbcrlf & _
+            L(194,"Primary Source:")     & " " & gCompile.MainFilename & vbCrLf & _
+            L(195,"Target Compilation:") & " " & gCompile.OutputFilename & " (" & _
+                                    rtrim(AfxStrFormatKBSize(nFileSize)) & ", " & _
+                                    nFileSize & " " & L(199,"bytes") & ")" & vbcrlf & _
+            L(196,"Compile Time:")       & " " & format(gCompile.EndTime-gCompile.StartTime, "###0.0") & _
+                                    " " & L(198,"seconds") & " (" & _
+                                    AfxSystemTimeToDateStr( gCompile.SystemTime, "yyyy-MM-dd" ) & " " & _
+                                    AfxSystemTimeToTimeStr( gCompile.SystemTime, "hh:mm:ss" ) & ")" & vbcrlf
     end if
 
     ' Update the log file text box in the frmOutput window

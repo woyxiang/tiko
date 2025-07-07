@@ -24,7 +24,7 @@ function OnCommand_CompileCommon( byval id as long ) as LRESULT
             code_Compile( id )
         
         case IDM_RUNEXE
-            RunExe( _
+            RunExe( 0, _
                 GetRunExecutableFilename, _
                 iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
                 )

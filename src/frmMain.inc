@@ -73,86 +73,6 @@ end function
 
 
 ' ========================================================================================
-' Attempt to open specified file. if it exists then position to Tab if applicable
-' ========================================================================================
-function frmMain_OpenFileSafely( _
-            byval hwnd        as HWND, _
-            byval bIsNewFile  as boolean, _ 
-            byval bIsTemplate as boolean, _
-            byval bShowInTab  as boolean, _
-            byval bIsInclude  as boolean, _
-            byref wszName     as wstring, _
-            byval pDocIn      as clsDocument ptr, _
-            byval wszFileType as CWSTR = FILETYPE_UNDEFINED _
-            ) as clsDocument ptr
-        
-    dim as long iTab = -1
-    dim pDoc as clsDocument ptr 
-
-    ' This function opens/creates various types of files depending on the situation. 
-    ' - New documents
-    ' - Open document from disk (after editor has been loaded)
-    ' - Display document that is already loaded and has valid Scintilla loaded control.
-    ' - Display document that is already loaded but does not have a valid Scintilla loaded control.
-
-    ' if the incoming pDocIn is null then we need to create a new pDoc and add it to the collection. 
-    if pDocIn = 0 then   
-        ' Create a new pDoc 
-        pDoc = gApp.AddNewDocument() 
-        if bIsNewFile then
-            pDoc->CreateCodeWindow( _
-                    hwnd, _
-                    true, _    ' IsNewFile
-                    bIsTemplate, _
-                    iif(bIsTemplate, wszName, wstr(""))) 
-        else
-            wszName = OnCommand_FileAutoSaveFileCheck( wszName )
-            pDoc->CreateCodeWindow( hwnd, false, bIsTemplate, wszName )
-            pDoc->bNeedsParsing = true
-            pDoc->ParseDocument()
-        end if
-        pDoc->ProjectFileType = wszFileType
-        if gApp.IsProjectLoading = false then 
-            LoadExplorerFiles()
-            LoadFunctionsFiles()
-        end if
-    else   
-        pDoc = pDocIn   
-    end if
-
-    ' Set the default build configuration for this document. If no IsDefault option
-    ' has been checked then we simply use whatever the current selected build is.
-    if pDoc->DocumentBuild = "" then 
-        pDoc->DocumentBuild = frmBuildConfig_GetDefaultBuildGUID()
-        if pDoc->DocumentBuild = "" then 
-            pDoc->DocumentBuild = frmBuildConfig_GetSelectedBuildGUID()
-        end if
-    end if      
-    
-    if bShowInTab then
-        if gApp.IsProjectLoading = false then 
-            ' if the document is already open and loaded then simply switch to
-            ' that document in the top tabcontrol, otherwise load the Explorer 
-            ' files list, create a new tab, and switch to it.
-            iTab = gTTabCtl.GetTabIndexFromFilename( pDoc->DiskFilename )
-            if iTab = -1 then 
-                LoadExplorerFiles()
-                iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
-            end if   
-            gTTabCtl.SetFocusTab(iTab)
-        end if
-    end if
-
-    if gApp.IsProjectLoading = false then 
-        frmMain_PositionWindows
-        frmMain_SetFocusToCurrentCodeWindow
-    end if
-    
-    function = pDoc
-end Function
-
-
-' ========================================================================================
 ' Update the main form statusbar. This is the only routine that updates
 ' the statusbar in the entire program.
 ' ========================================================================================
@@ -212,10 +132,10 @@ function frmMain_SetStatusbar() as long
         gSBPanels(GOTO_PANEL).wszText = wszText
 
         ' PANEL Themes dialog
-        gSBPanels(THEMES_DIALOG_PANEL).wszText = "  " & wszIconThemes & "  "
+        gSBPanels(THEMES_DIALOG_PANEL).wszText = " " + wszIconThemes + " "
 
         ' PANEL Build Configuration dialog
-        gSBPanels(BUILD_DIALOG_PANEL).wszText = " " & wszIconAddFileButton & " "
+        gSBPanels(BUILD_DIALOG_PANEL).wszText = wszIconAddFileButton 
 
         ' PANEL Build Configuration
         if gApp.GetDocumentCount then
@@ -352,30 +272,10 @@ function frmMain_ProcessFilesArray( _
         case else   ' .bas, .bi, .rc, etc...
             ' Test to see if the file is already loaded in the editor. if it is, then
             ' bypass loading it again thereby creating multiple ghost instances.
+            numProcessed += 1
             dim pDoc as clsDocument ptr
-            dim pDocIn as clsDocument ptr
-            pDoc = gApp.GetDocumentPtrByFilename(wszArg) 
-            if pDoc then
-                if pDoc->GetActiveScintillaPtr = 0 then pDocIn = pDoc
-            end if   
-            if (pDoc = 0) orelse (pDocIn <> 0) then 
-                numProcessed += 1
-                pDoc = frmMain_OpenFileSafely(hwnd, _
-                                        false, _    ' bIsNewFile
-                                        false, _    ' bIsTemplate
-                                        true,  _    ' bShowInTab
-                                        false, _    ' bIsInclude
-                                        wszArg, _   ' wszName
-                                        pDocIn _    ' pDocIn
-                                        )
-                                        
-                ' Give this document a default project type depending on its file extension
-                if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
-                    if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
-                        gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
-                    end if   
-                end if
-            end if    
+            pDoc = OpenSelectedDocument( wszArg )
+            if pDoc then pDoc->SetProjectFileType()
         end select    
 
     next
@@ -608,7 +508,7 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
     b.EndDoubleBuffer()
     
     function = 0
-end Function
+end function
 
 
 ' ========================================================================================
@@ -994,6 +894,10 @@ function frmMain_OnActivateApp( _
             byval dwThreadId as DWORD _
             ) as LRESULT
 
+    ' Reset top menubar active selection if we lose or gain app focus.
+    gActiveMenuBarIndex = -1
+    AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
+    
     ' If app is losing focus then there is nothing we need to do
     if fActivate = false then exit function
 
@@ -1025,13 +929,7 @@ function frmMain_OnActivateApp( _
 
             if AfxFileExists(pDoc->DiskFilename) = false then
                 ' Ensure that the file is open and displayed
-                frmMain_OpenFileSafely(HWND_FRMMAIN, _
-                                        false, _    ' bIsNewFile
-                                        false, _    ' bIsTemplate
-                                        true,  _    ' bShowInTab
-                                        false, _    ' bIsInclude
-                                        "", _       ' wszName
-                                        pDoc )      ' pDocIn
+                OpenSelectedDocument( pDoc->DiskFilename )
                 MessageBox( HWND_FRMMAIN, _
                                 pDoc->DiskFilename & vbCrLf & _ 
                                 L(286, "This document has been deleted or is no longer available."), _
@@ -1062,7 +960,7 @@ function frmMain_OnActivateApp( _
         if (AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(pDoc->DateFileTime)) andalso _
             (pDoc->IsNewFlag <> true) then
             
-            OpenSelectedDocument( pDoc->DiskFilename, "" )
+            OpenSelectedDocument( pDoc->DiskFilename )
             dim as long res = MessageBox( HWND_FRMMAIN, _
                             pDoc->DiskFilename & vbCrLf & _ 
                             L(266, "File was changed by another application. Reload it?"), _
@@ -1213,9 +1111,6 @@ end Function
 ' Process WM_DESTROY message for window/dialog: frmMain
 ' ========================================================================================
 function frmMain_OnDestroy( byval hwnd as HWND ) as LRESULT
-
-    ' Kill any existing AutoSave timer
-    OnCommand_FileAutoSaveKillTimer()
 
     ' Output the config settings to disk file
     gConfig.SaveConfigFile
@@ -1703,9 +1598,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Post a message to process any User Tools that must start after the editor displays.
     PostMessage( pWindow->hWindow, MSG_USER_PROCESS_STARTUPUSERTOOLS, 0, 0 )
-
-    ' Start AutoSave timer if that option is enabled
-    OnCommand_FileAutoSaveStartTimer()
 
     ' Process windows events
     dim uMsg as MSG

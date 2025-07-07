@@ -1,3 +1,21 @@
+Version 1.1.1 ()
+- Added: Additional Build Configuration flags (-O1,2,3,s,fast and -eassert) to the flag entries in the configuration listbox.
+- Changed: Substantial file management refactor. Reduce resource usage (especially font handles) by up to 400% for large projects.
+- Changed: RunViaCommandWindow now defaults to false for new settings.ini.
+- Changed: Silently switch to "Build and Execute" for "Quick Run" compiles on already saved source files.
+- Changed: Beep only on compile errors only (no beep if only warnings).
+- Changed: Pop open the Output window only if errors (no pop open if only warnings).
+- Fixed: Output window minimize, restore, and close logic respecting user defined panel height.
+- Fixed: Default config build description for "Win64 Static Library".
+- Fixed: Saved several hFont gdi resources by using modified CWindow class.
+- Fixed: Menu text and keyboard accelerator text possibly squishing into each other in the top menu.
+- Fixed: Quick Run produced temporary .bat file now deleted in same manner as temp .exe file.
+- Fixed: Prevent certain config file data from being hot reloaded (eg. SidePanel width and OutputPanel height).
+- Fixed: Replace All not resetting displayed find count.
+- Fixed: Parsing TYPE ALIAS's failed and caused incorrect parsing of remainder of the source file.
+- Fixed: File/Rename would fail if trying to rename to an already existing file name.
+- Fixed: Various refactoring and improvements too many to list.
+
 Version 1.1.0 (June 29, 2025)
 - Added: Split Editor icon in top tab control. Hold [Alt] key to toggle icon for top/bottom split.
 - Added: Panel icon menu (located above the EXPLORER panel).

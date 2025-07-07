@@ -27,9 +27,6 @@ end type
 dim shared gLastPosition as LASTPOSITION_TYPE
 
 
-declare function frmMain_OpenFileSafely( byval hwnd as HWND, byval bIsNewFile as boolean, byval bIsTemplate as boolean, _
-        byval bShowInTab as BOOLEAN, byval bIsInclude as BOOLEAN, Byref wszName as WString, byval pDocIn as clsDocument Ptr, _
-        byval wszFileType as CWSTR = FILETYPE_UNDEFINED ) as clsDocument ptr
 declare function frmMain_OpenProjectSafely( byval HWnd as HWnd, byref wszProjectFileName as const WString ) as Boolean
 declare function frmMain_CalcSplitRect( byval pDoc as clsDocument ptr ) as long
 declare function frmMain_GotoFile( byval pDoc as clsDocument ptr, byval nMenuId as long ) as long

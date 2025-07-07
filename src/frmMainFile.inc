@@ -17,35 +17,25 @@
 ' ========================================================================================
 ' Create a new editing window
 ' ========================================================================================
-function OnCommand_FileNew( _
-            byval hwnd as HWND, _
-            byval bShowAfterLastDisplayTab as boolean _
-            ) as clsDocument ptr
+function OnCommand_FileNew( byval hwnd as HWND ) as clsDocument ptr
+    dim pDoc as clsDocument ptr
     
-    dim pDocNew as clsDocument ptr
+    ' Create the new pDoc object and assign blank text buffer to it which will
+    ' automatically create the scintilla windows.
+    pDoc = gApp.CreateEmptyDocument( true )
+    pDoc->AssignTextBuffer()
+
+    ' Load Explorer names first SetFocusTab will highlight it.
+    LoadExplorerFiles()
+    LoadFunctionsFiles()
+
+    ' Add the new document to the top tabcontrol
+    dim as long iTab = gTTabCtl.AddTab( pDoc )  
+    gTTabCtl.SetFocusTab(iTab)
+    frmMain_PositionWindows
+    frmMain_SetFocusToCurrentCodeWindow
     
-    dim as boolean bShowInTab = true
-    if bShowAfterLastDisplayTab then bShowInTab = false
-    
-    pDocNew = frmMain_OpenFileSafely(hwnd, _
-                                        true,  _   ' bIsNewFile
-                                        false, _   ' bIsTemplate
-                                        bShowInTab,  _   ' bShowInTab
-                                        false, _   ' bIsInclude
-                                        "", _      ' wszName
-                                        0 )        ' pDocIn
-    if bShowAfterLastDisplayTab then
-        ' Move the new file to the end of the tabs currently displayed. Basically,
-        ' right before the "+" Add New file button. 
-        LoadExplorerFiles()
-        ' Add the new document to the top tabcontrol
-        dim as long idx = gTTabCtl.InsertTab( pDocNew, gTTabCtl.LastDisplayTab )  
-        frmTopTabs_PositionWindows()
-        gTTabCtl.SetFocusTab(idx)
-        frmMain_SetFocusToCurrentCodeWindow
-    end if
-    
-    function = pDocNew
+    function = pDoc
 end function
 
 
@@ -58,20 +48,26 @@ function OnCommand_FileOpen( _
             byval bIsTemplate as boolean = false _
             ) as LRESULT
 
-    dim pDoc as clsDocument ptr
-    dim pDocIn as clsDocument ptr
-
+    ' This function is called from these top menu items:
+    ' File / Open File
+    ' Project / Add Files to Project
+    
     ' Display the Open File Dialog
     dim pItems as IShellItemArray ptr = AfxIFileOpenDialogMultiple(hwnd, IDM_FILEOPEN)
     if pItems = null then exit function
     dim dwItemCount as long, i as long, pItem as IShellItem ptr, pwszName as wstring ptr
     pItems->lpVtbl->GetCount(pItems, @dwItemCount)
+    
+    ' Variable length array to hold all filenames to open. 
+    dim AllFilenames(dwItemCount - 1) as CWSTR
+    
     ' Variable length array to hold sequence of TabCtrl tabs to open. We save the sequence
     ' here and open them only after all over documents have been loaded. This will look
     ' visually more appealing for those files that will display in the top Tab Control.
     dim pDocTabs(dwItemCount - 1) as clsDocument ptr
 
     SetCursor( LoadCursor(0, IDC_WAIT) )
+    dim pDoc as clsDocument ptr
     pDoc = gTTabCtl.GetActiveDocumentPtr()
     if pDoc then SciExec( pDoc->hWindow(0), SCI_SETCURSOR, SC_CURSORWAIT, 0 )
 
@@ -84,38 +80,7 @@ function OnCommand_FileOpen( _
         if pItem then
             pItem->lpVtbl->GetDisplayName(pItem, SIGDN_FILESYSPATH, @pwszName)
             if pwszName then 
-                ' Save the folder where this file was opened from into the gApp.wszLastOpenFolder
-                ' variable so that subsequent uses of the File Open dialog will default to 
-                ' this folder.
-                gApp.wszLastOpenFolder = AfxStrPathName( "PATH", *pwszName )
-
-                ' Test to see if the file is already loaded in the editor. if it is, then
-                ' bypass loading it again thereby creating multiple ghost instances.
-                pDoc = gApp.GetDocumentPtrByFilename(*pwszName) 
-                if pDoc then
-                    if pDoc->GetActiveScintillaPtr = 0 then pDocIn = pDoc
-                end if   
-                if (pDoc = 0) orelse (pDocIn <> 0) then
-                    dim as boolean bIsNewFile = bIsTemplate
-                    pDoc = frmMain_OpenFileSafely( _
-                                hwnd, _
-                                bIsNewFile, _  ' bIsNewFile
-                                bIsTemplate, _ ' bIsTemplate
-                                false, _       ' bShowInTab
-                                false, _       ' bIsInclude
-                                *pwszName, _   ' pwszName
-                                pDocIn _       ' pDocIn
-                                )     
-                end if
-
-                ' Give this document a default project type depending on its file extension
-                if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
-                    if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
-                        gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
-                    end if   
-                end if
-                
-                if bShowInTab then pDocTabs(i) = pDoc
+                AllFilenames(i) = *pwszName
                 CoTaskMemFree(pwszName)
                 pwszName = null
             end if
@@ -125,31 +90,69 @@ function OnCommand_FileOpen( _
     next
     pItems->lpVtbl->Release(pItems)
     
-    LoadExplorerFiles()
-    LoadFunctionsFiles()
-    
-    ' Display all of the tabs
+    ' Loop through all file names and create pDoc objects. Load the text into the
+    ' buffers and parse it. We do not create scintilla window until the document is
+    ' asked to be displayed.
+    for i = lbound(AllFilenames) to ubound(AllFilenames)
+        if len(AllFilenames(i)) = 0 then continue for
+
+        ' Save the folder where this file was opened from into the gApp.wszLastOpenFolder
+        ' variable so that subsequent uses of the File Open dialog will default to this folder.
+        if i = lbound(AllFilenames) then 
+            gApp.wszLastOpenFolder = AfxStrPathName( "PATH", AllFilenames(i) )
+        end if
+
+        ' Test to see if the file is already loaded in the editor. if it is, then
+        ' bypass loading it again thereby creating multiple ghost instances.
+        dim pDoc as clsDocument ptr
+        dim pDocSearch as clsDocument ptr
+        
+        if bIsTemplate then
+            pDoc = gApp.CreateEmptyDocument( true )
+            pDoc->LoadDiskFile( AllFilenames(i), true, true )
+        else
+            pDocSearch = gApp.GetDocumentPtrByFilename(AllFilenames(i)) 
+            if pDocSearch = 0 then
+                pDoc = gApp.CreateEmptyDocument()
+                pDoc->LoadDiskFile( AllFilenames(i) )
+                ' Set type of file based on file extension (used to categorize project files)
+                pDoc->SetProjectFileType()
+            end if    
+        end if
+        
+        if (bShowInTab = true) andalso (pDoc <> 0) then pDocTabs(i) = pDoc
+        if (bShowInTab = true) andalso (pDocSearch <> 0) then pDocTabs(i) = pDocSearch
+    next
+
+
+    ' Loop through all files that are tagged to be displayed in the top tabcontrol.
+    ' Files being added to a Project do not get added to the tabe control.
     dim as long iTab = -1
     for i = lbound(pDocTabs) to ubound(pDocTabs)
         if pDocTabs(i) = 0 then continue for
         iTab = gTTabCtl.GetTabIndexByDocumentPtr(pDocTabs(i))
-        if iTab = -1 then iTab = gTTabCtl.AddTab(pDocTabs(i))  ' Add the new document to the top tabcontrol
+        if iTab = -1 then 
+            pDocTabs(i)->AssignTextBuffer()
+            ' If this is a Template then set the buffer dirty (Templates would have IsNewFlag)
+            if pDocTabs(i)->IsNewFlag then
+                pDocTabs(i)->UserModified = true
+            end if
+            ' Add the new document to the top tabcontrol
+            iTab = gTTabCtl.AddTab(pDocTabs(i))  
+            UpdateMRUList(pDocTabs(i)->DiskFilename) 
+        end if
     next   
+
+    ' Load Explorer names first SetFocusTab will highlight it.
+    LoadExplorerFiles()
+    LoadFunctionsFiles()
     if iTab > -1 then gTTabCtl.SetFocusTab(iTab)
 
     gApp.IsFileLoading = false
     
-    gApp.wszPanelText = ""   ' reset filename text that displays in StatusBar panel
-    frmMain_SetStatusbar
+    ' reset filename loading text that displays in StatusBar panel
+    gApp.wszPanelText = ""   
 
-    ' Update the MRU list. Do this after the tabs are loaded because IsProjectLoading
-    ' will prevent the list from updating.
-    if gApp.IsProjectActive = false then
-        for i = lbound(pDocTabs) to ubound(pDocTabs)
-            if pDocTabs(i) then UpdateMRUList(pDocTabs(i)->DiskFilename) 
-        next     
-    end if
-    
     SetCursor( LoadCursor(0, IDC_ARROW) )
     ResetScintillaCursors
     frmMain_PositionWindows
@@ -249,12 +252,12 @@ function OnCommand_FileRename( _
                 gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )    
             end if
         end if
+        ' If we are trying to rename and overwrite an existing file (we would have already gotten
+        ' the popup message warning to replace the file), then we need to delete that file first 
+        ' otherwise the AfxRenameFile will fail.
+        if AfxFileExists(wszFilename) then AfxDeleteFile(wszFilename)
         if AfxRenameFile( wszFilename_original, wszFilename ) then
             pDoc->DiskFilename = wszFilename
-            ' Rename any existing autosave file
-            wszFilename_AutoSave = OnCommand_FileAutoSaveGenerateFilename(wszFilename)
-            AfxRenameFile( pDoc->AutoSaveFilename, wszFilename_AutoSave) 
-            pDoc->AutoSaveFilename = wszFilename_AutoSave
         end if    
 
         CoTaskMemFree(pwszName)
@@ -350,9 +353,6 @@ function OnCommand_FileClose( _
                 r = pDoc->SaveFile()
                 if r = true then exit function   ' save was cancelled
                 elseif r = IDNO then
-                ' Delete any existing AutoSave file because at this point the user doesn't
-                ' care about any unsaved changes.
-                if AfxFileExists(pDoc->AutoSaveFilename) then AfxDeleteFile(pDoc->AutoSaveFilename)
             end if
         end if
         
@@ -380,6 +380,8 @@ function OnCommand_FileClose( _
             ' if the file is not part of an active project, otherwise, we will lose
             ' references to function names, etc.
             gdb2.dbDelete( pDoc->DiskFilename )
+            ' Save positioning information to be saved to project file
+            pDoc->SetDocInfo()   
             gApp.RemoveDocument( pDoc )
             LoadExplorerFiles()
         end if
@@ -422,7 +424,7 @@ function OnCommand_FileExplorerMessage( _
             ) as LRESULT
     
     if id = IDM_FILEOPEN_EXPLORERLISTBOX then
-        OpenSelectedDocument( pDoc->DiskFilename, "" )
+        OpenSelectedDocument( pDoc->DiskFilename )
 
     elseif id = IDM_FILESAVE_EXPLORERLISTBOX then
         OnCommand_FileSave( HWND_FRMMAIN, pDoc, false )
@@ -440,145 +442,6 @@ function OnCommand_FileExplorerMessage( _
         end if   
     end if   
 
-    function = 0
-end function
-
-
-' ========================================================================================
-' Generate an AutoSave filename based on the incoming full path DiskFilename
-' ========================================================================================
-function OnCommand_FileAutoSaveGenerateFilename( byval wszInFilename as CWSTR ) as CWSTR
-    dim as CWSTR wszFilePath = AfxStrPathname( "PATH", wszInFilename )
-    dim as CWSTR wszFilename = AfxStrPathname( "NAMEX", wszInFilename )
-    if len(wszFilename) = 0 then return ""
-    dim as CWSTR wszAutoSaveFilename = wszFilePath & "#" & wszFilename & "#"
-    return wszAutoSaveFilename
-end function
-
-
-' ========================================================================================
-' Check the incoming filename to determine if a newer AutoSave file already exists. If
-' yes, then ask the user if he wants to use the AutoSave file. if yes, then copy then
-' delete the original file and rename the AutoSave file to the original returning the
-' original filename.
-' ========================================================================================
-function OnCommand_FileAutoSaveFileCheck( byval wszInFilename as CWSTR ) as CWSTR
-
-#if ENABLE_AUTOSAVE
-    dim as FILETIME ftOriginal
-    dim as FILETIME ftAutoSave
-    dim as CWSTR wszAutoSaveFilename = OnCommand_FileAutoSaveGenerateFilename(wszInFilename)
-    dim as long nResult
-    
-    ftOriginal = AfxGetFileLastWriteTime( wszInFilename )
-    ftAutoSave = AfxGetFileLastWriteTime( wszAutoSaveFilename )
-    
-    if AfxFileTimeToVariantTime(ftAutoSave) > AfxFileTimeToVariantTime(ftOriginal) then
-        nResult = MessageBox( HWND_FRMMAIN, _
-                L(428,"An automatically saved version the following file is more recent:") & vbcrlf & _
-                chr(34) & wszInFilename & chr(34) & vbcrlf & vbcrlf & _
-                L(429,"Would you like to load the auto save version instead?"), _
-                L(427, "Auto Save"), MB_ICONQUESTION or MB_YESNO) 
-
-        if nResult = IDYES then
-            ' User wants to re-use the previously saved AutoSave file. Delete the
-            ' incoming filename and rename the AutoSave to the original name.
-            AfxDeleteFile( wszInFilename )
-            AfxRenameFile( wszAutoSaveFilename, wszInFilename )
-        elseif nResult = IDNO then
-            ' User does not want to use the existing AutoSave file so simply delete it.
-            AfxDeleteFile( wszAutoSaveFilename )
-        end if   
-        
-    end if
-#endif
-
-    ' No matter if the original or autosave file is selected by the
-    ' user, the filename being returned will inevitably be the same
-    ' as the incoming filename.
-    function = wszInFilename
-end function
-
-
-' ========================================================================================
-' Enable/Disable File auto save features
-' ========================================================================================
-function OnCommand_FileAutoSaveTimerProc( _
-            byval hWndTimer as HWND, _
-            byval uMsg as long, _
-            byval idEvent as long, _
-            byval dwTime as long _
-            ) as long
-                    
-    ' Iterate all of the documents and determine which ones need to have
-    ' the special #filename# temporary file created.
-    if gConfig.AutoSaveFiles = false then exit function
-
-#if ENABLE_AUTOSAVE    
-    dim pDoc as clsDocument ptr
-    pDoc = gApp.pDocList
-    do until pDoc = 0
-        if pDoc->AutoSaveRequired then
-            if len(pDoc->AutoSaveFilename) then
-            pDoc->SaveFile( false, true )
-            pDoc->AutoSaveRequired = false
-            end if   
-        end if
-        pDoc = pDoc->pDocnext
-    loop
-#endif
-
-    function = 0
-end function
-
-' ========================================================================================
-' Kill AutoSave timer that checks for file changes between saves. This function
-' is called whenever the AutoSave menu item is clicked or when editor closes.
-' ========================================================================================
-function OnCommand_FileAutoSaveKillTimer() as LRESULT
-    KillTimer( HWND_FRMMAIN, gConfig.idAutoSaveTimer )
-    function = 0
-end function
-
-' ========================================================================================
-' Start AutoSave timer that checks for file changes between saves. This function
-' is called whenever the AutoSave menu item is clicked or when the application
-' starts and gConfig.AutoSaveFiles = true
-' ========================================================================================
-function OnCommand_FileAutoSaveStartTimer() as LRESULT
-    if gConfig.AutoSaveFiles = false then exit function
-#if AUTOSAVE_ENABLE
-    OnCommand_FileAutoSaveKillTimer()
-    SetTimer( HWND_FRMMAIN, gConfig.idAutoSaveTimer, _
-                gConfig.AutoSaveInterval * 1000, _
-                cast(TimerProc, @OnCommand_FileAutoSaveTimerProc) )       
-#endif
-    function = 0
-end function
-
-' ========================================================================================
-' Enable/Disable File auto save features
-' ========================================================================================
-function OnCommand_FileAutoSave( byval hwnd as HWND ) as LRESULT
-    ' if AutoSave is enabled then start timer that checks for AutoSave conditions
-#if AUTOSAVE_ENABLE
-    if gConfig.AutoSaveFiles then 
-        ' any files that were dirty prior to Autosave being enabled should
-        ' now get processed by the new timer when it fires.
-        OnCommand_FileAutoSaveStartTimer()
-            
-    elseif gConfig.AutoSaveFiles = false then
-        ' if AutoSave is disabled then delete any existing #filename# temporary files
-        OnCommand_FileAutoSaveKillTimer()
-        ' Delete any temporary ## files
-        dim pDoc as clsDocument ptr = gApp.pDocList
-        do until pDoc = 0
-            AfxDeleteFile( pDoc->AutoSaveFilename )
-            pDoc = pDoc->pDocnext
-        loop
-    
-    end if
-#endif    
     function = 0
 end function
 

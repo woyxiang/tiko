@@ -23,7 +23,7 @@ declare function ParseLogForError( _
             byval fCompilingObjFiles as boolean _
             ) as boolean
 declare function ResetScintillaCursors() as long
-declare function RunEXE( byref wszFileExe as CWSTR, byref wszParam as CWSTR ) as long
+declare function RunEXE( byval pDocMain as clsDocument ptr, byref wszFileExe as CWSTR, byref wszParam as CWSTR ) as long
 declare function SetCompileStatusBarMessage(byref wszText as wstring, byval hIconCompile as long) as LRESULT
 declare function RedirConsoleToFile(byref wszExe as wstring, byref wszCmdLine as wstring, byref sConsoleText as string ) as long
 declare function CreateTempResourceFile() as boolean

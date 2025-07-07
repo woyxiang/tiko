@@ -214,9 +214,6 @@ end function
 
 function OnCommand_ViewOutput() as LRESULT
     dim as long nShowFlag = iif(IsWindowVisible(HWND_FRMOUTPUT), SW_HIDE, SW_SHOW)
-    if nShowFlag = SW_SHOW then 
-        frmOutput_ActivatePanelHeight
-    end if
     ShowWindow( HWND_FRMOUTPUT, nShowFlag )
     frmMain_PositionWindows
     function = 0

@@ -37,12 +37,12 @@ function code_Compile( byval wID as long ) as boolean
 
     dim pDoc as clsDocument ptr
     
-    dim wszTemp      as wstring * MAX_PATH 
-    dim wszFileExe   as wstring * MAX_PATH
-    dim wszIconCompile   as CWSTR
-    dim wszCommand   as CWSTR 
-    dim wszParams    as CWSTR
-    dim sConsoleText as string 
+    dim wszTemp        as wstring * MAX_PATH 
+    dim wszFileExe     as wstring * MAX_PATH
+    dim wszIconCompile as CWSTR
+    dim wszCommand     as CWSTR 
+    dim wszParams      as CWSTR
+    dim sConsoleText   as string 
     
     dim as CWSTR wExeCmd, wDQ, wsLogSt, wst
             
@@ -57,7 +57,6 @@ function code_Compile( byval wID as long ) as boolean
     gCompile.wszOutputMsg = ""
     gCompile.ResourceFile = ""
     gCompile.LinkModules = ""
-    gCompile.bInvalidImagePath = false
     
     
     ' Indicate in the StatusBar that we have started to compile
@@ -107,10 +106,10 @@ function code_Compile( byval wID as long ) as boolean
         function = false: exit function
     end if
     
-    
+
     ' Set some compile flags depending on the type of compile requested.
     gCompile.CompileID = wID
-    select case wID
+    select case gCompile.CompileID
         case IDM_BUILDEXECUTE: gCompile.RunAfterCompile = true
         case IDM_QUICKRUN:     gCompile.RunAfterCompile = true
         case IDM_COMPILE:      gCompile.RunAfterCompile = false
@@ -134,6 +133,12 @@ function code_Compile( byval wID as long ) as boolean
         return 0
     end if
     
+    ' Silently convert QuickRun to BuildExecute if file being compiled has already been saved.
+    if (pDocMain->IsNewFlag = false) andalso (gCompile.CompileID = IDM_QUICKRUN) then
+        pDocMain->DeleteTempFiles()
+        gCompile.CompileID = IDM_BUILDEXECUTE
+    end if
+
     ' Run any precompile tools
     for y as long = lbound(gConfig.Tools) to ubound(gConfig.Tools)
         if gConfig.Tools(y).Action = USERTOOL_ACTION_PRECOMPILE then
@@ -145,12 +150,8 @@ function code_Compile( byval wID as long ) as boolean
     ' and compile that bas file instead. The resulting bas file will be deleted after the compiling
     ' has completed and exe will be deleted when the exe is terminated. 
     dim as CWSTR wszTempMainFilename
-    if wID = IDM_QUICKRUN then
-        if pDocMain->IsNewFlag then 
-            gCompile.MainFolder = AfxGetExePathName
-        else
-            gCompile.MainFolder = AfxStrPathname("PATH", pDocMain->DiskFilename)
-        end if
+    if gCompile.CompileID = IDM_QUICKRUN then   ' can only occur for NewFlag files otherwise a BuildExecute happens.
+        gCompile.MainFolder   = AfxGetExePathName
         wszTempMainFilename   = GetTemporaryFilename(gCompile.MainFolder, "bas")
         gCompile.MainFilename = wszTempMainFilename
         gCompile.MainName     = AfxStrPathname("NAME", gCompile.MainFilename)
@@ -295,7 +296,7 @@ function code_Compile( byval wID as long ) as boolean
                 dim as FILETIME ft2 = AfxGetFileLastWriteTime(wszTemp)  ' object file
 
                 if (AfxFileTimeToVariantTime(ft1) > AfxFileTimeToVariantTime(ft2)) orelse _
-                    (wID = IDM_REBUILDALL)  then
+                    (gCompile.CompileID = IDM_REBUILDALL)  then
 
                     nFileCount = nFileCount + 1
                     if (nFileCount mod 5) = 0 then AfxDoEvents
@@ -315,7 +316,7 @@ function code_Compile( byval wID as long ) as boolean
                     ' Need to check to see if any errors occurred while compiling this
                     ' object file. if yes, then stop processing object files and display
                     ' the error.
-                    if ParseLogForError(sConsoleText, false, wID, fCompile64, true) then   ' error detected
+                    if ParseLogForError(sConsoleText, false, gCompile.CompileID, fCompile64, true) then   ' error detected
                         gApp.IsCompiling = false
                         SetCursor( hCurSave )
                         ResetScintillaCursors()
@@ -405,11 +406,11 @@ function code_Compile( byval wID as long ) as boolean
     gCompile.SystemTime = AfxSystemSystemTime 
 
     ' if this was a QuickRun then delete the temporary code file that was created.
-    if wID = IDM_QUICKRUN then 
+    if gCompile.CompileID = IDM_QUICKRUN then 
         AfxDeleteFile( gCompile.MainFilename )
     end if    
     
-    if ParseLogForError(sConsoleText, true, wID, fCompile64, false) = true then 
+    if ParseLogForError(sConsoleText, true, gCompile.CompileID, fCompile64, false) = true then 
         ' Error was found. Editor has now been set to the error position. Nothing
         ' more we can do now but exit out. 
         ' Make sure gApp.IsCompiling = false before returning
@@ -428,15 +429,15 @@ function code_Compile( byval wID as long ) as boolean
                 gCompile.OutputFilename = AfxPathCombine( gCompile.MainFolder, gCompile.OutputFilename )
             end if
 
-            if wID = IDM_QUICKRUN then 
-                dim pDocMain as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
+            if gCompile.CompileID = IDM_QUICKRUN then 
                 if pDocMain then
-                    AfxDeleteFile(pDocMain->QuickRunDiskFilename)   ' delete any already existing file
+                    pDocMain->DeleteTempFiles()   ' delete any existing temp files
                     pDocMain->QuickRunDiskFilename = gCompile.OutputFilename  ' set with new temp filename
                 end if
             end if
 
             RunEXE( _
+                pDocMain, _
                 gCompile.OutputFilename,    _
                 iif( gApp.IsProjectActive, gApp.ProjectCommandLine, gApp.wszCommandLine ) _
             )

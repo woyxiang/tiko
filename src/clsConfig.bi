@@ -137,7 +137,7 @@ type clsConfig
         CompilerSwitches          as CWSTR
         CompilerIncludes          as CWSTR
         CompilerHelpfile          as CWSTR
-        RunViaCommandWindow       as long = true
+        RunViaCommandWindow       as long = false
         DisableCompileBeep        as long = false
         MRU(9)                    as CWSTR
         MRUProject(9)             as CWSTR
@@ -151,7 +151,7 @@ type clsConfig
         declare function WriteMRUProjects() as long
         declare function WriteMRUSessions() as long
         declare function SaveConfigFile() as long
-        declare function LoadConfigFile() as long
+        declare function LoadConfigFile( byval isHotReload as boolean = false ) as long
         declare function CloseSessionFile( byref wszSessionFile as wstring ) as boolean    
         declare function SaveSessionFile( byref wszSessionFile as wstring ) as boolean    
         declare function LoadSessionFile( byref wszSessionFile as wstring ) as boolean   

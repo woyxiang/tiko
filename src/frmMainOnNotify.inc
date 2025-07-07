@@ -419,9 +419,6 @@ function Scintilla_OnNotify( _
                 ' as it is loading and is not yet the active document ptr.
                 pDoc = gApp.GetDocumentPtrByWindow( pNSC->hdr.hwndFrom )
                 if pDoc then 
-                    if pDoc->LoadingFromFile = false then
-                        pDoc->AutoSaveRequired = true
-                    end if
                        
                     frmMain_SetStatusbar
                             

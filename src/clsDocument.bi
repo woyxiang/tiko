@@ -53,9 +53,10 @@ end enum
 ' type that holds data for all project files as it they are loaded from
 ' the project file.
 type PROJECT_FILELOAD_DATA
+    bIsValidData   as boolean       ' True set on projectload. Checked in AssignTextBuffer.
+    bLoadInTab      as boolean
     wszFilename     as CWSTR        ' full path and filename
     wszFiletype     as CWSTR        ' pDoc->ProjectFileType
-    bLoadInTab      as boolean
     wszBookmarks    as CWSTR        ' pDoc->GetBookmarks()
     wszFoldPoints   as CWSTR        ' pDoc->GetFoldPoints()
     nFirstLine      as long         ' first line of main view 
@@ -85,7 +86,7 @@ type clsDocument
     public:
     pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
     IsNewFlag             as boolean
-    LoadingFromFile       as boolean
+    TextBuffer            as string
     
     docData               as PROJECT_FILELOAD_DATA    ' loaded from project files
     
@@ -98,9 +99,8 @@ type clsDocument
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
     QuickRunDiskFilename  as wstring * MAX_PATH
+    RunViaBatFilename     as wstring * MAX_PATH
     DiskFilename          as wstring * MAX_PATH
-    AutoSaveFilename      as wstring * MAX_PATH    ' #filename#
-    AutoSaveRequired      as boolean
     DateFileTime          as FILETIME  
     bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
     bFunctionsExpanded    as boolean = true     ' Functions list expand/collapse state
@@ -139,13 +139,21 @@ type clsDocument
     declare property UserModified() as boolean
     declare property UserModified( byval nModified as boolean )
     
+    declare function SetDocInfo() as long
+    declare function SetProjectFileType() as long
+    declare function SetDocumentBuild() as long
+    declare function DeleteTempFiles() as long
     declare function ParseDocument() as boolean
     declare function IsValidScintillaID( byval idScintilla as long ) as boolean
     declare function GetActiveScintillaPtr() as any ptr
+    declare function AssignTextBuffer() as long
+    declare function LoadDiskFile( byref wszFile as wstring, byval bForceParse as boolean = true, byval bIsTemplate as boolean = false ) as long
+    declare function DestroyScintillaWindows() as long
+    declare function CreateScintillaWindows() as long
     declare function CreateCodeWindow( byval hWndParent as HWnd, byval IsNewFile as boolean, byval IsTemplate as boolean = False, byref wszFileName as wstring = "") as HWnd
     declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long
     declare function InsertFile() as boolean
-    declare function SaveFile(byval bSaveAs as boolean = False, byval bAutoSaveOnly as boolean = false) as boolean
+    declare function SaveFile(byval bSaveAs as boolean = false ) as boolean
     declare function ApplyProperties() as long
     declare function GetTextRange( byval cpMin as long, byval cpMax as long) as string
     declare function ChangeSelectionCase( byval fCase as long) as long 
