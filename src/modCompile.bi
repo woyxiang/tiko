@@ -39,7 +39,6 @@ type COMPILE_TYPE
     StartTime          as double
     EndTime            as double
     CompileID          as long                 ' Type of compile (wID). Needed in case frmOutput listview later clicked on.
-    bInvalidImagePath  as boolean              ' One or more images have invalid path will result in failed resource compile
 end type
 
 declare function code_Compile( byval wID as long ) as boolean

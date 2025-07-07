@@ -20,11 +20,6 @@ locations.
     \settings\themes
     \settings\tools
 
-* This assumes that you are using the "tiko_suite.zip" file which contains both
-the editor -AND- the FreeBasic compiler. This is the download that most users
-will want to use. The "tiko_suite.zip" can always be found from the Releases
-area of the Tiko Editor's Github page.
-
 
 2. SESSIONS
 -----------
@@ -40,17 +35,27 @@ If you select the option to "Restore previous session/project file on startup"
 (Preferences / Environment Options), then when you subsequently use the editor
 you will be able to pick up where you left off. Very convenient.
 
+If you do not explicitly create a Session then Tiko will create a "default"
+session (as long as the "Restore previous session/project file on startup"
+option is checked). So, if that option is checked, then you can basically 
+continue in Tiko from where you left off during your last use.
+
 
 3. PROJECTS
 -----------
 By far, using a Project is the best way to organize and control a number of 
-source files that compose your application. 
+source files that compose your application especially if your application is
+composed of more than, say, four or five files and maybe involves a resource
+file.
 
 When creating a new project, all related project information is stored in a
-simple settings text file with a .tiko file extension. Additionally, a 
-.tiko subfolder will be created automatically off your project folder to hold
-any temporary files created by your project during a compile process (for
-example, object files).
+simple settings text file with a .tiko file extension. This .tiko project file
+is automatically generated and updated by Tiko itself. You never have to edit 
+that file yourself.
+
+Additionally, a .tiko subfolder will be created automatically off your project 
+folder to hold any temporary files created by your project during a compile 
+process (for example, object files generated from compiling Modules).
 
 The key concept to remember about Projects is that they are organized in a 
 very specific way organized in the Explorer as follows:
@@ -84,21 +89,22 @@ Ctrl key (or the Shift key) and clicking on each file of interest. Then you can
 right click to display the popup menu and select the file type that will be
 applied to all of the selected files.
 
-Using the Explorer you can -not- drag and drop the files between the categories.
+Note: Using the Explorer you can -not- drag and drop the files between the 
+categories.
 
 
 4. COMPILER SETUP
 -----------------
-The editor allows you to use one or multiple versions of the FreeBasic compile.
+The editor allows you to use one or multiple versions of the FreeBasic compiler.
 Each version is stored in the special subfolder off the "settings\toolchains"
 folder. If you download the FreeBasic compiler separately, then ensure that
 you place the files within the toolchains folder otherwise the editor will have
 no way to find it.
 
 Using Preferences / Environment Options / Compiler Setup, you will see the list
-of available toolchains and be able to select amongst them. If you installed
-the editor using the "tiko_suite.zip" file, then you will already have a default
-compiler toolchain installed.
+of available toolchains and be able to select amongst them. The Tiko install
+already has a default compiler toolchain installed so you can get up and running
+quickly.
 
 The Compiler Setup also has fields that allow you to specify additional switches
 used by the compiler during compilation. The final list of compiler switches is

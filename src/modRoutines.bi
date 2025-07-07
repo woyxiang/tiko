@@ -32,7 +32,7 @@ END TYPE
 
 dim shared as any ptr gpHelpLib
 
-declare function getTextWidth( byval hwnd as HWND, byref wszText as wstring, byval FontIndex as long, byval nPadding as long ) as long
+declare function getTextWidth( byval hwnd as HWND, byref wszText as wstring, byval FontIndex as long ) as long
 declare function SpawnPreviousInstance() as boolean
 declare function ReloadDocument( byref wszFilename as wstring ) as long
 declare function ShowContextHelp( byval id as long ) as long

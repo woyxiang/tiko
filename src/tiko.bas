@@ -38,7 +38,7 @@ using Afx
 #define APPNAME        wstr("Tiko Editor")
 #define APPNAMESHORT   wstr("Tiko")
 #define APPCLASSNAME   wstr("tiko_editor_class")
-#define APPVERSION     wstr("1.1.0") 
+#define APPVERSION     wstr("1.1.1") 
 #define APPEXTENSION   wstr(".tiko") 
 #define APPBITS        wstr(" (64-bit)")
 
@@ -66,6 +66,7 @@ dim shared gConfig  as clsConfig
 dim shared gTTabCtl as clsTopTabCtl
 
 
+#include once "modCWindow.inc"
 #include once "modThemes.inc"
 #include once "clsDB2.inc"
 #include once "clsConfig.inc"

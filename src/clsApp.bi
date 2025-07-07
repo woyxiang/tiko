@@ -57,6 +57,7 @@ type clsApp
 
         declare function IsValidDocumentPointer( byval pDocSearch as clsDocument ptr ) as boolean
         declare function RemoveAllSelectionAttributes() as long
+        declare function CreateEmptyDocument( byval IsNewFile as boolean = false ) as clsDocument ptr   
         declare function AddNewDocument() as clsDocument ptr 
         declare function RemoveDocument( byval pDoc as clsDocument ptr ) as long
         declare function RemoveAllDocuments() as long

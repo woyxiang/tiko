@@ -41,15 +41,6 @@ function frmOptions_SaveEditorOptions() as long
     gConfig.AskExit              = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKASKEXIT) )
     gConfig.RestoreSession       = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKRESTORESESSION) )
     
-    
-#if ENABLE_AUTOSAVE
-    dim as long AutoSaveFiles    = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKAUTOSAVE) )
-    if AutoSaveFiles <> gConfig.AutoSaveFiles then
-        gConfig.AutoSaveFiles = AutoSaveFiles
-        OnCommand_FileAutoSave(HWND_FRMMAIN)
-    end if
-#endif
-    
     dim as long CompactMenus     = Button_GetCheck( GetDlgItem(hwnd, IDC_FRMOPTIONSGENERAL_CHKCOMPACTMENUS) )
     if (gConfig.CompactMenus <> CompactMenus) then bChangesNextRun = true
     gConfig.CompactMenus = CompactMenus

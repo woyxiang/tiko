@@ -60,7 +60,7 @@ function updateMRUFilesItems() as long
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
-    dim as long padding = AfxScaleX(12)
+    dim as long margin_width = 40
 
     for i as long = 0 To 9
         ' if the file no longer exists then remove it from the MRU list
@@ -71,7 +71,7 @@ function updateMRUFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUBASE + i, 0, false, false )
             wszText = gConfig.MRU(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -83,7 +83,7 @@ function updateMRUFilesItems() as long
         setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRU, IDM_MRUCLEAR, 0, false, false )
     end if   
     
-    function = nMenuWidth + padding
+    function = nMenuWidth + (margin_width * 2)  ' unscaled value
 end function
 
 
@@ -99,7 +99,7 @@ function updateMRUSessionFilesItems() as long
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
-    dim as long padding = AfxScaleX(12)
+    dim as long margin_width = 40
 
     for i as long = 0 To 9
         ' if the file no longer exists then remove it from the MRU list
@@ -110,7 +110,7 @@ function updateMRUSessionFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONBASE + i, 0, false, false )
             wszText = gConfig.MRUSESSION(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -122,7 +122,7 @@ function updateMRUSessionFilesItems() as long
         setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUSESSION, IDM_MRUSESSIONCLEAR, 0, false, false )
     end if   
     
-    function = nMenuWidth + padding
+    function = nMenuWidth + (margin_width * 2)  ' unscaled value
 end function
 
 
@@ -138,8 +138,8 @@ function updateMRUProjectFilesItems() as long
     dim as boolean hasMRUfiles = false
     dim as long txtWidth = 0
     dim as long nMenuWidth = 0
-    dim as long padding = AfxScaleX(12)
-
+    dim as long margin_width = 40
+    
     for i as long = 0 To 9
         ' if the file no longer exists then remove it from the MRU list
         gConfig.MRUPROJECT(i) = ProcessFromCurdriveApp( gConfig.MRUPROJECT(i) )
@@ -149,7 +149,7 @@ function updateMRUProjectFilesItems() as long
             hasMRUfiles = true
             setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTBASE + i, 0, false, false )
             wszText = gConfig.MRUPROJECT(i)
-            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10, 30 )
+            txtWidth = getTextWidth( HWND_FRMMAIN_MENUBAR, wszText, GUIFONT_10 )
             if txtWidth > nMenuWidth then nMenuWidth = txtWidth
         end if
     next
@@ -161,7 +161,7 @@ function updateMRUProjectFilesItems() as long
         setTopMenuMRUItem( getnextFreeMRUindex(), IDM_MRUPROJECT, IDM_MRUPROJECTCLEAR, 0, false, false )
     end if   
     
-    function = nMenuWidth + padding
+    function = nMenuWidth + (margin_width * 2)   ' unscaled value
 end function
 
 
@@ -171,32 +171,13 @@ function OpenMRUFile( _
             byval hwnd as HWND, _
             byval wID as long _
             ) as long
-    dim wszFile as wstring * MAX_PATH
     dim pDoc as clsDocument ptr
-    dim pDocIn as clsDocument ptr
+    dim wszFile as wstring * MAX_PATH
+
     wszFile = gConfig.MRU(wID - IDM_MRUBASE)
     
-    ' if file is already loaded then simply switch to that file
-    ' within the editor.
-    pDocIn = gApp.GetDocumentPtrByFilename( wszFile )
-
-    pDoc = frmMain_OpenFileSafely( _
-                    HWND_FRMMAIN, _
-                    false, _    ' bIsNewFile
-                    false, _    ' bIsTemplate
-                    true, _     ' bShowInTab
-                    false, _    ' bIsInclude
-                    wszFile, _  ' wszName
-                    pDocIn, _   ' pDocIn
-                    false _
-                    )
-
-    ' Give this document a default project type depending on its file extension
-    if (pDoc->IsNewFlag = false) andalso (pDoc->ProjectFileType = FILETYPE_UNDEFINED) then
-        if ( gApp.IsProjectActive = true ) orelse ( gApp.IsProjectLoading = true ) then
-            gApp.ProjectSetFileType( pDoc, pDoc->ProjectFileType )
-        end if   
-    end if
+    pDoc = OpenSelectedDocument( wszFile )
+    if pDoc then pDoc->SetProjectFileType
 
     LoadExplorerFiles()
     LoadFunctionsFiles()
@@ -234,7 +215,8 @@ function UpdateMRUList( byref wzFilename as wstring ) as long
     dim wzFile      as wstring * MAX_PATH
     
     if gApp.IsProjectLoading then exit function
-
+    if gApp.IsProjectActive then exit function
+     
     ' Search the 10 MRU items to see if the filename already exists and
     ' also for an available entry to put the filename in.
     for i = 0 To 9

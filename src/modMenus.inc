@@ -589,11 +589,11 @@ function CreateFunctionsActionButtonContextMenu() as HMENU
     dim as CWSTR wszCaption
     
     hPopUpMenu = CreatePopupMenu
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_EXPANDALL, L(441,"Expand All") 
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_COLLAPSEALL, L(442,"Collapse All") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_EXPANDALL, L(441,"Expand All") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_COLLAPSEALL, L(442,"Collapse All") 
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_VIEWASTREE, L(445,"View as Tree") 
-    AppendMenu hPopUpMenu, MF_ENABLED, IDM_functionS_VIEWASLIST, L(446,"View as List") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_VIEWASTREE, L(445,"View as Tree") 
+    AppendMenu hPopUpMenu, MF_ENABLED, IDM_FUNCTIONS_VIEWASLIST, L(446,"View as List") 
     AppendMenu hPopUpMenu, MF_SEPARATOR, 0, "" 
     AppendMenu hPopUpMenu, MF_ENABLED, IDM_CLOSEPANEL, L(161,"Close") 
 

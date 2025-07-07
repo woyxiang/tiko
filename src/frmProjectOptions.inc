@@ -60,13 +60,8 @@ function frmProjectOptions_CreateResourceManifest() as Long
     ' Add the resource file to the project if it does not already exist in the project
     if gApp.GetDocumentPtrByFilename(wszResource) = 0 then
         dim pDoc as clsDocument ptr
-        pDoc = frmMain_OpenFileSafely(HWND_FRMMAIN, _
-                                False, _    ' bIsNewFile
-                                False, _    ' bIsTemplate
-                                false, _    ' bShowInTab
-                                false, _    ' bIsInclude
-                                wszResource, _  ' pwszName
-                                0 )  ' pDocIn
+        pDoc = gApp.CreateEmptyDocument()
+        pDoc->LoadDiskFile( wszResource )
         gApp.ProjectSetFileType(pDoc, FILETYPE_RESOURCE)
     end if
     

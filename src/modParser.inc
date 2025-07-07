@@ -269,6 +269,16 @@ function ctxParser.ParseTYPE( byval action as PARSEACTION ) as boolean
         this.typeName = this.token
     end if
 
+    ' Check if the next token is 'as' which would signal that
+    ' this is a TYPE ALIAS statement.
+    ' eg.   Type typename As symbol
+    if this.GetToken() then
+        if this.ltoken = "as" then 
+            this.ReadToEOL()
+            return true
+        end if    
+    end if
+
     ' Finally, look for the END TYPE that will complete the parsing
     do until this.GetToken() = false
         ' tokens from the body of the TYPE should be processed here
@@ -507,7 +517,7 @@ function ctxParser.IsStandardDataType( byref sVarType as string ) as boolean
     ' Determine if the variable is one of the predefined standard data types
     static as string sList
     sList = " boolean byte double integer long longint short single" & _
-            " string ubyte uinteger ushort wstring zstring cwstr "
+            " string ubyte uinteger ushort wstring zstring cwstr dwstring "
     if instr(sList, " " & lcase(sVarType) & " " ) then return true
     return false  
 end function
@@ -888,7 +898,13 @@ function ctxParser.Parse( byval pDoc as clsDocument ptr ) as boolean
     
     this.pDoc = pDoc
     
-    this.text = Cast( ZString Ptr, SciExec(pDoc->hWindow(0), SCI_GETCHARACTERPOINTER, 0, 0) )
+    ' Get the string data pointer depending on whether the text is loaded into
+    ' a scintilla window or simply exists as raw text in the pDoc TextBuffer.
+    if IsWindow(pDoc->hWindow(0)) then
+        this.text = Cast( ZString Ptr, SciExec(pDoc->hWindow(0), SCI_GETCHARACTERPOINTER, 0, 0) )
+    else
+        this.text = Cast( ZString Ptr, strptr(this.pDoc->TextBuffer))
+    end if    
     if( this.text = 0 ) then return false
 
     this.incomment = false

@@ -49,8 +49,7 @@ function frmFindReplace_PositionWindows() as LRESULT
     if pWindow = 0 then exit function
 
     dim wszText as wstring * 100 = gFind.wszResults
-    dim as long nResultsWidth = _
-            getTextWidth(HWND_FRMFINDREPLACE, wszText, GUIFONT_9, 0) + 6
+    dim as long nResultsWidth = getTextWidth(HWND_FRMFINDREPLACE, wszText, GUIFONT_9) + 10
 
     pWindow->SetClientSize( 350 + max(70, nResultsWidth), iif(gFind.bExpanded, 66, 33) )
             
@@ -375,6 +374,8 @@ function frmFindReplace_DoReplace( _
         SendMessage( hEdit, SCI_ENDUNDOACTION, 0, 0)
         SetWindowRedraw( hEdit, true )
         gApp.SuppressNotify = false
+        startPos = SendMessage( hEdit, SCI_GETCURRENTPOS, 0, 0) 
+        frmFindReplace_NextSelection(startPos, fMoveNext, true)
         AfxRedrawWindow( hEdit )
 
     else   

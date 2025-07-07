@@ -23,6 +23,7 @@ function frmMenuBar_PositionWindows() as LRESULT
     dim as long nTop = 0
     dim as long nWidth = 0
     dim as long nHeight = AfxGetWindowHeight(HWND_FRMMAIN_MENUBAR)
+    dim as long nPadding = 12   ' 6 left 6 right
     
     dim id( 0 to ... ) as long = _
         { _
@@ -35,7 +36,7 @@ function frmMenuBar_PositionWindows() as LRESULT
     for i as integer = lbound(id) to ubound(id)
         gMenuBar(i).id = id(i)
         gMenuBar(i).wszText = getMenuText(gMenuBar(i).id)
-        dim as long nWidth = pWindow->ScaleX(getTextWidth( HWND_FRMMAIN, gMenuBar(i).wszText, GUIFONT_10, 6 ))
+        dim as long nWidth = pWindow->ScaleX(getTextWidth( HWND_FRMMAIN, gMenuBar(i).wszText, GUIFONT_10) + nPadding)
         gMenuBar(i).rcItem = type(nLeft, nTop, nLeft + nWidth, nTop + nHeight)
         nLeft += nWidth
     next
@@ -194,15 +195,11 @@ end function
 function frmMenuBar_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = new CWindow
+    dim pWindow as CPanelWindow ptr = new CPanelWindow
 
     dim as long nHeight = iif(gConfig.CompactMenus, MENUBAR_HEIGHT_COMPACT, MENUBAR_HEIGHT)
 
-    HWND_FRMMAIN_MENUBAR = pWindow->Create( hWndParent, "", @frmMenuBar_WndProc, _
-        0, 0, 0, nHeight, _
-        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-
+    HWND_FRMMAIN_MENUBAR = pWindow->Create( hWndParent, @frmMenuBar_WndProc, 0, 0, 0, nHeight )
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
     

@@ -29,6 +29,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     dim as long i = 0
     dim as long nLeft = rc.left
     dim as long nSpacer = pWindow->ScaleX(4)
+    dim as long nPadding = 10   ' 5 left 5 right
     
     ' the text for each panel is set in frmMain_SetStatusbar which then calls this
     ' function to determine proper sizing and placement.
@@ -38,7 +39,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     gSBPanels(i).rc.Left   = nLeft
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nLeft + _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.bottom = rc.bottom
     gSBPanels(i).nID       = IDM_GOTO
     nLeft = gSBPanels(i).rc.right + nSpacer
@@ -51,7 +52,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     i = CRLF_PANEL  ' CRLF 
     dim as long nRight = grcGripper.left
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -60,7 +61,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = UTF_PANEL  ' UTF-8
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight 
     gSBPanels(i).rc.bottom = rc.bottom
@@ -69,7 +70,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = SPACES_PANEL  ' Spaces
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -79,7 +80,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     i = FILETYPE_PANEL  ' Main/Resource/Module/Normal
     if gApp.IsProjectActive then
         gSBPanels(i).rc.Left   = nRight - _
-            pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+            pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
         gSBPanels(i).rc.top    = rc.top
         gSBPanels(i).rc.right  = nRight
         gSBPanels(i).rc.bottom = rc.bottom
@@ -91,7 +92,7 @@ function frmStatusBar_PositionWindows() as LRESULT
     
     i = BUILD_POPUP_PANEL  ' Build Configuration
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -100,7 +101,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = BUILD_DIALOG_PANEL  ' Build Configuration dialog
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -109,7 +110,7 @@ function frmStatusBar_PositionWindows() as LRESULT
 
     i = THEMES_DIALOG_PANEL  ' Themes/Colors dialog
     gSBPanels(i).rc.Left   = nRight - _
-        pWindow->ScaleX( getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 4 ) )
+        pWindow->ScaleX( getTextWidth(HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9) + nPadding )
     gSBPanels(i).rc.top    = rc.top
     gSBPanels(i).rc.right  = nRight
     gSBPanels(i).rc.bottom = rc.bottom
@@ -308,7 +309,7 @@ function frmStatusBar_WndProc( _
                     b.SetForeColors( clr, ghStatusBar.ForeColorHot )
                     b.SetBackColors( ghStatusBar.BackColor, ghStatusBar.BackColorHot )
                     if pWindow then
-                        dim as long txtWidth = getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9, 0 ) 
+                        dim as long txtWidth = getTextWidth( HWND_FRMMAIN_STATUSBAR, gSBPanels(i).wszText, GUIFONT_9 ) 
                         dim as RECT rcBitmap = gSBPanels(i).rc
                         dim as long halfWidth = (rcBitmap.right-rcBitmap.left) / 2
                         rcBitmap.right = rcBitmap.left + halfWidth - pWindow->ScaleX((txtWidth / 2))
@@ -338,9 +339,9 @@ end function
 function frmStatusBar_Show( byval hwndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
-    dim pWindow as CWindow ptr = New CWindow
+    dim pWindow as CPanelWindow ptr = New CPanelWindow
 
-    HWND_FRMMAIN_STATUSBAR = pWindow->Create( hwndParent, "", @frmStatusBar_WndProc, _
+    HWND_FRMMAIN_STATUSBAR = pWindow->Create( hwndParent, @frmStatusBar_WndProc, _
         0, 0, 0, STATUSBAR_HEIGHT, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)

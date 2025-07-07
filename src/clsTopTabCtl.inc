@@ -176,7 +176,7 @@ function clsTopTabCtl.SetFocusTab( byval idx as long ) as long
         
         ' Highlight the selected tab file in the Explorer listbox
         frmExplorer_SelectItemData( this.tabs(idx).pDoc )
-        ' Highlight the selected tab file in the function List listbox
+        ' Highlight the selected tab file in the Function List listbox
         frmFunctions_SelectItemData( this.tabs(idx).pDoc )
     end if
 

@@ -115,11 +115,8 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
     AfxDeleteFile( wszResultFile )
     
     ' Show the search results
-    gOutputTabsCurSel = 2 
-    ShowWindow( HWND_FRMOUTPUT, SW_SHOW )
-    gConfig.ShowOutputPanelMinimized = 0
-    frmOutput_ActivatePanelHeight
-    frmMain_PositionWindows
+    gOutputTabsCurSel = 2
+    frmOutput_RestorePanel() 
     frmOutput_PositionWindows
 
     function = 0
@@ -217,7 +214,7 @@ function frmOutput_PositionWindows() as LRESULT
     rc.left = rc.left + pWindow->ScaleX(10)
 
     wszText = ucase(L(191, "Compiler Results"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(0).wszText = wszText
     gOutputTabs(0).rcTab = rc: gOutputTabs(0).rcText = rc
     gOutputTabs(0).rcText.left = gOutputTabs(0).rcTab.left + hmargin 
@@ -225,7 +222,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(0).rcTab.right = gOutputTabs(0).rcText.right + hmargin
 
     wszText = ucase(L(252, "Compiler Log File"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(1).wszText = wszText
     gOutputTabs(1).rcTab = rc: gOutputTabs(1).rcText = rc
     gOutputTabs(1).rcTab.left = gOutputTabs(0).rcTab.right
@@ -234,7 +231,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(1).rcTab.right = gOutputTabs(1).rcText.right + hmargin
 
     wszText = ucase(L(262, "Search Results"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(2).wszText = wszText
     gOutputTabs(2).rcTab = rc: gOutputTabs(2).rcText = rc
     gOutputTabs(2).rcTab.left = gOutputTabs(1).rcTab.right
@@ -243,7 +240,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(2).rcTab.right = gOutputTabs(2).rcText.right + hmargin
 
     wszText = ucase(L(263, "TODO"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(3).wszText = wszText
     gOutputTabs(3).rcTab = rc: gOutputTabs(3).rcText = rc
     gOutputTabs(3).rcTab.left = gOutputTabs(2).rcTab.right
@@ -252,7 +249,7 @@ function frmOutput_PositionWindows() as LRESULT
     gOutputTabs(3).rcTab.right = gOutputTabs(3).rcText.right + hmargin
 
     wszText = ucase(L(264, "Notes"))
-    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9, 0 ))
+    nTextLen = pWindow->ScaleX(getTextWidth( HWND_FRMOUTPUT, wszText, GUIFONT_9))
     gOutputTabs(4).wszText = wszText
     gOutputTabs(4).rcTab = rc: gOutputTabs(4).rcText = rc
     gOutputTabs(4).rcTab.left = gOutputTabs(3).rcTab.right
@@ -620,27 +617,45 @@ end function
 
 
 ' ========================================================================================
-' If the Output panel is "minimized" at only OUTPUT_TABS_HEIGHT then
-' we expand the height to 4x OUTPUT_TABS_HEIGHT.
+' Minimize the Output window
+' Result of double clicking an Output panel tab or clicking the "X' close icon.
 ' ========================================================================================
-function frmOutput_ActivatePanelHeight() as long
+function frmOutput_MinimizePanel() as long
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
     if pWindow = 0 then exit function
-
-    dim as long nHeight
+    gConfig.ShowOutputPanelMinimized = 1
     dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
-    dim as long nDefaultHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
+    dim as long nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight)
+    frmMain_PositionWindows()
+    function = 0
+end function
 
-    if gConfig.ShowOutputPanelMinimized then
-        nHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
-    else
-        if gConfig.ShowOutputPanelHeight <= nDefaultHeight then
-            gConfig.ShowOutputPanelHeight = nDefaultHeight
-        end if
-        nHeight = gConfig.ShowOutputPanelHeight
+
+' ========================================================================================
+' Restore the Output window to user controlled height
+' Result of double clicking an Output panel tab.
+' ========================================================================================
+function frmOutput_RestorePanel() as long
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
+    if pWindow = 0 then exit function
+    
+    gConfig.ShowOutputPanelMinimized = 0
+    
+    dim as long nDefaultHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT)
+    dim as long nWidth = AfxGetWindowWidth(HWND_FRMOUTPUT)
+    dim as long nHeight = gConfig.ShowOutputPanelHeight
+    
+    if nHeight <= nDefaultHeight then
+        gConfig.ShowOutputPanelHeight = pWindow->ScaleY(OUTPUT_TABS_HEIGHT * 5)
+        nHeight = nDefaultHeight
     end if
    
+    ' Ensure that window is visible. Compile or Find results need a visible
+    ' window in order to display results.
     AfxSetWindowSize(HWND_FRMOUTPUT, nWidth, nHeight)
+    ShowWindow( HWND_FRMOUTPUT, SW_SHOW)
+    frmMain_PositionWindows()
     
     function = 0
 end function
@@ -708,30 +723,31 @@ function frmOutputTabs_SubclassProc ( _
             frmOutputTabs_getHotTabHitTest( hWin )
             nLastIdx = -1
             AfxRedrawWindow(hWin)   
-        
+       
         case WM_LBUTTONUP
             if isMouseOverRECT( hWin, gOutputCloseRect ) = true then
                 OnCommand_ViewOutput()   ' toggle the Output window off
             else
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
-                gConfig.ShowOutputPanelMinimized = 0
-                frmOutput_ActivatePanelHeight()
-                frmMain_PositionWindows()
+                frmOutput_RestorePanel()
                 gOutputTabsCurSel = idx
                 AfxRedrawWindow(hWin)   
                 frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
             end if
 
         case WM_LBUTTONDBLCLK
+            ' One of the Output window tabs has been doubleclicked.
             ' Toggle the Output window between "minimized" state and the height
             ' that the user has manually resized the window to.
             if isMouseOverRECT( hWin, gOutputCloseRect ) = false then
                 dim as long idx = frmOutputTabs_getHotTabHitTest( hWin )
                 if idx = -1 then exit function
-                gConfig.ShowOutputPanelMinimized = iif(gConfig.ShowOutputPanelMinimized = 1, 0, 1)
-                frmOutput_ActivatePanelHeight()
-                frmMain_PositionWindows()
+                if gConfig.ShowOutputPanelMinimized then
+                    frmOutput_RestorePanel()
+                else
+                    frmOutput_MinimizePanel()
+                end if
                 gOutputTabsCurSel = idx
                 AfxRedrawWindow(hWin)   
                 frmOutput_ShowHideOutputControls( HWND_FRMOUTPUT )
@@ -904,17 +920,21 @@ function frmOutput_SetControlColors() as long
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE )
     SendMessage( hCtl, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
     SendMessage( hCtl, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghOutput.backcolor) )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES )
     SendMessage( hCtl, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
     SendMessage( hCtl, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghOutput.backcolor) )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVRESULTS )
     ListView_SetBkColor( hCtl, ghOutput.BackColor )
     ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
     ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVSEARCH )
     ListView_SetBkColor( hCtl, ghOutput.BackColor )
     ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
     ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
+    
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVTODO )
     ListView_SetBkColor( hCtl, ghOutput.BackColor )
     ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
@@ -931,20 +951,28 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     '  This pointer destroyed at end of frmMain ends before application ends.
     dim pWindow as CWindow ptr = new CWindow
+    dim as long nHeight
+    
+    ' Set the height of the window to the last used visible height or to the
+    ' default height if gConfig.ShowOutputPanelHeight is less than it.
+    gConfig.ShowOutputPanelHeight = max(gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
+    nHeight = gConfig.ShowOutputPanelHeight
+    
+    ' If the Output window was in minimized state when use the default tabs height
+    ' for showing the initial height of the window.
+    if gConfig.ShowOutputPanelMinimized <> 0 then nHeight = OUTPUT_TABS_HEIGHT
 
     ' Only make the Output panel initially visible if it was already visible
-    ' when the most previous instance of the program closed. Also, set the height of
-    ' the window to the last used visible height.
-    dim as long nHeight = _
-        iif(gConfig.ShowOutputPanel, gConfig.ShowOutputPanelHeight, OUTPUT_TABS_HEIGHT)
-    
+    ' when the most previous instance of the program closed. 
     HWND_FRMOUTPUT = pWindow->Create( hwndParent, "", @frmOutput_WndProc, 0, 0, 0, nHeight, _
         WS_CHILD or iif(gConfig.ShowOutputPanel, WS_VISIBLE, 0) or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_CONTROLPARENT or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
     pWindow->ClassStyle = CS_DBLCLKS
 
-    ' Need to scale up the user defined panel height because it is saved to the config
-    ' file in unscaled value.
+    ' Now that the Output window has been created using the unscaled height from the
+    ' config file, we need to scale up the user defined panel height because future psoitioning
+    ' of the window depends on scaled values. However, it is unscaled prior to saving the
+    ' value back to the config file on program exit.
     gConfig.ShowOutputPanelHeight = pWindow->ScaleY(gConfig.ShowOutputPanelHeight)
     
     dim as HWND hCtl, hLV, hLB
@@ -999,7 +1027,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
 
         ' Configure the ListView
         dwExStyle = ListView_GetExtendedListViewStyle(hLV)
-        dwExStyle = dwExStyle or LVS_EX_FULLROWselect or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
+        dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
         ListView_SetExtendedListViewStyle(hLV, dwExStyle)
         ListView_MakeHeaderFlat(hLV)
         ListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
@@ -1024,7 +1052,6 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
         ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
 
-    frmOutput_ActivatePanelHeight
     frmOutput_SetControlColors
     frmOutput_PositionWindows
     

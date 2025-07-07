@@ -40,5 +40,5 @@ declare function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) As LRESU
 declare function frmOutput_PositionWindows() as LRESULT
 declare function frmOutput_Show( byval hWndParent as HWND ) as LRESULT
 declare function frmOutput_ResetAllControls() as long 
-declare function frmOutput_ActivatePanelHeight() as long
+declare function frmOutput_RestorePanel() as long
 

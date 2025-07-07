@@ -361,12 +361,14 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine "Theme="                 & this.ThemeShortFilename
     pStream.WriteLine "ExplorerPositionRight=" & this.ExplorerPositionRight
     pStream.WriteLine ""
+    ' Note: Main window StartUp positions are in scaled screen coordinates.
     pStream.WriteLine "[Startup]" 
     pStream.WriteLine "StartupLeft="              & this.StartupLeft          
     pStream.WriteLine "StartupTop="               & this.StartupTop           
     pStream.WriteLine "StartupRight="             & this.StartupRight         
     pStream.WriteLine "StartupBottom="            & this.StartupBottom        
     pStream.WriteLine "StartupMaximized="         & this.StartupMaximized     
+    ' Note: SidePanel and OutputPanel positions are in unscaled screen coordinates.
     pStream.WriteLine "ShowPanel="                & this.ShowPanel
     pStream.WriteLine "ShowPanelWidth="           & this.ShowPanelWidth    
     pStream.WriteLine "ShowOutputPanel="          & this.ShowOutputPanel
@@ -591,7 +593,7 @@ end function
 ''
 ''  LOAD CONFIGURATION FROM DISK FILE
 ''
-function clsConfig.LoadConfigFile() as long
+function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as long
 
     dim as CWSTR wst, wKey, wData, wData2
     dim nData  as long  
@@ -683,7 +685,7 @@ function clsConfig.LoadConfigFile() as long
                 this.Builds(i).IsDefault      = val(AfxStrParse(wData, 4, "|-|"))
                 this.Builds(i).Is32bit        = val(AfxStrParse(wData, 5, "|-|"))
                 this.Builds(i).Is64bit        = val(AfxStrParse(wData, 6, "|-|"))
-                this.Builds(i).ExcludeInPopup    = val(AfxStrParse(wData, 7, "|-|"))
+                this.Builds(i).ExcludeInPopup = val(AfxStrParse(wData, 7, "|-|"))
                 continue do
             end If
             end If
@@ -716,10 +718,6 @@ function clsConfig.LoadConfigFile() as long
             select case wKey
             case "SettingsVersion":          this.SettingsVersion       = wData
             case "AskExit":                  this.AskExit               = nData
-#if ENABLE_AUTOSAVE
-            case "AutoSaveFiles":            this.AutoSaveFiles         = nData
-#endif
-            case "AutoSaveInterval":         this.AutoSaveInterval      = nData
             case "RestoreSession":           this.RestoreSession        = nData
             case "LastActiveSessionFile":    this.wszLastActiveSession  = ProcessFromCurdriveApp(wData)
             case "CompactMenus":             this.CompactMenus          = nData
@@ -753,17 +751,6 @@ function clsConfig.LoadConfigFile() as long
             case "Theme":                    this.ThemeShortFilename    = wData
             case "ExplorerPositionRight":    this.ExplorerPositionRight = nData
             case "KeywordCase":              this.KeywordCase           = nData
-            case "StartupLeft":              this.StartupLeft           = nData
-            case "StartupTop":               this.StartupTop            = nData
-            case "StartupRight":             this.StartupRight          = nData
-            case "StartupBottom":            this.StartupBottom         = nData
-            case "StartupMaximized":         this.StartupMaximized      = nData
-            case "ShowPanel":                this.ShowPanel             = nData
-            case "ShowPanelWidth":           this.ShowPanelWidth        = nData
-            case "ShowOutputPanel":          this.ShowOutputPanel       = nData
-            case "ShowOutputPanelHeight":    this.ShowOutputPanelHeight = nData
-            case "ShowOutputPanelMinimized": this.ShowOutputPanelMinimized = nData
-            case "ShowOutputPanelIndex":     gOutputTabsCurSel          = nData
             case "FBWINCompiler32":          this.FBWINCompiler32       = ProcessFromCurdriveApp(wData)
             case "FBWINCompiler64":          this.FBWINCompiler64       = ProcessFromCurdriveApp(wData)
             case "CompilerBuild":            this.CompilerBuild         = wData
@@ -774,6 +761,26 @@ function clsConfig.LoadConfigFile() as long
             case "DisableCompileBeep":       this.DisableCompileBeep    = nData
             end select
         
+            ' Only reload data affect instance states for heights and positions if
+            ' this is not a hot reload. A hot reload is when the message loop detects
+            ' that the config file has been externally modified (eg by a User Tool)
+            ' and then will be reloaded on the fly.
+            if isHotReload = false then
+                select case wKey
+                    case "StartupLeft":              this.StartupLeft           = nData
+                    case "StartupTop":               this.StartupTop            = nData
+                    case "StartupRight":             this.StartupRight          = nData
+                    case "StartupBottom":            this.StartupBottom         = nData
+                    case "StartupMaximized":         this.StartupMaximized      = nData
+                    case "ShowPanel":                this.ShowPanel             = nData
+                    case "ShowPanelWidth":           this.ShowPanelWidth        = nData
+                    case "ShowOutputPanel":          this.ShowOutputPanel       = nData
+                    case "ShowOutputPanelHeight":    this.ShowOutputPanelHeight = nData
+                    case "ShowOutputPanelMinimized": this.ShowOutputPanelMinimized = nData
+                    case "ShowOutputPanelIndex":     gOutputTabsCurSel          = nData
+                end select
+            end if
+            
         loop
         pStream.Close
     end if
@@ -910,7 +917,7 @@ function clsConfig.LoadConfigFile() as long
         this.Builds(10).ExcludeInPopup = 1
 
         this.Builds(11).id = AfxGuidText(AfxGuid())
-        this.Builds(11).wszDescription = "Win64 Static Library -gen gas64"
+        this.Builds(11).wszDescription = "Win64 Static Library"
         this.Builds(11).wszOptions = "-lib"
         this.Builds(11).Is32bit = 0
         this.Builds(11).Is64bit = 1
@@ -1113,16 +1120,9 @@ function clsConfig.LoadSessionFile( byref wszSessionFile as wstring ) as boolean
             
             case "FileEnd":
             if AfxFileExists(wszFilename) then
-                pDoc = frmMain_OpenFileSafely( _
-                        HWND_FRMMAIN, _
-                        false, _        ' bIsNewFile
-                        false, _        ' bIsTemplate
-                        false, _        ' bShowInTab (we'll manually add new tab below)
-                        false, _        ' bIsInclude
-                        wszFilename, _  ' wszName
-                        0, _            ' pDocIn
-                        wszFileType )
-    
+                pDoc = gApp.CreateEmptyDocument()
+                pDoc->LoadDiskFile( wszFilename )
+                pDoc->AssignTextBuffer()
                 iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
                 
                 ' Set the saved positions
@@ -1230,25 +1230,26 @@ function clsConfig.ProjectSaveToFile() as boolean
         
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
+            pDoc->SetDocInfo()   
             wszText = pDoc->DiskFilename
             cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)
             if len(cwzRelative) then
                 if AfxPathIsRelative(cwzRelative) then wszText = cwzRelative
-            end if   
+            end if
             wszText = ProcessToCurdriveProject(wszText)
             pStream.WriteLine "File=" & wszText
             pStream.WriteLine "FileType=" & pDoc->ProjectFileType
-            pStream.WriteLine "TabIndex=" & -1     ' use -1 rather than true
-            pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
-            pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
-            pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-            pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-            pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-            pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
-            pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
-            pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
-            pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
+            pStream.WriteLine "TabIndex=" & "-1"     ' use -1 rather than true
+            pStream.WriteLine "Bookmarks=" & pDoc->docData.wszBookmarks
+            pStream.WriteLine "FoldPoints=" & pDoc->docData.wszFoldPoints
+            pStream.WriteLine "FirstLine=" & pDoc->docData.nFirstLine 
+            pStream.WriteLine "Position=" & pDoc->docData.nPosition  
+            pStream.WriteLine "FirstLine1=" & pDoc->docData.nFirstLine1  
+            pStream.WriteLine "Position1=" & pDoc->docData.nPosition1  
+            pStream.WriteLine "SplitMode=" & pDoc->docData.nSplitMode
+            pStream.WriteLine "SplitPositionX=" & pDoc->docData.nSplitPositionX
+            pStream.WriteLine "SplitPositionY=" & pDoc->docData.nSplitPositionY
+            pStream.WriteLine "FocusEdit=" & pDoc->docData.nFocusEdit
             pStream.WriteLine "FileEnd=[-]" 
         end if
     next
@@ -1266,17 +1267,17 @@ function clsConfig.ProjectSaveToFile() as boolean
                 wszText = ProcessToCurdriveProject(wszText)
                 pStream.WriteLine "File=" & wszText
                 pStream.WriteLine "FileType=" & pDoc->ProjectFileType
-                pStream.WriteLine "TabIndex=" & 0    
-                pStream.WriteLine "Bookmarks=" & pDoc->GetBookmarks()
-                pStream.WriteLine "FoldPoints=" & pDoc->GetFoldPoints()
-                pStream.WriteLine "FirstLine=" & SendMessage( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-                pStream.WriteLine "Position=" & SendMessage( pDoc->hWindow(0), SCI_GETCURRENTPOS, 0, 0)  
-                pStream.WriteLine "FirstLine1=" & SendMessage( pDoc->hWindow(1), SCI_GETFIRSTVISIBLELINE, 0, 0) 
-                pStream.WriteLine "Position1=" & SendMessage( pDoc->hWindow(1), SCI_GETCURRENTPOS, 0, 0)  
-                pStream.WriteLine "SplitMode=" & pDoc->EditorSplitMode
-                pStream.WriteLine "SplitPositionX=" & pDoc->SplitX
-                pStream.WriteLine "SplitPositionY=" & pDoc->SplitY
-                pStream.WriteLine "FocusEdit=" & iif(pDoc->hWndActiveScintilla = pDoc->hWindow(0), 0, 1)
+                pStream.WriteLine "TabIndex=" & "0"
+                pStream.WriteLine "Bookmarks=" & pDoc->docData.wszBookmarks
+                pStream.WriteLine "FoldPoints=" & pDoc->docData.wszFoldPoints
+                pStream.WriteLine "FirstLine=" & pDoc->docData.nFirstLine 
+                pStream.WriteLine "Position=" & pDoc->docData.nPosition  
+                pStream.WriteLine "FirstLine1=" & pDoc->docData.nFirstLine1  
+                pStream.WriteLine "Position1=" & pDoc->docData.nPosition1  
+                pStream.WriteLine "SplitMode=" & pDoc->docData.nSplitMode
+                pStream.WriteLine "SplitPositionX=" & pDoc->docData.nSplitPositionX
+                pStream.WriteLine "SplitPositionY=" & pDoc->docData.nSplitPositionY
+                pStream.WriteLine "FocusEdit=" & pDoc->docData.nFocusEdit
                 pStream.WriteLine "FileEnd=[-]"
             end If
         end if
@@ -1402,14 +1403,13 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
             end if
             if AfxFileExists(wszFilename) then
 
-                wszFilename = OnCommand_FileAutoSaveFileCheck( wszFilename )
-
                 nFileIndex = nFileIndex + 1
                 if nFileIndex > ubound(docData) then
                     redim preserve docData( ubound(docData) + 100 ) 
                 end If
 
                 with docData(nFileIndex)
+                    .bIsValidData    = true
                     .wszFilename     = wszFilename
                     .wszFileType     = wszFileType
                     .bLoadInTab      = bLoadInTab
@@ -1447,31 +1447,14 @@ function clsConfig.ProjectLoadFromFile( byval wszFile as CWSTR ) as boolean
         gApp.wszPanelText = docData(i).wszFilename
         frmMain_SetStatusbar
 
-        pDoc = frmMain_OpenFileSafely( _
-                    HWND_FRMMAIN, _
-                    false, _    ' bIsNewFile
-                    false, _    ' bIsTemplate
-                    false, _    ' bShowInTab (we'll manually add new tab below)
-                    false, _    ' bIsInclude
-                    docData(i).wszFilename, _  ' wszName
-                    0, _        ' pDocIn
-                    docData(i).wszFileType )
-
+        pDoc = gApp.CreateEmptyDocument()
+        pDoc->LoadDiskFile( docData(i).wszFilename )
+        pDoc->ProjectFiletype = docData(i).wszFileType
+        pDoc->docData = docData(i)
         if docData(i).bLoadInTab then
+            pDoc->AssignTextBuffer()
             iTab = gTTabCtl.AddTab( pDoc )  ' Add the new document to the top tabcontrol
         end if
-
-        ' Set the previously saved positions
-        pDoc->SplitX = docData(i).nSplitPositionX
-        pDoc->SplitY = docData(i).nSplitPositionY
-        pDoc->EditorSplitMode = docData(i).nSplitMode
-        pDoc->SetBookmarks(docData(i).wszBookmarks)
-        pDoc->SetFoldPoints(docData(i).wszFoldPoints)
-        SciExec( pDoc->hWindow(0), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine, 0) 
-        SciExec( pDoc->hWindow(0), SCI_GOTOPOS, docData(i).nPosition, 0) 
-        SciExec( pDoc->hWindow(1), SCI_SETFIRSTVISIBLELINE, docData(i).nFirstLine1, 0) 
-        SciExec( pDoc->hWindow(1), SCI_GOTOPOS, docData(i).nPosition1, 0) 
-        pDoc->hWndActiveScintilla = pDoc->hWindow(docData(i).nFocusEdit)
 
     next
 
@@ -1537,7 +1520,7 @@ function clsConfig.ReloadConfigFileTest() as boolean
     ' Compare the disk file date time to the value currently stored in static variable.
     ft = AfxGetFileLastWriteTime(this.ConfigFilename)
     if AfxFileTimeToVariantTime(ft) <> AfxFileTimeToVariantTime(this.DateFileTime) then
-        gConfig.LoadConfigFile()  ' this function also updates the _DateFileTime value
+        gConfig.LoadConfigFile(true)  ' this function also updates the _DateFileTime value
         ' Apply the newly saved options to all open Scintilla windows
         dim pDoc as clsDocument ptr = gApp.pDocList
         do until pDoc = 0

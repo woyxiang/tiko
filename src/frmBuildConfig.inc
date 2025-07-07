@@ -19,24 +19,31 @@
 ' Create an array that holds all options in the Build compiler options listbox. The
 ' description contains a parenthesis enclosed action.
 dim shared gBuildOptions(...) as CWSTR => _
-    {  "Language compatibility FreeBasic (-lang fb)", _
-        "Language compatibility FreeBasic Lite (-lang fblite)", _
-        "Language compatibility QuickBasic (-lang qb)", _
-        "Subsystem to console (-s console)", _
-        "Subsystem to GUI (-s gui)", _
-        "Compiler 32-bit assembler backend (-gen gas)", _
-        "Compiler 64-bit assembler backend (-gen gas64)", _
-        "Compiler GCC backend (-gen gcc)", _
-        "Compiler LLVM backend (-gen llvm)", _
-        "Create DLL and import library (-dll)", _
-        "Create static library (-lib)", _
-        "Add error checking (-e)", _
-        "Add error checking with RESUME support (-ex)", _
-        "Same as -ex with array bounds and null pointer (-exx)", _
-        "Add debug information (-g)", _
-        "Compile only, do not link (-c)", _
-        "Do not delete the object files (-C)", _
-        "Emit preprocessed output, do not compile (-pp)" _
+    {  _
+    "Subsystem to console (-s console)", _
+    "Subsystem to GUI (-s gui)", _
+    "Compiler 32-bit assembler backend (-gen gas)", _
+    "Compiler 64-bit assembler backend (-gen gas64)", _
+    "Compiler GCC backend (-gen gcc)", _
+    "Compiler LLVM backend (-gen llvm)", _
+    "Add error checking (-e)", _
+    "Add error checking with RESUME support (-ex)", _
+    "Same as -ex with array bounds and null pointer (-exx)", _
+    "Enable Assert and AssertWarn code generation (-eassert)", _
+    "Add debug information (-g)", _
+    "Optimization level 1 for gcc (-Wc -O1)", _
+    "Optimization level 2 for gcc (-Wc -O2)", _
+    "Optimization level 3 for gcc (-Wc -O3)", _
+    "Optimization favor size for gcc (-Wc -Os)", _
+    "Optimization favor speed for gcc (-Wc -Ofast)", _
+    "Language compatibility FreeBasic (-lang fb)", _
+    "Language compatibility FreeBasic Lite (-lang fblite)", _
+    "Language compatibility QuickBasic (-lang qb)", _
+    "Create DLL and import library (-dll)", _
+    "Create static library (-lib)", _
+    "Compile only, do not link (-c)", _
+    "Do not delete the object files (-C)", _
+    "Emit preprocessed output, do not compile (-pp)" _
     }
 
 ' ========================================================================================
