@@ -178,6 +178,141 @@ end function
 
 
 ' ========================================================================================
+' frmHelpViewerListBox_SubclassProc 
+' ========================================================================================
+function frmHelpViewerListBox_SubclassProc ( _
+            byval hWin   as HWND, _                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval _wParam as WPARAM, _               ' // First message parameter
+            byval _lParam as LPARAM, _               ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
+
+    static as long accumDelta
+    
+    ' keep track of last index we were over so that we only issue a 
+    ' repaint if the cursor has moved off of the line
+    static as long nLastIdx = -1
+        
+    select case uMsg
+        case WM_MOUSEWHEEL
+            ' accumulate delta until scroll one line (up +120, down -120). 
+            ' 120 is the Microsoft default delta
+            dim as long zDelta = GET_WHEEL_DELTA_WPARAM( _wParam )
+            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
+            accumDelta = accumDelta + zDelta
+            if accumDelta >= 120 then       ' scroll up 3 lines
+                nTopIndex = nTopIndex - 3
+                nTopIndex = max( 0, nTopIndex )
+                SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                accumDelta = 0
+'                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+            elseif accumDelta <= -120 then  ' scroll down 3 lines
+                nTopIndex = nTopIndex + 3
+                SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                accumDelta = 0
+'                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+            end if
+
+        case WM_MOUSEMOVE
+            ' Track that we are over the control in order to catch the 
+            ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
+            dim tme as TrackMouseEvent
+            tme.cbSize = sizeof(TrackMouseEvent)
+            tme.dwFlags = TME_HOVER or TME_LEAVE
+            tme.hwndTrack = hWin
+            tme.dwHoverTime = 1
+            TrackMouseEvent(@tme) 
+
+            ' get the item rect that the mouse is over and only invalidate
+            ' that instead of the entire listbox
+            dim as RECT rc
+            dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
+            ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
+            ' if the specified point is in the client area of the list box, or one if it is outside the 
+            ' client area.
+            if hiword(idx) <> 1 then
+                if idx <> nLastIdx then
+                    ListBox_GetItemRect( hWin, idx, @rc )
+                    InvalidateRect( hWin, @rc, true )
+                    ListBox_GetItemRect( hWin, nLastIdx, @rc )
+                    InvalidateRect( hWin, @rc, true )
+                    nLastIdx = idx
+                end if
+            end if
+                            
+        case WM_MOUSELEAVE
+            nLastIdx = -1
+            AfxRedrawWindow(hWin)   
+            
+        case WM_LBUTTONUP
+            ' determine if we clicked on a function name or a node header
+            dim as RECT rc
+            dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
+            ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
+            ' if the specified point is in the client area of the list box, or one if it is outside the 
+            ' client area.
+            if hiword(idx) <> 1 then
+'                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
+'                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
+'                if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
+'                    OpenSelectedDocument( pDoc->DiskFilename )
+'                else
+'                    ' Attempt to show the function name
+'                    dim as long nLineNum = getFunctionsLinenumber( wszCaption )
+'                    dim as CWSTR wszFunctionName = getFunctionsFunctionName( wszCaption )
+'                    dim as CWSTR wszDiskFilename 
+'                    if pDoc then wszDiskFilename = pDoc->DiskFilename
+'                    OpenSelectedDocument( wszDiskFilename, wszFunctionName, nLineNum )
+'                end if
+            end if
+
+                                    
+        case WM_ERASEBKGND
+            ' if the number of lines in the listbox maybe less than the number per page then 
+            ' calculate from last item to bottom of listbox, otherwise calculate based on
+            ' the mod of the lineheight to listbox height so we can color the partial line
+            ' that won't be displayed at the bottom of the list.
+            dim as RECT rc: GetClientRect( hWin, @rc )
+
+            dim as RECT rcItem  
+            SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
+            dim as long itemHeight = rcItem.bottom - rcItem.top
+            dim as long NumItems = ListBox_GetCount(hWin)
+            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
+            dim as long visible_rows = 0
+            dim as long ItemsPerPage = 0
+            dim as long bottom_index = 0
+                        
+            if NumItems > 0 then
+                ItemsPerPage = (rc.bottom - rc.top) / itemHeight
+                bottom_index = (nTopIndex + ItemsPerPage) 
+                if bottom_index >= NumItems then bottom_index = NumItems - 1
+                visible_rows = (bottom_index - nTopIndex) + 1
+                rc.top = visible_rows * itemHeight 
+            end if
+
+            if rc.top < rc.bottom then
+                dim as HDC _hDC = cast(HDC, _wParam)
+                PaintRect( _hDC, @rc, ghPanel.BackColor )
+            end if
+
+            ValidateRect( hWin, @rc )
+            return true
+        
+        Case WM_DESTROY
+            ' REQUIRED: Remove control subclassing
+            RemoveWindowSubclass( hWin, @frmHelpViewerListBox_SubclassProc, uIdSubclass )
+    end select
+    
+    ' For messages that we don't deal with
+    function = DefSubclassProc( hWin, uMsg, _wParam, _lParam )
+
+end function
+
+
+' ========================================================================================
 ' frmHelpViewer_Show
 ' ========================================================================================
 function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
@@ -194,6 +329,14 @@ function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
 
     pWindow->SetClientSize(625, 460)
     pWindow->Center(pWindow->hWindow, hWndParent)
+
+    HWND_FRMHELPVIEWER_LISTBOX = _ 
+        pWindow->AddControl("LISTBOX", , IDC_FRMHELPVIEWER_LISTBOX, "", 0, 0, 200, 460, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
+        LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
+        cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
+        IDC_FRMHELPVIEWER_LISTBOX, cast(DWORD_PTR, @pWindow))
 
     frmHelpViewer_PositionWindows()
     

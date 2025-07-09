@@ -363,7 +363,7 @@ function frmFunctionsListBox_SubclassProc ( _
         case MSG_USER_LOAD_FUNCTIONSFILES
             LoadFunctionsFiles()
 
-        Case WM_MOUSEWHEEL
+        case WM_MOUSEWHEEL
             ' accumulate delta until scroll one line (up +120, down -120). 
             ' 120 is the Microsoft default delta
             dim as long zDelta = GET_WHEEL_DELTA_WPARAM( _wParam )
@@ -382,7 +382,7 @@ function frmFunctionsListBox_SubclassProc ( _
                 frmPanelVScroll_PositionWindows( SW_SHOWNA )
             end if
             
-        Case WM_MOUSEMOVE
+        case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
             dim tme as TrackMouseEvent

@@ -13,6 +13,8 @@
 
 #pragma once
 
+#define IDC_FRMHELPVIEWER_LISTBOX       1000
+
 
 declare function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
 
