@@ -258,14 +258,9 @@ function frmBuildConfig_OnDrawItem( _
             byval lpdis as const DRAWITEMSTRUCT ptr _
             ) as long
 
-    dim memDC as HDC                 ' Double buffering
-    dim hbit  as HBITMAP             ' Double buffering
-    
-    dim as HBRUSH hBrush 
-    dim as HICON hCheckBox
-    dim as RECT rc, rc2
-    dim as long nWidth, nHeight
+    dim as RECT rc
     dim as CWSTR wszText, wszOptions, wszAction
+    dim as boolean IsChecked = false
     
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow = 0 then exit function
@@ -274,81 +269,62 @@ function frmBuildConfig_OnDrawItem( _
     
     select case lpdis->itemAction
         case ODA_DRAWENTIRE, ODA_SELECT
+            
+            dim as long nSelBuild = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LIST1))
+            dim as long nSelOptions = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LSTOPTIONS))
+            
             if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
                 wszText = gConfig.BuildsTemp(lpdis->itemID).wszDescription
-                hCheckBox = 0
             elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
                 wszText = gBuildOptions(lpdis->itemID).wszText
                 ' Get the selected item in the Builds listbox and then look at the OptionList for
                 ' that build for each of the individual OptionList build options.
-                dim as long nSelBuild = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LIST1))
                 if nSelBuild > -1 then 
                     wszOptions = " " & gConfig.BuildsTemp(nSelBuild).wszOptions & " "
                     wszAction  = " " & AfxStrExtract(gBuildOptions(lpdis->itemID).wszText, "(", ")") & " "
-                    hCheckBox = iif( instr(wszOptions, wszAction), ghIconTick, ghIconNoTick)
+                    IsChecked = iif( instr(wszOptions, wszAction), true, false)
                 end if
             end if
             
-            nWidth  = lpdis->rcItem.right-lpdis->rcItem.left
-            nHeight = lpdis->rcItem.bottom-lpdis->rcItem.top 
-            
-            memDC = CreateCompatibleDC( lpdis->hDC )
+            dim as clsDoubleBuffer b
 
-            SaveDC(memDC)
-                                            
-            hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
-            if hbit then SelectObject( memDC, hbit )
+            b.BeginDoubleBuffer(lpdis->hwndItem, lpdis->hDC, lpdis->rcItem)
+                
+            dim as boolean IsHot = false
+            if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
+                if lpdis->itemID = nSelBuild then IsHot = true
+            elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                if lpdis->itemID = nSelOptions then IsHot = true
+            end if
+            
+            dim as COLORREF backclr = iif( IsHot, GetSysColor(COLOR_HIGHLIGHT), GetSysColor(COLOR_WINDOW) )
+            dim as COLORREF foreclr = iif( IsHot, GetSysColor(COLOR_HIGHLIGHTTEXT), GetSysColor(COLOR_WINDOWTEXT) )
+            b.SetForeColors(foreclr, foreclr)
+            b.SetBackColors(backclr, backclr)
 
             ' Create our rect that works with the entire line
-            SetRect(@rc, 0, 0, nWidth, nHeight)
-            FillRect(memDC, @rc, GetSysColorBrush(COLOR_WINDOW))  
-            
-            ' Draw the tick/untick image
-            ' The line height is FRMBUILDCONFIG_LISTBOX_LINEHEIGHT so center the 16x16 icon vertically and horizontally
-            rc2 = rc
-            if hCheckBox then
-                DrawIconEx( memDC, _
-                            rc.Left + pWindow->ScaleX(2), _
-                            rc.Top + pWindow->ScaleY(2), _
-                            hCheckBox, _
-                            pWindow->ScaleX(16), pWindow->ScaleY(16), 0, 0, DI_NORMAL) 
-                rc2.Left = pWindow->ScaleX(20)
+            SetRect( @rc, 0, 0, b.rcClientWidth, b.rcClientHeight )
+            dim as RECT rcText = rc 
+            dim as RECT rcBitmap = rc 
+        
+            ' Paint the entire background
+            b.PaintRect( @rc )
+
+            if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
+                rcText.left += pWindow->ScaleX(10)
+            elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                b.SetFont( SYMBOLFONT_9 )
+                rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20)
+                dim as CWSTR wszBitmap = iif(IsChecked, wszIconCheckBoxMarked, wszIconCheckBoxEmpty) 
+                b.PaintText( wszBitmap, @rcBitmap, DT_CENTER )
+                rcText.left = rcBitmap.right
             end if
             
-            ' DETERMINE TEXT BACKGROUND
-            if (lpdis->itemState and ODS_SELECTED) then     
-                SetBkColor(memDC, GetSysColor(COLOR_HIGHLIGHT))   
-                SetTextColor(memDC, GetSysColor(COLOR_HIGHLIGHTTEXT))
-                hBrush = GetSysColorBrush(COLOR_HIGHLIGHT) 
-            else
-                SetBkColor(memDC, GetSysColor(COLOR_WINDOW))   
-                SetTextColor(memDC, GetSysColor(COLOR_WINDOWTEXT))
-                hBrush = GetSysColorBrush(COLOR_WINDOW) 
-            end if
-                    
-            ' Output the text
-            SelectObject(memDC, AfxGetWindowFont(lpdis->hwndItem))
-            SelectObject(memDC, hBrush)      
-            FillRect(memDC, @rc2, hBrush)  
-
-            rc2.Left = rc2.Left + pWindow->ScaleX(4)
-            DrawText( memDC, wszText, _
-                    -1, cast(lpRect, @rc2), _
-                    DT_LEFT or DT_SINGLELINE or DT_VCENTER )
-
-            ' Draw the border edges
-            SetBkMode(memDC, TRANSPARENT)   
-            DrawEdge( memDC, @rc, EDGE_SUNKEN, BF_BOTTOMRIGHT)
-
-            ' Copy the entire memory bitmap over to the visual display
-            BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, nWidth, nHeight, memDC, 0, 0, SRCCOPY 
-
-            ' Cleanup
-            RestoreDC(memDC, -1)
+            b.SetFont( GUIFONT_9 )
+            b.PaintText( wszText, @rcText, DT_LEFT )
             
-            if hbit  then DeleteObject(hbit)
-            if memDC then DeleteDC(memDC)
-
+            b.EndDoubleBuffer()
+    
             return true
     
     end select
@@ -366,17 +342,30 @@ function frmBuildConfig_ProcessListboxClick( _
             ) as long
     if nCurSel = -1 then exit function
     
-    ' Get the action text for this listbox item. If it exists in the Options
-    ' textbox then remove it
+    ' Get the action text for this listbox item. 
     dim as CWSTR wszText = AfxGetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)) & " "
     dim as CWSTR wszAction = AfxStrExtract(gBuildOptions(nCurSel).wszText, "(", ")") & " "
-    ' If the action exists, remove it. If it does not exist then add it.
-    if instr(wszText, wszAction) then
-        wszText = trim(AfxStrRemove(wszText, wszAction))
-    else
+    dim as long groupid = gBuildOptions(nCurSel).groupid
+    dim as boolean doAddAction = false
+    
+    ' If the action does not exist then set flag to add it after all other items in 
+    ' the group have been removed.
+    if instr(wszText, wszAction) = 0 then doAddAction = true
+
+    ' Remove all actions with same groupid.
+    for i as long = lbound(gBuildOptions) to ubound(gBuildOptions)
+        if gBuildOptions(i).groupid = groupid then
+            dim as CWSTR wszRemove = AfxStrExtract(gBuildOptions(i).wszText, "(", ")") & " "
+            wszText = AfxStrRemove(wszText, wszRemove)
+        end if
+    next
+
+    if doAddAction then 
         wszText = trim(wszText) & " " & trim(wszAction)
     end if   
+    
     AfxSetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS), wszText)
+    AfxRedrawWindow( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS) )
 
     function = 0
 
@@ -417,9 +406,11 @@ function frmBuildConfig_ListBox_SubclassProc ( _
         case WM_KEYUP
             select case loword(wParam)
             case VK_SPACE
-                dim as long nCurSel = ListBox_GetCurSel(hwnd)
-                frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
-                exit function
+                if uIdSubclass = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                    dim as long nCurSel = ListBox_GetCurSel(hwnd)
+                    frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
+                    exit function
+                end if    
             case VK_ESCAPE
                 PostMessage( GetParent(hwnd), WM_CLOSE, 0, 0 )
                 exit function
@@ -429,22 +420,23 @@ function frmBuildConfig_ListBox_SubclassProc ( _
         case WM_LBUTTONDOWN
             
         case WM_LBUTTONUP
-            ' Handle if the checkbox is clicked
-            dim as long nCurSel = ListBox_GetCurSel(hwnd)
-            if nCurSel = -1 then exit function
-            dim pWindow as CWindow ptr = AfxCWindowPtr(GetParent(hwnd))
-            if pWindow = 0 then exit function
-            dim as RECT rc: SendMessage(hwnd, LB_GETITEMRECT, nCurSel, cast(LPARAM, @rc))
-            ' The checkbox is the first 20x20 area (16x16 icon)
-            rc.Left   = rc.Left + pWindow->ScaleX(2)
-            rc.Top    = rc.Top  + pWindow->ScaleY(2)
-            rc.Right  = rc.Left + pWindow->ScaleX(16)
-            rc.Bottom = rc.Top  + pWindow->ScaleY(16)
-            dim as point pt = (loword(lParam), hiword(lParam))
-            if PtInRect(@rc, pt) then
-                frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
-                InvalidateRect(hwnd, @rc, true): UpdateWindow(hwnd)
-            END IF
+            if uIdSubclass = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                ' Handle if the checkbox is clicked
+                dim as long nCurSel = ListBox_GetCurSel(hwnd)
+                if nCurSel = -1 then exit function
+                dim pWindow as CWindow ptr = AfxCWindowPtr(GetParent(hwnd))
+                if pWindow = 0 then exit function
+                dim as RECT rc: SendMessage(hwnd, LB_GETITEMRECT, nCurSel, cast(LPARAM, @rc))
+                ' The checkbox is the first 20x20 area (16x16 icon)
+                rc.Left   = rc.Left + pWindow->ScaleX(2)
+                rc.Top    = rc.Top  + pWindow->ScaleY(2)
+                rc.Right  = rc.Left + pWindow->ScaleX(16)
+                rc.Bottom = rc.Top  + pWindow->ScaleY(16)
+                dim as point pt = (loword(lParam), hiword(lParam))
+                if PtInRect(@rc, pt) then
+                    frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
+                end if
+            end if    
             
         case WM_DESTROY
             ' REQUIRED: Remove control subclassing
@@ -501,6 +493,11 @@ function frmBuildConfig_OnCommand( _
                 frmBuildConfig_SetBuildConfigTextboxes()
             end if
             
+        case IDC_FRMBUILDCONFIG_LSTOPTIONS
+            if codeNotify = LBN_SELCHANGE then
+                AfxRedrawWindow(hwndCtl)
+            end if
+
         case IDC_FRMBUILDCONFIG_TXTDESCRIPTION
             if codeNotify = EN_CHANGE then
                 ' Update the temp array and the Listbox

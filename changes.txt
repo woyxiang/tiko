@@ -1,4 +1,6 @@
 Version 1.x.x ()
+- Added: Build Configuration. Toggle on/off mutually exclusive related compile options.
+- Changed: Build Configuration. Double buffered with better resolution new checkbox icons.
 - Fixed: Regression files loaded from command line would not display their Function List.
 - Fixed: Visual glitch where menubar rectangle could display in wrong place.
 - Fixed: Hide any open top menus if editor itself loses focus (WM_ACTIVATEAPP).

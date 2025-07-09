@@ -1539,11 +1539,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     ghIconGood = 1  
     ghIconBad  = 2 
     
-    ' Load the tick and untick icons
-    dim cx as long =  16 * (pWindow->DPI \ 96)
-    ghIconTick   = LoadImage( pWindow->InstanceHandle, "IMAGE_TICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR or LR_SHARED )
-    ghIconNoTick = LoadImage( pWindow->InstanceHandle, "IMAGE_NOTICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR or LR_SHARED )
-
     ' Load the North/South and East/West cursor images
     ghCursorSizeNS = LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZENS), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )
     ghCursorSizeWE = LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZEWE), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )
@@ -1662,9 +1657,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     loop  ' message loop
     
     function = uMsg.wParam
-
-    if ghIconTick       then DestroyIcon( ghIconTick )
-    if ghIconNoTick     then DestroyIcon( ghIconNoTick )
 
     if ghAccelUserTools then DestroyAcceleratorTable( ghAccelUserTools )
     

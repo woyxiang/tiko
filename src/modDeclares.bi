@@ -163,7 +163,6 @@ dim shared as HWND HWND_FRMPANEL, HWND_FRMPANEL_MENU, HWND_FRMPANEL_VSCROLLBAR
 dim shared as HWND HWND_FRMEDITOR_HSCROLLBAR(1)
 dim shared as HWND HWND_FRMEDITOR_VSCROLLBAR(1)
 
-dim shared as HICON ghIconTick, ghIconNoTick
 dim shared as long ghIconGood, ghIconBad
 dim shared as HCURSOR ghCursorSizeNS
 dim shared as HCURSOR ghCursorSizeWE
@@ -287,7 +286,7 @@ dim shared as wstring * 10 _
     wszIconPreserveCase, wszIconReplace, wszIconReplaceAll, wszIconMoreActions, wszIconAddFileButton, _
     wszIconExplorer, wszIconFunctions, wszIconBookmarks, wszIconCompile, wszIconBuildExecute, _
     wszIconSplitEditor, wszIconSplitLeftRight, wszIconSplitTopBottom, wszIconThemes, _
-    wszIconSettings
+    wszIconSettings, wszIconCheckBoxEmpty, wszIconCheckBoxMarked
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 
@@ -321,4 +320,6 @@ dim shared as wstring * 10 _
     wszIconSplitEditor       = wszIconSplitLeftRight
     wszIconSettings          = !"\uE713"   
     wszIconThemes            = !"\uE771"   
+    wszIconCheckBoxEmpty     = !"\uE739"
+    wszIconCheckBoxMarked    = !"\uE73A"
 
