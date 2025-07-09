@@ -860,6 +860,11 @@ function frmMain_OnCreate( _
             byval hwnd as HWND, _
             byval lpCreateStructPtr as LPCREATESTRUCT _
             ) as boolean
+
+    ' delete any previous temporary quick run files should they exist
+    gApp.wszQuickRunFilename = AfxGetExePathName & QUICKRUNEXE
+    AfxDeleteFile( gApp.wszQuickRunFilename )
+
     ' Enable drag and drop files
     DragAcceptFiles hwnd, CTRUE
     
@@ -1118,6 +1123,11 @@ function frmMain_OnDestroy( byval hwnd as HWND ) as LRESULT
     ' Output the config settings to disk file
     gConfig.SaveConfigFile
 
+    ' delete any temporary quick run files should they exist
+    ' filename set in compile process and could be different location than the
+    ' default filename as tested for in wm_create.
+    AfxDeleteFile( gApp.wszQuickRunFilename )
+    
     ' Disable drag and drop files
     DragAcceptFiles hwnd, false
     

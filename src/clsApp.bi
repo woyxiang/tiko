@@ -40,6 +40,7 @@ type clsApp
         IsShutDown                 as boolean           ' App is currently closing
         wszCommandLine             as CWSTR             ' non-project commandline (not saved to file)
         wszLastOpenFolder          as CWSTR             ' remembers the last opened folder for the Open Dialog
+        wszQuickRunFilename        as CWSTR
         
         IsSessionActive            as boolean
         SessionName                as CWSTR

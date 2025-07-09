@@ -98,8 +98,6 @@ type clsDocument
     
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
-    QuickRunDiskFilename  as wstring * MAX_PATH
-    RunViaBatFilename     as wstring * MAX_PATH
     DiskFilename          as wstring * MAX_PATH
     DateFileTime          as FILETIME  
     bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
@@ -142,7 +140,6 @@ type clsDocument
     declare function SetDocInfo() as long
     declare function SetProjectFileType() as long
     declare function SetDocumentBuild() as long
-    declare function DeleteTempFiles() as long
     declare function ParseDocument() as boolean
     declare function IsValidScintillaID( byval idScintilla as long ) as boolean
     declare function GetActiveScintillaPtr() as any ptr

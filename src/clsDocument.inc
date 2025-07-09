@@ -27,18 +27,8 @@
 destructor clsDocument
     ' Delete any manually allocated scintilla edit windows in the editor
     this.DestroyScintillaWindows()
-    
-    ' Delete any temp files associated with this document (eg. QuickRun)
-    this.DeleteTempFiles()
 end destructor
 
-
-function clsDocument.DeleteTempFiles() as long
-    if AfxFileExists(this.QuickRunDiskFilename) then AfxDeleteFile(this.QuickRunDiskFilename)
-    if AfxFileExists(this.RunViaBatFilename) then AfxDeleteFile(this.RunViaBatFilename)
-    function = 0
-end function    
-    
 
 ''
 ''  Returns true/False indicating whether user manual changes were made

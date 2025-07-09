@@ -15,6 +15,7 @@
 #include once "frmExplorer.bi"
 #include once "modMRU.bi"
 
+
 ''
 ''
 function clsApp.IsValidDocumentPointer( byval pDocSearch as clsDocument ptr ) as boolean

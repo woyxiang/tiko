@@ -133,12 +133,6 @@ function code_Compile( byval wID as long ) as boolean
         return 0
     end if
     
-    ' Silently convert QuickRun to BuildExecute if file being compiled has already been saved.
-    if (pDocMain->IsNewFlag = false) andalso (gCompile.CompileID = IDM_QUICKRUN) then
-        pDocMain->DeleteTempFiles()
-        gCompile.CompileID = IDM_BUILDEXECUTE
-    end if
-
     ' Run any precompile tools
     for y as long = lbound(gConfig.Tools) to ubound(gConfig.Tools)
         if gConfig.Tools(y).Action = USERTOOL_ACTION_PRECOMPILE then
@@ -147,13 +141,15 @@ function code_Compile( byval wID as long ) as boolean
     next
 
     ' if this is a QuickRun then we need to copy the current source code to a temporary bas file
-    ' and compile that bas file instead. The resulting bas file will be deleted after the compiling
-    ' has completed and exe will be deleted when the exe is terminated. 
-    dim as CWSTR wszTempMainFilename
-    if gCompile.CompileID = IDM_QUICKRUN then   ' can only occur for NewFlag files otherwise a BuildExecute happens.
-        gCompile.MainFolder   = AfxGetExePathName
-        wszTempMainFilename   = GetTemporaryFilename(gCompile.MainFolder, "bas")
-        gCompile.MainFilename = wszTempMainFilename
+    ' and compile that bas file instead. 
+    if gCompile.CompileID = IDM_QUICKRUN then  
+        if AfxFileExists(pDocMain->DiskFilename) then
+            gCompile.MainFolder = AfxStrPathname("PATH", pDocMain->DiskFilename)
+        else    
+            gCompile.MainFolder = AfxGetExePathName
+        end if
+
+        gCompile.MainFilename = gCompile.MainFolder & QUICKRUNBAS
         gCompile.MainName     = AfxStrPathname("NAME", gCompile.MainFilename)
         
         dim as CWSTR wszText
@@ -247,10 +243,15 @@ function code_Compile( byval wID as long ) as boolean
         gCompile.OutputFilename = gCompile.MainFolder & "lib" & gCompile.MainName & ".a"
     end if
 
-
+    if gCompile.CompileID = IDM_QUICKRUN then
+        ' Delete the quick run exe when Application ends.
+        gApp.wszQuickRunFilename = gCompile.OutputFilename
+    end if    
+        
     ' Need to test if the resulting application to be compiled is actually running
     ' in memory. This would cause the compile to fail.
     if IsProcessRunning(@gCompile.OutputFilename) then
+        AfxDeleteFile( gCompile.OutputFilename )
         SetCompileStatusBarMessage( "", 0 )
         MessageBox( HWND_FRMMAIN, L(200,"Program running") & "...", L(201,"Error"), _
                         MB_OK Or MB_ICONINFORMATION Or MB_DEFBUTTON1 )
@@ -377,8 +378,7 @@ function code_Compile( byval wID as long ) as boolean
         loop
     end if
 
-    ' Attempt to delete any existing output file so it will not exist
-    ' should the compile fail.
+    ' Attempt to delete any existing output file so it will not exist should the compile fail.
     if AfxFileExists( gCompile.OutputFilename ) then
         AfxDeleteFile( gCompile.OutputFilename )
     end if
@@ -427,13 +427,6 @@ function code_Compile( byval wID as long ) as boolean
             gCompile.OutputFilename = AfxStrReplace( gCompile.OutputFilename, "/", "\" )
             if AfxPathIsRelative( gCompile.OutputFilename ) then 
                 gCompile.OutputFilename = AfxPathCombine( gCompile.MainFolder, gCompile.OutputFilename )
-            end if
-
-            if gCompile.CompileID = IDM_QUICKRUN then 
-                if pDocMain then
-                    pDocMain->DeleteTempFiles()   ' delete any existing temp files
-                    pDocMain->QuickRunDiskFilename = gCompile.OutputFilename  ' set with new temp filename
-                end if
             end if
 
             RunEXE( _
