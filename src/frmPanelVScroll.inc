@@ -163,7 +163,7 @@ function frmPanelVScroll_WndProc( _
             b.BeginDoubleBuffer(hwnd)
             b.SetBackColors( ghPanel.BackColorScrollBar, ghPanel.BackColorScrollBar )
             b.PaintClientRect()
-            b.SetBackColors( ghEditor.ForeColorScrollBar, ghEditor.ForeColorScrollBar )
+            b.SetBackColors( ghPanel.ForeColorScrollBar, ghPanel.ForeColorScrollBar )
             b.PaintRect( @gPanelVScroll.rc )
 
             b.EndDoubleBuffer()
