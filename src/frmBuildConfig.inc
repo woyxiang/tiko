@@ -16,35 +16,71 @@
 #include once "clsTopTabCtl.bi"
 #include once "clsDocument.bi"
 
+type BUILD_OPTIONS
+    groupid as long
+    wszText as CWSTR
+end type
+
 ' Create an array that holds all options in the Build compiler options listbox. The
 ' description contains a parenthesis enclosed action.
-dim shared gBuildOptions(...) as CWSTR => _
-    {  _
-    "Subsystem to console (-s console)", _
-    "Subsystem to GUI (-s gui)", _
-    "Compiler 32-bit assembler backend (-gen gas)", _
-    "Compiler 64-bit assembler backend (-gen gas64)", _
-    "Compiler GCC backend (-gen gcc)", _
-    "Compiler LLVM backend (-gen llvm)", _
-    "Add error checking (-e)", _
-    "Add error checking with RESUME support (-ex)", _
-    "Same as -ex with array bounds and null pointer (-exx)", _
-    "Enable Assert and AssertWarn code generation (-eassert)", _
-    "Add debug information (-g)", _
-    "Optimization level 1 for gcc (-Wc -O1)", _
-    "Optimization level 2 for gcc (-Wc -O2)", _
-    "Optimization level 3 for gcc (-Wc -O3)", _
-    "Optimization favor size for gcc (-Wc -Os)", _
-    "Optimization favor speed for gcc (-Wc -Ofast)", _
-    "Language compatibility FreeBasic (-lang fb)", _
-    "Language compatibility FreeBasic Lite (-lang fblite)", _
-    "Language compatibility QuickBasic (-lang qb)", _
-    "Create DLL and import library (-dll)", _
-    "Create static library (-lib)", _
-    "Compile only, do not link (-c)", _
-    "Do not delete the object files (-C)", _
-    "Emit preprocessed output, do not compile (-pp)" _
-    }
+dim shared gBuildOptions(23) as BUILD_OPTIONS
+gBuildOptions(0).groupid  = 0
+gBuildOptions(0).wszText  = "Subsystem to console (-s console)"
+gBuildOptions(1).groupid  = 0
+gBuildOptions(1).wszText  = "Subsystem to GUI (-s gui)"
+
+gBuildOptions(2).groupid  = 1
+gBuildOptions(2).wszText  = "Compiler 32-bit assembler backend (-gen gas)"
+gBuildOptions(3).groupid  = 1
+gBuildOptions(3).wszText  = "Compiler 64-bit assembler backend (-gen gas64)"
+gBuildOptions(4).groupid  = 1
+gBuildOptions(4).wszText  = "Compiler GCC backend (-gen gcc)"
+gBuildOptions(5).groupid  = 1
+gBuildOptions(5).wszText  = "Compiler LLVM backend (-gen llvm)"
+
+gBuildOptions(6).groupid  = 2
+gBuildOptions(6).wszText  = "Add error checking (-e)"
+gBuildOptions(7).groupid  = 2
+gBuildOptions(7).wszText  = "Add error checking with RESUME support (-ex)"
+gBuildOptions(8).groupid  = 2
+gBuildOptions(8).wszText  = "Same as -ex with array bounds and null pointer (-exx)"
+
+gBuildOptions(9).groupid  = 3
+gBuildOptions(9).wszText  = "Enable Assert and AssertWarn code generation (-eassert)"
+
+gBuildOptions(10).groupid = 4
+gBuildOptions(10).wszText = "Add debug information (-g)"
+
+gBuildOptions(11).groupid = 5
+gBuildOptions(11).wszText = "Optimization level 1 for gcc (-Wc -O1)"
+gBuildOptions(12).groupid = 5
+gBuildOptions(12).wszText = "Optimization level 2 for gcc (-Wc -O2)"
+gBuildOptions(13).groupid = 5
+gBuildOptions(13).wszText = "Optimization level 3 for gcc (-Wc -O3)"
+gBuildOptions(14).groupid = 5
+gBuildOptions(14).wszText = "Optimization favor size for gcc (-Wc -Os)"
+gBuildOptions(15).groupid = 5
+gBuildOptions(15).wszText = "Optimization favor speed for gcc (-Wc -Ofast)"
+
+gBuildOptions(16).groupid = 6
+gBuildOptions(16).wszText = "Language compatibility FreeBasic (-lang fb)"
+gBuildOptions(17).groupid = 6
+gBuildOptions(17).wszText = "Language compatibility FreeBasic Lite (-lang fblite)"
+gBuildOptions(18).groupid = 6
+gBuildOptions(18).wszText = "Language compatibility QuickBasic (-lang qb)"
+
+gBuildOptions(19).groupid = 7
+gBuildOptions(19).wszText = "Create DLL and import library (-dll)"
+gBuildOptions(20).groupid = 7
+gBuildOptions(20).wszText = "Create static library (-lib)"
+
+gBuildOptions(21).groupid = 8
+gBuildOptions(21).wszText = "Compile only, do not link (-c)"
+gBuildOptions(22).groupid = 9
+gBuildOptions(22).wszText = "Do not delete the object files (-C)"
+gBuildOptions(23).groupid = 10
+gBuildOptions(23).wszText = "Emit preprocessed output, do not compile (-pp)"
+
 
 ' ========================================================================================
 ' Load all of the build descriptions into the listbox
@@ -242,13 +278,13 @@ function frmBuildConfig_OnDrawItem( _
                 wszText = gConfig.BuildsTemp(lpdis->itemID).wszDescription
                 hCheckBox = 0
             elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
-                wszText = gBuildOptions(lpdis->itemID)
+                wszText = gBuildOptions(lpdis->itemID).wszText
                 ' Get the selected item in the Builds listbox and then look at the OptionList for
                 ' that build for each of the individual OptionList build options.
                 dim as long nSelBuild = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LIST1))
                 if nSelBuild > -1 then 
                     wszOptions = " " & gConfig.BuildsTemp(nSelBuild).wszOptions & " "
-                    wszAction  = " " & AfxStrExtract(gBuildOptions(lpdis->itemID), "(", ")") & " "
+                    wszAction  = " " & AfxStrExtract(gBuildOptions(lpdis->itemID).wszText, "(", ")") & " "
                     hCheckBox = iif( instr(wszOptions, wszAction), ghIconTick, ghIconNoTick)
                 end if
             end if
@@ -333,7 +369,7 @@ function frmBuildConfig_ProcessListboxClick( _
     ' Get the action text for this listbox item. If it exists in the Options
     ' textbox then remove it
     dim as CWSTR wszText = AfxGetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)) & " "
-    dim as CWSTR wszAction = AfxStrExtract(gBuildOptions(nCurSel), "(", ")") & " "
+    dim as CWSTR wszAction = AfxStrExtract(gBuildOptions(nCurSel).wszText, "(", ")") & " "
     ' If the action exists, remove it. If it does not exist then add it.
     if instr(wszText, wszAction) then
         wszText = trim(AfxStrRemove(wszText, wszAction))
@@ -781,7 +817,7 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     ' Load the Compiler Options Listbox
     hCtrl = GetDlgItem(hForm, IDC_FRMBUILDCONFIG_LSTOPTIONS)
     for i as long = lbound(gBuildOptions) to ubound(gBuildOptions)
-        ListBox_AddString(hCtrl, gBuildOptions(i).sptr)
+        ListBox_AddString(hCtrl, gBuildOptions(i).wszText.sptr)
     next
 
     

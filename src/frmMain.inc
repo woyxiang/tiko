@@ -354,6 +354,9 @@ function frmMain_ProcessCommandLine( byval hwnd as HWND ) as long
         frmMain_RestoreSessionOrProject()
     end if    
 
+    LoadExplorerFiles()
+    LoadFunctionsFiles()
+
     function = 0
 end function   
 

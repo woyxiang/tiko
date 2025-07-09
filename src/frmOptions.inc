@@ -371,7 +371,7 @@ end function
 ' ========================================================================================
 ' frmOptions_Show
 ' ========================================================================================
-public function frmOptions_Show( byval hWndParent as HWND ) as LRESULT
+function frmOptions_Show( byval hWndParent as HWND ) as LRESULT
 
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow

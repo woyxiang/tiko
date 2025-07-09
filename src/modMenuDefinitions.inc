@@ -160,7 +160,7 @@ Function getMenuText( byval idMenu as long ) As CWSTR
         case IDM_COMMANDLINE: wszText = L(68,"Command Line") & "..."
 
         case IDM_HELP_FB: wszText = "FreeBASIC " & L(73,"Help")
-        case IDM_HELP_TIKO: wszText = "Tiko Editor " & L(73,"Help")
+        case IDM_HELP_TIKO: wszText = APPNAME & " " & L(73,"Help")
         case IDM_ABOUT: wszText = L(74,"About")
 
         case else

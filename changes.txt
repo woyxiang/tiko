@@ -1,3 +1,6 @@
+Version 1.x.x ()
+- Fixed: Regression files loaded from command line would not display their Function List.
+
 Version 1.1.1 ()
 - Added: Additional Build Configuration flags (-O1,2,3,s,fast and -eassert) to the flag entries in the configuration listbox.
 - Changed: Substantial file management refactor. Reduce resource usage (especially font handles) by up to 400% for large projects.
