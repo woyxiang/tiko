@@ -21,6 +21,14 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     ' Determine if the mouse has moved over (or away from) a window that should invoke
     ' showing or hiding our custom Panel VScroll or Editor HScroll.
     if (uMsg.message = WM_MOUSEMOVE) orelse (uMsg.message = WM_NCMOUSEMOVE) then
+        ' Ensure that if moved away from menubar that the selected index is reset.
+        if (isMouseOverWindow(HWND_FRMMAIN_MENUBAR) = false) andalso _
+            (isPopupMenuOpen() = false) andalso _
+            (gActiveMenuBarIndex <> -1) then
+            gActiveMenuBarIndex = -1
+            AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
+        end if   
+
         ' if mouse is currently in drag operation then simply exit
         if gApp.bDragActive then return false
         ' if mouse is currently scrolling through top menus then exit

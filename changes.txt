@@ -1,5 +1,6 @@
 Version 1.x.x ()
 - Fixed: Regression files loaded from command line would not display their Function List.
+- Fixed: Visual glitch where menubar rectangle could display in wrong place.
 
 Version 1.1.1 ()
 - Added: Additional Build Configuration flags (-O1,2,3,s,fast and -eassert) to the flag entries in the configuration listbox.
