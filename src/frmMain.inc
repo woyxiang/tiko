@@ -504,7 +504,7 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
         if pDoc->EditorSplitMode <> SplitNone then
             frmMain_CalcSplitRect(pDoc)
             b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
-            b.PaintRect( @pDoc->rcSplitButton, ghEditor.Divider )
+            b.PaintRect( @pDoc->rcSplitButton )
         end if    
     end if
     

@@ -13,6 +13,33 @@
 
 #include once "frmHelpViewer.bi"
 
+
+#define IDC_LEFTPANEL   1000
+#define IDC_RIGHTPANEL   1001
+
+dim shared as HWND HWND_LEFTPANEL
+dim shared as HWND HWND_RIGHTPANEL
+
+dim shared as POINT ptSplitPrev
+dim shared as long xDeltaSplitter
+
+' ========================================================================================
+' Calculate RECT area of the splitter bar
+' ========================================================================================
+function frmHelpViewer_CalcSplitRect() as RECT
+    dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
+    if pWindow = 0 then exit function
+
+    dim as long nSplitterWidth = pWindow->ScaleX(4)
+    dim as RECT rc
+    GetClientRect( HWND_FRMHELPVIEWER, @rc )
+    rc.left = AfxGetWindowWidth( HWND_LEFTPANEL )
+    rc.right = rc.left + nSplitterWidth
+
+    function = rc
+end function
+
+
 ' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
@@ -20,10 +47,125 @@ function frmHelpViewer_PositionWindows() as LRESULT
     
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMHELPVIEWER)
     if pWindow = 0 then exit function
+
+    dim as long nLeftPanelWidth = AfxGetWindowWidth(HWND_LEFTPANEL)
+    if nLeftPanelWidth = 0 then nLeftPanelWidth = pWindow->ScaleX(200)
     
-   
+    dim as long nSplitterWidth = pWindow->ScaleX(4)
+
+    dim as RECT rcClient: GetClientRect(HWND_FRMHELPVIEWER, @rcClient)
+    dim as long nClientHeight = rcClient.bottom - rcClient.top
+    dim as long nClientWidth = rcClient.right - rcClient.left
+    
+    dim as long xDelta = 0
+    if gApp.bDragActive = true then xDelta = xDeltaSplitter
+        
+    nLeftPanelWidth += xDelta
+    if nLeftPanelWidth < nSplitterWidth then nLeftPanelWidth = nSplitterWidth
+    if nLeftPanelWidth >= (nClientWidth - nSplitterWidth * 2) then _
+        nLeftPanelWidth = (nClientWidth - nSplitterWidth * 2)
+
+    SetWindowPos( HWND_LEFTPANEL, 0, _
+        0, 0, nLeftPanelWidth, nClientHeight, _
+        SWP_NOZORDER or SWP_SHOWWINDOW )
+    
+    SetWindowPos( HWND_RIGHTPANEL, 0, _
+        nLeftPanelWidth + nSplitterWidth, 0, _
+        nClientWidth - nSplitterWidth - nLeftPanelWidth, nClientHeight, _
+        SWP_NOZORDER or SWP_SHOWWINDOW )
+    
     function = 0
 end function
+
+
+' ========================================================================================
+' Process WM_MOUSEMOVE message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnMouseMove( _
+            byval hwnd as HWND, _
+            byval x as long, _
+            byval y as long, _
+            byval keyflags as UINT _
+            ) as long
+
+    ' HITTEST (SPLITTER)
+    dim as RECT rcSplitter = frmHelpViewer_CalcSplitRect()
+    if (isMouseOverRECT(hwnd, rcSplitter) = true) orelse (gApp.bDragActive = true) then
+        SetCursor( ghCursorSizeWE )
+    else    
+        SetCursor( LoadCursor( null, IDC_ARROW ))
+    end if
+
+    if (gApp.bDragActive = true) andalso (x <> ptSplitPrev.x) then
+        xDeltaSplitter = (x - ptSplitPrev.x)
+        frmHelpViewer_PositionWindows
+    end if
+
+    ptSplitPrev = type(x, y)
+            
+    function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_LBUTTONDOWN message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnLButtonDown( _
+            byval hwnd as HWND, _
+            byval fDoubleClick as boolean, _
+            byval x as long, _
+            byval y as long, _
+            byval keyflags as UINT _
+            ) as long
+                                        
+    dim as RECT rcSplitter = frmHelpViewer_CalcSplitRect()
+    if isMouseOverRECT( hwnd, rcSplitter ) then
+        gApp.bDragActive = true
+        ptSplitPrev = type(x, y)
+        SetCursor(ghCursorSizeWE)
+        SetCapture( HWND_FRMHELPVIEWER )
+    end if
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_LBUTTONUP message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnLButtonUp( _
+            byval hwnd as HWND, _
+            byval x as long, _
+            byval y as long, _
+            byval keyflags as UINT _
+            ) as long
+
+    if gApp.bDragActive then
+       gApp.bDragActive = false
+       frmHelpViewer_PositionWindows
+       ReleaseCapture
+    end if   
+    SetCursor( LoadCursor( null, IDC_ARROW ))
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_SIZE message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnSize( _
+            byval hwnd as HWND, _
+            byval state as UINT, _
+            byval cx as long, _
+            byval cy as long _
+            ) as LRESULT
+    if state <> SIZE_MINIMIZED then
+        ' Position all of the child windows
+        frmHelpViewer_PositionWindows
+    end if
+    function = 0
+end Function
 
 
 ' ========================================================================================
@@ -118,14 +260,35 @@ function frmHelpViewer_OnCtlColorStatic( _
             byval nType as long _
             ) as HBRUSH
 
-'    if hWndChild = GetDlgItem( hwnd, IDC_FRMOPTIONS_LBLCATEGORY ) then
-'        ' Set the category label to blue text 
-'        SetTextColor hdc, 8388608
-'        SetBkColor   hdc, GetSysColor( COLOR_BTNFACE )
-'        return GetSysColorBrush( COLOR_BTNFACE )
-'    end if
+    if hWndChild = HWND_LEFTPANEL then
+        return GetSysColorBrush( COLOR_BTNFACE )
+    elseif hWndChild = HWND_RIGHTPANEL then
+        return GetSysColorBrush( COLOR_HIGHLIGHT )
+    end if
     
     function = 0      
+end function
+
+
+' ========================================================================================
+' Process WM_PAINT message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnPaint( byval hwnd as HWND ) as LRESULT
+    dim as clsDoubleBuffer b
+
+    b.BeginDoubleBuffer(hwnd)
+    b.SetBackColors( ghMain.BackColor, ghMain.BackColor )
+    b.PaintClientRect()
+
+    ' Draw any splitter between the two panels
+    dim as RECT rcSplitter = frmHelpViewer_CalcSplitRect()
+    'b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
+    b.SetBackColors( bgr(255,0,0), bgr(255,0,0) )
+    b.PaintRect( @rcSplitter )
+    
+    b.EndDoubleBuffer()
+    
+    function = 0
 end function
 
 
@@ -164,12 +327,17 @@ function frmHelpViewer_WndProc( _
             ) as LRESULT
 
     select case uMsg
-        HANDLE_MSG (hwnd, WM_CREATE,   frmHelpViewer_OnCreate)
-        HANDLE_MSG (hwnd, WM_CLOSE,    frmHelpViewer_OnClose)
-        HANDLE_MSG (hwnd, WM_DESTROY,  frmHelpViewer_OnDestroy)
-        HANDLE_MSG (hwnd, WM_COMMAND,  frmHelpViewer_OnCommand)
-        HANDLE_MSG (hwnd, WM_NOTIFY,   frmHelpViewer_OnNotify)
+        HANDLE_MSG (hwnd, WM_SIZE,           frmHelpViewer_OnSize)
+        HANDLE_MSG (hwnd, WM_PAINT,          frmHelpViewer_OnPaint)
+        HANDLE_MSG (hwnd, WM_CREATE,         frmHelpViewer_OnCreate)
+        HANDLE_MSG (hwnd, WM_CLOSE,          frmHelpViewer_OnClose)
+        HANDLE_MSG (hwnd, WM_DESTROY,        frmHelpViewer_OnDestroy)
+        HANDLE_MSG (hwnd, WM_COMMAND,        frmHelpViewer_OnCommand)
+        HANDLE_MSG (hwnd, WM_NOTIFY,         frmHelpViewer_OnNotify)
         HANDLE_MSG (hwnd, WM_CTLCOLORSTATIC, frmHelpViewer_OnCtlColorStatic)
+        HANDLE_MSG (hwnd, WM_LBUTTONDOWN,    frmHelpViewer_OnLButtonDown)
+        HANDLE_MSG (hwnd, WM_LBUTTONUP,      frmHelpViewer_OnLButtonUp)
+        HANDLE_MSG (hwnd, WM_MOUSEMOVE,      frmHelpViewer_OnMouseMove)
     end select
 
     function = DefWindowProc(hwnd, uMsg, wParam, lParam)
@@ -323,20 +491,32 @@ function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
     dim as CWSTR wszText = APPNAME & " " & L(73,"Help")
     HWND_FRMHELPVIEWER = pWindow->Create( _
         hWndParent, wszText, @frmHelpViewer_WndProc, 0, 0, 0, 0, _
-        WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
-        WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
+        WS_POPUP or WS_OVERLAPPEDWINDOW or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
+        WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->ClassStyle = CS_DBLCLKS
+
+    ' Set the small and large icon for the main window (must be set after main window is created)
+    pWindow->BigIcon   = LoadImage( pWindow->InstanceHandle, "IMAGE_AAA_MAINICON", IMAGE_ICON, 32, 32, LR_SHARED)
+    pWindow->SmallIcon = LoadImage( pWindow->InstanceHandle, "IMAGE_AAA_MAINICON", IMAGE_ICON, 16, 16, LR_SHARED)
 
     pWindow->SetClientSize(625, 460)
     pWindow->Center(pWindow->hWindow, hWndParent)
 
-    HWND_FRMHELPVIEWER_LISTBOX = _ 
-        pWindow->AddControl("LISTBOX", , IDC_FRMHELPVIEWER_LISTBOX, "", 0, 0, 200, 460, _
-        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
-        LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, _
-        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-        cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
-        IDC_FRMHELPVIEWER_LISTBOX, cast(DWORD_PTR, @pWindow))
+'    HWND_FRMHELPVIEWER_LISTBOX = _ 
+'        pWindow->AddControl("LISTBOX", , IDC_FRMHELPVIEWER_LISTBOX, "", 0, 0, 200, 460, _
+'        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
+'        LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, _
+'        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
+'        cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
+'        IDC_FRMHELPVIEWER_LISTBOX, cast(DWORD_PTR, @pWindow))
+
+    HWND_LEFTPANEL = pWindow->AddControl("LABEL", , IDC_LEFTPANEL, "", 0, 0, 0, 0, _
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+
+    HWND_RIGHTPANEL = pWindow->AddControl("LABEL", , IDC_RIGHTPANEL, "", 0, 0, 0, 0, _
+        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
 
     frmHelpViewer_PositionWindows()
     
