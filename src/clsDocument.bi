@@ -113,7 +113,6 @@ type clsDocument
     lastCaretPos          as long               ' used for checking in SCN_UPDATEUI
     lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
     LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
-    bIsHelpFile           as boolean = false
     wszEOL                as CWSTR              ' used in replace in files when constructing each line of new file
     CurrentSelection      as SELECTION_INFO     ' set during scintilla wm_notfy and used in Find/Replace dialog
     

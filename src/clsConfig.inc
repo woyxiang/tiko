@@ -27,6 +27,7 @@
 #include once "frmTopTabs.bi"
 #include once "frmOutput.bi"
 #include once "frmMainOnCommand.bi"
+#include once "frmHelpViewer.bi"
                 
 ''
 ''  CONSTRUCTOR
@@ -40,8 +41,8 @@ constructor clsConfig
     FBCodetipsFilename        = exe_path & "settings\keywords\codetips.ini" 
     WinAPICodetipsFilename    = exe_path & "settings\keywords\codetips_winapi.ini" 
     WinFBXCodetipsFilename    = exe_path & "settings\keywords\codetips_winfbx.ini" 
-    TikoHelpFile              = exe_path & "settings\help\tiko_help.txt" 
     DefaultSessionFilename    = exe_path & "settings\default.session" 
+    HelpTableOfContents       = exe_path & "settings\help\_toc.txt" 
 end constructor
 
 ''
@@ -312,7 +313,30 @@ function clsConfig.SaveConfigFile() as long
         if this.StartupRight <> rc.Right then this.StartupRight = rc.Right
         if this.StartupBottom <> rc.Bottom then this.StartupBottom = rc.Bottom
     end if
-    
+
+    ' Determine the HelpViewer positioning 
+    ' Do not save if minimized
+    if (isWindow(HWND_FRMHELPVIEWER)) andalso (isiconic( HWND_FRMHELPVIEWER ) = 0) then
+        dim WinPla as WINDOWPLACEMENT
+        WinPla.Length = sizeof(WinPla)
+        GetWindowPlacement( HWND_FRMHELPVIEWER, @WinPla )
+        With this
+            .HelpStartupLeft   = WinPla.rcNormalPosition.Left 
+            .HelpStartupTop    = WinPla.rcNormalPosition.Top
+            .HelpStartupRight  = WinPla.rcNormalPosition.Right
+            .HelpStartupBottom = WinPla.rcNormalPosition.Bottom
+            .HelpStartupMaximized = iif( WinPla.showCmd = SW_MAXIMIZE, true, false )
+            .HelpLeftPanelWidth = AfxGetWindowWidth(GetDlgItem(HWND_FRMHELPVIEWER, IDC_FRMHELPVIEWER_LEFTPANEL))
+        end With
+        
+        dim as RECT rc
+        GetWindowRect( HWND_FRMHELPVIEWER, @rc )
+        if this.HelpStartupLeft <> rc.Left then this.HelpStartupLeft = rc.Left
+        if this.HelpStartupTop <> rc.Top then this.HelpStartupTop = rc.Top
+        if this.HelpStartupRight <> rc.Right then this.HelpStartupRight = rc.Right
+        if this.HelpStartupBottom <> rc.Bottom then this.HelpStartupBottom = rc.Bottom
+    end if
+
     this.CompilerBuild = frmBuildConfig_GetSelectedBuildGUID()
 
     dim pStream as CTextStream   '(utf16)
@@ -368,6 +392,13 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine "StartupRight="             & this.StartupRight         
     pStream.WriteLine "StartupBottom="            & this.StartupBottom        
     pStream.WriteLine "StartupMaximized="         & this.StartupMaximized     
+    ' Note: HelpViewer StartUp positions are in scaled screen coordinates.
+    pStream.WriteLine "HelpStartupLeft="          & this.HelpStartupLeft          
+    pStream.WriteLine "HelpStartupTop="           & this.HelpStartupTop           
+    pStream.WriteLine "HelpStartupRight="         & this.HelpStartupRight         
+    pStream.WriteLine "HelpStartupBottom="        & this.HelpStartupBottom        
+    pStream.WriteLine "HelpStartupMaximized="     & this.HelpStartupMaximized     
+    pStream.WriteLine "HelpLeftPanelWidth="       & this.HelpLeftPanelWidth
     ' Note: SidePanel and OutputPanel positions are in unscaled screen coordinates.
     pStream.WriteLine "ShowPanel="                & this.ShowPanel
     pStream.WriteLine "ShowPanelWidth="           & this.ShowPanelWidth    
@@ -772,6 +803,12 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
                     case "StartupRight":             this.StartupRight          = nData
                     case "StartupBottom":            this.StartupBottom         = nData
                     case "StartupMaximized":         this.StartupMaximized      = nData
+                    case "HelpStartupLeft":          this.HelpStartupLeft       = nData
+                    case "HelpStartupTop":           this.HelpStartupTop        = nData
+                    case "HelpStartupRight":         this.HelpStartupRight      = nData
+                    case "HelpStartupBottom":        this.HelpStartupBottom     = nData
+                    case "HelpStartupMaximized":     this.HelpStartupMaximized  = nData
+                    case "HelpLeftPanelWidth":       this.HelpLeftPanelWidth    = nData
                     case "ShowPanel":                this.ShowPanel             = nData
                     case "ShowPanelWidth":           this.ShowPanelWidth        = nData
                     case "ShowOutputPanel":          this.ShowOutputPanel       = nData
@@ -1226,7 +1263,6 @@ function clsConfig.ProjectSaveToFile() as boolean
     for i = 0 To nCount - 1
         if gTTabCtl.IsSafeIndex(i) = false then continue for
         pDoc = gTTabCtl.tabs(i).pDoc
-        if pDoc->bIsHelpFile then continue for
         
         ' Only deal with files that are no longer "new"
         if pDoc->IsNewFlag = false then 
@@ -1259,7 +1295,7 @@ function clsConfig.ProjectSaveToFile() as boolean
     pDoc = gApp.pDocList
     do until pDoc = 0
         ' Only deal with files that are no longer "new"
-        if (pDoc->IsNewFlag = false) andalso (pDoc->bIsHelpFile = false) then 
+        if pDoc->IsNewFlag = false then 
             if gTTabCtl.GetTabIndexByDocumentPtr(pDoc) = -1 then
                 wszText = pDoc->DiskFilename
                 cwzRelative = AfxPathRelativePathTo( gApp.ProjectFilename, FILE_ATTRIBUTE_NORMAL, wszText, FILE_ATTRIBUTE_NORMAL)

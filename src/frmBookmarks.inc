@@ -223,6 +223,7 @@ function frmBookmarks_OnDrawItem( _
 
 end function
 
+
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmBookmarks
 ' ========================================================================================
@@ -555,14 +556,14 @@ function LoadBookmarksFiles() as long
             ListBox_SetItemData( hList, idx, pDoc )
 
             if pDoc->bBookmarkExpanded then
-            nCount = AfxStrParseCount( sBookmarks, "," )
-            for i as long = 1 to nCount
-                nLineNum = val( AfxStrParse( sBookmarks, i, "," ) )
-                wszText = wstr(nLineNum) & _
-                            "%" & ltrim(pDoc->GetLine(nLineNum))
-                idx = Listbox_AddString( hList, @wszText )
-                ListBox_SetItemData( hList, idx, pDoc )
-            next
+                nCount = AfxStrParseCount( sBookmarks, "," )
+                for i as long = 1 to nCount
+                    nLineNum = val( AfxStrParse( sBookmarks, i, "," ) )
+                    wszText = wstr(nLineNum) & _
+                                "%" & ltrim(pDoc->GetLine(nLineNum))
+                    idx = Listbox_AddString( hList, @wszText )
+                    ListBox_SetItemData( hList, idx, pDoc )
+                next
             end if
         end if
 

@@ -328,10 +328,7 @@ function frmMain_OnCommand( _
             ShowContextHelp(id) 
     
         case IDM_HELP_TIKO
-            frmHelpViewer_Show( hwnd )
-'            dim pDoc as clsDocument ptr = _
-'                OpenSelectedDocument(gConfig.TikoHelpFile)
-'            if pDoc then pDoc->bIsHelpFile = true    
+            frmHelpViewer_Show( HWND_DESKTOP )
 
         case IDM_ABOUT
             DisableAllModeless()

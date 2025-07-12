@@ -13,8 +13,22 @@
 
 #pragma once
 
-#define IDC_FRMHELPVIEWER_LISTBOX       1000
+#include once "Afx/CRichEditCtrl.inc"
+#include once "Afx/CRichEditOleCallback.inc"
+#include once "Afx/CGdiPlus/CGdiPlus.inc"
 
+#define IDC_FRMHELPVIEWER_LEFTPANEL        1000
+#define IDC_FRMHELPVIEWER_RIGHTPANEL       1001
+
+type HELPVIEWER_TYPE
+    as CRichEditCtrl ptr pRichEdit 
+    as POINT ptSplitPrev
+    as long  xDeltaSplitter
+    as CWSTR Filenames(any)
+    as CWSTR Topics(any)
+end type
+
+dim shared as HELPVIEWER_TYPE gHelpViewer
 
 declare function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
 

@@ -14,15 +14,6 @@
 #include once "frmHelpViewer.bi"
 
 
-#define IDC_LEFTPANEL   1000
-#define IDC_RIGHTPANEL   1001
-
-dim shared as HWND HWND_LEFTPANEL
-dim shared as HWND HWND_RIGHTPANEL
-
-dim shared as POINT ptSplitPrev
-dim shared as long xDeltaSplitter
-
 ' ========================================================================================
 ' Calculate RECT area of the splitter bar
 ' ========================================================================================
@@ -33,11 +24,28 @@ function frmHelpViewer_CalcSplitRect() as RECT
     dim as long nSplitterWidth = pWindow->ScaleX(4)
     dim as RECT rc
     GetClientRect( HWND_FRMHELPVIEWER, @rc )
-    rc.left = AfxGetWindowWidth( HWND_LEFTPANEL )
+    rc.left = AfxGetWindowWidth( HWND_FRMHELPVIEWER_LEFTPANEL )
     rc.right = rc.left + nSplitterWidth
 
     function = rc
 end function
+
+
+' ========================================================================================
+' Load a specific Help file richtext file
+' ========================================================================================
+function frmHelpViewer_LoadHelpFile( byval nIndex as long ) as long
+    if (nIndex >= lbound(gHelpViewer.Filenames)) andalso _
+        (nIndex <= ubound(gHelpViewer.Filenames)) then
+        dim as CWSTR wszPath = AfxStrPathname("PATH", gConfig.HelpTableOfContents)
+        DIM cv AS CVAR = wszPath & gHelpViewer.Filenames(nIndex)
+        gHelpViewer.pRichEdit->OpenDoc(cv)
+        gHelpViewer.pRichEdit->SetZoom(120, 100)
+        gHelpViewer.pRichEdit->AcceptTab = false
+    end if
+    function = 0
+end function
+
 
 
 ' ========================================================================================
@@ -48,9 +56,6 @@ function frmHelpViewer_PositionWindows() as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMHELPVIEWER)
     if pWindow = 0 then exit function
 
-    dim as long nLeftPanelWidth = AfxGetWindowWidth(HWND_LEFTPANEL)
-    if nLeftPanelWidth = 0 then nLeftPanelWidth = pWindow->ScaleX(200)
-    
     dim as long nSplitterWidth = pWindow->ScaleX(4)
 
     dim as RECT rcClient: GetClientRect(HWND_FRMHELPVIEWER, @rcClient)
@@ -58,18 +63,18 @@ function frmHelpViewer_PositionWindows() as LRESULT
     dim as long nClientWidth = rcClient.right - rcClient.left
     
     dim as long xDelta = 0
-    if gApp.bDragActive = true then xDelta = xDeltaSplitter
+    if gApp.bDragActive = true then xDelta = gHelpViewer.xDeltaSplitter
         
-    nLeftPanelWidth += xDelta
+    dim as long nLeftPanelWidth = AfxGetWindowWidth(HWND_FRMHELPVIEWER_LEFTPANEL) + xDelta
     if nLeftPanelWidth < nSplitterWidth then nLeftPanelWidth = nSplitterWidth
     if nLeftPanelWidth >= (nClientWidth - nSplitterWidth * 2) then _
         nLeftPanelWidth = (nClientWidth - nSplitterWidth * 2)
 
-    SetWindowPos( HWND_LEFTPANEL, 0, _
+    SetWindowPos( HWND_FRMHELPVIEWER_LEFTPANEL, 0, _
         0, 0, nLeftPanelWidth, nClientHeight, _
         SWP_NOZORDER or SWP_SHOWWINDOW )
     
-    SetWindowPos( HWND_RIGHTPANEL, 0, _
+    SetWindowPos( HWND_FRMHELPVIEWER_RIGHTPANEL, 0, _
         nLeftPanelWidth + nSplitterWidth, 0, _
         nClientWidth - nSplitterWidth - nLeftPanelWidth, nClientHeight, _
         SWP_NOZORDER or SWP_SHOWWINDOW )
@@ -96,12 +101,12 @@ function frmHelpViewer_OnMouseMove( _
         SetCursor( LoadCursor( null, IDC_ARROW ))
     end if
 
-    if (gApp.bDragActive = true) andalso (x <> ptSplitPrev.x) then
-        xDeltaSplitter = (x - ptSplitPrev.x)
+    if (gApp.bDragActive = true) andalso (x <> gHelpViewer.ptSplitPrev.x) then
+        gHelpViewer.xDeltaSplitter = (x - gHelpViewer.ptSplitPrev.x)
         frmHelpViewer_PositionWindows
     end if
 
-    ptSplitPrev = type(x, y)
+    gHelpViewer.ptSplitPrev = type(x, y)
             
     function = 0
 end function
@@ -121,7 +126,7 @@ function frmHelpViewer_OnLButtonDown( _
     dim as RECT rcSplitter = frmHelpViewer_CalcSplitRect()
     if isMouseOverRECT( hwnd, rcSplitter ) then
         gApp.bDragActive = true
-        ptSplitPrev = type(x, y)
+        gHelpViewer.ptSplitPrev = type(x, y)
         SetCursor(ghCursorSizeWE)
         SetCapture( HWND_FRMHELPVIEWER )
     end if
@@ -194,8 +199,18 @@ function frmHelpViewer_OnCommand( _
             byval codeNotify as UINT _
             ) as LRESULT
 
-    select case id
+    select case codeNotify
+        case LBN_SELCHANGE
+            ' update the highlighting of the current line
+            AfxRedrawWindow(hwndCtl)
+            ' Load the help document into the richedit control
+            dim as long nCurSel = Listbox_GetCurSel(hwndCtl)
+            frmHelpViewer_LoadHelpFile( nCurSel )
+            ' update the scrollbar position if necessary
+            frmHelpViewer_PositionWindows()
+    end select      
         
+    select case id
 '        case IDC_FRMOPTIONS_CMDOK
 '            if codeNotify = BN_CLICKED then
 '                frmOptions_SaveEditorOptions()
@@ -260,9 +275,9 @@ function frmHelpViewer_OnCtlColorStatic( _
             byval nType as long _
             ) as HBRUSH
 
-    if hWndChild = HWND_LEFTPANEL then
+    if hWndChild = HWND_FRMHELPVIEWER_LEFTPANEL then
         return GetSysColorBrush( COLOR_BTNFACE )
-    elseif hWndChild = HWND_RIGHTPANEL then
+    elseif hWndChild = HWND_FRMHELPVIEWER_RIGHTPANEL then
         return GetSysColorBrush( COLOR_HIGHLIGHT )
     end if
     
@@ -310,9 +325,99 @@ function frmHelpViewer_OnDestroy( byval hwnd as HWND ) as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow then delete(pWindow)
     
+    if gHelpViewer.pRichEdit then delete(gHelpViewer.pRichEdit)
+    
+    ' Save the current screen coordinates of the Help Viewer
+    gConfig.SaveConfigFile    
+    
     HWND_FRMHELPVIEWER = 0
 
     function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_MEASUREITEM message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnMeasureItem( _
+            byval hwnd as HWND, _
+            byval lpmis as MEASUREITEMSTRUCT ptr _
+            ) as long
+    ' Set the height of the list box items.
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    lpmis->itemHeight = pWindow->ScaleY(EXPLORERITEM_HEIGHT)
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' Process WM_DRAWITEM message for window/dialog: frmHelpViewer
+' ========================================================================================
+function frmHelpViewer_OnDrawItem( _
+            byval hwnd as HWND, _
+            byval lpdis as const DRAWITEMSTRUCT ptr _
+            ) as long
+
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
+    if pWindow = 0 then exit function
+
+    if lpdis = 0 then exit function
+
+    if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
+        ( lpdis->itemAction = ODA_SELECT ) orelse _
+        ( lpdis->itemAction = ODA_FOCUS ) then
+
+        dim as clsDoubleBuffer b
+
+        b.BeginDoubleBuffer(lpdis->hwndItem, lpdis->hDC, lpdis->rcItem)
+
+        dim as boolean IsHot = false
+        dim as boolean isNodeHeader = false
+        dim as boolean isIconDown = false
+
+        ' if mouse is over then reset hot
+        if isMouseOverRECT(lpdis->hwndItem, b.rcClient) then IsHot = true   
+        if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
+    '    if isMouseOverWindow( HWND_FRMHELPVIEWER_VSCROLLBAR ) then IsHot = false
+
+        dim as COLORREF backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
+        dim as COLORREF foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
+        b.SetForeColors(foreclr, foreclr)
+        b.SetBackColors(backclr, backclr)
+
+        dim as CWSTR wszCaption
+        if (lpdis->ItemID >= lbound(gHelpViewer.Filenames)) andalso _
+            (lpdis->ItemID <= ubound(gHelpViewer.Filenames)) then
+            wszCaption = gHelpViewer.Topics(lpdis->ItemID)
+        end if
+
+        ' Create our rect that works with the entire line
+        dim as RECT rc
+        SetRect( @rc, 0, 0, b.rcClientWidth, b.rcClientHeight )
+        dim as RECT rcText = rc 
+        dim as RECT rcBitmap = rc 
+        
+        ' Paint the entire background
+        b.PaintRect( @rc )
+
+        ' This would be a regular file.
+        rcBitmap.left = rcText.left + pWindow->ScaleX(20)
+        rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20) 
+
+        b.SetFont( GUIFONT_10 )  ' use GUI rather than SYMBOL b/c of dot icon
+        b.PaintText( wszIconDocument, @rcBitmap, DT_CENTER )
+
+        b.SetFont( GUIFONT_10 )
+        rcText.left = rcBitmap.right
+        b.PaintText( wszCaption, @rcText, DT_LEFT )
+
+        b.EndDoubleBuffer()
+            
+    end if
+
+    function = true
+
 end function
 
 
@@ -338,6 +443,8 @@ function frmHelpViewer_WndProc( _
         HANDLE_MSG (hwnd, WM_LBUTTONDOWN,    frmHelpViewer_OnLButtonDown)
         HANDLE_MSG (hwnd, WM_LBUTTONUP,      frmHelpViewer_OnLButtonUp)
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,      frmHelpViewer_OnMouseMove)
+        HANDLE_MSG (hwnd, WM_MEASUREITEM,    frmHelpViewer_OnMeasureItem)
+        HANDLE_MSG (hwnd, WM_DRAWITEM,       frmHelpViewer_OnDrawItem)
     end select
 
     function = DefWindowProc(hwnd, uMsg, wParam, lParam)
@@ -402,11 +509,8 @@ function frmHelpViewerListBox_SubclassProc ( _
             ' client area.
             if hiword(idx) <> 1 then
                 if idx <> nLastIdx then
-                    ListBox_GetItemRect( hWin, idx, @rc )
-                    InvalidateRect( hWin, @rc, true )
-                    ListBox_GetItemRect( hWin, nLastIdx, @rc )
-                    InvalidateRect( hWin, @rc, true )
                     nLastIdx = idx
+                    AfxRedrawWindow(hWin)   
                 end if
             end if
                             
@@ -414,26 +518,14 @@ function frmHelpViewerListBox_SubclassProc ( _
             nLastIdx = -1
             AfxRedrawWindow(hWin)   
             
-        case WM_LBUTTONUP
-            ' determine if we clicked on a function name or a node header
+        case WM_LBUTTONDOWN
             dim as RECT rc
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
             ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
-'                dim as clsDocument ptr pDoc = cast(clsDocument ptr, ListBox_GetItemData( hWin, idx ))
-'                dim as CWSTR wszCaption = AfxGetListBoxText( hWin, idx )
-'                if (left(wszCaption, 4) = "true") orelse (left(wszCaption, 5) = "false") then
-'                    OpenSelectedDocument( pDoc->DiskFilename )
-'                else
-'                    ' Attempt to show the function name
-'                    dim as long nLineNum = getFunctionsLinenumber( wszCaption )
-'                    dim as CWSTR wszFunctionName = getFunctionsFunctionName( wszCaption )
-'                    dim as CWSTR wszDiskFilename 
-'                    if pDoc then wszDiskFilename = pDoc->DiskFilename
-'                    OpenSelectedDocument( wszDiskFilename, wszFunctionName, nLineNum )
-'                end if
+                AfxRedrawWindow(hWin)   
             end if
 
                                     
@@ -499,28 +591,89 @@ function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->BigIcon   = LoadImage( pWindow->InstanceHandle, "IMAGE_AAA_MAINICON", IMAGE_ICON, 32, 32, LR_SHARED)
     pWindow->SmallIcon = LoadImage( pWindow->InstanceHandle, "IMAGE_AAA_MAINICON", IMAGE_ICON, 16, 16, LR_SHARED)
 
-    pWindow->SetClientSize(625, 460)
-    pWindow->Center(pWindow->hWindow, hWndParent)
+    dim as long nvalue = false
+    if instr(gConfig.ThemeShortFilename, "_dark") then nvalue = true
+    ' Attempt to apply the standard Windows dark theme to the non-client areas of the main form.
+    DwmSetWindowAttribute(HWND_FRMHELPVIEWER, DWMWA_USE_IMMERSIVE_DARK_MODE, @nvalue, sizeof(nvalue))
 
-'    HWND_FRMHELPVIEWER_LISTBOX = _ 
-'        pWindow->AddControl("LISTBOX", , IDC_FRMHELPVIEWER_LISTBOX, "", 0, 0, 200, 460, _
-'        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
-'        LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, _
-'        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-'        cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
-'        IDC_FRMHELPVIEWER_LISTBOX, cast(DWORD_PTR, @pWindow))
+    if (gConfig.HelpStartupRight = 0) orelse (gConfig.HelpStartupBottom = 0) then
+        gConfig.HelpStartupRight  = pWindow->ScaleX(800)
+        gConfig.HelpStartupBottom = pWindow->ScaleX(600)
+        gConfig.HelpLeftPanelWidth = pWindow->ScaleX(250)
+    end if
+    
+    dim WinPla as WINDOWPLACEMENT
+    with WinPla
+        .Length = sizeof(WinPla)
+        .rcNormalPosition.Left   = gConfig.HelpStartupLeft
+        .rcNormalPosition.Top    = gConfig.HelpStartupTop
+        .rcNormalPosition.Right  = gConfig.HelpStartupRight
+        .rcNormalPosition.Bottom = gConfig.HelpStartupBottom
+        .showCmd = iif( gConfig.HelpStartupMaximized, SW_MAXIMIZE, SW_SHOWNORMAL )
+    end with
+    SetWindowPlacement( pWindow->hWindow, @WinPla )
 
-    HWND_LEFTPANEL = pWindow->AddControl("LABEL", , IDC_LEFTPANEL, "", 0, 0, 0, 0, _
-        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
-        WS_EX_LEFT or WS_EX_LTRREADING)
+    dim as long nWidth = pWindow->UnScaleX(gConfig.HelpLeftPanelWidth)
+    HWND_FRMHELPVIEWER_LEFTPANEL = _ 
+        pWindow->AddControl("LISTBOX", , IDC_FRMHELPVIEWER_LEFTPANEL, "", 0, 0, nWidth, 0, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
+        LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
+        cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
+        IDC_FRMHELPVIEWER_LEFTPANEL, cast(DWORD_PTR, @pWindow))
 
-    HWND_RIGHTPANEL = pWindow->AddControl("LABEL", , IDC_RIGHTPANEL, "", 0, 0, 0, 0, _
-        WS_CHILD or WS_VISIBLE or SS_LEFT or SS_NOTIFY, _
-        WS_EX_LEFT or WS_EX_LTRREADING)
+    gHelpViewer.pRichEdit = new CRichEditCtrl( pWindow, IDC_FRMHELPVIEWER_RIGHTPANEL, "", _
+        0, 0, 0, 0, WS_VISIBLE or WS_CHILD or WS_TABSTOP or ES_LEFT or WS_HSCROLL or WS_VSCROLL or _
+        ES_AUTOHSCROLL or ES_AUTOVSCROLL or ES_MULTILINE or ES_WANTRETURN or ES_NOHIDESEL or ES_SAVESEL, _
+        0 )
+
+    HWND_FRMHELPVIEWER_RIGHTPANEL = gHelpViewer.pRichEdit->hRichEdit
+    gHelpViewer.pRichEdit->EnableWordWrap
+    gHelpViewer.pRichEdit->LeftMargin = 40
+    gHelpViewer.pRichEdit->RightMargin = 40
+    ' // Set advanced typography options
+    gHelpViewer.pRichEdit->TypographyOptions(TO_ADVANCEDTYPOGRAPHY or TO_SIMPLELINEBREAK) = _
+        TO_ADVANCEDTYPOGRAPHY or TO_SIMPLELINEBREAK
+    gHelpViewer.pRichEdit->SetTextColor(ghEditor.ForeColorText)
+    gHelpViewer.pRichEdit->SetBkgndColor(0, ghEditor.BackColorText)
+    gHelpViewer.pRichEdit->SetReadOnly(true)
+    
+    ' Load the Help table of contents
+    dim pStream as CTextStream
+    if pStream.Open(gConfig.HelpTableOfContents) = S_OK then
+        dim as CWSTR wst
+        dim as long idx
+        do until pStream.EOS
+            wst = pStream.ReadLine
+            wst = trim(wst)
+            if len(wst) = 0 then continue do
+            
+            if left(wst, 7) = "TOPIC: " then
+                idx = Listbox_AddString( HWND_FRMHELPVIEWER_LEFTPANEL, @wstr("") )
+                redim preserve gHelpViewer.Topics(idx)
+                redim preserve gHelpViewer.Filenames(idx)
+                gHelpViewer.Topics(idx) = mid(wst, 8)
+                continue do
+            end if
+
+            if left(wst, 10) = "FILENAME: " then
+                if (idx >= lbound(gHelpViewer.Filenames)) andalso _
+                    (idx <= ubound(gHelpViewer.Filenames)) then
+                    gHelpViewer.Filenames(idx) = mid(wst, 11)
+                end if
+                continue do
+            end if
+        loop
+        pStream.Close
+    end if
+    
+    Listbox_SetCurSel( HWND_FRMHELPVIEWER_LEFTPANEL, 0 )
+    frmHelpViewer_LoadHelpFile(0)
 
     frmHelpViewer_PositionWindows()
     
     ShowWindow( HWND_FRMHELPVIEWER, SW_SHOW )
+    SetFocus(HWND_FRMHELPVIEWER_LEFTPANEL)
         
     return 0
 end function

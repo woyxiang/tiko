@@ -68,9 +68,9 @@ type clsConfig
         FBCodetipsFilename        as CWSTR
         WinAPICodetipsFilename    as CWSTR 
         WinFBXCodetipsFilename    as CWSTR
-        TikoHelpFile              as CWSTR
         DefaultSessionFilename    as CWSTR 
-        
+        HelpTableOfContents       as CWSTR
+         
         DateFileTime              as FILETIME
         
         SettingsVersion           as CWSTR
@@ -131,6 +131,12 @@ type clsConfig
         StartupRight              as long = 0
         StartupBottom             as long = 0
         StartupMaximized          as long = false
+        HelpStartupLeft           as long = 0
+        HelpStartupTop            as long = 0
+        HelpStartupRight          as long = 0
+        HelpStartupBottom         as long = 0
+        HelpStartupMaximized      as long = false
+        HelpLeftPanelWidth        as long = 0
         FBWINCompiler32           as CWSTR
         FBWINCompiler64           as CWSTR
         CompilerBuild             as CWSTR     ' Build GUID
