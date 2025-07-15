@@ -38,10 +38,9 @@ function frmHelpViewer_LoadHelpFile( byval nIndex as long ) as long
     if (nIndex >= lbound(gHelpViewer.Filenames)) andalso _
         (nIndex <= ubound(gHelpViewer.Filenames)) then
         dim as CWSTR wszPath = AfxStrPathname("PATH", gConfig.HelpTableOfContents)
-        DIM cv AS CVAR = wszPath & gHelpViewer.Filenames(nIndex)
-        gHelpViewer.pRichEdit->OpenDoc(cv)
-        gHelpViewer.pRichEdit->SetZoom(120, 100)
-        gHelpViewer.pRichEdit->AcceptTab = false
+        RichEdit_LoadRtfFromFile( HWND_FRMHELPVIEWER_RIGHTPANEL, wszPath & gHelpViewer.Filenames(nIndex) )
+'        RichEdit_SetZoom( HWND_FRMHELPVIEWER_RIGHTPANEL, 120, 100 )
+        RichEdit_SetZoom( HWND_FRMHELPVIEWER_RIGHTPANEL, 100, 100 )
     end if
     function = 0
 end function
@@ -266,26 +265,6 @@ end function
 
 
 ' ========================================================================================
-' Process WM_CTLCOLORSTATIC message for window/dialog: frmHelpViewer
-' ========================================================================================
-function frmHelpViewer_OnCtlColorStatic( _
-            byval hwnd as HWND, _
-            byval hdc as HDC, _
-            byval hWndChild as HWND, _
-            byval nType as long _
-            ) as HBRUSH
-
-    if hWndChild = HWND_FRMHELPVIEWER_LEFTPANEL then
-        return GetSysColorBrush( COLOR_BTNFACE )
-    elseif hWndChild = HWND_FRMHELPVIEWER_RIGHTPANEL then
-        return GetSysColorBrush( COLOR_HIGHLIGHT )
-    end if
-    
-    function = 0      
-end function
-
-
-' ========================================================================================
 ' Process WM_PAINT message for window/dialog: frmHelpViewer
 ' ========================================================================================
 function frmHelpViewer_OnPaint( byval hwnd as HWND ) as LRESULT
@@ -297,8 +276,7 @@ function frmHelpViewer_OnPaint( byval hwnd as HWND ) as LRESULT
 
     ' Draw any splitter between the two panels
     dim as RECT rcSplitter = frmHelpViewer_CalcSplitRect()
-    'b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
-    b.SetBackColors( bgr(255,0,0), bgr(255,0,0) )
+    b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
     b.PaintRect( @rcSplitter )
     
     b.EndDoubleBuffer()
@@ -324,8 +302,6 @@ end function
 function frmHelpViewer_OnDestroy( byval hwnd as HWND ) as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow then delete(pWindow)
-    
-    if gHelpViewer.pRichEdit then delete(gHelpViewer.pRichEdit)
     
     ' Save the current screen coordinates of the Help Viewer
     gConfig.SaveConfigFile    
@@ -439,7 +415,6 @@ function frmHelpViewer_WndProc( _
         HANDLE_MSG (hwnd, WM_DESTROY,        frmHelpViewer_OnDestroy)
         HANDLE_MSG (hwnd, WM_COMMAND,        frmHelpViewer_OnCommand)
         HANDLE_MSG (hwnd, WM_NOTIFY,         frmHelpViewer_OnNotify)
-        HANDLE_MSG (hwnd, WM_CTLCOLORSTATIC, frmHelpViewer_OnCtlColorStatic)
         HANDLE_MSG (hwnd, WM_LBUTTONDOWN,    frmHelpViewer_OnLButtonDown)
         HANDLE_MSG (hwnd, WM_LBUTTONUP,      frmHelpViewer_OnLButtonUp)
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,      frmHelpViewer_OnMouseMove)
@@ -622,21 +597,33 @@ function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
         cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
         IDC_FRMHELPVIEWER_LEFTPANEL, cast(DWORD_PTR, @pWindow))
 
-    gHelpViewer.pRichEdit = new CRichEditCtrl( pWindow, IDC_FRMHELPVIEWER_RIGHTPANEL, "", _
-        0, 0, 0, 0, WS_VISIBLE or WS_CHILD or WS_TABSTOP or ES_LEFT or WS_HSCROLL or WS_VSCROLL or _
-        ES_AUTOHSCROLL or ES_AUTOVSCROLL or ES_MULTILINE or ES_WANTRETURN or ES_NOHIDESEL or ES_SAVESEL, _
-        0 )
+    HWND_FRMHELPVIEWER_RIGHTPANEL = _ 
+        pWindow->AddControl("RICHEDIT", , IDC_FRMHELPVIEWER_RIGHTPANEL, "", 0, 0, 0, 0, _
+        WS_VISIBLE or WS_CHILD or WS_TABSTOP or WS_VSCROLL or ES_LEFT or _
+        ES_AUTOVSCROLL or ES_MULTILINE or ES_NOHIDESEL or ES_SAVESEL, _
+        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR)
 
-    HWND_FRMHELPVIEWER_RIGHTPANEL = gHelpViewer.pRichEdit->hRichEdit
-    gHelpViewer.pRichEdit->EnableWordWrap
-    gHelpViewer.pRichEdit->LeftMargin = 40
-    gHelpViewer.pRichEdit->RightMargin = 40
-    ' // Set advanced typography options
-    gHelpViewer.pRichEdit->TypographyOptions(TO_ADVANCEDTYPOGRAPHY or TO_SIMPLELINEBREAK) = _
-        TO_ADVANCEDTYPOGRAPHY or TO_SIMPLELINEBREAK
-    gHelpViewer.pRichEdit->SetTextColor(ghEditor.ForeColorText)
-    gHelpViewer.pRichEdit->SetBkgndColor(0, ghEditor.BackColorText)
-    gHelpViewer.pRichEdit->SetReadOnly(true)
+    ' Turn on default word wrapping
+    '// wParam = (WPARAM) hdc (can be NULL)
+    '// lParam = (LONG) line width in twips (1/1440 inch)
+    SendMessage( HWND_FRMHELPVIEWER_RIGHTPANEL, EM_SETTARGETDEVICE, NULL, 0 )
+    
+    RichEdit_SetMargins( HWND_FRMHELPVIEWER_RIGHTPANEL, EC_LEFTMARGIN, MAKELONG(40, 0) )
+    RichEdit_SetMargins( HWND_FRMHELPVIEWER_RIGHTPANEL, EC_RIGHTMARGIN, MAKELONG(0, 40) )
+    RichEdit_SetTypographyOptions( HWND_FRMHELPVIEWER_RIGHTPANEL, _
+        TO_ADVANCEDTYPOGRAPHY or TO_SIMPLELINEBREAK, _
+        TO_ADVANCEDTYPOGRAPHY or TO_SIMPLELINEBREAK )
+'    gHelpViewer.pRichEdit->SetBkgndColor(0, ghEditor.BackColorText)
+    RichEdit_SetReadOnly( HWND_FRMHELPVIEWER_RIGHTPANEL, true )
+    
+    ' Set the text color for the entire document. The Afx CRichEdit function SetTextColor only
+    ' seems to work on selections rather than all text.
+'    Dim cf As CHARFORMAT
+'    cf.cbSize = sizeof(CHARFORMAT)
+'    cf.dwMask = CFM_COLOR
+'    cf.dwEffects = 0
+'    cf.crTextColor = ghEditor.ForeColorText
+'    SendMessage(HWND_FRMHELPVIEWER_RIGHTPANEL, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf))
     
     ' Load the Help table of contents
     dim pStream as CTextStream
