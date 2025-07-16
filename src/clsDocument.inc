@@ -27,6 +27,8 @@
 destructor clsDocument
     ' Delete any manually allocated scintilla edit windows in the editor
     this.DestroyScintillaWindows()
+    ' Destroy any manually allocated memory for #include files
+    this.RemoveAllIncludeDocuments()
 end destructor
 
 
@@ -1939,3 +1941,70 @@ function clsDocument.CompileDirectives( Directives() as COMPILE_DIRECTIVES ) as 
 end function
 
 
+''
+''
+function clsDocument.GetIncludeDocumentCount() as long
+    dim pDoc as clsDocument ptr = this.pDocIncludeList
+    dim nCount as long = 0
+    do until pDoc = 0
+        nCount = nCount + 1
+        pDoc = pDoc->pDocNext
+    loop
+    function = nCount
+end function
+
+
+''
+''
+function clsDocument.AddNewIncludeDocument() as clsDocument ptr 
+    ' Add it to the start of the linked list
+    dim pDoc as clsDocument ptr = new clsDocument
+    pDoc->pDocNext = this.pDocIncludeList
+    this.pDocIncludeList = pDoc
+    function = pDoc
+end function
+
+
+''
+''
+function clsDocument.RemoveAllIncludeDocuments() as long
+    ' Remove from pDocIncludeList
+    dim pDoc as clsDocument ptr = this.pDocIncludeList
+    dim pDocNext as clsDocument ptr = this.pDocIncludeList
+
+    do until pDoc = 0
+        pDocNext = pDoc->pDocNext
+        ' Release memory associated with this pDoc
+        delete pDoc
+        pDoc = pDocNext
+    loop
+    this.pDocIncludeList = 0
+    
+    function = 0
+end function
+
+
+''
+''
+function clsDocument.AddIncludeFromParse( byval sLine as string ) as boolean
+    dim as string sFilename
+
+    if left(ucase(sLine), 9) = "#INCLUDE " then sFilename = mid(sLine, 10)
+    if left(ucase(sLine), 14) = "#INCLUDE ONCE " then sFilename = mid(sLine, 15)
+
+    if len(sFilename) = 0 then return false
+    
+    sFilename = CompleteIncludeFilename( @this, sFilename )
+    if AfxFileExists(sFilename) = false then return false
+    
+    ' At this point, the filename exists so save it to our list of include files
+    ' for this document that will have its filetime check durign compile to 
+    ' determine if the .bas module file should be recompiled.
+    dim as clsDocument ptr pDoc = this.AddNewIncludeDocument()
+    if pDoc then
+        pDoc->DiskFilename = sFilename
+        pDoc->DateFileTime = AfxGetFileLastWriteTime(pDoc->DiskFilename)
+    end if
+
+    function = 0
+end function

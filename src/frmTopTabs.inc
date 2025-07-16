@@ -22,31 +22,31 @@ function frmTopTabs_ShowShadow() as long
     if IsWindowVisible( HWND_FRMMAIN_TOPTABS ) = 0 then exit function
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     
-    if pDoc then
-        dim as RECT rcFindReplace = AfxGetWindowRect( HWND_FRMFINDREPLACE )
-        dim as RECT rcTopTabs = AfxGetWindowRect( HWND_FRMMAIN_TOPTABS )
-        dim as long nLeftWidth = rcTopTabs.right - rcTopTabs.left
-
-        dim as long nLine = SciExec( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0)
-        dim as long nShow = iif( nLine > 0, SW_SHOWNA, SW_HIDE )
-        
-        ' if the Find/Replace popup window is active then we always show the show
-        ' the shadow window is a popup style so need to use screen coordinates
-        if IsWindowVisible( HWND_FRMFINDREPLACE ) then 
-            nShow = SW_SHOWNA
-            nLeftWidth = rcFindReplace.left - rcTopTabs.left 
-        end if
-            
-        SetWindowPos( HWND_FRMMAIN_TOPTABS_SHADOW, 0, _
-                    rcTopTabs.left, rcTopTabs.bottom, _
-                    nLeftWidth, AfxGetWindowHeight( HWND_FRMMAIN_TOPTABS_SHADOW ), _
-                    SWP_NOZORDER or SWP_NOACTIVATE )
-
-        ShowWindow( HWND_FRMMAIN_TOPTABS_SHADOW, nShow ) 
-
-    else
+    if pDoc = 0 then
         ShowWindow( HWND_FRMMAIN_TOPTABS_SHADOW, SW_HIDE )
-    end if   
+        exit function
+    end if
+        
+    dim as RECT rcFindReplace = AfxGetWindowRect( HWND_FRMFINDREPLACE )
+    dim as RECT rcTopTabs = AfxGetWindowRect( HWND_FRMMAIN_TOPTABS )
+    dim as long nLeftWidth = rcTopTabs.right - rcTopTabs.left
+
+    dim as long nLine = SciExec( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0)
+    dim as long nShow = iif( nLine > 0, SW_SHOWNA, SW_HIDE )
+    
+    ' if the Find/Replace popup window is active then we always show 
+    ' the shadow window as a popup style so need to use screen coordinates
+    if IsWindowVisible( HWND_FRMFINDREPLACE ) then 
+        nShow = SW_SHOWNA
+        nLeftWidth = rcFindReplace.left - rcTopTabs.left 
+    end if
+        
+    SetWindowPos( HWND_FRMMAIN_TOPTABS_SHADOW, 0, _
+                rcTopTabs.left, rcTopTabs.bottom, _
+                nLeftWidth, AfxGetWindowHeight( HWND_FRMMAIN_TOPTABS_SHADOW ), _
+                SWP_NOZORDER or SWP_NOACTIVATE )
+
+    ShowWindow( HWND_FRMMAIN_TOPTABS_SHADOW, nShow ) 
 
     function = 0
 end function

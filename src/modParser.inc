@@ -772,6 +772,13 @@ function ctxParser.GetToken() as boolean
     c = this.PeekChar()
     if( c = asc("#") and this.startofline ) then
         c = this.ReadChar()
+
+        ' If this # line is an Include file then attempt to add it
+        ' to the document's list of include files that will have its
+        ' filetime checked during module compiling.
+        this.GetLine()
+        this.pDoc->AddIncludeFromParse(this.fullLine)
+
         while( c )
             c = this.PeekChar()
             if( ( c = asc("_") ) or _
@@ -783,6 +790,7 @@ function ctxParser.GetToken() as boolean
                 exit while
             end if
         wend 
+
         this.inprepro = true
         this.s = this.i
         continue while
@@ -906,6 +914,9 @@ function ctxParser.Parse( byval pDoc as clsDocument ptr ) as boolean
         this.text = Cast( ZString Ptr, strptr(this.pDoc->TextBuffer))
     end if    
     if( this.text = 0 ) then return false
+    
+    ' Remove any #include files from the linked list
+    pDoc->RemoveAllIncludeDocuments()
 
     this.incomment = false
     this.startofline = true
@@ -921,6 +932,7 @@ function ctxParser.Parse( byval pDoc as clsDocument ptr ) as boolean
     do until this.GetToken() = false 
 
         select case this.ltoken
+                 
             case "dim", "redim", "var"
             if this.ParseDIM( PARSINGACTION.PARSE_DIM, DIMSCOPE.SCOPEGLOBAL ) = false then
                 '? this.lineNum, "Error parsing DIM statement. Unexpected token: "; this.token

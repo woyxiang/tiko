@@ -576,7 +576,7 @@ end function
 ' Used when parsing source code file so that module compiling can check if embedded
 ' include files have changed and requires the module bas file to recompile.
 ' ========================================================================================
-function CompleteIncludeFilename( byval pDoc as clsDocument ptr, byval wszFilename as CWSTR ) as CWSTR
+function CompleteIncludeFilename( byval pDoc as clsDocument ptr, byval sFilename as string ) as string
     dim wszPath             as CWSTR
     dim wszCompilerPath     as CWSTR
     dim wszText             as CWSTR
@@ -596,27 +596,27 @@ function CompleteIncludeFilename( byval pDoc as clsDocument ptr, byval wszFilena
     end if
 
     ' remove any comments at the end of the line
-    i = instr(wszFilename, "'")
-    if i then wszFilename = left(wszFilename, i-1)
-    wszFilename = trim(wszFilename, any chr(32,34))  ' remove spaces and double quotes
+    i = instr(sFilename, "'")
+    if i then sFilename = left(sFilename, i-1)
+    sFilename = trim(sFilename, any chr(32,34))  ' remove spaces and double quotes
     wszPath = AfxStrPathname( "PATH", pDoc->DiskFilename )
 
-    if AfxFileExists(wszPath & wszFilename) then 
-        wszCompleteFilename = wszPath & wszFilename
-    elseif AfxFileExists(wszFilename) then 
-        wszCompleteFilename = wszFilename
-    elseif AfxFileExists(AfxGetCurDir & "\" & wszFilename) then 
-        wszCompleteFilename = AfxGetCurDir & "\" & wszFilename
-    elseif AfxFileExists(AfxGetExePathName & wszFilename) then 
-        wszCompleteFilename = AfxGetExePathName & wszFilename
-    elseif AfxFileExists(str(wszCompilerPath) & "\" & wszFilename) then 
-        wszCompleteFilename = str(wszCompilerPath) & "\" & wszFilename
+    if AfxFileExists(wszPath & sFilename) then 
+        wszCompleteFilename = wszPath & sFilename
+    elseif AfxFileExists(sFilename) then 
+        wszCompleteFilename = sFilename
+    elseif AfxFileExists(AfxGetCurDir & "\" & sFilename) then 
+        wszCompleteFilename = AfxGetCurDir & "\" & sFilename
+    elseif AfxFileExists(AfxGetExePathName & sFilename) then 
+        wszCompleteFilename = AfxGetExePathName & sFilename
+    elseif AfxFileExists(str(wszCompilerPath) & "\" & sFilename) then 
+        wszCompleteFilename = str(wszCompilerPath) & "\" & sFilename
     else
         ' Iterate the optional semi colon separated list of compiler include paths
         dim as CWSTR includePath
         dim as long numpaths = AfxStrParseCount(gConfig.CompilerIncludes, ";")
         for i as long = 1 to numpaths
-            includePath = rtrim(AfxStrParse(gConfig.CompilerIncludes, i, ";")) & "\" & wszFilename
+            includePath = rtrim(AfxStrParse(gConfig.CompilerIncludes, i, ";")) & "\" & sFilename
             if AfxFileExists(includePath) then
                 wszCompleteFilename = includePath
                 exit for
@@ -643,16 +643,16 @@ function IsCurrentLineIncludeFilename() as boolean
     if pDoc = 0 then exit function
     
     dim as long nLine  = pDoc->GetCurrentLineNumber()
-    dim as CWSTR sLine = ltrim(pDoc->GetLine(nLine))
+    dim as string sLine = ltrim(pDoc->GetLine(nLine))
     
-    dim as CWSTR wszFilename 
+    dim as string sFilename 
 
-    if left(ucase(sLine), 9) = "#INCLUDE " then wszFilename = mid(sLine, 10)
-    if left(ucase(sLine), 14) = "#INCLUDE ONCE " then wszFilename = mid(sLine, 15)
+    if left(ucase(sLine), 9) = "#INCLUDE " then sFilename = mid(sLine, 10)
+    if left(ucase(sLine), 14) = "#INCLUDE ONCE " then sFilename = mid(sLine, 15)
 
     gApp.IncludeFilename = ""   
-    if len(wszFilename) then
-        gApp.IncludeFilename = CompleteIncludeFilename( pDoc, wszFilename )
+    if len(sFilename) then
+        gApp.IncludeFilename = CompleteIncludeFilename( pDoc, sFilename )
     end if
     
     function = AfxFileExists( gApp.IncludeFilename ) 

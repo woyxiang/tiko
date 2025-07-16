@@ -293,11 +293,31 @@ function code_Compile( byval wID as long ) as boolean
                 ' Compare the source code file datetime to the object. if the source code
                 ' date time is greater then we need to recompile it, otherwise we will simply
                 ' link to the existing object file.
+                dim as boolean bRebuildModule = false
+               
                 dim as FILETIME ft1 = AfxGetFileLastWriteTime(pDoc->DiskFilename) ' source file
                 dim as FILETIME ft2 = AfxGetFileLastWriteTime(wszTemp)  ' object file
 
-                if (AfxFileTimeToVariantTime(ft1) > AfxFileTimeToVariantTime(ft2)) orelse _
-                    (gCompile.CompileID = IDM_REBUILDALL)  then
+                if (AfxFileTimeToVariantTime(ft1) > AfxFileTimeToVariantTime(ft2)) then bRebuildModule = true
+                
+                ' If rebuild is false then we still need to check any embedded #include files that
+                ' may have changed since the document was parsed.
+                dim pDocInclude as clsDocument ptr 
+                pDocInclude = pDoc->pDocIncludeList
+                do until pDocInclude = 0
+                    ft1 = AfxGetFileLastWriteTime(pDocInclude->DiskFilename) ' current include file datetime
+                    if AfxFileTimeToVariantTime(ft1) > AfxFileTimeToVariantTime(pDocInclude->DateFileTime) then 
+                        bRebuildModule = true
+                    end if    
+                    pDocInclude->DateFileTime = ft1
+
+print "INCLUDE CHANGED * RECOMPILE"
+print "   " & pDocInclude->DiskFilename
+
+                loop
+                
+                if (bRebuildModule = true) orelse (gCompile.CompileID = IDM_REBUILDALL)  then
+print "Recompile Module: " & pDoc->DiskFilename
 
                     nFileCount = nFileCount + 1
                     if (nFileCount mod 5) = 0 then AfxDoEvents

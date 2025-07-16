@@ -85,6 +85,7 @@ type clsDocument
         
     public:
     pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
+    pDocIncludeList       as clsDocument_ ptr = 0  ' Single linked list of #include files
     IsNewFlag             as boolean
     TextBuffer            as string
     
@@ -197,6 +198,11 @@ type clsDocument
     declare function LastMarkerHighlight() as long
     declare function LinesPerPage( byval idxWindow as long ) as long
     declare function CompileDirectives( Directives() as COMPILE_DIRECTIVES) as long
+    declare function GetIncludeDocumentCount() as long
+    declare function AddNewIncludeDocument() as clsDocument ptr 
+    declare function RemoveAllIncludeDocuments() as long
+    declare function AddIncludeFromParse( byval sLine as string ) as boolean
+
     declare destructor
 end type
 dim clsDocument.NextFileNum as long = 0

@@ -1386,7 +1386,7 @@ function frmMain_WndProc( _
             ' Ensure that if the Find/Replace dialog is open that it moves with
             ' underlying main editor window.   
             if IsWindowVisible( HWND_FRMFINDREPLACE ) then  
-                frmFindReplace_Show( hwnd, gFind.bExpanded )
+                frmFindReplace_PositionMainWindow()
             end if
             if IsWindowVisible( HWND_FRMMAIN_TOPTABS ) then
                 frmTopTabs_ShowShadow()

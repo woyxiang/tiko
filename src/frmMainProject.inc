@@ -61,7 +61,7 @@ function OnCommand_ProjectClose( byval hwnd As HWND ) As LRESULT
     if gApp.IsShutdown then return true
         
     ' If we get this far then we can safely remove all of the open pDocs
-    gApp.RemoveAllDocuments
+    gApp.RemoveAllDocuments()
     
     ' If the Find/Replace window is open then close it.
     DestroyWindow(HWND_FRMFINDREPLACE)
