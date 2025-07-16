@@ -517,6 +517,10 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine wszText
 
     pStream.Close 
+
+    ' Save the last write time so that it can be checked in the message loop
+    ' in order to detect external changes to it.
+    this.DateFileTime = AfxGetFileLastWriteTime( this.ConfigFilename )
     
     function = 0
 end function
