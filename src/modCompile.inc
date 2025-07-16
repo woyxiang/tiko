@@ -310,15 +310,10 @@ function code_Compile( byval wID as long ) as boolean
                         bRebuildModule = true
                     end if    
                     pDocInclude->DateFileTime = ft1
-
-print "INCLUDE CHANGED * RECOMPILE"
-print "   " & pDocInclude->DiskFilename
-
+                    pDocInclude = pDocInclude->pDocNext
                 loop
                 
                 if (bRebuildModule = true) orelse (gCompile.CompileID = IDM_REBUILDALL)  then
-print "Recompile Module: " & pDoc->DiskFilename
-
                     nFileCount = nFileCount + 1
                     if (nFileCount mod 5) = 0 then AfxDoEvents
                     
