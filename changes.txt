@@ -1,6 +1,7 @@
 Version 1.x.x ()
 - Added: Build Configuration. Toggle on/off mutually exclusive related compile options.
 - Added: Module compiling now checks for #Include file dependency changes and engages object recompiling if true.
+- Added: French language translation thanks to contributor, docroger.
 - Changed: Quick Run refactor. Now uses "_tiko_quickrun.exe" rather than random temporary generated filenames.
 - Changed: Build Configuration. Double buffered with new better resolution checkbox icons.
 - Changed: Light Theme. Darkened scrollbar thumb colors. 
