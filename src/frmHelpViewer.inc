@@ -276,7 +276,7 @@ function frmHelpViewer_OnPaint( byval hwnd as HWND ) as LRESULT
 
     ' Draw any splitter between the two panels
     dim as RECT rcSplitter = frmHelpViewer_CalcSplitRect()
-    b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
+    b.SetBackColors( ghPanel.BackColor, ghPanel.BackColorHot )
     b.PaintRect( @rcSplitter )
     
     b.EndDoubleBuffer()

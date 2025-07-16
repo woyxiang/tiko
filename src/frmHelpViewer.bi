@@ -19,7 +19,6 @@
 #define IDC_FRMHELPVIEWER_RIGHTPANEL       1001
 
 type HELPVIEWER_TYPE
-'    as CRichEditCtrl ptr pRichEdit 
     as POINT ptSplitPrev
     as long  xDeltaSplitter
     as CWSTR Filenames(any)

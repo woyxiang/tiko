@@ -32,6 +32,7 @@ END TYPE
 
 dim shared as any ptr gpHelpLib
 
+declare function CompleteIncludeFilename( byval pDoc as clsDocument ptr, byval wszFilename as CWSTR ) as CWSTR
 declare function getTextWidth( byval hwnd as HWND, byref wszText as wstring, byval FontIndex as long ) as long
 declare function SpawnPreviousInstance() as boolean
 declare function ReloadDocument( byref wszFilename as wstring ) as long
