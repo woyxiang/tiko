@@ -291,7 +291,8 @@ end function
 ''  SAVE CONFIGURATION TO DISK FILE
 ''
 function clsConfig.SaveConfigFile() as long
-
+    gApp.PreventConfigLoad = true
+    
     ' Determine the current editor positioning 
     ' Do not save if editor is minimized
     if isiconic( HWND_FRMMAIN ) = 0 then
@@ -522,6 +523,8 @@ function clsConfig.SaveConfigFile() as long
     ' in order to detect external changes to it.
     this.DateFileTime = AfxGetFileLastWriteTime( this.ConfigFilename )
     
+    gApp.PreventConfigLoad = false
+
     function = 0
 end function
 
@@ -629,11 +632,12 @@ end function
 ''  LOAD CONFIGURATION FROM DISK FILE
 ''
 function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as long
+    gApp.PreventConfigLoad = true
 
-    dim as CWSTR wst, wKey, wData, wData2
-    dim nData  as long  
-    dim i      as long
-    dim bReadingNote as boolean
+    dim as CWSTR wst, wKey, wData
+    dim nData          as long  
+    dim i              as long
+    dim bReadingNote   as boolean
     dim bNewConfigFile as boolean
 
     ' Remove any existing Builds
@@ -691,62 +695,62 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
             
             if left(wKey, 9) = "USERTOOL_" then  ' is this a User Tool entry
             i = val(right(wKey,2))
-            if i > ubound(this.Tools) then
-                redim preserve this.Tools(i)
-                this.Tools(i).wszDescription   = AfxStrParse(wData, 1, "|-|")
-                this.Tools(i).wszCommand       = ProcessFromCurdriveApp( AfxStrParse(wData, 2, "|-|") ) 
-                this.Tools(i).wszParameters    = AfxStrParse(wData, 3, "|-|")
-                this.Tools(i).wszKey           = AfxStrParse(wData, 4, "|-|")
-                this.Tools(i).wszWorkingFolder = ProcessFromCurdriveApp( AfxStrParse(wData, 5, "|-|") ) 
-                this.Tools(i).IsCtrl           = val(AfxStrParse(wData, 6, "|-|"))
-                this.Tools(i).IsAlt            = val(AfxStrParse(wData, 7, "|-|"))
-                this.Tools(i).IsShift          = val(AfxStrParse(wData, 8, "|-|"))
-                this.Tools(i).IsPromptRun      = val(AfxStrParse(wData, 9, "|-|"))
-                this.Tools(i).IsMinimized      = val(AfxStrParse(wData, 10, "|-|"))
-                this.Tools(i).IsWaitFinish     = val(AfxStrParse(wData, 11, "|-|"))
-                this.Tools(i).IsDisplayMenu    = val(AfxStrParse(wData, 12, "|-|"))
-                this.Tools(i).Action           = val(AfxStrParse(wData, 13, "|-|"))
-                continue do
-            end If
+                if i > ubound(this.Tools) then
+                    redim preserve this.Tools(i)
+                    this.Tools(i).wszDescription   = AfxStrParse(wData, 1, "|-|")
+                    this.Tools(i).wszCommand       = ProcessFromCurdriveApp( AfxStrParse(wData, 2, "|-|") ) 
+                    this.Tools(i).wszParameters    = AfxStrParse(wData, 3, "|-|")
+                    this.Tools(i).wszKey           = AfxStrParse(wData, 4, "|-|")
+                    this.Tools(i).wszWorkingFolder = ProcessFromCurdriveApp( AfxStrParse(wData, 5, "|-|") ) 
+                    this.Tools(i).IsCtrl           = val(AfxStrParse(wData, 6, "|-|"))
+                    this.Tools(i).IsAlt            = val(AfxStrParse(wData, 7, "|-|"))
+                    this.Tools(i).IsShift          = val(AfxStrParse(wData, 8, "|-|"))
+                    this.Tools(i).IsPromptRun      = val(AfxStrParse(wData, 9, "|-|"))
+                    this.Tools(i).IsMinimized      = val(AfxStrParse(wData, 10, "|-|"))
+                    this.Tools(i).IsWaitFinish     = val(AfxStrParse(wData, 11, "|-|"))
+                    this.Tools(i).IsDisplayMenu    = val(AfxStrParse(wData, 12, "|-|"))
+                    this.Tools(i).Action           = val(AfxStrParse(wData, 13, "|-|"))
+                    continue do
+                end If
             end If
 
             if left(wKey, 6) = "BUILD_" then  ' is this a BUILD entry
             i = val(right(wKey,2))
-            if i > ubound(this.Builds) then
-                redim preserve this.Builds(i) 
-                this.Builds(i).id             = AfxStrParse(wData, 1, "|-|")
-                this.Builds(i).wszDescription = AfxStrParse(wData, 2, "|-|")
-                this.Builds(i).wszOptions     = AfxStrParse(wData, 3, "|-|")
-                this.Builds(i).IsDefault      = val(AfxStrParse(wData, 4, "|-|"))
-                this.Builds(i).Is32bit        = val(AfxStrParse(wData, 5, "|-|"))
-                this.Builds(i).Is64bit        = val(AfxStrParse(wData, 6, "|-|"))
-                this.Builds(i).ExcludeInPopup = val(AfxStrParse(wData, 7, "|-|"))
-                continue do
-            end If
+                if i > ubound(this.Builds) then
+                    redim preserve this.Builds(i) 
+                    this.Builds(i).id             = AfxStrParse(wData, 1, "|-|")
+                    this.Builds(i).wszDescription = AfxStrParse(wData, 2, "|-|")
+                    this.Builds(i).wszOptions     = AfxStrParse(wData, 3, "|-|")
+                    this.Builds(i).IsDefault      = val(AfxStrParse(wData, 4, "|-|"))
+                    this.Builds(i).Is32bit        = val(AfxStrParse(wData, 5, "|-|"))
+                    this.Builds(i).Is64bit        = val(AfxStrParse(wData, 6, "|-|"))
+                    this.Builds(i).ExcludeInPopup = val(AfxStrParse(wData, 7, "|-|"))
+                    continue do
+                end If
             end If
 
             if left(wKey, 4) = "MRU_" then  ' is this an MRU entry
             i = val(right(wKey,2))
-            if (i >= 0) And (i <= 9) then 
-                this.MRU(i) = ProcessFromCurdriveApp(wData)
-                continue do
-            end If
+                if (i >= 0) And (i <= 9) then 
+                    this.MRU(i) = ProcessFromCurdriveApp(wData)
+                    continue do
+                end If
             end If
             
             if left(wKey, 11) = "MRUPROJECT_" then  ' is this an MRU Project entry
             i = val(right(wKey,2))
-            if (i >= 0) And (i <= 9) then 
-                this.MRUProject(i) = ProcessFromCurdriveApp(wData)
-                continue do
-            end If
+                if (i >= 0) And (i <= 9) then 
+                    this.MRUProject(i) = ProcessFromCurdriveApp(wData)
+                    continue do
+                end If
             end If
 
             if left(wKey, 11) = "MRUSESSION_" then  ' is this an MRU Session entry
             i = val(right(wKey,2))
-            if (i >= 0) And (i <= 9) then 
-                this.MRUSession(i) = ProcessFromCurdriveApp(wData)
-                continue do
-            end If
+                if (i >= 0) And (i <= 9) then 
+                    this.MRUSession(i) = ProcessFromCurdriveApp(wData)
+                    continue do
+                end If
             end If
 
             
@@ -849,7 +853,7 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
     
     ' Set some defaults if the config file was missing.
     ' if no Tools exist then create some default ones...
-    if (ubound(this.Tools) = -1) and (bNewConfigFile = true) then
+    if (ubound(this.Tools) = -1) andalso (bNewConfigFile = true) then
         dim wszTools(1) as CWSTR
         wszTools(0) = "ASCII Chart|-|.\settings\tools\asciichart32.exe|-||-|1|-||-|1|-|0|-|0|-|0|-|0|-|0|-|1|-|0"
         wszTools(1) = "GUID Generator|-|.\settings\tools\GUIDgen32.exe|-||-|2|-||-|1|-|0|-|0|-|0|-|0|-|0|-|1|-|0"
@@ -964,7 +968,7 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
         this.Builds(11).Is64bit = 1
         this.Builds(11).ExcludeInPopup = 1
 
-    end IF
+    end if
 
     ' Attempt to fill in any missing compiler paths and help files
     dim as CWSTR wszText
@@ -991,6 +995,8 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
     ' Save the last write time so that it can be checked in the message loop
     ' in order to detect external changes to it.
     this.DateFileTime = AfxGetFileLastWriteTime( this.ConfigFilename )
+
+    gApp.PreventConfigLoad = false
 
     function = 0
 end function
@@ -1554,6 +1560,7 @@ end function
 function clsConfig.ReloadConfigFileTest() as boolean    
 
     if gApp.IsShutdown = true then return false
+    if gApp.PreventConfigLoad = true then return false
     
     dim as FILETIME ft
     
