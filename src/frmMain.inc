@@ -1652,7 +1652,7 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
             ' Check if the settings.ini file was changed by an external program.
             ' Reload the config file in case a user has automated a change to it since
             ' the application started (for example, changing the compiler path).
-            gConfig.ReloadConfigFileTest()
+    '        gConfig.ReloadConfigFileTest()
             
             ' Ensure keystrokes like TAB are properly handled by the modeless dialogs
             if IsDialogMessage( HWND_FRMFINDREPLACE, @uMsg ) then continue Do
