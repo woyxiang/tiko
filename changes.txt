@@ -10,6 +10,7 @@ Version 1.1.2 ()
 - Fixed: Hide any open top menus if editor itself loses focus (WM_ACTIVATEAPP).
 - Fixed: Excessive redrawing and repositioning of Find/Replace window when main application window is moved.
 - Fixed: In Settings dialog, pressing ESC while keywords textbox has focus would make textbox disappear.
+- Fixed: Additional Compiler Includes data getting incorrectly reset when Build Configuration changed.
 
 Version 1.1.1 (July 7, 2025)
 - Added: Additional Build Configuration flags (-O1,2,3,s,fast and -eassert) to the flag entries in the configuration listbox.

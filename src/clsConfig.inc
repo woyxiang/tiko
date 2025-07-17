@@ -419,15 +419,18 @@ function clsConfig.SaveConfigFile() as long
     this.CompilerHelpfile = ProcessToCurdriveApp(this.CompilerHelpfile)
 
     ' Iterate the optional semi colon separated list of compiler include paths
+    ' Do not modify the this.CompilerIncludes directly because that will put the
+    ' {CURDRIVE} macro back into the path names causing future compiles to fail
+    ' because that macro only gets resolved on LoadConfig.
     dim as CWSTR allIncludes = rtrim(this.CompilerIncludes, ";")
-    this.CompilerIncludes = ""
+    dim as CWSTR SaveCompilerIncludes
     dim as CWSTR includePath
     dim as long numpaths = AfxStrParseCount(allIncludes, ";")
     for i as long = 1 to numpaths
         includePath = trim(AfxStrParse(allIncludes, i, ";"))
         if len(includePath) then 
             includePath = ProcessToCurdriveApp(includePath)
-            this.CompilerIncludes = this.CompilerIncludes + includePath + ";"
+            SaveCompilerIncludes = SaveCompilerIncludes + includePath + ";"
         end if
     next
 
@@ -436,7 +439,7 @@ function clsConfig.SaveConfigFile() as long
     pStream.WriteLine "FBWINCompiler64="       & this.FBWINCompiler64      
     pStream.WriteLine "CompilerBuild="         & this.CompilerBuild     
     pStream.WriteLine "CompilerSwitches="      & this.CompilerSwitches     
-    pStream.WriteLine "CompilerIncludes="      & this.CompilerIncludes
+    pStream.WriteLine "CompilerIncludes="      & SaveCompilerIncludes
     pStream.WriteLine "CompilerHelpfile="      & this.CompilerHelpfile     
     pStream.WriteLine "RunViaCommandWindow="   & this.RunViaCommandWindow
     pStream.WriteLine "DisableCompileBeep="    & this.DisableCompileBeep
