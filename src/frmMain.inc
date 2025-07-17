@@ -909,7 +909,6 @@ function frmMain_OnActivateApp( _
     ' If app is losing focus then there is nothing we need to do
     if fActivate = false then exit function
 
-    if gApp.PreventActivateApp then exit function
     if gApp.GetDocumentCount = 0 then exit function
 
     ' Re-entry guard

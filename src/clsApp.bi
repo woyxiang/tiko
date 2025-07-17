@@ -19,8 +19,6 @@ type clsApp
     public:
         pDocList                   as clsDocument ptr   ' Single linked list of loaded files
         pfnCreateLexerfn           as CreateLexerFn
-        IsWindowIncludes           as boolean           ' T/F that Windows includes have already been loaded
-        PreventActivateApp         as boolean           ' temporarily suppress WM_ACTIVATEAPP
         PreventConfigLoad          as boolean           ' temporarily suppress messagepump checking (set during Load/Save config)
         SuppressNotify             as boolean           ' temporarily suppress Scintilla notifications
         bDragTabActive             as boolean           ' a tab in the top tabcontrol is being dragged
