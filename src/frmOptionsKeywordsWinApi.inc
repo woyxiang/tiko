@@ -49,6 +49,39 @@ end function
 
 
 ' ========================================================================================
+' Subclass the multiline textbox to catch the ESCAPE key that is normally eaten by
+' the textbox control when in multiline mode.
+' ========================================================================================
+function frmOptionsKeywordsWinApiTextBox_SubclassProc ( _
+            byval hWin   as HWND, _                 ' // Control window handle
+            byval uMsg   as UINT, _                 ' // Type of message
+            byval _wParam as WPARAM, _               ' // First message parameter
+            byval _lParam as LPARAM, _               ' // Second message parameter
+            byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
+            byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
+            ) as LRESULT
+
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMEXPLORER)
+        
+    select case uMsg
+        case WM_KEYDOWN
+            if _wParam = VK_ESCAPE then
+                ' Send the close message to the dialog window
+                PostMessage( HWND_FRMOPTIONS, WM_COMMAND, MAKELONG(IDCANCEL, 0), 0 )
+            end if
+        
+        Case WM_DESTROY
+            ' REQUIRED: Remove control subclassing
+            RemoveWindowSubclass( hWin, @frmOptionsKeywordsWinApiTextBox_SubclassProc, uIdSubclass )
+    end select
+    
+    ' For messages that we don't deal with
+    function = DefSubclassProc( hWin, uMsg, _wParam, _lParam )
+
+end function
+
+
+' ========================================================================================
 ' frmOptionsKeywordsWinApi Window procedure
 ' ========================================================================================
 function frmOptionsKeywordsWinApi_WndProc( _
@@ -87,7 +120,9 @@ function frmOptionsKeywordsWinApi_Show( byval hwndParent as HWND ) as LRESULT
     pWindow->AddControl("TEXTBOX", , IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS, "", 0, 0, 386, 345, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or ES_LEFT or _
         ES_MULTILINE or ES_AUTOVSCROLL or ES_WANTRETURN, _
-        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING )
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING , , _
+        cast(SUBCLASSPROC, @frmOptionsKeywordsWinApiTextBox_SubclassProc ), _
+        IDC_FRMOPTIONSKEYWORDSWINAPI_TXTKEYWORDS, cast(DWORD_PTR, @pWindow)) 
         
     SendMessage( hTextBox, EM_SETLIMITTEXT, (1024 * 100), 0 )    ' max 100K text   
     

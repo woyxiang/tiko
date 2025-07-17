@@ -376,7 +376,7 @@ function frmOptions_Show( byval hWndParent as HWND ) as LRESULT
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
 
-    pWindow->Create( hWndParent, L(113,"Environment Options"), @frmOptions_WndProc, 0, 0, 0, 0, _
+    HWND_FRMOPTIONS = pWindow->Create( hWndParent, L(113,"Environment Options"), @frmOptions_WndProc, 0, 0, 0, 0, _
         WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
         WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
     pWindow->SetClientSize(625, 460)
