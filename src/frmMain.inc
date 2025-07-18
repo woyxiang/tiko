@@ -1573,6 +1573,9 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Create the UserTools accelerator table
     frmUserTools_CreateAcceleratorTable()            
+
+    ' Create the Build Configurations accelerator table
+    frmBuildConfig_CreateAcceleratorTable()            
     
     ' SET STARTUP POSITION
     ' if no valid window size exists then set to the default working area of the screen
@@ -1618,7 +1621,8 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
         ' Processes accelerator keys for menu commands
         if (pWindow->AccelHandle = 0) orelse (TranslateAccelerator(pWindow->hWindow, pWindow->AccelHandle, @uMsg) = 0) then
-            if (ghAccelUserTools = 0) orelse (TranslateAccelerator(pWindow->hWindow, ghAccelUserTools, @uMsg) = 0) then 
+         if (ghAccelUserTools = 0) orelse (TranslateAccelerator(pWindow->hWindow, ghAccelUserTools, @uMsg) = 0) then 
+          if (ghAccelBuildConfigurations = 0) orelse (TranslateAccelerator(pWindow->hWindow, ghAccelBuildConfigurations, @uMsg) = 0) then 
 
             ' Prevent any < asc(32) characters from making their way to Scintilla where they 
             ' get shown as an embedded control graphic. Allow backspace.
@@ -1661,13 +1665,15 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
                 DispatchMessage @uMsg     ' Dispatches a message to a window procedure.
             end if
 
-            end if  ' accelerators usertools 
+          end if  ' accelerators build configurations
+         end if  ' accelerators usertools 
         end if  ' accelerators
     loop  ' message loop
     
     function = uMsg.wParam
 
     if ghAccelUserTools then DestroyAcceleratorTable( ghAccelUserTools )
+    if ghAccelBuildConfigurations then DestroyAcceleratorTable( ghAccelBuildConfigurations )
     
     ' delete the allocated memory for the various child windows
     pWindow = AfxCWindowPtr( HWND_FRMPANEL ):                if pWindow then delete(pWindow)

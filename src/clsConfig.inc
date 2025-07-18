@@ -487,7 +487,11 @@ function clsConfig.SaveConfigFile() as long
         pStream.Write this.Builds(i).IsDefault & "|-|"  
         pStream.Write this.Builds(i).Is32bit & "|-|"  
         pStream.Write this.Builds(i).Is64bit & "|-|"  
-        pStream.WriteLine this.Builds(i).ExcludeInPopup
+        pStream.Write this.Builds(i).ExcludeInPopup & "|-|" 
+        pStream.Write this.Builds(i).IsCtrl & "|-|"
+        pStream.Write this.Builds(i).IsAlt & "|-|"  
+        pStream.Write this.Builds(i).IsShift & "|-|"
+        pStream.WriteLine this.Builds(i).wszKey
     next
 
     
@@ -728,6 +732,10 @@ function clsConfig.LoadConfigFile( byval isHotReload as boolean = false ) as lon
                     this.Builds(i).Is32bit        = val(AfxStrParse(wData, 5, "|-|"))
                     this.Builds(i).Is64bit        = val(AfxStrParse(wData, 6, "|-|"))
                     this.Builds(i).ExcludeInPopup = val(AfxStrParse(wData, 7, "|-|"))
+                    this.Builds(i).IsCtrl         = val(AfxStrParse(wData, 8, "|-|"))
+                    this.Builds(i).IsAlt          = val(AfxStrParse(wData, 9, "|-|"))
+                    this.Builds(i).IsShift        = val(AfxStrParse(wData, 10, "|-|"))
+                    this.Builds(i).wszKey         = AfxStrParse(wData, 11, "|-|")
                     continue do
                 end If
             end If

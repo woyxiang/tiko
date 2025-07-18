@@ -28,9 +28,17 @@
 #define IDC_FRMBUILDCONFIG_LSTOPTIONS               1011
 #define IDC_FRMBUILDCONFIG_CHKISDEFAULT             1012
 #define IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP          1013
+#define IDC_FRMBUILDCONFIG_LABEL3                   1014
+#define IDC_FRMBUILDCONFIG_CHKCTRL                  1015
+#define IDC_FRMBUILDCONFIG_CHKALT                   1016
+#define IDC_FRMBUILDCONFIG_CHKSHIFT                 1017
+#define IDC_FRMBUILDCONFIG_COMBOKEY                 1018
 
 #define FRMBUILDCONFIG_LISTBOX_LINEHEIGHT  20 
 
+common shared as HACCEL ghAccelBuildConfigurations
+
+declare function frmBuildConfig_CreateAcceleratorTable() as long
 declare function frmBuildConfig_getActiveBuildIndex() as long
 declare function frmBuildConfig_GetSelectedBuildDescription() as CWSTR
 declare function frmBuildConfig_GetSelectedBuildGUID() as string

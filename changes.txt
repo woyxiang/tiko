@@ -1,4 +1,5 @@
 Version 1.1.2 ()
+- Added: Build Configuration. Can now assign user defined keyboard shortcut to each configuration.
 - Added: Build Configuration. Toggle on/off mutually exclusive related compile options.
 - Added: Module compiling now checks for #Include file dependency changes and engages object recompiling if true.
 - Added: French language translation thanks to contributor, docroger.

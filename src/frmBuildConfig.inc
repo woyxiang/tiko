@@ -186,14 +186,18 @@ end function
 ' Set the build description and compiler options depending on what listbox entry is selected
 ' ========================================================================================
 function frmBuildConfig_SetBuildConfigTextboxes() as long
-    dim as HWND hList1 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LIST1)
-    dim as HWND hList2 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS)
-    dim as HWND hCheck = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKISDEFAULT)
-    dim as HWND hText1 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTDESCRIPTION)
-    dim as HWND hText2 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)
-    dim as HWND hOpt32 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32)
-    dim as HWND hOpt64 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT64)
-    dim as HWND hExcl  = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP)
+    dim as HWND hList1   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LIST1)
+    dim as HWND hList2   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS)
+    dim as HWND hCheck   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKISDEFAULT)
+    dim as HWND hText1   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTDESCRIPTION)
+    dim as HWND hText2   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)
+    dim as HWND hOpt32   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32)
+    dim as HWND hOpt64   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT64)
+    dim as HWND hExcl    = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP)
+    dim as HWND hIsCtrl  = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKCTRL)
+    dim as HWND hIsAlt   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKALT)
+    dim as HWND hIsShift = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKSHIFT)
+    dim as HWND hKey     = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_COMBOKEY)
     
     dim as long nCurSel = ListBox_GetCurSel(hList1)
     if nCurSel < 0 then 
@@ -207,24 +211,41 @@ function frmBuildConfig_SetBuildConfigTextboxes() as long
         EnableWindow(hOpt32, false)
         EnableWindow(hOpt64, false)
         EnableWindow(hList2, false)
-        EnableWindow(hExcl,  false)
+        EnableWindow(hExcl, false)
+        EnableWindow(hIsCtrl, false)
+        EnableWindow(hIsAlt, false)
+        EnableWindow(hIsShift, false)
+        EnableWindow(hKey, false)
     else
         AfxSetWindowText( hText1, gConfig.BuildsTemp(nCurSel).wszDescription)
         AfxSetWindowText( hText2, gConfig.BuildsTemp(nCurSel).wszOptions)
         Button_SetCheck( hCheck, gConfig.BuildsTemp(nCurSel).IsDefault)
         Button_SetCheck( hExcl, gConfig.BuildsTemp(nCurSel).ExcludeInPopup)
+
+        Button_SetCheck( hIsCtrl, gConfig.BuildsTemp(nCurSel).IsCtrl)
+        Button_SetCheck( hIsAlt, gConfig.BuildsTemp(nCurSel).IsAlt)
+        Button_SetCheck( hIsShift, gConfig.BuildsTemp(nCurSel).IsShift)
+        if len(gConfig.BuildsTemp(nCurSel).wszKey) = 0 then gConfig.BuildsTemp(nCurSel).wszKey = "None"
+        dim as long sel = ComboBox_FindStringExact( hKey, -1, gConfig.BuildsTemp(nCurSel).wszKey.sptr )
+        ComboBox_SetCurSel( hKey, sel )
+
         if gConfig.BuildsTemp(nCurSel).Is32bit then
             CheckRadioButton(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32, IDC_FRMBUILDCONFIG_OPT64, IDC_FRMBUILDCONFIG_OPT32)
         else   
             CheckRadioButton(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32, IDC_FRMBUILDCONFIG_OPT64, IDC_FRMBUILDCONFIG_OPT64)
         END IF
+
         EnableWindow(hText1, true)
         EnableWindow(hText2, true)
         EnableWindow(hCheck, true)
         EnableWindow(hOpt32, true)
         EnableWindow(hOpt64, true)
         EnableWindow(hList2, true)
-        EnableWindow(hExcl,  true)
+        EnableWindow(hExcl, true)
+        EnableWindow(hIsCtrl, true)
+        EnableWindow(hIsAlt, true)
+        EnableWindow(hIsShift, true)
+        EnableWindow(hKey, true)
     end if
 
     ' Set the checkmarks in the OptionList Listbox by redrawing the Listbox
@@ -233,6 +254,96 @@ function frmBuildConfig_SetBuildConfigTextboxes() as long
     function = 0
 end function
                 
+
+' ========================================================================================
+' Create an accelerator table based on selections for the Build Configurations.
+' ========================================================================================
+function frmBuildConfig_CreateAcceleratorTable() as long
+    dim NumKeys  as long
+    dim nKey     as long
+    dim fVirt    as long
+        
+    if ghAccelBuildConfigurations then DestroyAcceleratorTable(ghAccelBuildConfigurations)
+    dim a(any) as ACCEL
+        
+    NumKeys = 0
+    for y as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
+            
+        fVirt = FNOINVERT or FVIRTKEY
+        
+        if gConfig.Builds(y).IsCtrl then fVirt = fVirt or FCONTROL
+        if gConfig.Builds(y).IsShift then fVirt = fVirt or FSHIFT
+        if gConfig.Builds(y).IsAlt then fVirt = fVirt or FALT
+            
+        nKey = 0   ' important to reset
+        select case ucase(trim(gConfig.Builds(y).wszKey))
+            case "F1":  nKey = VK_F1
+            case "F2":  nKey = VK_F2
+            case "F3":  nKey = VK_F3
+            case "F4":  nKey = VK_F4
+            case "F5":  nKey = VK_F5
+            case "F6":  nKey = VK_F6
+            case "F7":  nKey = VK_F7
+            case "F8":  nKey = VK_F8
+            case "F9":  nKey = VK_F9
+            case "F10": nKey = VK_F10
+            case "F11": nKey = VK_F11
+            case "F12": nKey = VK_F12
+            case "0":   nKey = VK_0
+            case "1":   nKey = VK_1
+            case "2":   nKey = VK_2
+            case "3":   nKey = VK_3
+            case "4":   nKey = VK_4
+            case "5":   nKey = VK_5
+            case "6":   nKey = VK_6
+            case "7":   nKey = VK_7
+            case "8":   nKey = VK_8
+            case "9":   nKey = VK_9
+            case "A":   nKey = VK_A
+            case "B":   nKey = VK_B
+            case "C":   nKey = VK_C
+            case "D":   nKey = VK_D
+            case "E":   nKey = VK_E
+            case "F":   nKey = VK_F
+            case "G":   nKey = VK_G
+            case "H":   nKey = VK_H
+            case "I":   nKey = VK_I
+            case "J":   nKey = VK_J
+            case "K":   nKey = VK_K
+            case "L":   nKey = VK_L
+            case "M":   nKey = VK_M
+            case "N":   nKey = VK_N
+            case "O":   nKey = VK_O
+            case "P":   nKey = VK_P  
+            case "Q":   nKey = VK_Q  
+            case "R":   nKey = VK_R  
+            case "S":   nKey = VK_S  
+            case "T":   nKey = VK_T  
+            case "U":   nKey = VK_U  
+            case "V":   nKey = VK_V  
+            case "W":   nKey = VK_W
+            case "X":   nKey = VK_X
+            case "Y":   nKey = VK_Y
+            case "Z":   nKey = VK_Z  
+        end select
+            
+        if nKey > 0 then
+            NumKeys = NumKeys + 1
+            redim preserve a(1 To NumKeys) as ACCEL
+            a(NumKeys).fVirt = fVirt
+            a(NumKeys).key   = nKey
+            a(NumKeys).cmd   = IDM_BUILDCONFIGBASE + y
+        end if
+
+    next                                    
+        
+    if NumKeys then
+        ghAccelBuildConfigurations = CreateAcceleratorTable(cast(LPACCEL, @a(1)), NumKeys)
+    end if
+
+    function = 0
+end Function
+
 
 ' ========================================================================================
 ' Process WM_MEASUREITEM message for window/dialog: frmBuildConfig
@@ -568,6 +679,35 @@ function frmBuildConfig_OnCommand( _
                 end if
             end if
 
+        case IDC_FRMBUILDCONFIG_CHKCTRL
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).IsCtrl = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_CHKALT
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).IsAlt = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_CHKSHIFT
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).IsShift = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_COMBOKEY
+            if codeNotify = CBN_SELCHANGE then
+                if nCurSel > -1 then gConfig.BuildsTemp(nCurSel).wszKey = AfxGetWindowText(hwndCtl)
+            end if
+
         case IDC_FRMBUILDCONFIG_CMDUP
             if codeNotify = BN_CLICKED then
                 if nCurSel > 0 then
@@ -657,6 +797,7 @@ function frmBuildConfig_OnCommand( _
                     frmMain_SetStatusbar
                 end if
                 
+                frmBuildConfig_CreateAcceleratorTable            
                 gConfig.SaveConfigFile
                 SendMessage( hwnd, WM_CLOSE, 0, 0 )
                 exit function
@@ -746,7 +887,7 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL1, L(278,"Description") & ":", 240, 11, 120, 20, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKISDEFAULT, L(280,"Set as default"), 380, 10, 300, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKISDEFAULT, L(280,"Set as default"), 424, 10, 230, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMBUILDCONFIG_TXTDESCRIPTION, "", 240, 32, 425, 20, _
@@ -755,9 +896,27 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("RADIOBUTTON", , IDC_FRMBUILDCONFIG_OPT32, "FBC 32-bit", 240, 56, 100, 20, _
         WS_VISIBLE or WS_TABSTOP or BS_AUTORADIOBUTTON or BS_LEFT or BS_VCENTER or WS_GROUP, _
         WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL3, L(294,"Accelerator") & ":", 424, 56, 100, 18, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("RADIOBUTTON", , IDC_FRMBUILDCONFIG_OPT64, "FBC 64-bit", 240, 76, 100, 20, _
         WS_VISIBLE or WS_TABSTOP or BS_AUTORADIOBUTTON or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKCTRL, "Ctrl", 424, 76, 46, 19, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKALT, "Alt", 470, 76, 42, 19, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKSHIFT, "Shift", 512, 76, 44, 19, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    dim as HWND hCombo 
+    hCombo = pWindow->AddControl("COMBOBOX", , IDC_FRMBUILDCONFIG_COMBOKEY, "", 556, 74, 103, 200, _
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+
+    AddShortcutsToComboBox( hCombo )
 
     pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL2, L(279,"Compiler Options") & ":", 240, 102, 170, 18, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _

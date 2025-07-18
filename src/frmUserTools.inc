@@ -227,7 +227,6 @@ end function
 ' Also adds the Tools to the top menu.
 ' ========================================================================================
 function frmUserTools_CreateAcceleratorTable() as long
-
     dim NumKeys  as long
     dim nKey     as long
     dim fVirt    as long
@@ -709,7 +708,7 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDBROWSEEXE, "...", 610, 46, 30, 23, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL3, L(292,"Parameters") & ":", 230, 75, 95, 18, _
+    pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL3, L(292,"Parameters"), 230, 75, 95, 18, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMUSERTOOLS_TXTPARAMETERS, "", 334, 72, 305, 20, _
@@ -739,13 +738,6 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKSHIFT, "Shift", 441, 202, 48, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-'    pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL7, "Key", 559, 204, 38, 18, _
-'        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
-'        WS_EX_LEFT or WS_EX_LTRREADING)
-'    pWindow->AddControl("TEXTBOX", , IDC_FRMUSERTOOLS_COMBOKEY, "", 498, 201, 52, 20, _
-'        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
-'        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    
     dim as HWND hCombo 
     hCombo = pWindow->AddControl("COMBOBOX", , IDC_FRMUSERTOOLS_COMBOKEY, "", 498, 201, 103, 200, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _

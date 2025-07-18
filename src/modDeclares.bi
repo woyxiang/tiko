@@ -143,6 +143,7 @@ end enum
 #define IDM_MRUBASE          5000  ' Windows id of MRU items 1 to 10 (located under File menu)
 #define IDM_MRUPROJECTBASE   6000  ' Windows id of MRUPROJECT items 1 to 10 (located under Project menu)
 #define IDM_MRUSESSIONBASE   7000  ' Windows id of MRUSESSION items 1 to 10 (located under File menu)
+#define IDM_BUILDCONFIGBASE  8000
 
 
 '  Global window handles
