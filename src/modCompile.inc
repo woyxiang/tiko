@@ -153,13 +153,13 @@ function code_Compile( byval wID as long ) as boolean
         gCompile.MainName     = AfxStrPathname("NAME", gCompile.MainFilename)
         
         dim as CWSTR wszText
-        wszText = pDocMain->GetText()
+        wszText.Utf8 = pDocMain->GetText() 
 
-        dim as long f = freefile
-        if open (gCompile.MainFilename for output as #f) = 0 then
-            print #f, wszText
-            close #f
+        dim pStream as CTextStream   '(utf16)
+        if pStream.Create(gCompile.MainFilename, true, true) = S_OK then 
+            pStream.WriteLine wszText            
         end if
+        pStream.Close 
 
     else
         gCompile.MainFilename = pDocMain->DiskFilename
