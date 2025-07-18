@@ -5,6 +5,7 @@ Version 1.1.2 ()
 - Changed: Quick Run refactor. Now uses "_tiko_quickrun.exe" rather than random temporary generated filenames.
 - Changed: Build Configuration. Double buffered with new better resolution checkbox icons.
 - Changed: Light Theme. Darkened scrollbar thumb colors. 
+- Changed: Editor horizontal height now matches vertical scrollbar width.
 - Fixed: Regression files loaded from command line would not display their Function List.
 - Fixed: Visual glitch where menubar rectangle could display in wrong place.
 - Fixed: Hide any open top menus if editor itself loses focus (WM_ACTIVATEAPP).
