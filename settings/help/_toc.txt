@@ -1,33 +1,33 @@
-TOPIC: OVERVIEW
+TOPIC: Overview
 FILENAME: overview.rtf
 
-TOPIC: SETUP AND INSTALLATION
+TOPIC: Setup and Installation
 FILENAME: setup.rtf
 
-TOPIC: SESSIONS
+TOPIC: Sessions
 FILENAME: sessions.rtf
 
-TOPIC: PROJECTS
+TOPIC: Projects
 FILENAME: projects.rtf
 
-TOPIC: COMPILER SETUP
+TOPIC: Compiler Setup
 FILENAME: compiler.rtf
 
-TOPIC: BUILD CONFIGURATIONS
+TOPIC: Build Configurations
 FILENAME: builds.rtf
 
-TOPIC: KEYBOARD SHORTCUTS
+TOPIC: Keyboard Shortcuts
 FILENAME: keyboard.rtf
 
-TOPIC: USER TOOLS
+TOPIC: User Tools
 FILENAME: usertools.rtf
 
-TOPIC: THEMES
+TOPIC: Themes
 FILENAME: themes.rtf
 
-TOPIC: LOCALIZATION
+TOPIC: Localization
 FILENAME: localization.rtf
 
-TOPIC: CODE DIRECTIVES
+TOPIC: Code Directives
 FILENAME: directives.rtf
 
