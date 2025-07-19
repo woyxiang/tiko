@@ -552,6 +552,15 @@ end function
 ' ========================================================================================
 function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
 
+    ' Display the HelpViewer if it already exists
+    if IsWindow( HWND_FRMHELPVIEWER ) then
+        if IsIconic(HWND_FRMHELPVIEWER) then 
+            ShowWindow( HWND_FRMHELPVIEWER, SW_NORMAL )
+        end if
+        SetForegroundWindow( HWND_FRMHELPVIEWER )
+        exit function
+    end if
+    
     '  Create the main window and child controls
     dim pWindow as CWindow ptr = new CWindow
 
