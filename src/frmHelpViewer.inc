@@ -154,7 +154,7 @@ function frmHelpViewer_CalcSplitRect() as RECT
     if pWindow = 0 then exit function
 
     dim as long nVScrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_PANEL)
-    dim as long nSplitterWidth = pWindow->ScaleX(4)
+    dim as long nSplitterWidth = pWindow->ScaleX(SPLITSIZE)
     dim as RECT rc
     GetClientRect( HWND_FRMHELPVIEWER, @rc )
     rc.left = AfxGetWindowWidth(HWND_FRMHELPVIEWER_LEFTPANEL) + nVScrollWidth
@@ -187,7 +187,7 @@ function frmHelpViewer_PositionWindows() as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMHELPVIEWER)
     if pWindow = 0 then exit function
 
-    dim as long nSplitterWidth = pWindow->ScaleX(4)
+    dim as long nSplitterWidth = pWindow->ScaleX(SPLITSIZE)
 
     dim as RECT rcClient: GetClientRect(HWND_FRMHELPVIEWER, @rcClient)
     dim as long nClientHeight = rcClient.bottom - rcClient.top
@@ -483,21 +483,26 @@ function frmHelpViewer_OnDrawItem( _
         ' Create our rect that works with the entire line
         dim as RECT rc
         SetRect( @rc, 0, 0, b.rcClientWidth, b.rcClientHeight )
-        dim as RECT rcText = rc 
-        dim as RECT rcBitmap = rc 
         
         ' Paint the entire background
         b.PaintRect( @rc )
 
-        ' This would be a regular file.
-        rcBitmap.left = rcText.left + pWindow->ScaleX(20)
-        rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20) 
+        dim as long nLeftMargin = pWindow->ScaleX(20)
+        rc.left = nLeftMargin
+        dim as RECT rcText = rc 
+        dim as RECT rcBitmap = rc 
 
-        b.SetFont( GUIFONT_10 )  ' use GUI rather than SYMBOL b/c of dot icon
-        b.PaintText( wszIconDocument, @rcBitmap, DT_CENTER )
+        if left(ltrim(wszCaption), 1) = "-" then
+            rcBitmap.left = rcText.left + pWindow->ScaleX(10)
+            rcBitmap.right = rcBitmap.left + pWindow->ScaleX(10) 
+            b.SetFont( GUIFONT_10 )  ' use GUI rather than SYMBOL b/c of dot icon
+            b.PaintText( wszIconDocument, @rcBitmap, DT_CENTER )
+            rcText.left = rcBitmap.right
+        end if    
 
+        wszCaption = ltrim(wszCaption, any " -")
+        
         b.SetFont( GUIFONT_10 )
-        rcText.left = rcBitmap.right
         b.PaintText( wszCaption, @rcText, DT_LEFT )
 
         b.EndDoubleBuffer()

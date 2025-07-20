@@ -10,6 +10,9 @@ FILENAME: sessions.rtf
 TOPIC: Projects
 FILENAME: projects.rtf
 
+TOPIC: - How to Compile Tiko
+FILENAME: compile_tiko.rtf
+
 TOPIC: Compiler Setup
 FILENAME: compiler.rtf
 
@@ -18,6 +21,9 @@ FILENAME: builds.rtf
 
 TOPIC: Keyboard Shortcuts
 FILENAME: keyboard.rtf
+
+TOPIC: - Common Shortcuts
+FILENAME: common_shortcuts.rtf
 
 TOPIC: User Tools
 FILENAME: usertools.rtf
