@@ -15,16 +15,149 @@
 
 
 ' ========================================================================================
+' Calculate the RECT that holds the client coordinates of the scrollbar's vertical thumb
+' Returns True if RECT is not empty
+' ========================================================================================
+function frmHelpViewerVScroll_calcVThumbRect() as boolean
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMHELPVIEWER)
+    if pWindow = 0 then exit function
+
+    ' calculate the vertical scrollbar in client coordinates
+    SetRectEmpty( @gPanelVScroll.rc )
+    
+    dim as long nTopIndex = SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_GETTOPINDEX, 0, 0 ) 
+
+    dim as RECT rc 
+    with gPanelVScroll
+        GetClientRect( HWND_FRMHELPVIEWER_LEFTPANEL, @rc )
+        .listBoxHeight = rc.bottom - rc.top
+        .itemHeight = SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_GETITEMHEIGHT, 0, 0 )
+        .numItems = ListBox_GetCount( HWND_FRMHELPVIEWER_LEFTPANEL ) 
+        .itemsPerPage = .listBoxHeight / .itemHeight
+        .thumbHeight = (.itemsPerPage / .numItems) * .listBoxHeight
+        GetClientRect( HWND_FRMHELPVIEWER_LEFTPANEL, @rc )
+        .rc.Left = rc.Left
+        .rc.top = rc.top + ((nTopIndex / .numItems) * .listBoxHeight)
+        .rc.Right = rc.right
+        .rc.bottom = .rc.top + .thumbHeight
+        if .numItems < .itemsPerPage then 
+            SetRectEmpty( @gPanelVScroll.rc )
+            return true
+        end if    
+    end with
+
+    function = 0
+end function
+
+    
+' ========================================================================================
+' frmHelpViewerVScroll Window procedure
+' ========================================================================================
+function frmHelpViewerVScroll_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
+
+    static as point prev_pt   ' screen pt.y cursor position
+
+    select case uMsg
+        case WM_LBUTTONDOWN
+            dim as point pt: GetCursorPos( @pt )
+            frmHelpViewerVScroll_calcVThumbRect()   ' in client coordinates
+            dim as RECT rc = gPanelVScroll.rc ' covert copy to screen coordinates
+            MapWindowpoints( HWND_FRMHELPVIEWER_VSCROLLBAR, HWND_DESKTOP, cast(point ptr, @rc), 2)
+            if PtInRect( @rc, pt ) then
+                prev_pt = pt
+                gApp.bDragActive = true
+                SetCapture( HWnd )
+            else
+                ' we have clicked on a PageUp or PageDn
+                dim as long nTopIndex = SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_GETTOPINDEX, 0, 0 ) 
+                if pt.y < rc.top then
+                    nTopIndex = max( nTopIndex - gPanelVScroll.itemsPerPage, 0 )
+                    SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmHelpViewerVScroll_calcVThumbRect()   ' in client coordinates
+                    AfxRedrawWindow( HWND_FRMHELPVIEWER_VSCROLLBAR )
+                    AfxRedrawWindow( HWND_FRMHELPVIEWER_LEFTPANEL )
+                elseif pt.y > rc.bottom then
+                    dim as long nMaxTopIndex = gPanelVScroll.numItems - gPanelVScroll.itemsPerPage
+                    nTopIndex = min( nTopIndex + gPanelVScroll.itemsPerPage, nMaxTopIndex )
+                    SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmHelpViewerVScroll_calcVThumbRect()   ' in client coordinates
+                    AfxRedrawWindow( HWND_FRMHELPVIEWER_VSCROLLBAR )
+                    AfxRedrawWindow( HWND_FRMHELPVIEWER_LEFTPANEL )
+                end if
+            end if
+            
+        case WM_MOUSEMOVE
+            if gApp.bDragActive then
+                dim as point pt: GetCursorPos( @pt )
+                if pt.y <> prev_pt.y then 
+                    dim as long delta = pt.y - prev_pt.y 
+                    ' convert to client coordinates for ease of use
+                    dim as RECT rc: GetClientRect( HWND_FRMHELPVIEWER_VSCROLLBAR, @rc )
+
+                    gPanelVScroll.rc.top = max(0, gPanelVScroll.rc.top + delta)
+                    gPanelVScroll.rc.top = min(gPanelVScroll.rc.top, rc.bottom-gPanelVScroll.thumbHeight)
+                    gPanelVScroll.rc.bottom = gPanelVScroll.rc.top + gPanelVScroll.thumbHeight
+
+                    prev_pt = pt
+                    
+                    dim as long nPrevTopIndex = SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_GETTOPINDEX, 0, 0 ) 
+                    dim as long nLastIndex = (gPanelVScroll.rc.bottom / rc.bottom) * gPanelVScroll.numItems
+                    dim as long nTopIndex = nLastIndex - gPanelVScroll.itemsPerPage
+                    if nTopIndex <> nPrevTopIndex then
+                        SendMessage( HWND_FRMHELPVIEWER_LEFTPANEL, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    end if   
+                    AfxRedrawWindow( HWND_FRMHELPVIEWER_LEFTPANEL )
+                    AfxRedrawWindow( HWND_FRMHELPVIEWER_VSCROLLBAR )
+                end if
+            end if
+            
+        case WM_LBUTTONUP   
+            gApp.bDragActive = false
+            prev_pt.x = 0
+            prev_pt.y = 0
+            ReleaseCapture
+        
+        case WM_ERASEBKGND
+            return true
+            
+        case WM_PAINT
+            dim as clsDoubleBuffer b
+
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghPanel.BackColorScrollBar, ghPanel.BackColorScrollBar )
+            b.PaintClientRect()
+            b.SetBackColors( ghPanel.ForeColorScrollBar, ghPanel.ForeColorScrollBar )
+            b.PaintRect( @gPanelVScroll.rc )
+
+            b.EndDoubleBuffer()
+
+            return 0
+
+    end select
+
+    ' for messages that we don't deal with
+    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+
+end function
+
+
+' ========================================================================================
 ' Calculate RECT area of the splitter bar
 ' ========================================================================================
 function frmHelpViewer_CalcSplitRect() as RECT
     dim pWindow as CWindow ptr = AfxCWindowPtr( HWND_FRMMAIN )
     if pWindow = 0 then exit function
 
+    dim as long nVScrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_PANEL)
     dim as long nSplitterWidth = pWindow->ScaleX(4)
     dim as RECT rc
     GetClientRect( HWND_FRMHELPVIEWER, @rc )
-    rc.left = AfxGetWindowWidth( HWND_FRMHELPVIEWER_LEFTPANEL )
+    rc.left = AfxGetWindowWidth(HWND_FRMHELPVIEWER_LEFTPANEL) + nVScrollWidth
     rc.right = rc.left + nSplitterWidth
 
     function = rc
@@ -39,7 +172,6 @@ function frmHelpViewer_LoadHelpFile( byval nIndex as long ) as long
         (nIndex <= ubound(gHelpViewer.Filenames)) then
         dim as CWSTR wszPath = AfxStrPathname("PATH", gConfig.HelpTableOfContents)
         RichEdit_LoadRtfFromFile( HWND_FRMHELPVIEWER_RIGHTPANEL, wszPath & gHelpViewer.Filenames(nIndex) )
-'        RichEdit_SetZoom( HWND_FRMHELPVIEWER_RIGHTPANEL, 120, 100 )
         RichEdit_SetZoom( HWND_FRMHELPVIEWER_RIGHTPANEL, 100, 100 )
     end if
     function = 0
@@ -69,14 +201,24 @@ function frmHelpViewer_PositionWindows() as LRESULT
     if nLeftPanelWidth >= (nClientWidth - nSplitterWidth * 2) then _
         nLeftPanelWidth = (nClientWidth - nSplitterWidth * 2)
 
+    dim as long nVScrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_PANEL)
+    frmHelpViewerVScroll_calcVThumbRect()
+        
     SetWindowPos( HWND_FRMHELPVIEWER_LEFTPANEL, 0, _
         0, 0, nLeftPanelWidth, nClientHeight, _
         SWP_NOZORDER or SWP_SHOWWINDOW )
+
+    SetWindowPos( HWND_FRMHELPVIEWER_VSCROLLBAR, 0, _
+        nLeftPanelWidth, 0, nVScrollWidth, nClientHeight, _
+        SWP_NOZORDER or SWP_SHOWWINDOW )
     
     SetWindowPos( HWND_FRMHELPVIEWER_RIGHTPANEL, 0, _
-        nLeftPanelWidth + nSplitterWidth, 0, _
-        nClientWidth - nSplitterWidth - nLeftPanelWidth, nClientHeight, _
+        nLeftPanelWidth + nVScrollWidth + nSplitterWidth, 0, _
+        nClientWidth - nSplitterWidth - nVScrollWidth - nLeftPanelWidth, nClientHeight, _
         SWP_NOZORDER or SWP_SHOWWINDOW )
+
+    AfxRedrawWindow( HWND_FRMHELPVIEWER_VSCROLLBAR )
+    AfxRedrawWindow( HWND_FRMHELPVIEWER_LEFTPANEL )
     
     function = 0
 end function
@@ -210,33 +352,6 @@ function frmHelpViewer_OnCommand( _
     end select      
         
     select case id
-'        case IDC_FRMOPTIONS_CMDOK
-'            if codeNotify = BN_CLICKED then
-'                frmOptions_SaveEditorOptions()
-'                ' Reload the theme file in case it has changed
-'                LoadThemeFile()
-'                ' Refresh the frmOutput controls (listviews and RichEdits)
-'                AfxRedrawWindow( HWND_FRMOUTPUT )
-'                frmOutput_SetControlColors()
-'                frmOutput_PositionWindows()
-'                ' Refresh the menubar. The rest of the GUI will refresh via frmMain_PositionWindows
-'                AfxRedrawWindow( HWND_FRMMAIN_MENUBAR )
-'                frmMenuBar_PositionWindows()
-                
-'                ' Reposition main windows in case hide toolbar/statusbar selected
-'                frmMain_PositionWindows
-                
-'                ' Apply the newly saved options to all open Scintilla windows
-'                dim pFrame as CWindow ptr
-'                dim pDoc as clsDocument Ptr = gApp.pDocList
-'                do until pDoc = 0
-'                    pDoc->ApplyProperties
-'                    pDoc = pDoc->pDocNext
-'                loop   
-'                SendMessage( hwnd, WM_CLOSE, 0, 0 )
-'                exit function
-'            end if
-        
         case IDCANCEL
             if codeNotify = BN_CLICKED then
                 SendMessage( hwnd, WM_CLOSE, 0, 0 )
@@ -289,8 +404,6 @@ end function
 ' Process WM_CLOSE message for window/dialog: frmHelpViewer
 ' ========================================================================================
 function frmHelpViewer_OnClose( byval hwnd as HWND ) as LRESULT
-    ' Enables parent window keeping parent's zorder
-'    EnableAllModeless()
     DestroyWindow hwnd
     function = 0
 end function
@@ -355,7 +468,6 @@ function frmHelpViewer_OnDrawItem( _
         ' if mouse is over then reset hot
         if isMouseOverRECT(lpdis->hwndItem, b.rcClient) then IsHot = true   
         if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
-    '    if isMouseOverWindow( HWND_FRMHELPVIEWER_VSCROLLBAR ) then IsHot = false
 
         dim as COLORREF backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
         dim as COLORREF foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
@@ -457,12 +569,12 @@ function frmHelpViewerListBox_SubclassProc ( _
                 nTopIndex = max( 0, nTopIndex )
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-'                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmHelpViewer_PositionWindows
             elseif accumDelta <= -120 then  ' scroll down 3 lines
                 nTopIndex = nTopIndex + 3
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-'                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmHelpViewer_PositionWindows
             end if
 
         case WM_MOUSEMOVE
@@ -605,6 +717,11 @@ function frmHelpViewer_Show( byval hWndParent as HWND ) as LRESULT
         WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmHelpViewerListBox_SubclassProc), _
         IDC_FRMHELPVIEWER_LEFTPANEL, cast(DWORD_PTR, @pWindow))
+
+    dim pWindowPanel as CPanelWindow ptr = New CPanelWindow
+    HWND_FRMHELPVIEWER_VSCROLLBAR = _
+        pWindowPanel->Create( HWND_FRMHELPVIEWER, @frmHelpViewerVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0 )
+    pWindow->ClassStyle = CS_DBLCLKS
 
     HWND_FRMHELPVIEWER_RIGHTPANEL = _ 
         pWindow->AddControl("RICHEDIT", , IDC_FRMHELPVIEWER_RIGHTPANEL, "", 0, 0, 0, 0, _

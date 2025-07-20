@@ -32,12 +32,12 @@ function frmTopTabs_ShowShadow() as long
     dim as long nLeftWidth = rcTopTabs.right - rcTopTabs.left
 
     dim as long nLine = SciExec( pDoc->hWindow(0), SCI_GETFIRSTVISIBLELINE, 0, 0)
-    dim as long nShow = iif( nLine > 0, SW_SHOWNA, SW_HIDE )
+    dim as long nShow = iif( nLine > 0, SW_SHOWNOACTIVATE, SW_HIDE )
     
     ' if the Find/Replace popup window is active then we always show 
     ' the shadow window as a popup style so need to use screen coordinates
     if IsWindowVisible( HWND_FRMFINDREPLACE ) then 
-        nShow = SW_SHOWNA
+        nShow = SW_SHOWNOACTIVATE
         nLeftWidth = rcFindReplace.left - rcTopTabs.left 
     end if
         

@@ -207,6 +207,6 @@ function frmEditorHScroll_NeedScrollBar( _
         if needHSB then exit for
     next
     
-    function = iif( needHSB, SW_SHOWNA, SW_HIDE )
+    function = iif( needHSB, SW_SHOWNOACTIVATE, SW_HIDE )
 end function
 

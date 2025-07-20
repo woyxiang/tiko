@@ -158,8 +158,8 @@ function frmBookmarks_OnDrawItem( _
 
         ' if mouse is over VScrollBar then reset hot
         if isMouseOverRECT(lpdis->hwndItem, b.rcClient) then IsHot = true   
-        if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
         if isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then IsHot = false
+        if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
 
         dim as COLORREF backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
         dim as COLORREF foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
@@ -327,12 +327,12 @@ function frmBookmarksListBox_SubclassProc ( _
                 nTopIndex = max( 0, nTopIndex )
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 )
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmPanelVScroll_PositionWindows( SW_SHOWNOACTIVATE )
             elseif accumDelta <= -120 then  ' scroll down 3 lines
                 nTopIndex = nTopIndex + 3
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 )
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmPanelVScroll_PositionWindows( SW_SHOWNOACTIVATE )
             end if
             
         Case WM_MOUSEMOVE

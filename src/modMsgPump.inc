@@ -37,13 +37,28 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     
         ' HIT TEST for VSCROLLBAR in PANEL
         dim as boolean isVisible = IsWindowVisible(HWND_FRMPANEL_VSCROLLBAR)
-        dim as long curState = iif(isVisible, SW_SHOWNA, SW_HIDE)
+        dim as long curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
         dim as long newState = SW_HIDE
         if isMouseOverWindow( gPanelVScroll.hListBox ) orelse _
             isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then 
-            newState = SW_SHOWNA
+            newState = SW_SHOWNOACTIVATE
         end if
         if newState <> curState then frmPanelVScroll_PositionWindows( newState )
+
+        ' HIT TEST for VSCROLLBAR in HELPVIEWER
+        if IsWindow(HWND_FRMHELPVIEWER) then
+            isVisible = IsWindowVisible(HWND_FRMHELPVIEWER_VSCROLLBAR)
+            curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
+            newState = SW_HIDE
+            if isMouseOverWindow( HWND_FRMHELPVIEWER_LEFTPANEL ) orelse _
+                isMouseOverWindow( HWND_FRMHELPVIEWER_VSCROLLBAR ) then 
+                newState = SW_SHOWNOACTIVATE
+            end if
+            if newState <> curState then 
+                frmHelpViewer_PositionWindows()
+            end if
+        end if    
+
     end if      
 
     ' Should we show an Editor HScrollbar
@@ -51,7 +66,7 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     if (pDoc <> 0) andalso (pDoc->bSizing = false) then   ' no testing during split panel resizing
         for i as long = lbound(pDoc->hWindow) to ubound(pDoc->hWindow)
             dim as boolean isVisible = IsWindowVisible( HWND_FRMEDITOR_HSCROLLBAR(i) )
-            dim as long curState = iif(isVisible, SW_SHOWNA, SW_HIDE)
+            dim as long curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
             dim as long newState = SW_HIDE
             if isMouseOverWindow( pDoc->hWindow(i) ) orelse _
                 isMouseOverWindow( HWND_FRMEDITOR_HSCROLLBAR(i) ) then 

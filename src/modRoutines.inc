@@ -212,7 +212,8 @@ end function
 function isMouseOverWindow( byval hChild as HWND ) as boolean
     dim as point pt
     GetCursorPos( @pt )
-    if WindowFromPoint( pt ) = hChild then return true
+    dim as HWND hWindow = WindowFromPoint(pt)
+    if hWindow = hChild then return true
 end function
 
 ' ========================================================================================
