@@ -241,6 +241,11 @@ end function
 function OnCommand_ViewExplorerPosition() as LRESULT
     gConfig.ExplorerPositionRight = not gConfig.ExplorerPositionRight 
     frmMain_PositionWindows()
+    dim pDoc as clsDocument ptr = gTTabCtl.tabs(gTTabCtl.CurSel).pDoc
+    if pDoc then
+        AfxRedrawWindow( pDoc->hWindow(0) )
+        AfxRedrawWindow( pDoc->hWindow(1) )
+    end if   
     function = 0
 end function
                 

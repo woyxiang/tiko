@@ -35,15 +35,21 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
         if IsWindowVisible( HWND_MENU(0) ) then return false
         if IsWindowVisible( HWND_FRMPANEL ) = 0 then return false
     
+        dim as boolean isVisible
+        dim as long curState
+        dim as long newState 
+
         ' HIT TEST for VSCROLLBAR in PANEL
-        dim as boolean isVisible = IsWindowVisible(HWND_FRMPANEL_VSCROLLBAR)
-        dim as long curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
-        dim as long newState = SW_HIDE
-        if isMouseOverWindow( gPanelVScroll.hListBox ) orelse _
-            isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then 
-            newState = SW_SHOWNOACTIVATE
-        end if
-        if newState <> curState then frmPanelVScroll_PositionWindows( newState )
+        if IsWindow(HWND_FRMHELPVIEWER) then
+            isVisible = IsWindowVisible(HWND_FRMPANEL_VSCROLLBAR)
+            curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
+            newState = SW_HIDE
+            if isMouseOverWindow( gPanelVScroll.hListBox ) orelse _
+                isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then 
+                newState = SW_SHOWNOACTIVATE
+            end if
+            if newState <> curState then frmPanel_PositionWindows()
+        end if    
 
         ' HIT TEST for VSCROLLBAR in HELPVIEWER
         if IsWindow(HWND_FRMHELPVIEWER) then
@@ -54,9 +60,7 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
                 isMouseOverWindow( HWND_FRMHELPVIEWER_VSCROLLBAR ) then 
                 newState = SW_SHOWNOACTIVATE
             end if
-            if newState <> curState then 
-                frmHelpViewer_PositionWindows()
-            end if
+            if newState <> curState then frmHelpViewer_PositionWindows()
         end if    
 
     end if      

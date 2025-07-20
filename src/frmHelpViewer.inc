@@ -416,10 +416,14 @@ function frmHelpViewer_OnDestroy( byval hwnd as HWND ) as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow then delete(pWindow)
     
+    pWindow = AfxCWindowPtr(HWND_FRMHELPVIEWER_VSCROLLBAR)
+    if pWindow then delete(pWindow)
+
     ' Save the current screen coordinates of the Help Viewer
     gConfig.SaveConfigFile    
     
     HWND_FRMHELPVIEWER = 0
+    HWND_FRMHELPVIEWER_VSCROLLBAR = 0
 
     function = 0
 end function

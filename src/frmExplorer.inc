@@ -370,12 +370,12 @@ function frmExplorerListBox_SubclassProc ( _
                 nTopIndex = max( 0, nTopIndex )
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNOACTIVATE )
+                frmPanel_PositionWindows
             elseif accumDelta <= -120 then  ' scroll down 3 lines
                 nTopIndex = nTopIndex + 3
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNOACTIVATE )
+                frmPanel_PositionWindows
             end if
 
         Case WM_MOUSEMOVE
@@ -740,7 +740,7 @@ function LoadExplorerFiles() as long
     AfxRedrawWindow(hList)
 
     ' Determine if the VScroll bar has changed size or is now hidden/shown
-    frmPanelVScroll_PositionWindows( SW_HIDE )
+    frmPanel_PositionWindows
 
     function = 0
 end function

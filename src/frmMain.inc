@@ -1566,7 +1566,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Create the various child windows
     frmPanel_Show( HWND_FRMMAIN )
-    frmPanelVScroll_Show( HWND_FRMMAIN )
     frmOutput_Show( HWND_FRMMAIN )
     frmEditorHScroll_Show( HWND_FRMMAIN )
     frmEditorVScroll_Show( HWND_FRMMAIN )
@@ -1677,7 +1676,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     
     ' delete the allocated memory for the various child windows
     pWindow = AfxCWindowPtr( HWND_FRMPANEL ):                if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ):     if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(0) ): if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(1) ): if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(0) ): if pWindow then delete(pWindow)
