@@ -15,6 +15,7 @@ Version 1.2.0 ()
 - Fixed: Excessive redrawing and repositioning of Find/Replace window when main application window is moved.
 - Fixed: In Settings dialog, pressing ESC while keywords textbox has focus would make textbox disappear.
 - Fixed: Additional Compiler Includes data getting incorrectly reset when Build Configuration changed.
+- Fixed: Various refactoring and improvements too many to list.
 
 Version 1.1.1 (July 7, 2025)
 - Added: Additional Build Configuration flags (-O1,2,3,s,fast and -eassert) to the flag entries in the configuration listbox.
