@@ -227,7 +227,6 @@ end function
 ' Also adds the Tools to the top menu.
 ' ========================================================================================
 function frmUserTools_CreateAcceleratorTable() as long
-
     dim NumKeys  as long
     dim nKey     as long
     dim fVirt    as long
@@ -361,8 +360,13 @@ function frmUserTools_SetTextboxes() as long
     EnableWindow(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTCOMMAND), fEnabled)
     AfxSetWindowText(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTPARAMETERS), iif(fEnabled, gConfig.ToolsTemp(nCurSel).wszParameters, wstr("")))
     EnableWindow(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTPARAMETERS), fEnabled)
-    AfxSetWindowText(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTKEY), iif(fEnabled, gConfig.ToolsTemp(nCurSel).wszKey, wstr("")))
-    EnableWindow(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTKEY), fEnabled)
+
+    dim as HWND hCombo = GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_COMBOKEY)
+    if len(gConfig.ToolsTemp(nCurSel).wszKey) = 0 then gConfig.ToolsTemp(nCurSel).wszKey = "None"
+    dim as long sel = ComboBox_FindStringExact( hCombo, -1, gConfig.ToolsTemp(nCurSel).wszKey.sptr )
+    ComboBox_SetCurSel( hCombo, sel )
+    EnableWindow(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_COMBOKEY), fEnabled)
+
     AfxSetWindowText(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTWORKINGFOLDER), iif(fEnabled, gConfig.ToolsTemp(nCurSel).wszWorkingFolder, wstr("")))
     EnableWindow(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_TXTWORKINGFOLDER), fEnabled)
     Button_SetCheck(GetDlgItem(HWND_FRMUSERTOOLS, IDC_FRMUSERTOOLS_CHKCTRL), iif(fEnabled, gConfig.ToolsTemp(nCurSel).IsCtrl, 0))
@@ -452,8 +456,8 @@ function frmUserTools_OnCommand( _
                 if nCurSel > -1 then gConfig.ToolsTemp(nCurSel).wszParameters = AfxGetWindowText(hwndCtl)
             end if
 
-        case IDC_FRMUSERTOOLS_TXTKEY
-            if codeNotify = EN_CHANGE then
+        case IDC_FRMUSERTOOLS_COMBOKEY
+            if codeNotify = CBN_SELCHANGE then
                 if nCurSel > -1 then gConfig.ToolsTemp(nCurSel).wszKey = AfxGetWindowText(hwndCtl)
             end if
 
@@ -704,7 +708,7 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("BUTTON", , IDC_FRMUSERTOOLS_CMDBROWSEEXE, "...", 610, 46, 30, 23, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL3, L(292,"Parameters") & ":", 230, 75, 95, 18, _
+    pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL3, L(292,"Parameters"), 230, 75, 95, 18, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_RIGHT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     pWindow->AddControl("TEXTBOX", , IDC_FRMUSERTOOLS_TXTPARAMETERS, "", 334, 72, 305, 20, _
@@ -734,13 +738,13 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKSHIFT, "Shift", 441, 202, 48, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("LABEL", , IDC_FRMUSERTOOLS_LABEL7, "Key", 559, 204, 38, 18, _
-        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
-        WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("TEXTBOX", , IDC_FRMUSERTOOLS_TXTKEY, "", 498, 201, 52, 20, _
-        WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
+    dim as HWND hCombo 
+    hCombo = pWindow->AddControl("COMBOBOX", , IDC_FRMUSERTOOLS_COMBOKEY, "", 498, 201, 103, 200, _
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-        
+
+    AddShortcutsToComboBox( hCombo )
+
     pWindow->AddControl("CHECKBOX", , IDC_FRMUSERTOOLS_CHKPROMPT, L(295,"Prompt for confirmation when Tool is invoked"), _
         250, 267, 420, 19, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
@@ -785,7 +789,7 @@ function frmUserTools_Show( byval hWndParent as HWND ) as LRESULT
     frmUserTools_LoadListBox(hForm)
 
     ' Load the Actions combobox
-    dim hCombo as HWND = GetDlgItem(hForm, IDC_FRMUSERTOOLS_COMBOACTION)
+    hCombo = GetDlgItem(hForm, IDC_FRMUSERTOOLS_COMBOACTION)
     ComboBox_Addstring( hCombo, @L(303,"Invoke only when selected by user") ) 
     ComboBox_Addstring( hCombo, @L(302,"Invoke during pre-compile") ) 
     ComboBox_Addstring( hCombo, @L(301,"Invoke during post-compile") ) 

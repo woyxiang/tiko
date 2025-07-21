@@ -122,7 +122,7 @@ FUNCTION CMemMapFile.MapFile (BYVAL pwszFileName AS WSTRING PTR, BYVAL bReadOnly
    ' //Open the disk file
    DIM dwDesiredAccess AS DWORD
    IF bReadOnly THEN dwDesiredAccess = GENERIC_READ ELSE dwDesiredAccess = GENERIC_READ OR GENERIC_WRITE
-   m_hFile = CreateFile(pwszFilename, dwDesiredAccess, dwShareMode, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+   m_hFile = CreateFileW(pwszFilename, dwDesiredAccess, dwShareMode, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
    IF m_hFile = INVALID_HANDLE_VALUE THEN RETURN FALSE
 
    ' // Create the file mapping object

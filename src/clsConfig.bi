@@ -15,15 +15,19 @@
 
 
 type TYPE_BUILDS
-    id             as string    ' GUID
-    wszDescription as CWSTR
-    IsDefault      as long      ' 0:False, 1:True
-    Is32bit        as long      ' 0:False, 1:True
-    Is64bit        as long      ' 0:False, 1:True
-    ExcludeInPopup as long      ' 0:False, 1:True  (do not show in statusbar popup menu)
-    wszOptions     as CWSTR     ' Compiler options (manual and selected from listbox)
-    idMenu         as long      ' Used to match selected build from statusbar popup menu 
+    id               as string    ' GUID
+    wszDescription   as CWSTR
+    IsDefault        as long      ' 0:False, 1:True
+    Is32bit          as long      ' 0:False, 1:True
+    Is64bit          as long      ' 0:False, 1:True
+    ExcludeInPopup   as long      ' 0:False, 1:True  (do not show in statusbar popup menu)
+    wszOptions       as CWSTR     ' Compiler options (manual and selected from listbox)
+    idMenu           as long      ' Used to match selected build from statusbar popup menu 
                                 ' because some items can be excluded from the popup.
+    IsCtrl           as long
+    IsAlt            as long
+    IsShift          as long
+    wszKey           as CWSTR
 end type
 
 type TYPE_TOOLS
@@ -43,9 +47,9 @@ type TYPE_TOOLS
 end type
 
 type TYPE_CATEGORIES
-    idFileType     as string    ' GUID or special node value (FILETYPE_*)
-    wszDescription as CWSTR
-    bShow          as boolean = true
+    idFileType       as string    ' GUID or special node value (FILETYPE_*)
+    wszDescription   as CWSTR
+    bShow            as boolean = true
 end type
 
 ' NOTE: These node types are different values than the FileType defines from
@@ -68,9 +72,9 @@ type clsConfig
         FBCodetipsFilename        as CWSTR
         WinAPICodetipsFilename    as CWSTR 
         WinFBXCodetipsFilename    as CWSTR
-        TikoHelpFile              as CWSTR
         DefaultSessionFilename    as CWSTR 
-        
+        HelpTableOfContents       as CWSTR
+         
         DateFileTime              as FILETIME
         
         SettingsVersion           as CWSTR
@@ -131,6 +135,12 @@ type clsConfig
         StartupRight              as long = 0
         StartupBottom             as long = 0
         StartupMaximized          as long = false
+        HelpStartupLeft           as long = 0
+        HelpStartupTop            as long = 0
+        HelpStartupRight          as long = 0
+        HelpStartupBottom         as long = 0
+        HelpStartupMaximized      as long = false
+        HelpLeftPanelWidth        as long = 0
         FBWINCompiler32           as CWSTR
         FBWINCompiler64           as CWSTR
         CompilerBuild             as CWSTR     ' Build GUID

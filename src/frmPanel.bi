@@ -43,5 +43,3 @@ dim shared gPanelVScroll as PANEL_VSCROLL_TYPE
 
 
 declare function frmPanel_Show( byval hWndParent as HWnd ) as LRESULT
-declare function frmPanelVScroll_Show( byval hWndParent as HWnd ) as LRESULT
-declare function frmPanelVScroll_PositionWindows( byval nShowState as long ) as LRESULT

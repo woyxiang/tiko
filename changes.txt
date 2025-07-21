@@ -1,3 +1,22 @@
+Version 1.2.0 (July 21, 2025)
+- Added: Build Configuration. Can now assign user defined keyboard shortcut to each configuration.
+- Added: Build Configuration. Toggle on/off mutually exclusive related compile options.
+- Added: Module compiling now checks for #Include file dependency changes and engages object recompiling if true.
+- Added: French language translation thanks to contributor, docroger.
+- Added: Enhanced Help file viewer and help file content.
+- Changed: Quick Run refactor. Temp source file now saved and compiled as UTF-16.
+- Changed: Quick Run refactor. Now uses "_tiko_quickrun.exe" rather than random temporary generated filenames.
+- Changed: Build Configuration. Double buffered with new better resolution checkbox icons.
+- Changed: Light Theme. Darkened scrollbar thumb colors. 
+- Changed: Editor horizontal height now matches vertical scrollbar width.
+- Fixed: Regression files loaded from command line would not display their Function List.
+- Fixed: Visual glitch where menubar rectangle could display in wrong place.
+- Fixed: Hide any open top menus if editor itself loses focus (WM_ACTIVATEAPP).
+- Fixed: Excessive redrawing and repositioning of Find/Replace window when main application window is moved.
+- Fixed: In Settings dialog, pressing ESC while keywords textbox has focus would make textbox disappear.
+- Fixed: Additional Compiler Includes data getting incorrectly reset when Build Configuration changed.
+- Fixed: Various refactoring and improvements too many to list.
+
 Version 1.1.1 (July 7, 2025)
 - Added: Additional Build Configuration flags (-O1,2,3,s,fast and -eassert) to the flag entries in the configuration listbox.
 - Added: French language translation from community member docroger.

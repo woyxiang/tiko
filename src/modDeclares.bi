@@ -143,11 +143,14 @@ end enum
 #define IDM_MRUBASE          5000  ' Windows id of MRU items 1 to 10 (located under File menu)
 #define IDM_MRUPROJECTBASE   6000  ' Windows id of MRUPROJECT items 1 to 10 (located under Project menu)
 #define IDM_MRUSESSIONBASE   7000  ' Windows id of MRUSESSION items 1 to 10 (located under File menu)
+#define IDM_BUILDCONFIGBASE  8000
 
 
 '  Global window handles
 dim shared as HWND HWND_FRMMAIN, HWND_FRMRECENT, HWND_FRMOUTPUT, HWND_FRMMAIN_STATUSBAR
 dim shared as HWND HWND_FRMMAIN_MENUBAR
+dim shared as HWND HWND_FRMHELPVIEWER, HWND_FRMHELPVIEWER_LEFTPANEL, HWND_FRMHELPVIEWER_RIGHTPANEL
+dim shared as HWND HWND_FRMHELPVIEWER_VSCROLLBAR
 dim shared as HWND HWND_FRMOPTIONS, HWND_FRMOPTIONSGENERAL, HWND_FRMOPTIONSEDITOR, HWND_FRMOPTIONSEDITOR2
 dim shared as HWND HWND_FRMOPTIONSCOLORS, HWND_FRMOPTIONSCOMPILER, HWND_FRMOPTIONSLOCAL
 dim shared as HWND HWND_FRMOPTIONSKEYWORDS, HWND_FRMOPTIONSKEYWORDSWINAPI
@@ -163,7 +166,6 @@ dim shared as HWND HWND_FRMPANEL, HWND_FRMPANEL_MENU, HWND_FRMPANEL_VSCROLLBAR
 dim shared as HWND HWND_FRMEDITOR_HSCROLLBAR(1)
 dim shared as HWND HWND_FRMEDITOR_VSCROLLBAR(1)
 
-dim shared as HICON ghIconTick, ghIconNoTick
 dim shared as long ghIconGood, ghIconBad
 dim shared as HCURSOR ghCursorSizeNS
 dim shared as HCURSOR ghCursorSizeWE
@@ -257,9 +259,9 @@ const EXPLORERITEM_HEIGHT_COMPACT = 19
 const MENUBAR_HEIGHT_COMPACT = 28 
 
 const STATUSBAR_HEIGHT = 22
-const SCROLLBAR_WIDTH_PANEL = 10
+const SCROLLBAR_WIDTH_PANEL = 7
 const SCROLLBAR_WIDTH_EDITOR = 12
-const SCROLLBAR_HEIGHT = 10
+const SCROLLBAR_HEIGHT = 12
 const SCROLLBAR_MINTHUMBSIZE = 30
 const SPLITSIZE = 4
 
@@ -287,7 +289,7 @@ dim shared as wstring * 10 _
     wszIconPreserveCase, wszIconReplace, wszIconReplaceAll, wszIconMoreActions, wszIconAddFileButton, _
     wszIconExplorer, wszIconFunctions, wszIconBookmarks, wszIconCompile, wszIconBuildExecute, _
     wszIconSplitEditor, wszIconSplitLeftRight, wszIconSplitTopBottom, wszIconThemes, _
-    wszIconSettings
+    wszIconSettings, wszIconCheckBoxEmpty, wszIconCheckBoxMarked
 
 ' Symbol characters display in top menus, frmExplorer, and tab control
 
@@ -321,4 +323,6 @@ dim shared as wstring * 10 _
     wszIconSplitEditor       = wszIconSplitLeftRight
     wszIconSettings          = !"\uE713"   
     wszIconThemes            = !"\uE771"   
+    wszIconCheckBoxEmpty     = !"\uE739"
+    wszIconCheckBoxMarked    = !"\uE73A"
 

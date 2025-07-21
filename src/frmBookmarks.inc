@@ -158,8 +158,8 @@ function frmBookmarks_OnDrawItem( _
 
         ' if mouse is over VScrollBar then reset hot
         if isMouseOverRECT(lpdis->hwndItem, b.rcClient) then IsHot = true   
-        if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
         if isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then IsHot = false
+        if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
 
         dim as COLORREF backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
         dim as COLORREF foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
@@ -222,6 +222,7 @@ function frmBookmarks_OnDrawItem( _
     function = true
 
 end function
+
 
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmBookmarks
@@ -326,12 +327,12 @@ function frmBookmarksListBox_SubclassProc ( _
                 nTopIndex = max( 0, nTopIndex )
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 )
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmPanel_PositionWindows
             elseif accumDelta <= -120 then  ' scroll down 3 lines
                 nTopIndex = nTopIndex + 3
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 )
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmPanel_PositionWindows
             end if
             
         Case WM_MOUSEMOVE
@@ -555,14 +556,14 @@ function LoadBookmarksFiles() as long
             ListBox_SetItemData( hList, idx, pDoc )
 
             if pDoc->bBookmarkExpanded then
-            nCount = AfxStrParseCount( sBookmarks, "," )
-            for i as long = 1 to nCount
-                nLineNum = val( AfxStrParse( sBookmarks, i, "," ) )
-                wszText = wstr(nLineNum) & _
-                            "%" & ltrim(pDoc->GetLine(nLineNum))
-                idx = Listbox_AddString( hList, @wszText )
-                ListBox_SetItemData( hList, idx, pDoc )
-            next
+                nCount = AfxStrParseCount( sBookmarks, "," )
+                for i as long = 1 to nCount
+                    nLineNum = val( AfxStrParse( sBookmarks, i, "," ) )
+                    wszText = wstr(nLineNum) & _
+                                "%" & ltrim(pDoc->GetLine(nLineNum))
+                    idx = Listbox_AddString( hList, @wszText )
+                    ListBox_SetItemData( hList, idx, pDoc )
+                next
             end if
         end if
 
@@ -581,7 +582,7 @@ function LoadBookmarksFiles() as long
     AfxRedrawWindow( hList )
 
     ' Determine if the VScroll bar has changed size or is now hidden/shown
-    frmPanelVScroll_PositionWindows( SW_HIDE )
+    frmPanel_PositionWindows
 
     function = 0
 end function

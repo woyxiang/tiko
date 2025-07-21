@@ -354,6 +354,9 @@ function frmMain_ProcessCommandLine( byval hwnd as HWND ) as long
         frmMain_RestoreSessionOrProject()
     end if    
 
+    LoadExplorerFiles()
+    LoadFunctionsFiles()
+
     function = 0
 end function   
 
@@ -501,7 +504,7 @@ function frmMain_OnPaint( byval hwnd as HWND ) as LRESULT
         if pDoc->EditorSplitMode <> SplitNone then
             frmMain_CalcSplitRect(pDoc)
             b.SetBackColors( ghEditor.Divider, ghEditor.Divider )
-            b.PaintRect( @pDoc->rcSplitButton, ghEditor.Divider )
+            b.PaintRect( @pDoc->rcSplitButton )
         end if    
     end if
     
@@ -857,6 +860,11 @@ function frmMain_OnCreate( _
             byval hwnd as HWND, _
             byval lpCreateStructPtr as LPCREATESTRUCT _
             ) as boolean
+
+    ' delete any previous temporary quick run files should they exist
+    gApp.wszQuickRunFilename = AfxGetExePathName & QUICKRUNEXE
+    AfxDeleteFile( gApp.wszQuickRunFilename )
+
     ' Enable drag and drop files
     DragAcceptFiles hwnd, CTRUE
     
@@ -895,13 +903,12 @@ function frmMain_OnActivateApp( _
             ) as LRESULT
 
     ' Reset top menubar active selection if we lose or gain app focus.
-    gActiveMenuBarIndex = -1
-    AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
+    ' killAllPopupMenus resets gActiveMenuBarIndex and redraws menubar
+    killAllPopupMenus()   
     
     ' If app is losing focus then there is nothing we need to do
     if fActivate = false then exit function
 
-    if gApp.PreventActivateApp then exit function
     if gApp.GetDocumentCount = 0 then exit function
 
     ' Re-entry guard
@@ -1115,6 +1122,11 @@ function frmMain_OnDestroy( byval hwnd as HWND ) as LRESULT
     ' Output the config settings to disk file
     gConfig.SaveConfigFile
 
+    ' delete any temporary quick run files should they exist
+    ' filename set in compile process and could be different location than the
+    ' default filename as tested for in wm_create.
+    AfxDeleteFile( gApp.wszQuickRunFilename )
+    
     ' Disable drag and drop files
     DragAcceptFiles hwnd, false
     
@@ -1373,7 +1385,7 @@ function frmMain_WndProc( _
             ' Ensure that if the Find/Replace dialog is open that it moves with
             ' underlying main editor window.   
             if IsWindowVisible( HWND_FRMFINDREPLACE ) then  
-                frmFindReplace_Show( hwnd, gFind.bExpanded )
+                frmFindReplace_PositionMainWindow()
             end if
             if IsWindowVisible( HWND_FRMMAIN_TOPTABS ) then
                 frmTopTabs_ShowShadow()
@@ -1536,11 +1548,6 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     ghIconGood = 1  
     ghIconBad  = 2 
     
-    ' Load the tick and untick icons
-    dim cx as long =  16 * (pWindow->DPI \ 96)
-    ghIconTick   = LoadImage( pWindow->InstanceHandle, "IMAGE_TICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR or LR_SHARED )
-    ghIconNoTick = LoadImage( pWindow->InstanceHandle, "IMAGE_NOTICK", IMAGE_ICON, cx, cx, LR_DEFAULTCOLOR or LR_SHARED )
-
     ' Load the North/South and East/West cursor images
     ghCursorSizeNS = LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZENS), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )
     ghCursorSizeWE = LoadImage( Null, MAKEINTRESOURCEW(OCR_SIZEWE), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE or LR_SHARED )
@@ -1559,13 +1566,15 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Create the various child windows
     frmPanel_Show( HWND_FRMMAIN )
-    frmPanelVScroll_Show( HWND_FRMMAIN )
     frmOutput_Show( HWND_FRMMAIN )
     frmEditorHScroll_Show( HWND_FRMMAIN )
     frmEditorVScroll_Show( HWND_FRMMAIN )
 
     ' Create the UserTools accelerator table
     frmUserTools_CreateAcceleratorTable()            
+
+    ' Create the Build Configurations accelerator table
+    frmBuildConfig_CreateAcceleratorTable()            
     
     ' SET STARTUP POSITION
     ' if no valid window size exists then set to the default working area of the screen
@@ -1611,7 +1620,8 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
         ' Processes accelerator keys for menu commands
         if (pWindow->AccelHandle = 0) orelse (TranslateAccelerator(pWindow->hWindow, pWindow->AccelHandle, @uMsg) = 0) then
-            if (ghAccelUserTools = 0) orelse (TranslateAccelerator(pWindow->hWindow, ghAccelUserTools, @uMsg) = 0) then 
+         if (ghAccelUserTools = 0) orelse (TranslateAccelerator(pWindow->hWindow, ghAccelUserTools, @uMsg) = 0) then 
+          if (ghAccelBuildConfigurations = 0) orelse (TranslateAccelerator(pWindow->hWindow, ghAccelBuildConfigurations, @uMsg) = 0) then 
 
             ' Prevent any < asc(32) characters from making their way to Scintilla where they 
             ' get shown as an embedded control graphic. Allow backspace.
@@ -1654,20 +1664,18 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
                 DispatchMessage @uMsg     ' Dispatches a message to a window procedure.
             end if
 
-            end if  ' accelerators usertools 
+          end if  ' accelerators build configurations
+         end if  ' accelerators usertools 
         end if  ' accelerators
     loop  ' message loop
     
     function = uMsg.wParam
 
-    if ghIconTick       then DestroyIcon( ghIconTick )
-    if ghIconNoTick     then DestroyIcon( ghIconNoTick )
-
     if ghAccelUserTools then DestroyAcceleratorTable( ghAccelUserTools )
+    if ghAccelBuildConfigurations then DestroyAcceleratorTable( ghAccelBuildConfigurations )
     
     ' delete the allocated memory for the various child windows
     pWindow = AfxCWindowPtr( HWND_FRMPANEL ):                if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ):     if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(0) ): if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(1) ): if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(0) ): if pWindow then delete(pWindow)

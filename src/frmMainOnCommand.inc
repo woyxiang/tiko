@@ -18,6 +18,7 @@
 #include once "clsDocument.bi"
 #include once "frmMain.bi"
 #include once "frmFunctions.bi"
+#include once "frmHelpViewer.bi"
 
 
 ' ========================================================================================
@@ -219,6 +220,22 @@ function frmMain_OnCommand( _
         case IDM_USERTOOLSBASE to (IDM_USERTOOLSBASE + ubound(gConfig.Tools))
             frmUserTools_ExecuteUserTool( id - IDM_USERTOOLSBASE )
 
+        case IDM_BUILDCONFIGBASE to (IDM_BUILDCONFIGBASE + ubound(gConfig.Builds))
+            ' Make sure that the incoming Tool Number is valid
+            dim as long nBuildNum = id - IDM_BUILDCONFIGBASE
+            if (nBuildNum < lbound(gConfig.Builds)) orelse (nBuildNum > ubound(gConfig.Builds)) then exit function
+            ' Set the active project or the active document to the selected build
+            If gApp.IsProjectActive then
+                gApp.ProjectBuild = gConfig.Builds(nBuildNum).Id
+            else
+                dim pDocMain as clsDocument Ptr 
+                pDocMain = gTTabCtl.GetActiveDocumentPtr()
+                if pDocMain then pDocMain->DocumentBuild = gConfig.Builds(nBuildNum).Id
+                gConfig.CompilerBuild = gConfig.Builds(nBuildNum).Id
+            end if
+            frmMain_SetStatusbar
+            gConfig.SaveConfigFile
+
         case IDM_EXIT
             SendMessage( hwnd, WM_CLOSE, 0, 0 )
 
@@ -327,9 +344,7 @@ function frmMain_OnCommand( _
             ShowContextHelp(id) 
     
         case IDM_HELP_TIKO
-            dim pDoc as clsDocument ptr = _
-                OpenSelectedDocument(gConfig.TikoHelpFile)
-            if pDoc then pDoc->bIsHelpFile = true    
+            frmHelpViewer_Show( HWND_DESKTOP )
 
         case IDM_ABOUT
             DisableAllModeless()

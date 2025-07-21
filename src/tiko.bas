@@ -35,12 +35,15 @@
 using Afx
 
 
-#define APPNAME        wstr("Tiko Editor")
-#define APPNAMESHORT   wstr("Tiko")
-#define APPCLASSNAME   wstr("tiko_editor_class")
-#define APPVERSION     wstr("1.1.1") 
-#define APPEXTENSION   wstr(".tiko") 
-#define APPBITS        wstr(" (64-bit)")
+#define APPNAME             wstr("Tiko Editor")
+#define APPNAMESHORT        wstr("Tiko")
+#define APPCLASSNAME        wstr("tiko_editor_class")
+#define APPVERSION          wstr("1.2.0") 
+#define APPEXTENSION        wstr(".tiko") 
+#define APPBITS             wstr(" (64-bit)")
+#define RUNBATCHFILE        wstr("_tiko_runbatch.bat")
+#define QUICKRUNBAS         wstr("_tiko_quickrun.bas")
+#define QUICKRUNEXE         wstr("_tiko_quickrun.exe")
 
 #define APPCOPYRIGHT   wstr("Paul Squires, PlanetSquires Software, Copyright (C) 2016-2025") 
 dim shared as CWSTR gwszDefaultToolchain = "FreeBASIC-1.10.1-winlibs-gcc-9.3.0"
@@ -89,7 +92,6 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmTopTabs.inc"
 #include once "frmMenuBar.inc"
 #include once "frmStatusBar.inc"
-#include once "frmPanelVScroll.inc" 
 #include once "frmEditorHScroll.inc" 
 #include once "frmEditorVScroll.inc" 
 #include once "frmPanel.inc" 
@@ -111,6 +113,7 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmOptionsKeywordsWinApi.inc"
 #include once "frmOptions.inc"
 #include once "frmGoto.inc"
+#include once "frmHelpViewer.inc"
 #include once "frmCommandLine.inc"
 #include once "frmFindInFiles.inc"
 #include once "frmFindReplace.inc"

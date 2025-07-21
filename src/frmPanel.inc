@@ -24,6 +24,138 @@
 
 
 ' ========================================================================================
+' Calculate the RECT that holds the client coordinates of the scrollbar's vertical thumb
+' Returns True if RECT is not empty
+' ========================================================================================
+function frmPanelVScroll_calcVThumbRect() as boolean
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMPANEL)
+    if pWindow = 0 then exit function
+
+    ' calculate the vertical scrollbar in client coordinates
+    SetRectEmpty( @gPanelVScroll.rc )
+    
+    dim as long nTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
+
+    dim as RECT rc 
+    with gPanelVScroll
+        GetClientRect( gPanelVScroll.hListBox, @rc )
+        .listBoxHeight = rc.bottom - rc.top
+        .itemHeight = SendMessage( gPanelVScroll.hListBox, LB_GETITEMHEIGHT, 0, 0 )
+        .numItems = ListBox_GetCount( gPanelVScroll.hListBox ) 
+        .itemsPerPage = .listBoxHeight / .itemHeight
+        .thumbHeight = (.itemsPerPage / .numItems) * .listBoxHeight
+        GetClientRect( HWND_FRMPANEL_VSCROLLBAR, @rc )
+        .rc.Left = rc.Left
+        .rc.top = rc.top + ((nTopIndex / .numItems) * .listBoxHeight)
+        .rc.Right = rc.right
+        .rc.bottom = .rc.top + .thumbHeight
+        if .numItems < .itemsPerPage then 
+            SetRectEmpty( @gPanelVScroll.rc )
+            return true
+        end if
+    end with
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' frmPanelVScroll Window procedure
+' ========================================================================================
+function frmPanelVScroll_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
+
+    static as point prev_pt   ' screen pt.y cursor position
+
+    select case uMsg
+        case WM_LBUTTONDOWN
+            dim as point pt: GetCursorPos( @pt )
+            frmPanelVScroll_calcVThumbRect()   ' in client coordinates
+            dim as RECT rc = gPanelVScroll.rc ' covert copy to screen coordinates
+            MapWindowpoints( HWND_FRMPANEL_VSCROLLBAR, HWND_DESKTOP, cast(point ptr, @rc), 2)
+            if PtInRect( @rc, pt ) then
+                prev_pt = pt
+                gApp.bDragActive = true
+                SetCapture( HWnd )
+            else
+                ' we have clicked on a PageUp or PageDn
+                dim as long nTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
+                if pt.y < rc.top then
+                    nTopIndex = max( nTopIndex - gPanelVScroll.itemsPerPage, 0 )
+                    SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmPanelVScroll_calcVThumbRect()   ' in client coordinates
+                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+                    AfxRedrawWindow( gPanelVScroll.hListBox )
+                elseif pt.y > rc.bottom then
+                    dim as long nMaxTopIndex = gPanelVScroll.numItems - gPanelVScroll.itemsPerPage
+                    nTopIndex = min( nTopIndex + gPanelVScroll.itemsPerPage, nMaxTopIndex )
+                    SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmPanelVScroll_calcVThumbRect()   ' in client coordinates
+                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+                    AfxRedrawWindow( gPanelVScroll.hListBox )
+                end if
+            end if
+            
+        case WM_MOUSEMOVE
+            if gApp.bDragActive then
+                dim as point pt: GetCursorPos( @pt )
+                if pt.y <> prev_pt.y then 
+                    dim as long delta = pt.y - prev_pt.y 
+                    ' convert to client coordinates for ease of use
+                    dim as RECT rc: GetClientRect( HWND_FRMPANEL_VSCROLLBAR, @rc )
+
+                    gPanelVScroll.rc.top = max(0, gPanelVScroll.rc.top + delta)
+                    gPanelVScroll.rc.top = min(gPanelVScroll.rc.top, rc.bottom-gPanelVScroll.thumbHeight)
+                    gPanelVScroll.rc.bottom = gPanelVScroll.rc.top + gPanelVScroll.thumbHeight
+
+                    prev_pt = pt
+                    
+                    dim as long nPrevTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
+                    dim as long nLastIndex = (gPanelVScroll.rc.bottom / rc.bottom) * gPanelVScroll.numItems
+                    dim as long nTopIndex = nLastIndex - gPanelVScroll.itemsPerPage
+                    if nTopIndex <> nPrevTopIndex then
+                        SendMessage( gPanelVScroll.hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                        AfxRedrawWindow( gPanelVScroll.hListBox )
+                    end if   
+                    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+                end if
+            end if
+            
+        case WM_LBUTTONUP   
+            gApp.bDragActive = false
+            prev_pt.x = 0
+            prev_pt.y = 0
+            ReleaseCapture
+        
+        case WM_ERASEBKGND
+            return true
+            
+        case WM_PAINT
+            dim as clsDoubleBuffer b
+
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghPanel.BackColorScrollBar, ghPanel.BackColorScrollBar )
+            b.PaintClientRect()
+            b.SetBackColors( ghPanel.ForeColorScrollBar, ghPanel.ForeColorScrollBar )
+            b.PaintRect( @gPanelVScroll.rc )
+
+            b.EndDoubleBuffer()
+
+            return 0
+
+    end select
+
+    ' for messages that we don't deal with
+    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+
+end function
+
+
+' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
 function frmPanel_PositionWindows() as LRESULT
@@ -73,6 +205,10 @@ function frmPanel_PositionWindows() as LRESULT
     SetWindowPos( HWND_FRMPANEL_MENU, 0, nLeft, 0, nWidth, nPanelMenuHeight, SWP_SHOWWINDOW or SWP_NOZORDER )
     frmPanelMenu_PositionWindows()
     
+    dim as long nVScrollWidth = pWindow->ScaleX(SCROLLBAR_WIDTH_PANEL)
+    frmPanelVScroll_calcVThumbRect()
+
+    nWidth = nWidth - nVScrollWidth
     SetWindowPos( HWND_FRMEXPLORER, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
     SetWindowPos( HWND_FRMBOOKMARKS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
     SetWindowPos( HWND_FRMFUNCTIONS, 0, nLeft, nTop, nWidth, nHeight, SWP_NOZORDER )
@@ -118,6 +254,10 @@ function frmPanel_PositionWindows() as LRESULT
             gPanelButton(1).hActionChild = HWND_FRMBOOKMARKS
     end select
 
+    SetWindowPos( HWND_FRMPANEL_VSCROLLBAR, 0, _
+        AfxGetWindowWidth(gPanelVScroll.hListBox), nTop, _
+        nVScrollWidth, nHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
+
     ' Calculate the divider line
     gPanel.rcDividerLine = type( 0, nPanelMenuHeight, nWidth, nPanelMenuHeight )
     
@@ -140,8 +280,9 @@ function frmPanel_PositionWindows() as LRESULT
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)
     end with
         
-    RedrawWindow( gPanelVScroll.hListBox, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
-    RedrawWindow( HWND_FRMPANEL, null, null, RDW_INVALIDATE or RDW_UPDATENOW )                
+    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
+    AfxRedrawWindow( gPanelVScroll.hListBox )
+    AfxRedrawWindow( HWND_FRMPANEL )
 
     ' Ensure that the panel menu selected item is in sync with the pane
     AfxRedrawWindow(HWND_FRMPANEL_MENU)
@@ -161,6 +302,7 @@ function frmPanel_OnDestroy( byval hwnd as HWND ) as LRESULT
     pWindow = AfxCWindowPtr( HWND_FRMEXPLORER ):   if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMFUNCTIONS ):  if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMBOOKMARKS ):  if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ):  if pWindow then delete(pWindow)
 
     function = 0
 end Function
@@ -431,6 +573,11 @@ function frmPanel_Show( byval hwndParent as hwnd ) as LRESULT
     ' Disable background erasing by only assigning the one style
     pWindow->ClassStyle = CS_DBLCLKS
     ShowWindow( HWND_FRMPANEL, iif(gConfig.ShowPanel, SW_SHOW, SW_HIDE) )
+
+    dim pWindowPanel as CPanelWindow ptr = New CPanelWindow
+    HWND_FRMPANEL_VSCROLLBAR = _
+        pWindowPanel->Create( HWND_FRMPANEL, @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0 )
+    pWindow->ClassStyle = CS_DBLCLKS
 
     ' Create the child windows
     frmPanelMenu_Show( HWND_FRMPANEL )

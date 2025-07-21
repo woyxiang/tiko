@@ -16,35 +16,71 @@
 #include once "clsTopTabCtl.bi"
 #include once "clsDocument.bi"
 
+type BUILD_OPTIONS
+    groupid as long
+    wszText as CWSTR
+end type
+
 ' Create an array that holds all options in the Build compiler options listbox. The
 ' description contains a parenthesis enclosed action.
-dim shared gBuildOptions(...) as CWSTR => _
-    {  _
-    "Subsystem to console (-s console)", _
-    "Subsystem to GUI (-s gui)", _
-    "Compiler 32-bit assembler backend (-gen gas)", _
-    "Compiler 64-bit assembler backend (-gen gas64)", _
-    "Compiler GCC backend (-gen gcc)", _
-    "Compiler LLVM backend (-gen llvm)", _
-    "Add error checking (-e)", _
-    "Add error checking with RESUME support (-ex)", _
-    "Same as -ex with array bounds and null pointer (-exx)", _
-    "Enable Assert and AssertWarn code generation (-eassert)", _
-    "Add debug information (-g)", _
-    "Optimization level 1 for gcc (-Wc -O1)", _
-    "Optimization level 2 for gcc (-Wc -O2)", _
-    "Optimization level 3 for gcc (-Wc -O3)", _
-    "Optimization favor size for gcc (-Wc -Os)", _
-    "Optimization favor speed for gcc (-Wc -Ofast)", _
-    "Language compatibility FreeBasic (-lang fb)", _
-    "Language compatibility FreeBasic Lite (-lang fblite)", _
-    "Language compatibility QuickBasic (-lang qb)", _
-    "Create DLL and import library (-dll)", _
-    "Create static library (-lib)", _
-    "Compile only, do not link (-c)", _
-    "Do not delete the object files (-C)", _
-    "Emit preprocessed output, do not compile (-pp)" _
-    }
+dim shared gBuildOptions(23) as BUILD_OPTIONS
+gBuildOptions(0).groupid  = 0
+gBuildOptions(0).wszText  = "Subsystem to console (-s console)"
+gBuildOptions(1).groupid  = 0
+gBuildOptions(1).wszText  = "Subsystem to GUI (-s gui)"
+
+gBuildOptions(2).groupid  = 1
+gBuildOptions(2).wszText  = "Compiler 32-bit assembler backend (-gen gas)"
+gBuildOptions(3).groupid  = 1
+gBuildOptions(3).wszText  = "Compiler 64-bit assembler backend (-gen gas64)"
+gBuildOptions(4).groupid  = 1
+gBuildOptions(4).wszText  = "Compiler GCC backend (-gen gcc)"
+gBuildOptions(5).groupid  = 1
+gBuildOptions(5).wszText  = "Compiler LLVM backend (-gen llvm)"
+
+gBuildOptions(6).groupid  = 2
+gBuildOptions(6).wszText  = "Add error checking (-e)"
+gBuildOptions(7).groupid  = 2
+gBuildOptions(7).wszText  = "Add error checking with RESUME support (-ex)"
+gBuildOptions(8).groupid  = 2
+gBuildOptions(8).wszText  = "Same as -ex with array bounds and null pointer (-exx)"
+
+gBuildOptions(9).groupid  = 3
+gBuildOptions(9).wszText  = "Enable Assert and AssertWarn code generation (-eassert)"
+
+gBuildOptions(10).groupid = 4
+gBuildOptions(10).wszText = "Add debug information (-g)"
+
+gBuildOptions(11).groupid = 5
+gBuildOptions(11).wszText = "Optimization level 1 for gcc (-Wc -O1)"
+gBuildOptions(12).groupid = 5
+gBuildOptions(12).wszText = "Optimization level 2 for gcc (-Wc -O2)"
+gBuildOptions(13).groupid = 5
+gBuildOptions(13).wszText = "Optimization level 3 for gcc (-Wc -O3)"
+gBuildOptions(14).groupid = 5
+gBuildOptions(14).wszText = "Optimization favor size for gcc (-Wc -Os)"
+gBuildOptions(15).groupid = 5
+gBuildOptions(15).wszText = "Optimization favor speed for gcc (-Wc -Ofast)"
+
+gBuildOptions(16).groupid = 6
+gBuildOptions(16).wszText = "Language compatibility FreeBasic (-lang fb)"
+gBuildOptions(17).groupid = 6
+gBuildOptions(17).wszText = "Language compatibility FreeBasic Lite (-lang fblite)"
+gBuildOptions(18).groupid = 6
+gBuildOptions(18).wszText = "Language compatibility QuickBasic (-lang qb)"
+
+gBuildOptions(19).groupid = 7
+gBuildOptions(19).wszText = "Create DLL and import library (-dll)"
+gBuildOptions(20).groupid = 7
+gBuildOptions(20).wszText = "Create static library (-lib)"
+
+gBuildOptions(21).groupid = 8
+gBuildOptions(21).wszText = "Compile only, do not link (-c)"
+gBuildOptions(22).groupid = 9
+gBuildOptions(22).wszText = "Do not delete the object files (-C)"
+gBuildOptions(23).groupid = 10
+gBuildOptions(23).wszText = "Emit preprocessed output, do not compile (-pp)"
+
 
 ' ========================================================================================
 ' Load all of the build descriptions into the listbox
@@ -150,14 +186,18 @@ end function
 ' Set the build description and compiler options depending on what listbox entry is selected
 ' ========================================================================================
 function frmBuildConfig_SetBuildConfigTextboxes() as long
-    dim as HWND hList1 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LIST1)
-    dim as HWND hList2 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS)
-    dim as HWND hCheck = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKISDEFAULT)
-    dim as HWND hText1 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTDESCRIPTION)
-    dim as HWND hText2 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)
-    dim as HWND hOpt32 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32)
-    dim as HWND hOpt64 = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT64)
-    dim as HWND hExcl  = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP)
+    dim as HWND hList1   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LIST1)
+    dim as HWND hList2   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS)
+    dim as HWND hCheck   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKISDEFAULT)
+    dim as HWND hText1   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTDESCRIPTION)
+    dim as HWND hText2   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)
+    dim as HWND hOpt32   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32)
+    dim as HWND hOpt64   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT64)
+    dim as HWND hExcl    = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP)
+    dim as HWND hIsCtrl  = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKCTRL)
+    dim as HWND hIsAlt   = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKALT)
+    dim as HWND hIsShift = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_CHKSHIFT)
+    dim as HWND hKey     = GetDlgItem( HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_COMBOKEY)
     
     dim as long nCurSel = ListBox_GetCurSel(hList1)
     if nCurSel < 0 then 
@@ -171,24 +211,41 @@ function frmBuildConfig_SetBuildConfigTextboxes() as long
         EnableWindow(hOpt32, false)
         EnableWindow(hOpt64, false)
         EnableWindow(hList2, false)
-        EnableWindow(hExcl,  false)
+        EnableWindow(hExcl, false)
+        EnableWindow(hIsCtrl, false)
+        EnableWindow(hIsAlt, false)
+        EnableWindow(hIsShift, false)
+        EnableWindow(hKey, false)
     else
         AfxSetWindowText( hText1, gConfig.BuildsTemp(nCurSel).wszDescription)
         AfxSetWindowText( hText2, gConfig.BuildsTemp(nCurSel).wszOptions)
         Button_SetCheck( hCheck, gConfig.BuildsTemp(nCurSel).IsDefault)
         Button_SetCheck( hExcl, gConfig.BuildsTemp(nCurSel).ExcludeInPopup)
+
+        Button_SetCheck( hIsCtrl, gConfig.BuildsTemp(nCurSel).IsCtrl)
+        Button_SetCheck( hIsAlt, gConfig.BuildsTemp(nCurSel).IsAlt)
+        Button_SetCheck( hIsShift, gConfig.BuildsTemp(nCurSel).IsShift)
+        if len(gConfig.BuildsTemp(nCurSel).wszKey) = 0 then gConfig.BuildsTemp(nCurSel).wszKey = "None"
+        dim as long sel = ComboBox_FindStringExact( hKey, -1, gConfig.BuildsTemp(nCurSel).wszKey.sptr )
+        ComboBox_SetCurSel( hKey, sel )
+
         if gConfig.BuildsTemp(nCurSel).Is32bit then
             CheckRadioButton(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32, IDC_FRMBUILDCONFIG_OPT64, IDC_FRMBUILDCONFIG_OPT32)
         else   
             CheckRadioButton(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_OPT32, IDC_FRMBUILDCONFIG_OPT64, IDC_FRMBUILDCONFIG_OPT64)
         END IF
+
         EnableWindow(hText1, true)
         EnableWindow(hText2, true)
         EnableWindow(hCheck, true)
         EnableWindow(hOpt32, true)
         EnableWindow(hOpt64, true)
         EnableWindow(hList2, true)
-        EnableWindow(hExcl,  true)
+        EnableWindow(hExcl, true)
+        EnableWindow(hIsCtrl, true)
+        EnableWindow(hIsAlt, true)
+        EnableWindow(hIsShift, true)
+        EnableWindow(hKey, true)
     end if
 
     ' Set the checkmarks in the OptionList Listbox by redrawing the Listbox
@@ -197,6 +254,96 @@ function frmBuildConfig_SetBuildConfigTextboxes() as long
     function = 0
 end function
                 
+
+' ========================================================================================
+' Create an accelerator table based on selections for the Build Configurations.
+' ========================================================================================
+function frmBuildConfig_CreateAcceleratorTable() as long
+    dim NumKeys  as long
+    dim nKey     as long
+    dim fVirt    as long
+        
+    if ghAccelBuildConfigurations then DestroyAcceleratorTable(ghAccelBuildConfigurations)
+    dim a(any) as ACCEL
+        
+    NumKeys = 0
+    for y as long = lbound(gConfig.Builds) to ubound(gConfig.Builds)
+            
+        fVirt = FNOINVERT or FVIRTKEY
+        
+        if gConfig.Builds(y).IsCtrl then fVirt = fVirt or FCONTROL
+        if gConfig.Builds(y).IsShift then fVirt = fVirt or FSHIFT
+        if gConfig.Builds(y).IsAlt then fVirt = fVirt or FALT
+            
+        nKey = 0   ' important to reset
+        select case ucase(trim(gConfig.Builds(y).wszKey))
+            case "F1":  nKey = VK_F1
+            case "F2":  nKey = VK_F2
+            case "F3":  nKey = VK_F3
+            case "F4":  nKey = VK_F4
+            case "F5":  nKey = VK_F5
+            case "F6":  nKey = VK_F6
+            case "F7":  nKey = VK_F7
+            case "F8":  nKey = VK_F8
+            case "F9":  nKey = VK_F9
+            case "F10": nKey = VK_F10
+            case "F11": nKey = VK_F11
+            case "F12": nKey = VK_F12
+            case "0":   nKey = VK_0
+            case "1":   nKey = VK_1
+            case "2":   nKey = VK_2
+            case "3":   nKey = VK_3
+            case "4":   nKey = VK_4
+            case "5":   nKey = VK_5
+            case "6":   nKey = VK_6
+            case "7":   nKey = VK_7
+            case "8":   nKey = VK_8
+            case "9":   nKey = VK_9
+            case "A":   nKey = VK_A
+            case "B":   nKey = VK_B
+            case "C":   nKey = VK_C
+            case "D":   nKey = VK_D
+            case "E":   nKey = VK_E
+            case "F":   nKey = VK_F
+            case "G":   nKey = VK_G
+            case "H":   nKey = VK_H
+            case "I":   nKey = VK_I
+            case "J":   nKey = VK_J
+            case "K":   nKey = VK_K
+            case "L":   nKey = VK_L
+            case "M":   nKey = VK_M
+            case "N":   nKey = VK_N
+            case "O":   nKey = VK_O
+            case "P":   nKey = VK_P  
+            case "Q":   nKey = VK_Q  
+            case "R":   nKey = VK_R  
+            case "S":   nKey = VK_S  
+            case "T":   nKey = VK_T  
+            case "U":   nKey = VK_U  
+            case "V":   nKey = VK_V  
+            case "W":   nKey = VK_W
+            case "X":   nKey = VK_X
+            case "Y":   nKey = VK_Y
+            case "Z":   nKey = VK_Z  
+        end select
+            
+        if nKey > 0 then
+            NumKeys = NumKeys + 1
+            redim preserve a(1 To NumKeys) as ACCEL
+            a(NumKeys).fVirt = fVirt
+            a(NumKeys).key   = nKey
+            a(NumKeys).cmd   = IDM_BUILDCONFIGBASE + y
+        end if
+
+    next                                    
+        
+    if NumKeys then
+        ghAccelBuildConfigurations = CreateAcceleratorTable(cast(LPACCEL, @a(1)), NumKeys)
+    end if
+
+    function = 0
+end Function
+
 
 ' ========================================================================================
 ' Process WM_MEASUREITEM message for window/dialog: frmBuildConfig
@@ -222,14 +369,9 @@ function frmBuildConfig_OnDrawItem( _
             byval lpdis as const DRAWITEMSTRUCT ptr _
             ) as long
 
-    dim memDC as HDC                 ' Double buffering
-    dim hbit  as HBITMAP             ' Double buffering
-    
-    dim as HBRUSH hBrush 
-    dim as HICON hCheckBox
-    dim as RECT rc, rc2
-    dim as long nWidth, nHeight
+    dim as RECT rc
     dim as CWSTR wszText, wszOptions, wszAction
+    dim as boolean IsChecked = false
     
     dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
     if pWindow = 0 then exit function
@@ -238,81 +380,62 @@ function frmBuildConfig_OnDrawItem( _
     
     select case lpdis->itemAction
         case ODA_DRAWENTIRE, ODA_SELECT
+            
+            dim as long nSelBuild = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LIST1))
+            dim as long nSelOptions = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LSTOPTIONS))
+            
             if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
                 wszText = gConfig.BuildsTemp(lpdis->itemID).wszDescription
-                hCheckBox = 0
             elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
-                wszText = gBuildOptions(lpdis->itemID)
+                wszText = gBuildOptions(lpdis->itemID).wszText
                 ' Get the selected item in the Builds listbox and then look at the OptionList for
                 ' that build for each of the individual OptionList build options.
-                dim as long nSelBuild = ListBox_GetCurSel(GetDlgItem(hwnd, IDC_FRMBUILDCONFIG_LIST1))
                 if nSelBuild > -1 then 
                     wszOptions = " " & gConfig.BuildsTemp(nSelBuild).wszOptions & " "
-                    wszAction  = " " & AfxStrExtract(gBuildOptions(lpdis->itemID), "(", ")") & " "
-                    hCheckBox = iif( instr(wszOptions, wszAction), ghIconTick, ghIconNoTick)
+                    wszAction  = " " & AfxStrExtract(gBuildOptions(lpdis->itemID).wszText, "(", ")") & " "
+                    IsChecked = iif( instr(wszOptions, wszAction), true, false)
                 end if
             end if
             
-            nWidth  = lpdis->rcItem.right-lpdis->rcItem.left
-            nHeight = lpdis->rcItem.bottom-lpdis->rcItem.top 
-            
-            memDC = CreateCompatibleDC( lpdis->hDC )
+            dim as clsDoubleBuffer b
 
-            SaveDC(memDC)
-                                            
-            hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
-            if hbit then SelectObject( memDC, hbit )
+            b.BeginDoubleBuffer(lpdis->hwndItem, lpdis->hDC, lpdis->rcItem)
+                
+            dim as boolean IsHot = false
+            if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
+                if lpdis->itemID = nSelBuild then IsHot = true
+            elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                if lpdis->itemID = nSelOptions then IsHot = true
+            end if
+            
+            dim as COLORREF backclr = iif( IsHot, GetSysColor(COLOR_HIGHLIGHT), GetSysColor(COLOR_WINDOW) )
+            dim as COLORREF foreclr = iif( IsHot, GetSysColor(COLOR_HIGHLIGHTTEXT), GetSysColor(COLOR_WINDOWTEXT) )
+            b.SetForeColors(foreclr, foreclr)
+            b.SetBackColors(backclr, backclr)
 
             ' Create our rect that works with the entire line
-            SetRect(@rc, 0, 0, nWidth, nHeight)
-            FillRect(memDC, @rc, GetSysColorBrush(COLOR_WINDOW))  
-            
-            ' Draw the tick/untick image
-            ' The line height is FRMBUILDCONFIG_LISTBOX_LINEHEIGHT so center the 16x16 icon vertically and horizontally
-            rc2 = rc
-            if hCheckBox then
-                DrawIconEx( memDC, _
-                            rc.Left + pWindow->ScaleX(2), _
-                            rc.Top + pWindow->ScaleY(2), _
-                            hCheckBox, _
-                            pWindow->ScaleX(16), pWindow->ScaleY(16), 0, 0, DI_NORMAL) 
-                rc2.Left = pWindow->ScaleX(20)
+            SetRect( @rc, 0, 0, b.rcClientWidth, b.rcClientHeight )
+            dim as RECT rcText = rc 
+            dim as RECT rcBitmap = rc 
+        
+            ' Paint the entire background
+            b.PaintRect( @rc )
+
+            if lpdis->CtlID = IDC_FRMBUILDCONFIG_LIST1 then
+                rcText.left += pWindow->ScaleX(10)
+            elseif lpdis->CtlID = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                b.SetFont( SYMBOLFONT_9 )
+                rcBitmap.right = rcBitmap.left + pWindow->ScaleX(20)
+                dim as CWSTR wszBitmap = iif(IsChecked, wszIconCheckBoxMarked, wszIconCheckBoxEmpty) 
+                b.PaintText( wszBitmap, @rcBitmap, DT_CENTER )
+                rcText.left = rcBitmap.right
             end if
             
-            ' DETERMINE TEXT BACKGROUND
-            if (lpdis->itemState and ODS_SELECTED) then     
-                SetBkColor(memDC, GetSysColor(COLOR_HIGHLIGHT))   
-                SetTextColor(memDC, GetSysColor(COLOR_HIGHLIGHTTEXT))
-                hBrush = GetSysColorBrush(COLOR_HIGHLIGHT) 
-            else
-                SetBkColor(memDC, GetSysColor(COLOR_WINDOW))   
-                SetTextColor(memDC, GetSysColor(COLOR_WINDOWTEXT))
-                hBrush = GetSysColorBrush(COLOR_WINDOW) 
-            end if
-                    
-            ' Output the text
-            SelectObject(memDC, AfxGetWindowFont(lpdis->hwndItem))
-            SelectObject(memDC, hBrush)      
-            FillRect(memDC, @rc2, hBrush)  
-
-            rc2.Left = rc2.Left + pWindow->ScaleX(4)
-            DrawText( memDC, wszText, _
-                    -1, cast(lpRect, @rc2), _
-                    DT_LEFT or DT_SINGLELINE or DT_VCENTER )
-
-            ' Draw the border edges
-            SetBkMode(memDC, TRANSPARENT)   
-            DrawEdge( memDC, @rc, EDGE_SUNKEN, BF_BOTTOMRIGHT)
-
-            ' Copy the entire memory bitmap over to the visual display
-            BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, nWidth, nHeight, memDC, 0, 0, SRCCOPY 
-
-            ' Cleanup
-            RestoreDC(memDC, -1)
+            b.SetFont( GUIFONT_9 )
+            b.PaintText( wszText, @rcText, DT_LEFT )
             
-            if hbit  then DeleteObject(hbit)
-            if memDC then DeleteDC(memDC)
-
+            b.EndDoubleBuffer()
+    
             return true
     
     end select
@@ -330,17 +453,30 @@ function frmBuildConfig_ProcessListboxClick( _
             ) as long
     if nCurSel = -1 then exit function
     
-    ' Get the action text for this listbox item. If it exists in the Options
-    ' textbox then remove it
+    ' Get the action text for this listbox item. 
     dim as CWSTR wszText = AfxGetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS)) & " "
-    dim as CWSTR wszAction = AfxStrExtract(gBuildOptions(nCurSel), "(", ")") & " "
-    ' If the action exists, remove it. If it does not exist then add it.
-    if instr(wszText, wszAction) then
-        wszText = trim(AfxStrRemove(wszText, wszAction))
-    else
+    dim as CWSTR wszAction = AfxStrExtract(gBuildOptions(nCurSel).wszText, "(", ")") & " "
+    dim as long groupid = gBuildOptions(nCurSel).groupid
+    dim as boolean doAddAction = false
+    
+    ' If the action does not exist then set flag to add it after all other items in 
+    ' the group have been removed.
+    if instr(wszText, wszAction) = 0 then doAddAction = true
+
+    ' Remove all actions with same groupid.
+    for i as long = lbound(gBuildOptions) to ubound(gBuildOptions)
+        if gBuildOptions(i).groupid = groupid then
+            dim as CWSTR wszRemove = AfxStrExtract(gBuildOptions(i).wszText, "(", ")") & " "
+            wszText = AfxStrRemove(wszText, wszRemove)
+        end if
+    next
+
+    if doAddAction then 
         wszText = trim(wszText) & " " & trim(wszAction)
     end if   
+    
     AfxSetWindowText( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_TXTOPTIONS), wszText)
+    AfxRedrawWindow( GetDlgItem(HWND_FRMBUILDCONFIG, IDC_FRMBUILDCONFIG_LSTOPTIONS) )
 
     function = 0
 
@@ -381,9 +517,11 @@ function frmBuildConfig_ListBox_SubclassProc ( _
         case WM_KEYUP
             select case loword(wParam)
             case VK_SPACE
-                dim as long nCurSel = ListBox_GetCurSel(hwnd)
-                frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
-                exit function
+                if uIdSubclass = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                    dim as long nCurSel = ListBox_GetCurSel(hwnd)
+                    frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
+                    exit function
+                end if    
             case VK_ESCAPE
                 PostMessage( GetParent(hwnd), WM_CLOSE, 0, 0 )
                 exit function
@@ -393,22 +531,23 @@ function frmBuildConfig_ListBox_SubclassProc ( _
         case WM_LBUTTONDOWN
             
         case WM_LBUTTONUP
-            ' Handle if the checkbox is clicked
-            dim as long nCurSel = ListBox_GetCurSel(hwnd)
-            if nCurSel = -1 then exit function
-            dim pWindow as CWindow ptr = AfxCWindowPtr(GetParent(hwnd))
-            if pWindow = 0 then exit function
-            dim as RECT rc: SendMessage(hwnd, LB_GETITEMRECT, nCurSel, cast(LPARAM, @rc))
-            ' The checkbox is the first 20x20 area (16x16 icon)
-            rc.Left   = rc.Left + pWindow->ScaleX(2)
-            rc.Top    = rc.Top  + pWindow->ScaleY(2)
-            rc.Right  = rc.Left + pWindow->ScaleX(16)
-            rc.Bottom = rc.Top  + pWindow->ScaleY(16)
-            dim as point pt = (loword(lParam), hiword(lParam))
-            if PtInRect(@rc, pt) then
-                frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
-                InvalidateRect(hwnd, @rc, true): UpdateWindow(hwnd)
-            END IF
+            if uIdSubclass = IDC_FRMBUILDCONFIG_LSTOPTIONS then
+                ' Handle if the checkbox is clicked
+                dim as long nCurSel = ListBox_GetCurSel(hwnd)
+                if nCurSel = -1 then exit function
+                dim pWindow as CWindow ptr = AfxCWindowPtr(GetParent(hwnd))
+                if pWindow = 0 then exit function
+                dim as RECT rc: SendMessage(hwnd, LB_GETITEMRECT, nCurSel, cast(LPARAM, @rc))
+                ' The checkbox is the first 20x20 area (16x16 icon)
+                rc.Left   = rc.Left + pWindow->ScaleX(2)
+                rc.Top    = rc.Top  + pWindow->ScaleY(2)
+                rc.Right  = rc.Left + pWindow->ScaleX(16)
+                rc.Bottom = rc.Top  + pWindow->ScaleY(16)
+                dim as point pt = (loword(lParam), hiword(lParam))
+                if PtInRect(@rc, pt) then
+                    frmBuildConfig_ProcessListboxClick(hwnd, nCurSel)
+                end if
+            end if    
             
         case WM_DESTROY
             ' REQUIRED: Remove control subclassing
@@ -465,6 +604,11 @@ function frmBuildConfig_OnCommand( _
                 frmBuildConfig_SetBuildConfigTextboxes()
             end if
             
+        case IDC_FRMBUILDCONFIG_LSTOPTIONS
+            if codeNotify = LBN_SELCHANGE then
+                AfxRedrawWindow(hwndCtl)
+            end if
+
         case IDC_FRMBUILDCONFIG_TXTDESCRIPTION
             if codeNotify = EN_CHANGE then
                 ' Update the temp array and the Listbox
@@ -533,6 +677,35 @@ function frmBuildConfig_OnCommand( _
                 if nCurSel > -1 then
                     gConfig.BuildsTemp(nCurSel).ExcludeInPopup = Button_GetCheck(hwndCtl)
                 end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_CHKCTRL
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).IsCtrl = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_CHKALT
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).IsAlt = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_CHKSHIFT
+            if codeNotify = BN_CLICKED then
+                ' Update the temp array 
+                if nCurSel > -1 then
+                    gConfig.BuildsTemp(nCurSel).IsShift = Button_GetCheck(hwndCtl)
+                end if
+            end if
+
+        case IDC_FRMBUILDCONFIG_COMBOKEY
+            if codeNotify = CBN_SELCHANGE then
+                if nCurSel > -1 then gConfig.BuildsTemp(nCurSel).wszKey = AfxGetWindowText(hwndCtl)
             end if
 
         case IDC_FRMBUILDCONFIG_CMDUP
@@ -624,6 +797,7 @@ function frmBuildConfig_OnCommand( _
                     frmMain_SetStatusbar
                 end if
                 
+                frmBuildConfig_CreateAcceleratorTable            
                 gConfig.SaveConfigFile
                 SendMessage( hwnd, WM_CLOSE, 0, 0 )
                 exit function
@@ -700,71 +874,90 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
             @frmBuildConfig_WndProc, 0, 0, 0, 0, _
             WS_POPUP or WS_CAPTION or WS_SYSMENU or WS_CLIPSIBLINGS or WS_CLIPCHILDREN, _
             WS_EX_DLGMODALFRAME or WS_EX_CONTROLPARENT or WS_EX_LEFT )
-    pWindow->SetClientSize(622, 436)
+'    pWindow->SetClientSize(622, 436)
+    pWindow->SetClientSize(675, 500)
     pWindow->Center(pWindow->hWindow, hWndParent)
 
-    pWindow->AddControl("LISTBOX", , IDC_FRMBUILDCONFIG_LIST1, "", 10, 10, 218, 362, _
+    pWindow->AddControl("LISTBOX", , IDC_FRMBUILDCONFIG_LIST1, "", 10, 10, 218, 420, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or LBS_NOTIFY or _
         LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmBuildConfig_ListBox_SubclassProc), IDC_FRMBUILDCONFIG_LIST1, cast(DWORD_PTR, @pWindow))
 
-    pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL1, L(278,"Description") & ":", 240, 11, 91, 20, _
+    pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL1, L(278,"Description") & ":", 240, 11, 120, 20, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKISDEFAULT, L(280,"Set as default"), 380, 10, 240, 20, _
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKISDEFAULT, L(280,"Set as default"), 424, 10, 230, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("TEXTBOX", , IDC_FRMBUILDCONFIG_TXTDESCRIPTION, "", 240, 32, 372, 20, _
+    pWindow->AddControl("TEXTBOX", , IDC_FRMBUILDCONFIG_TXTDESCRIPTION, "", 240, 32, 425, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("RADIOBUTTON", , IDC_FRMBUILDCONFIG_OPT32, "FBC 32-bit", 240, 54, 100, 20, _
+    pWindow->AddControl("RADIOBUTTON", , IDC_FRMBUILDCONFIG_OPT32, "FBC 32-bit", 240, 56, 100, 20, _
         WS_VISIBLE or WS_TABSTOP or BS_AUTORADIOBUTTON or BS_LEFT or BS_VCENTER or WS_GROUP, _
         WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("RADIOBUTTON", , IDC_FRMBUILDCONFIG_OPT64, "FBC 64-bit", 342, 54, 100, 20, _
-        WS_VISIBLE or WS_TABSTOP or BS_AUTORADIOBUTTON or BS_LEFT or BS_VCENTER, _
-        WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-
-    pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL2, L(279,"Compiler Options") & ":", 240, 82, 136, 18, _
+    pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL3, L(294,"Accelerator") & ":", 424, 56, 100, 18, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("TEXTBOX", , IDC_FRMBUILDCONFIG_TXTOPTIONS, "", 240, 103, 372, 20, _
+    pWindow->AddControl("RADIOBUTTON", , IDC_FRMBUILDCONFIG_OPT64, "FBC 64-bit", 240, 76, 100, 20, _
+        WS_VISIBLE or WS_TABSTOP or BS_AUTORADIOBUTTON or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKCTRL, "Ctrl", 424, 76, 46, 19, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKALT, "Alt", 470, 76, 42, 19, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKSHIFT, "Shift", 512, 76, 44, 19, _
+        WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    dim as HWND hCombo 
+    hCombo = pWindow->AddControl("COMBOBOX", , IDC_FRMBUILDCONFIG_COMBOKEY, "", 556, 74, 103, 200, _
+        WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or CBS_DROPDOWNLIST, _
+        WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
+
+    AddShortcutsToComboBox( hCombo )
+
+    pWindow->AddControl("LABEL", , IDC_FRMBUILDCONFIG_LABEL2, L(279,"Compiler Options") & ":", 240, 102, 170, 18, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_LEFT or SS_NOTIFY, _
+        WS_EX_LEFT or WS_EX_LTRREADING)
+    pWindow->AddControl("TEXTBOX", , IDC_FRMBUILDCONFIG_TXTOPTIONS, "", 240, 123, 425, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or ES_LEFT or ES_AUTOHSCROLL, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR)
-    pWindow->AddControl("LISTBOX", , IDC_FRMBUILDCONFIG_LSTOPTIONS, "", 240, 129, 372, 223, _
+    pWindow->AddControl("LISTBOX", , IDC_FRMBUILDCONFIG_LSTOPTIONS, "", 240, 149, 425, 263, _
         WS_CHILD or WS_VISIBLE or WS_VSCROLL or WS_TABSTOP or LBS_NOTIFY or _
         LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS, _
         WS_EX_CLIENTEDGE or WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmBuildConfig_ListBox_SubclassProc), IDC_FRMBUILDCONFIG_LSTOPTIONS, cast(DWORD_PTR, @pWindow))
     pWindow->AddControl("CHECKBOX", , IDC_FRMBUILDCONFIG_CHKEXCLUDEPOPUP, _
-        L(284,"Exclude build from status bar popup menu"), 240, 355, 372, 20, _
+        L(284,"Exclude build from status bar popup menu"), 240, 415, 425, 20, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_NOTIFY or BS_AUTOCHECKBOX or BS_LEFT or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 
 
-    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDINSERT, L(281, "Insert"), 8, 388, 74, 28, _
+    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDINSERT, L(281, "Insert"), 8, 450, 74, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDDELETE, L(282, "Delete"), 87, 388, 74, 28, _
+    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDDELETE, L(282, "Delete"), 87, 450, 74, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     
     dim as HWND hCtrl = _
-    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDUP, wszIconChevronUp, 166, 388, 28, 28, _
+    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDUP, wszIconChevronUp, 166, 450, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, hFontSymbolLarge, false )     
 
     hCtrl = _
-    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDDOWN, wszIconChevronDown, 199, 388, 28, 28, _
+    pWindow->AddControl("BUTTON", , IDC_FRMBUILDCONFIG_CMDDOWN, wszIconChevronDown, 199, 450, 28, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
     AfxSetWindowFont( hCtrl, hFontSymbolLarge, false )     
 
-    pWindow->AddControl("BUTTON", , IDOK, L(0,"OK"), 454, 388, 74, 28, _
+    pWindow->AddControl("BUTTON", , IDOK, L(0,"OK"), 508, 450, 74, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
-    pWindow->AddControl("BUTTON", , IDCANCEL, L(1,"Cancel"), 536, 388, 74, 28, _
+    pWindow->AddControl("BUTTON", , IDCANCEL, L(1,"Cancel"), 590, 450, 74, 28, _
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
 
@@ -781,7 +974,7 @@ function frmBuildConfig_Show( byval hWndParent as HWND ) as LRESULT
     ' Load the Compiler Options Listbox
     hCtrl = GetDlgItem(hForm, IDC_FRMBUILDCONFIG_LSTOPTIONS)
     for i as long = lbound(gBuildOptions) to ubound(gBuildOptions)
-        ListBox_AddString(hCtrl, gBuildOptions(i).sptr)
+        ListBox_AddString(hCtrl, gBuildOptions(i).wszText.sptr)
     next
 
     

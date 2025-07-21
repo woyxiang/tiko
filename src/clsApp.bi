@@ -19,8 +19,7 @@ type clsApp
     public:
         pDocList                   as clsDocument ptr   ' Single linked list of loaded files
         pfnCreateLexerfn           as CreateLexerFn
-        IsWindowIncludes           as boolean           ' T/F that Windows includes have already been loaded
-        PreventActivateApp         as boolean           ' temporarily suppress WM_ACTIVATEAPP (used in 3.02 form file upgrade)
+        PreventConfigLoad          as boolean           ' temporarily suppress messagepump checking (set during Load/Save config)
         SuppressNotify             as boolean           ' temporarily suppress Scintilla notifications
         bDragTabActive             as boolean           ' a tab in the top tabcontrol is being dragged
         ptDragTabPrev              as POINT             ' used for comparing delta movement of sursor during tab dragging
@@ -40,6 +39,7 @@ type clsApp
         IsShutDown                 as boolean           ' App is currently closing
         wszCommandLine             as CWSTR             ' non-project commandline (not saved to file)
         wszLastOpenFolder          as CWSTR             ' remembers the last opened folder for the Open Dialog
+        wszQuickRunFilename        as CWSTR
         
         IsSessionActive            as boolean
         SessionName                as CWSTR

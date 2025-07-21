@@ -85,6 +85,7 @@ type clsDocument
         
     public:
     pDocNext              as clsDocument_ ptr = 0  ' pointer to next document in linked list 
+    pDocIncludeList       as clsDocument_ ptr = 0  ' Single linked list of #include files
     IsNewFlag             as boolean
     TextBuffer            as string
     
@@ -98,8 +99,6 @@ type clsDocument
     
     ' Code document related
     ProjectFiletype       as CWSTR = FILETYPE_UNDEFINED
-    QuickRunDiskFilename  as wstring * MAX_PATH
-    RunViaBatFilename     as wstring * MAX_PATH
     DiskFilename          as wstring * MAX_PATH
     DateFileTime          as FILETIME  
     bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
@@ -115,7 +114,6 @@ type clsDocument
     lastCaretPos          as long               ' used for checking in SCN_UPDATEUI
     lastXOffsetPos        as long               ' used for checking in SCN_UPDATEUI (horizontal offset)
     LastCharTyped         as long               ' used to test for BACKSPACE resetting the autocomplete popup.
-    bIsHelpFile           as boolean = false
     wszEOL                as CWSTR              ' used in replace in files when constructing each line of new file
     CurrentSelection      as SELECTION_INFO     ' set during scintilla wm_notfy and used in Find/Replace dialog
     
@@ -142,7 +140,6 @@ type clsDocument
     declare function SetDocInfo() as long
     declare function SetProjectFileType() as long
     declare function SetDocumentBuild() as long
-    declare function DeleteTempFiles() as long
     declare function ParseDocument() as boolean
     declare function IsValidScintillaID( byval idScintilla as long ) as boolean
     declare function GetActiveScintillaPtr() as any ptr
@@ -201,6 +198,11 @@ type clsDocument
     declare function LastMarkerHighlight() as long
     declare function LinesPerPage( byval idxWindow as long ) as long
     declare function CompileDirectives( Directives() as COMPILE_DIRECTIVES) as long
+    declare function GetIncludeDocumentCount() as long
+    declare function AddNewIncludeDocument() as clsDocument ptr 
+    declare function RemoveAllIncludeDocuments() as long
+    declare function AddIncludeFromParse( byval sLine as string ) as boolean
+
     declare destructor
 end type
 dim clsDocument.NextFileNum as long = 0

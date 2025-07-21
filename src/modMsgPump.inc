@@ -21,21 +21,48 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     ' Determine if the mouse has moved over (or away from) a window that should invoke
     ' showing or hiding our custom Panel VScroll or Editor HScroll.
     if (uMsg.message = WM_MOUSEMOVE) orelse (uMsg.message = WM_NCMOUSEMOVE) then
+        ' Ensure that if moved away from menubar that the selected index is reset.
+        if (isMouseOverWindow(HWND_FRMMAIN_MENUBAR) = false) andalso _
+            (isPopupMenuOpen() = false) andalso _
+            (gActiveMenuBarIndex <> -1) then
+            gActiveMenuBarIndex = -1
+            AfxRedrawWindow(HWND_FRMMAIN_MENUBAR)
+        end if   
+
         ' if mouse is currently in drag operation then simply exit
         if gApp.bDragActive then return false
         ' if mouse is currently scrolling through top menus then exit
         if IsWindowVisible( HWND_MENU(0) ) then return false
         if IsWindowVisible( HWND_FRMPANEL ) = 0 then return false
     
+        dim as boolean isVisible
+        dim as long curState
+        dim as long newState 
+
         ' HIT TEST for VSCROLLBAR in PANEL
-        dim as boolean isVisible = IsWindowVisible(HWND_FRMPANEL_VSCROLLBAR)
-        dim as long curState = iif(isVisible, SW_SHOWNA, SW_HIDE)
-        dim as long newState = SW_HIDE
-        if isMouseOverWindow( gPanelVScroll.hListBox ) orelse _
-            isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then 
-            newState = SW_SHOWNA
-        end if
-        if newState <> curState then frmPanelVScroll_PositionWindows( newState )
+        if IsWindow(HWND_FRMHELPVIEWER) then
+            isVisible = IsWindowVisible(HWND_FRMPANEL_VSCROLLBAR)
+            curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
+            newState = SW_HIDE
+            if isMouseOverWindow( gPanelVScroll.hListBox ) orelse _
+                isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then 
+                newState = SW_SHOWNOACTIVATE
+            end if
+            if newState <> curState then frmPanel_PositionWindows()
+        end if    
+
+        ' HIT TEST for VSCROLLBAR in HELPVIEWER
+        if IsWindow(HWND_FRMHELPVIEWER) then
+            isVisible = IsWindowVisible(HWND_FRMHELPVIEWER_VSCROLLBAR)
+            curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
+            newState = SW_HIDE
+            if isMouseOverWindow( HWND_FRMHELPVIEWER_LEFTPANEL ) orelse _
+                isMouseOverWindow( HWND_FRMHELPVIEWER_VSCROLLBAR ) then 
+                newState = SW_SHOWNOACTIVATE
+            end if
+            if newState <> curState then frmHelpViewer_PositionWindows()
+        end if    
+
     end if      
 
     ' Should we show an Editor HScrollbar
@@ -43,7 +70,7 @@ function handleMouseShowScrollBar( byval uMsg as MSG ) as boolean
     if (pDoc <> 0) andalso (pDoc->bSizing = false) then   ' no testing during split panel resizing
         for i as long = lbound(pDoc->hWindow) to ubound(pDoc->hWindow)
             dim as boolean isVisible = IsWindowVisible( HWND_FRMEDITOR_HSCROLLBAR(i) )
-            dim as long curState = iif(isVisible, SW_SHOWNA, SW_HIDE)
+            dim as long curState = iif(isVisible, SW_SHOWNOACTIVATE, SW_HIDE)
             dim as long newState = SW_HIDE
             if isMouseOverWindow( pDoc->hWindow(i) ) orelse _
                 isMouseOverWindow( HWND_FRMEDITOR_HSCROLLBAR(i) ) then 

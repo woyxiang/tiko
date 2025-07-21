@@ -157,6 +157,82 @@ end function
 
 
 ' ========================================================================================
+' Add shortcuts to the specified combobox.
+' (1) Used in this form frmKeyboardEdit
+' (2) User Tools
+' ========================================================================================
+function AddShortcutsToComboBox( byval hCombo as HWND ) as long
+    dim as CWSTR wszText
+
+    ComboBox_AddString( hCombo, @wstr("None") ) 
+    ComboBox_AddString( hCombo, @wstr("Backspace") ) 
+    ComboBox_AddString( hCombo, @wstr("Tab") ) 
+    ComboBox_AddString( hCombo, @wstr("Enter") ) 
+    ComboBox_AddString( hCombo, @wstr("Escape") ) 
+    ComboBox_AddString( hCombo, @wstr("Spacebar") ) 
+    ComboBox_AddString( hCombo, @wstr("PageUp") ) 
+    ComboBox_AddString( hCombo, @wstr("PageDn") ) 
+    ComboBox_AddString( hCombo, @wstr("End") ) 
+    ComboBox_AddString( hCombo, @wstr("Home") ) 
+    ComboBox_AddString( hCombo, @wstr("Left") ) 
+    ComboBox_AddString( hCombo, @wstr("Right") ) 
+    ComboBox_AddString( hCombo, @wstr("Up") ) 
+    ComboBox_AddString( hCombo, @wstr("Down") ) 
+    ComboBox_AddString( hCombo, @wstr("DEL") ) 
+    ComboBox_AddString( hCombo, @wstr("INS") ) 
+    for i as long = 48 to 57    ' 0 to 9
+        wszText = wchr(i)
+        ComboBox_AddString( hCombo, wszText.sptr ) 
+    next
+    for i as long = 65 to 90    ' A to Z
+        wszText = wchr(i)
+        ComboBox_AddString( hCombo, wszText.sptr ) 
+    next
+    ComboBox_AddString( hCombo, @wstr("Numpad0") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad1") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad2") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad3") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad4") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad5") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad6") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad7") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad8") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad9") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad*") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad+") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad-") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad.") ) 
+    ComboBox_AddString( hCombo, @wstr("Numpad/") ) 
+    ComboBox_AddString( hCombo, @wstr("F1") ) 
+    ComboBox_AddString( hCombo, @wstr("F2") ) 
+    ComboBox_AddString( hCombo, @wstr("F3") ) 
+    ComboBox_AddString( hCombo, @wstr("F4") ) 
+    ComboBox_AddString( hCombo, @wstr("F5") ) 
+    ComboBox_AddString( hCombo, @wstr("F6") ) 
+    ComboBox_AddString( hCombo, @wstr("F7") ) 
+    ComboBox_AddString( hCombo, @wstr("F8") ) 
+    ComboBox_AddString( hCombo, @wstr("F9") ) 
+    ComboBox_AddString( hCombo, @wstr("F10") ) 
+    ComboBox_AddString( hCombo, @wstr("F11") ) 
+    ComboBox_AddString( hCombo, @wstr("F12") ) 
+    ComboBox_AddString( hCombo, @wstr("Tilde") ) 
+    ComboBox_AddString( hCombo, @wstr("Plus") ) 
+    ComboBox_AddString( hCombo, @wstr("Comma") ) 
+    ComboBox_AddString( hCombo, @wstr("Minus") ) 
+    ComboBox_AddString( hCombo, @wstr("Period") ) 
+    ComboBox_AddString( hCombo, @wstr("SingleQuote") ) 
+    ComboBox_AddString( hCombo, @wstr("SemiColon") ) 
+    ComboBox_AddString( hCombo, @wstr("/") ) 
+    ComboBox_AddString( hCombo, @wstr("\") ) 
+    ComboBox_AddString( hCombo, @wstr("[") ) 
+    ComboBox_AddString( hCombo, @wstr("]") ) 
+
+    function = 0
+end function
+
+
+
+' ========================================================================================
 ' frmKeyboardEdit_Show
 ' ========================================================================================
 function frmKeyboardEdit_Show( byval hWndParent as HWND ) as LRESULT
@@ -254,69 +330,8 @@ function frmKeyboardEdit_Show( byval hWndParent as HWND ) as LRESULT
         WS_CHILD or WS_VISIBLE or WS_TABSTOP or BS_TEXT or BS_PUSHBUTTON or BS_NOTIFY or BS_CENTER or BS_VCENTER, _
         WS_EX_LEFT or WS_EX_LTRREADING)
                                         
-    ComboBox_AddString( hCombo, @wstr("None") ) 
-    ComboBox_AddString( hCombo, @wstr("Backspace") ) 
-    ComboBox_AddString( hCombo, @wstr("Tab") ) 
-    ComboBox_AddString( hCombo, @wstr("Enter") ) 
-    ComboBox_AddString( hCombo, @wstr("Escape") ) 
-    ComboBox_AddString( hCombo, @wstr("Spacebar") ) 
-    ComboBox_AddString( hCombo, @wstr("PageUp") ) 
-    ComboBox_AddString( hCombo, @wstr("PageDn") ) 
-    ComboBox_AddString( hCombo, @wstr("End") ) 
-    ComboBox_AddString( hCombo, @wstr("Home") ) 
-    ComboBox_AddString( hCombo, @wstr("Left") ) 
-    ComboBox_AddString( hCombo, @wstr("Right") ) 
-    ComboBox_AddString( hCombo, @wstr("Up") ) 
-    ComboBox_AddString( hCombo, @wstr("Down") ) 
-    ComboBox_AddString( hCombo, @wstr("DEL") ) 
-    ComboBox_AddString( hCombo, @wstr("INS") ) 
-    for i as long = 48 to 57    ' 0 to 9
-        wszText = wchr(i)
-        ComboBox_AddString( hCombo, wszText.sptr ) 
-    next
-    for i as long = 65 to 90    ' A to Z
-        wszText = wchr(i)
-        ComboBox_AddString( hCombo, wszText.sptr ) 
-    next
-    ComboBox_AddString( hCombo, @wstr("Numpad0") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad1") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad2") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad3") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad4") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad5") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad6") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad7") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad8") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad9") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad*") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad+") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad-") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad.") ) 
-    ComboBox_AddString( hCombo, @wstr("Numpad/") ) 
-    ComboBox_AddString( hCombo, @wstr("F1") ) 
-    ComboBox_AddString( hCombo, @wstr("F2") ) 
-    ComboBox_AddString( hCombo, @wstr("F3") ) 
-    ComboBox_AddString( hCombo, @wstr("F4") ) 
-    ComboBox_AddString( hCombo, @wstr("F5") ) 
-    ComboBox_AddString( hCombo, @wstr("F6") ) 
-    ComboBox_AddString( hCombo, @wstr("F7") ) 
-    ComboBox_AddString( hCombo, @wstr("F8") ) 
-    ComboBox_AddString( hCombo, @wstr("F9") ) 
-    ComboBox_AddString( hCombo, @wstr("F10") ) 
-    ComboBox_AddString( hCombo, @wstr("F11") ) 
-    ComboBox_AddString( hCombo, @wstr("F12") ) 
-    ComboBox_AddString( hCombo, @wstr("Tilde") ) 
-    ComboBox_AddString( hCombo, @wstr("Plus") ) 
-    ComboBox_AddString( hCombo, @wstr("Comma") ) 
-    ComboBox_AddString( hCombo, @wstr("Minus") ) 
-    ComboBox_AddString( hCombo, @wstr("Period") ) 
-    ComboBox_AddString( hCombo, @wstr("SingleQuote") ) 
-    ComboBox_AddString( hCombo, @wstr("SemiColon") ) 
-    ComboBox_AddString( hCombo, @wstr("/") ) 
-    ComboBox_AddString( hCombo, @wstr("\") ) 
-    ComboBox_AddString( hCombo, @wstr("[") ) 
-    ComboBox_AddString( hCombo, @wstr("]") ) 
-
+    AddShortcutsToComboBox( hCombo )
+    
     if len(wszAccel) = 0 then wszAccel = "None"
     dim as long nCurSel 
     nCursel = ComboBox_FindStringExact( hCombo, -1, wszAccel.sptr )

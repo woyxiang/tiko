@@ -212,7 +212,8 @@ end function
 function isMouseOverWindow( byval hChild as HWND ) as boolean
     dim as point pt
     GetCursorPos( @pt )
-    if WindowFromPoint( pt ) = hChild then return true
+    dim as HWND hWindow = WindowFromPoint(pt)
+    if hWindow = hChild then return true
 end function
 
 ' ========================================================================================
@@ -571,6 +572,66 @@ end function
 
 
 ' ========================================================================================
+' Try to complete the #include filename so that it resolves to a valid path
+' Used when right clicking on filename in the editor.
+' Used when parsing source code file so that module compiling can check if embedded
+' include files have changed and requires the module bas file to recompile.
+' ========================================================================================
+function CompleteIncludeFilename( byval pDoc as clsDocument ptr, byval sFilename as string ) as string
+    dim wszPath             as CWSTR
+    dim wszCompilerPath     as CWSTR
+    dim wszText             as CWSTR
+    dim wszCompleteFilename as CWSTR
+    dim i                   as long
+
+    dim as long idxBuild = frmBuildConfig_getActiveBuildIndex()
+    if idxBuild = -1 then idxBuild = 0
+    if gConfig.Builds(idxBuild).Is32bit then wszCompilerPath = gConfig.FBWINcompiler32
+    if gConfig.Builds(idxBuild).Is64bit then wszCompilerPath = gConfig.FBWINcompiler64
+    wszCompilerPath = ProcessFromCurdriveApp(wszCompilerPath)
+    wszCompilerPath = AfxStrPathname( "PATH", wszCompilerPath ) & "inc"
+
+    ' Convert relative path to absolute path if needed.
+    if AfxPathIsRelative(wszCompilerPath) then
+        wszCompilerPath = AfxPathCombine(AfxGetExePathName, wszCompilerPath)
+    end if
+
+    ' remove any comments at the end of the line
+    i = instr(sFilename, "'")
+    if i then sFilename = left(sFilename, i-1)
+    sFilename = trim(sFilename, any chr(32,34))  ' remove spaces and double quotes
+    wszPath = AfxStrPathname( "PATH", pDoc->DiskFilename )
+
+    if AfxFileExists(wszPath & sFilename) then 
+        wszCompleteFilename = wszPath & sFilename
+    elseif AfxFileExists(sFilename) then 
+        wszCompleteFilename = sFilename
+    elseif AfxFileExists(AfxGetCurDir & "\" & sFilename) then 
+        wszCompleteFilename = AfxGetCurDir & "\" & sFilename
+    elseif AfxFileExists(AfxGetExePathName & sFilename) then 
+        wszCompleteFilename = AfxGetExePathName & sFilename
+    elseif AfxFileExists(str(wszCompilerPath) & "\" & sFilename) then 
+        wszCompleteFilename = str(wszCompilerPath) & "\" & sFilename
+    else
+        ' Iterate the optional semi colon separated list of compiler include paths
+        dim as CWSTR includePath
+        dim as long numpaths = AfxStrParseCount(gConfig.CompilerIncludes, ";")
+        for i as long = 1 to numpaths
+            includePath = rtrim(AfxStrParse(gConfig.CompilerIncludes, i, ";")) & "\" & sFilename
+            if AfxFileExists(includePath) then
+                wszCompleteFilename = includePath
+                exit for
+            end if
+        next
+    end if
+    wszCompleteFilename = AfxStrReplace(wszCompleteFilename, "/", "\")
+    wszCompleteFilename = AfxStrReplace(wszCompleteFilename, "\\", "\")
+
+    function = wszCompleteFilename
+end function
+
+
+' ========================================================================================
 ' Determine if current line is a valid #Include filename
 ' ========================================================================================
 function IsCurrentLineIncludeFilename() as boolean
@@ -582,64 +643,17 @@ function IsCurrentLineIncludeFilename() as boolean
     dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
     if pDoc = 0 then exit function
     
-    dim wszPath         as wstring * MAX_PATH
-    dim wszIconCompilerPath as wstring * MAX_PATH
-    dim wszText         as wstring * MAX_PATH
-    dim sFilename       as string 
-    dim sLine           as string 
-    dim nLine           as long   
-    dim i               as long
-
-    dim as long idxBuild = frmBuildConfig_getActiveBuildIndex()
-    if idxBuild = -1 then idxBuild = 0
-    if gConfig.Builds(idxBuild).Is32bit then wszIconCompilerPath = gConfig.FBWINcompiler32
-    if gConfig.Builds(idxBuild).Is64bit then wszIconCompilerPath = gConfig.FBWINcompiler64
-    wszIconCompilerPath = ProcessFromCurdriveApp(wszIconCompilerPath)
-    wszIconCompilerPath = AfxStrPathname( "PATH", wszIconCompilerPath ) & "inc"
-
-    ' Convert relative path to absolute path if needed.
-    if AfxPathIsRelative(wszIconCompilerPath) then
-        wszIconCompilerPath = AfxPathCombine(AfxGetExePathName, wszIconCompilerPath)
-    end if
-
-    nLine = pDoc->GetCurrentLineNumber()
-    sLine = ltrim(pDoc->GetLine(nLine))
+    dim as long nLine  = pDoc->GetCurrentLineNumber()
+    dim as string sLine = ltrim(pDoc->GetLine(nLine))
     
+    dim as string sFilename 
+
     if left(ucase(sLine), 9) = "#INCLUDE " then sFilename = mid(sLine, 10)
     if left(ucase(sLine), 14) = "#INCLUDE ONCE " then sFilename = mid(sLine, 15)
 
     gApp.IncludeFilename = ""   
     if len(sFilename) then
-        ' remove any comments at the end of the line
-        i = instr(sFilename, "'")
-        if i then sFilename = left(sFilename, i-1)
-        sFilename = trim(sFilename, any chr(32,34))  ' remove spaces and double quotes
-        wszPath = AfxStrPathname( "PATH", pDoc->DiskFilename )
-
-        if AfxFileExists(wszPath & sFilename) then 
-            gApp.IncludeFilename = wszPath & sFilename
-        elseif AfxFileExists(sFilename) then 
-            gApp.IncludeFilename = sFilename
-        elseif AfxFileExists(AfxGetCurDir & "\" & sFilename) then 
-            gApp.IncludeFilename = AfxGetCurDir & "\" & sFilename
-        elseif AfxFileExists(AfxGetExePathName & sFilename) then 
-            gApp.IncludeFilename = AfxGetExePathName & sFilename
-        elseif AfxFileExists(str(wszIconCompilerPath) & "\" & sFilename) then 
-            gApp.IncludeFilename = str(wszIconCompilerPath) & "\" & sFilename
-        else
-            ' Iterate the optional semi colon separated list of compiler include paths
-            dim as CWSTR includePath
-            dim as long numpaths = AfxStrParseCount(gConfig.CompilerIncludes, ";")
-            for i as long = 1 to numpaths
-                includePath = rtrim(AfxStrParse(gConfig.CompilerIncludes, i, ";")) & "\" & sFilename
-                if AfxFileExists(includePath) then
-                    gApp.IncludeFilename = includePath
-                    exit for
-                end if
-            next
-        end if
-        gApp.IncludeFilename = AfxStrReplace(gApp.IncludeFilename, "/", "\")
-        gApp.IncludeFilename = AfxStrReplace(gApp.IncludeFilename, "\\", "\")
+        gApp.IncludeFilename = CompleteIncludeFilename( pDoc, sFilename )
     end if
     
     function = AfxFileExists( gApp.IncludeFilename ) 

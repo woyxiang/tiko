@@ -222,8 +222,8 @@ function frmFunctions_OnDrawItem( _
         dim as boolean isIconDown = false
         
         if isMouseOverRECT(lpdis->hwndItem, b.rcClient) then IsHot = true   
-        if ListBox_GetSel(lpdis->hwndItem, lpdis->itemID) then IsHot = true
         if isMouseOverWindow( HWND_FRMPANEL_VSCROLLBAR ) then IsHot = false
+        if ListBox_GetSel(lpdis->hwndItem, lpdis->itemID) then IsHot = true
 
         dim as COLORREF backclr = iif( IsHot, ghPanel.BackColorHot,  ghPanel.BackColor)
         dim as COLORREF foreclr = iif( IsHot, ghPanel.ForeColorHot,  ghPanel.ForeColor)
@@ -363,7 +363,7 @@ function frmFunctionsListBox_SubclassProc ( _
         case MSG_USER_LOAD_FUNCTIONSFILES
             LoadFunctionsFiles()
 
-        Case WM_MOUSEWHEEL
+        case WM_MOUSEWHEEL
             ' accumulate delta until scroll one line (up +120, down -120). 
             ' 120 is the Microsoft default delta
             dim as long zDelta = GET_WHEEL_DELTA_WPARAM( _wParam )
@@ -374,15 +374,15 @@ function frmFunctionsListBox_SubclassProc ( _
                 nTopIndex = max( 0, nTopIndex )
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmPanel_PositionWindows
             elseif accumDelta <= -120 then  ' scroll down 3 lines
                 nTopIndex = nTopIndex + 3
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-                frmPanelVScroll_PositionWindows( SW_SHOWNA )
+                frmPanel_PositionWindows 
             end if
             
-        Case WM_MOUSEMOVE
+        case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
             dim tme as TrackMouseEvent
@@ -691,7 +691,7 @@ function LoadFilesAndFunctions() as long
     AfxRedrawWindow( hList )
 
     ' Determine if the VScroll bar has changed size or is now hidden/shown
-    frmPanelVScroll_PositionWindows( SW_HIDE )
+    frmPanel_PositionWindows
 
     function = 0
 end function
@@ -768,7 +768,7 @@ function LoadFunctionsOnly() as long
     AfxRedrawWindow( hList )
 
     ' Determine if the VScroll bar has changed size or is now hidden/shown
-    frmPanelVScroll_PositionWindows( SW_HIDE )
+    frmPanel_PositionWindows
 
     function = 0
 end function
