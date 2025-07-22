@@ -102,6 +102,7 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmKeyboardEdit.inc" 
 #include once "frmKeyboard.inc" 
 #include once "frmBuildConfig.inc" 
+#include once "frmListView.inc" 
 #include once "frmOutput.inc" 
 #include once "frmOptionsGeneral.inc"
 #include once "frmOptionsEditor.inc"

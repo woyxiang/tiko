@@ -137,15 +137,15 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS), SW_SHOW
     AfxRedrawWindow( GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS) )
     
-    ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_LVRESULTS), SW_HIDE
+    ShowWindow HWND_FRMOUTPUT_LVRESULTS, SW_HIDE
     ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE), SW_HIDE
-    ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_LVSEARCH), SW_HIDE
-    ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_LVTODO), SW_HIDE
+    ShowWindow HWND_FRMOUTPUT_LVSEARCH, SW_HIDE
+    ShowWindow HWND_FRMOUTPUT_LVTODO, SW_HIDE
     ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES), SW_HIDE
     
     select case gOutputTabsCurSel
         case 0    ' compiler results
-            hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_LVRESULTS)
+            hCtrl = HWND_FRMOUTPUT_LVRESULTS
             ListView_SetColumnWidth( hCtrl, 3, LVSCW_AUTOSIZE_USEHEADER ) 
 
         case 1    ' compiler log file
@@ -155,12 +155,12 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
             SendMessage( hCtrl, EM_SETRECT, 0, cast(LPARAM, @rc) )
 
         case 2    ' search results
-            hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_LVSEARCH)
+            hCtrl = HWND_FRMOUTPUT_LVSEARCH
             ListView_SetColumnWidth( hCtrl, 3, LVSCW_AUTOSIZE_USEHEADER ) 
 
         case 3    ' ToDo list
             ' ensure last column is sized to fit to end of client area.
-            hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_LVTODO)
+            hCtrl = HWND_FRMOUTPUT_LVTODO
             ListView_SetColumnWidth( hCtrl, 3, LVSCW_AUTOSIZE_USEHEADER ) 
 
         case 4    ' Notes
@@ -199,9 +199,9 @@ function frmOutput_PositionWindows() as LRESULT
     ' Position the child controls
     nTop = nTop + nTabsHeight + pWindow->ScaleY(8)
     SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVRESULTS), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVSEARCH), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVTODO), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
+    SetWindowPos HWND_FRMOUTPUT_LVRESULTS, 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
+    SetWindowPos HWND_FRMOUTPUT_LVSEARCH, 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
+    SetWindowPos HWND_FRMOUTPUT_LVTODO, 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
     SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
 
     ' Calculate the tabs rects
@@ -291,6 +291,21 @@ function frmOutput_OnSize( _
     function = 0
 end function
     
+
+' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmOutput
+' ========================================================================================
+function frmOutput_OnDestroy( byval hwnd as HWND ) as LRESULT
+    ' Delete all the panel CWindow pointers because these child windows
+    ' are about to get destroyed.
+    dim pWindow as CWindow ptr 
+    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVRESULTS ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVSEARCH ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVTODO ): if pWindow then delete(pWindow)
+
+    function = 0
+end Function
+
 
 ' ========================================================================================
 ' Process WM_COMMAND message for window/dialog: frmOutput
@@ -887,7 +902,8 @@ function frmOutput_WndProc( _
         HANDLE_MSG (hwnd, WM_LBUTTONDOWN,   frmOutput_OnLButtonDown)
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,     frmOutput_OnMouseMove)
         HANDLE_MSG (hwnd, WM_LBUTTONDBLCLK, frmOutput_OnLButtonDblClk)
-    
+        HANDLE_MSG (hwnd, WM_DESTROY,       frmOutput_OnDestroy)
+
     case WM_ERASEBKGND
         return true
 
@@ -925,20 +941,18 @@ function frmOutput_SetControlColors() as long
     SendMessage( hCtl, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
     SendMessage( hCtl, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghOutput.backcolor) )
     
-    hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVRESULTS )
-    ListView_SetBkColor( hCtl, ghOutput.BackColor )
-    ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
-    ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
-    
-    hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVSEARCH )
-    ListView_SetBkColor( hCtl, ghOutput.BackColor )
-    ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
-    ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
-    
-    hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVTODO )
-    ListView_SetBkColor( hCtl, ghOutput.BackColor )
-    ListView_SetTextColor( hCtl, ghOutput.ForeColorHot )
-    ListView_SetTextBkColor( hCtl, ghOutput.BackColor )
+    hCtl = HWND_FRMOUTPUT_LVRESULTS 
+    frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.BackColorHot )
+
+    hCtl = HWND_FRMOUTPUT_LVSEARCH
+    frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.BackColorHot )
+
+    hCtl = HWND_FRMOUTPUT_LVTODO 
+    frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.BackColorHot )
+
     function = 0
 end function
 
@@ -1002,55 +1016,31 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
         frmOutput_ShowNotes()   
 
-    hLV = _
-        pWindow->AddControl("LISTVIEW", , IDC_FRMOUTPUT_LVRESULTS, "", 0, 0, 0, 0, _
-        WS_CHILD or WS_TABSTOP or LVS_REPORT or LVS_SINGLESEL, _
-        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-        cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVRESULTS, cast(DWORD_PTR, @pWindow))
+    ' Compiler output Listview
+    hLV = frmListView_Show( HWND_FRMOUTPUT )
+        frmListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
+        frmListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
+        frmListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
+        frmListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
+        HWND_FRMOUTPUT_LVRESULTS = hLV
 
-        ' Configure the ListView
-        dim as long dwExStyle = ListView_GetExtendedListViewStyle(hLV)
-        dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
-        ListView_SetExtendedListViewStyle(hLV, dwExStyle)
-        ListView_MakeHeaderFlat(hLV)
-        ListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
-        ListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
-        ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
-        ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
-        
+    
     ' Search results Listview
-    hLV = _
-        pWindow->AddControl("LISTVIEW", , IDC_FRMOUTPUT_LVSEARCH, "", 0, 0, 0, 0, _
-        WS_CHILD or WS_TABSTOP or LVS_REPORT or LVS_SINGLESEL, _
-        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-        cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVSEARCH, cast(DWORD_PTR, @pWindow))
+    hLV = frmListView_Show( HWND_FRMOUTPUT )
+        frmListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
+        frmListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
+        frmListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
+        frmListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
+        HWND_FRMOUTPUT_LVSEARCH = hLV
 
-        ' Configure the ListView
-        dwExStyle = ListView_GetExtendedListViewStyle(hLV)
-        dwExStyle = dwExStyle or LVS_EX_FULLROWSELECT or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
-        ListView_SetExtendedListViewStyle(hLV, dwExStyle)
-        ListView_MakeHeaderFlat(hLV)
-        ListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
-        ListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
-        ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
-        ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
 
     ' TODO listview
-    hLV = _
-        pWindow->AddControl("LISTVIEW", , IDC_FRMOUTPUT_LVTODO, "", 0, 0, 0, 0, _
-        WS_CHILD or WS_TABSTOP or LVS_REPORT or LVS_SINGLESEL, _
-        WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
-        cast(SUBCLASSPROC, @frmOutput_Listview_SubclassProc), IDC_FRMOUTPUT_LVTODO, cast(DWORD_PTR, @pWindow))
-                                        
-        ' Configure the ListView
-        dwExStyle = ListView_GetExtendedListViewStyle(hLV)
-        dwExStyle = dwExStyle or LVS_EX_FULLROWselect or LVS_EX_DOUBLEBUFFER or LVS_EX_FLATSB
-        ListView_SetExtendedListViewStyle(hLV, dwExStyle)
-        ListView_MakeHeaderFlat(hLV)
-        ListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
-        ListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
-        ListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
-        ListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
+    hLV = frmListView_Show( HWND_FRMOUTPUT )
+        frmListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
+        frmListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
+        frmListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
+        frmListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
+        HWND_FRMOUTPUT_LVTODO = hLV
 
     frmOutput_SetControlColors
     frmOutput_PositionWindows

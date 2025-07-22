@@ -13,13 +13,13 @@
 
 #pragma once 
 
-#Define IDC_FRMOUTPUT_TABS                          1000
-#Define IDC_FRMOUTPUT_LVRESULTS                     1001
-#Define IDC_FRMOUTPUT_TXTLOGFILE                    1002
-#Define IDC_FRMOUTPUT_LVSEARCH                      1003
-#Define IDC_FRMOUTPUT_LVTODO                        1004
-#Define IDC_FRMOUTPUT_TXTNOTES                      1005
-#Define IDC_FRMOUTPUT_BTNCLOSE                      1006
+#define IDC_FRMOUTPUT_TABS                          1000
+#define IDC_FRMOUTPUT_LVRESULTS                     1001
+#define IDC_FRMOUTPUT_TXTLOGFILE                    1002
+#define IDC_FRMOUTPUT_LVSEARCH                      1003
+#define IDC_FRMOUTPUT_LVTODO                        1004
+#define IDC_FRMOUTPUT_TXTNOTES                      1005
+#define IDC_FRMOUTPUT_BTNCLOSE                      1006
 
 
 type OUTPUT_TABS
