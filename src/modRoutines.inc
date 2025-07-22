@@ -307,50 +307,50 @@ end function
 function ConvertTextBuffer( _
             byval pDoc as clsDocument ptr, _
             byval FileEncoding as long _
-            ) as Long
+            ) as long
                             
-   if pDoc = 0 then exit function
+    if pDoc = 0 then exit function
 
-   dim as hwnd hEdit = pDoc->hWndActiveScintilla
-   ' Save the current file position and first visible line
-   dim nFirstLine as long = SciExec( hEdit, SCI_GETFIRSTVISIBLELINE, 0, 0) 
-   Dim nPos As Long = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0)
-
-   pDoc->FileEncoding = FileEncoding
-   Dim As ZString Ptr psz = Cast( ZString Ptr, SciExec(hEdit, SCI_GETCHARACTERPOINTER, 0, 0) )
-   dim as long sciCodePage = SciExec(hEdit, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
-   dim as string txtBuffer 
+    dim as hwnd hEdit = pDoc->hWndActiveScintilla
    
-   ' Convert buffer to specified file encoding
-   select CASE FileEncoding
-      case FILE_ENCODING_ANSI
-         if sciCodePage = 0 THEN  ' already in ANSI format  
-            exit function
-         else   
-            ' need to convert from UTF8 to ANSI
-            txtBuffer = Utf8ToAnsi(*psz)
-            SciExec(hEdit, SCI_SETCODEPAGE, 0, 0 )
-         end if    
+    ' Save the current file position and first visible line
+    dim nFirstLine as long = SciExec( hEdit, SCI_GETFIRSTVISIBLELINE, 0, 0) 
+    dim nPos as long = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0)
 
-      case FILE_ENCODING_UTF8_BOM, FILE_ENCODING_UTF16_BOM
-         if sciCodePage = SC_CP_UTF8 THEN  ' already in unicode format
-            exit function
-         else
-            ' need to convert from ANSI to UTF8
-            txtBuffer = AnsiToUtf8(*psz)
-            SciExec(hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
-         end if    
-
-   END SELECT
+    pDoc->FileEncoding = FileEncoding
+    dim as zstring ptr psz = cast( zstring ptr, SciExec(hEdit, SCI_GETCHARACTERPOINTER, 0, 0) )
+    dim as long sciCodePage = SciExec(hEdit, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
+    dim as string txtBuffer 
    
-   ' Set the new buffer
-   pDoc->SetText(txtBuffer)
-   pDoc->UserModified = false
+    ' Convert buffer to specified file encoding
+    select case FileEncoding
+        case FILE_ENCODING_ANSI
+            if sciCodePage = 0 then  ' already in ANSI format  
+                exit function
+            else   
+                ' need to convert from UTF8 to ANSI
+                txtBuffer = Utf8ToAnsi(*psz)
+                SciExec(hEdit, SCI_SETCODEPAGE, 0, 0 )
+            end if    
 
-   SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
-   SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
+        case FILE_ENCODING_UTF8_BOM, FILE_ENCODING_UTF16_BOM
+            if sciCodePage = SC_CP_UTF8 then  ' already in unicode format
+                exit function
+            else
+                ' need to convert from ANSI to UTF8
+                txtBuffer = AnsiToUtf8(*psz)
+                SciExec(hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
+            end if    
+
+    end select
    
-   function = 0
+    ' Set the new buffer
+    pDoc->SetText(txtBuffer)
+    
+    SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
+    SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
+   
+    function = 0
 end function   
 
 
@@ -472,39 +472,53 @@ end function
 
 
 ' ========================================================================================
-' Determine if a string is UTF-8 encoded
+' Determine if a string is likely UTF-8 encoded
 ' ========================================================================================
-function isUTF8encoded(byref s as string) as boolean
-    dim as integer i = 0, n = len(s)
-    dim as ubyte ch
+function isUTF8encoded(byref text as string) as boolean
+    dim as ubyte ptr p = strptr(text)
+    dim as integer nlen = len(text)
+    dim as integer i = 0
+    dim as boolean hasUTF8Sequences = false
 
-    while i < n
-        ch = s[i]
-        
-        if ch <= &h7F then
-            ' ascii character (1 byte)
+    while i < nlen
+        dim as ubyte c = p[i]
+
+        if c < &h80 then
+            ' ASCII character
             i += 1
-        elseif ch >= &hC2 andalso ch <= &hDF then
-            ' 2-byte sequence
-            if i + 1 >= n then return false
-            if (s[i + 1] and &hC0) <> &h80 then return false
+
+        elseif (c and &hE0) = &hC0 then
+            ' 2-byte UTF-8 sequence
+            if i + 1 >= nlen then return false
+            if (p[i + 1] and &hC0) <> &h80 then return false
+            if c < &hC2 then return false
+            hasUTF8Sequences = true
             i += 2
-        elseif ch >= &hE0 andalso ch <= &hEF then
-            ' 3-byte sequence
-            if i + 2 >= n then return false
-            if (s[i + 1] and &hC0) <> &h80 orelse (s[i + 2] and &hC0) <> &h80 then return false
+
+        elseif (c and &hF0) = &hE0 then
+            ' 3-byte UTF-8 sequence
+            if i + 2 >= nlen then return false
+            if (p[i + 1] and &hC0) <> &h80 then return false
+            if (p[i + 2] and &hC0) <> &h80 then return false
+            hasUTF8Sequences = true
             i += 3
-        elseif ch >= &hF0 andalso ch <= &hF4 then
-            ' 4-byte sequence
-            if i + 3 >= n then return false
-            if (s[i + 1] and &hC0) <> &h80 orelse (s[i + 2] and &hC0) <> &h80 orelse (s[i + 3] and &hC0) <> &h80 then return false
+
+        elseif (c and &hF8) = &hF0 then
+            ' 4-byte UTF-8 sequence
+            if i + 3 >= nlen then return false
+            if (p[i + 1] and &hC0) <> &h80 then return false
+            if (p[i + 2] and &hC0) <> &h80 then return false
+            if (p[i + 3] and &hC0) <> &h80 then return false
+            hasUTF8Sequences = true
             i += 4
+
         else
+            ' Invalid byte for UTF-8
             return false
         end if
     wend
 
-    return true
+    return hasUTF8Sequences
 end function
 
 
@@ -565,7 +579,7 @@ function GetFileToString( _
          ' Convert to UTF8 so it can display in the editor
          txtBuffer = UnicodeToUtf8(wszText)
 
-   end select
+    end select
         
     function = false
 end function

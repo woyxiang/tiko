@@ -194,7 +194,7 @@ function frmPanel_PositionWindows() as LRESULT
     if gConfig.ExplorerPositionRight then nLeft = pWindow->ScaleX(3)  ' allow for grab
     
     dim as long nTop = 0
-    dim as long nWidth = rc.right  - rc.Left
+    dim as long nWidth = rc.right - rc.Left
     dim as long nHeight = nPanelMenuHeight
 
     nTop = rc.top + nPanelMenuHeight + nPanelHeaderHeight
@@ -259,6 +259,7 @@ function frmPanel_PositionWindows() as LRESULT
         nVScrollWidth, nHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
 
     ' Calculate the divider line
+    nWidth = rc.right - rc.Left
     gPanel.rcDividerLine = type( 0, nPanelMenuHeight, nWidth, nPanelMenuHeight )
     
     ' calculate the rect for the panel label (EXPLORER, FUNCTION LIST, BOOKMARKS)
