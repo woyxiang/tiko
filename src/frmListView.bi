@@ -30,6 +30,14 @@ type LISTVIEW_DATA_TYPE
     BackColorHot as COLORREF
 end type
 
+
+declare function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
+declare function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
+declare function frmListView_GetCount( byval hLV as HWND ) as long
+declare function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
+declare function frmListView_DeleteAllItems( byval hLV as HWND ) as long
+declare function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
+declare function frmListView_GetSelection( byval hLV as HWND ) as long
 declare function frmListView_AddColumn( _
     byval hLV as HWND, byval nColNum as long, byval wszText as CWSTR, byval nWidth as long ) as long
 declare function frmListView_SetForeColors( _

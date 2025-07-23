@@ -56,10 +56,71 @@ function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
     SetWindowPos( hListBox, 0, _
         0, nHeaderHeight, nClientWidth, nClientHeight - nHeaderHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
     
+    AfxRedrawWindow(hHeader)
     AfxRedrawWindow(hListBox)
     
     function = 0
 end function
+
+
+' ========================================================================================
+' frmListView_GetSelection
+' ========================================================================================
+function frmListView_GetSelection( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_GetCurSel( hListBox )
+end function
+
+
+' ========================================================================================
+' frmListView_GetItemText
+' ========================================================================================
+function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    dim as CWSTR wszCaption = AfxGetListBoxText( hListBox, nLineNum )
+    return AfxStrParse( wszCaption, nColNum + 1, chr(9) )
+end function
+
+
+' ========================================================================================
+' frmListView_DeleteAllItems
+' ========================================================================================
+function frmListView_DeleteAllItems( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    ListBox_ResetContent( hListBox )
+    AfxRedrawWindow( hListBox )
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_GetCount
+' ========================================================================================
+function frmListView_GetCount( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_GetCount( hListBox )
+end function
+
+
+' ========================================================================================
+' frmListView_SelectItem
+' ========================================================================================
+function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_SetCurSel( hListBox, nLineNum )
+end function
+
+
+' ========================================================================================
+' frmListView_AddString
+' ========================================================================================
+function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    ListBox_AddString( hListBox, wszText.vptr )
+    AfxRedrawWindow( hListBox )
+    return 0
+end function
+
 
 
 ' ========================================================================================
@@ -218,12 +279,12 @@ function frmListViewListBox_SubclassProc ( _
             byval dwRefData as DWORD_PTR _          ' // Pointer to reference data
             ) as LRESULT
 
-    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMEXPLORER)
+    dim pWindow as CWindow ptr = AfxCWindowPtr(GetParent(hWin))
     static as long accumDelta
     
     select case uMsg
-
-        Case WM_MOUSEWHEEL
+        
+        case WM_MOUSEWHEEL
             ' accumulate delta until scroll one line (up +120, down -120). 
             ' 120 is the Microsoft default delta
             dim as long zDelta = GET_WHEEL_DELTA_WPARAM( _wParam )
@@ -264,43 +325,37 @@ function frmListViewListBox_SubclassProc ( _
             ' if the specified point is in the client area of the list box, or one if it is outside the 
             ' client area.
             if hiword(idx) <> 1 then
+                ListBox_SetCurSel( hWin, idx )
             end if
                     
         case WM_LBUTTONDBLCLK 
                 
         case WM_ERASEBKGND
-            ' if the number of lines in the listbox maybe less than the number per page then 
-            ' calculate from last item to bottom of listbox, otherwise calculate based on
-            ' the mod of the lineheight to listbox height so we can color the partial line
-            ' that won't be displayed at the bottom of the list.
-            dim as RECT rc: GetClientRect( hWin, @rc )
-
-            dim as RECT rcItem  
-            SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
-            dim as long itemHeight = rcItem.bottom - rcItem.top
-            dim as long NumItems = ListBox_GetCount(hWin)
-            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
-            dim as long visible_rows = 0
-            dim as long ItemsPerPage = 0
-            dim as long bottom_index = 0
-                        
-            if NumItems > 0 then
-                ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-                bottom_index = (nTopIndex + ItemsPerPage) 
-                if bottom_index >= NumItems then bottom_index = NumItems - 1
-                visible_rows = (bottom_index - nTopIndex) + 1
-                rc.top = visible_rows * itemHeight 
-            end if
-
-            if rc.top < rc.bottom then
-                dim as HDC _hDC = cast(HDC, _wParam)
-                PaintRect( _hDC, @rc, ghOutput.BackColor )
-            end if
-
-            ValidateRect( hWin, @rc )
             return true
-        
-        Case WM_DESTROY
+
+        case WM_PAINT
+            ' First let default painting occur
+            dim ps as PAINTSTRUCT
+            dim hdc as HDC = BeginPaint(hWin, @ps)
+            DefSubclassProc(hWin, uMsg, _wParam, _lParam)
+            
+            ' Get item height and client size
+            dim as RECT rcClient = AfxGetWindowClientRect(hWin)
+            dim as long itemHeight = SendMessage(hWin, LB_GETITEMHEIGHT, 0, 0)
+            dim as long itemCount  = SendMessage(hWin, LB_GETCOUNT, 0, 0)
+            dim as long paintedHeight = itemCount * itemHeight
+
+            ' Fill remaining area
+            if paintedHeight < rcClient.bottom then
+                dim as RECT rcFill
+                SetRect( @rcFill, 0, paintedHeight, rcClient.right, rcClient.bottom )
+                PaintRect( hdc, @rcFill, ghOutput.BackColor )
+            End If
+
+            EndPaint(hWin, @ps)
+            Return 0
+
+        case WM_DESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmListViewListBox_SubclassProc, uIdSubclass )
     end select
@@ -348,12 +403,12 @@ function frmListView_OnDrawItem( _
         b.BeginDoubleBuffer(lpdis->hwndItem, lpdis->hDC, lpdis->rcItem)
 
         dim as boolean IsHot = false
-        if ListBox_GetSel(lpdis->hwndItem, lpdis->itemID) then IsHot = true
+        if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
 
         dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hwnd)
         if pData then 
-            dim as COLORREF backclr = iif( IsHot, pData->BackColorHot,  pData->BackColor)
-            dim as COLORREF foreclr = iif( IsHot, pData->ForeColorHot,  pData->ForeColorHot)
+            dim as COLORREF backclr = iif( IsHot, pData->BackColorHot, pData->BackColor)
+            dim as COLORREF foreclr = iif( IsHot, pData->ForeColorHot, pData->ForeColorHot)
             b.SetForeColors(foreclr, foreclr)
             b.SetBackColors(backclr, backclr)
 
@@ -373,7 +428,7 @@ function frmListView_OnDrawItem( _
             for i as long = 0 to nCount - 1
                 rcText.right = rcText.left + pData->ColData(i).nWidth
                 ' offset the left margin ever so slighly
-                rcText.left += pWindow->ScaleX(2)
+                rcText.left += pWindow->ScaleX(4)
                 dim as CWSTR wszText = AfxStrParse(wszCaption, i + 1, chr(9)) 
                 b.PaintText( wszText, @rcText, DT_LEFT )
                 rcText.left = rcText.right
@@ -457,8 +512,8 @@ function frmListView_OnPaint( byval hwnd as HWND ) as LRESULT
     b.BeginDoubleBuffer(hwnd)
 
     ' Set default fore and back colors
-    b.SetForeColors( ghOutput.ForeColor, ghOutput.ForeColorHot )
-    b.SetBackColors( ghOutput.BackColor, ghOutput.BackColorHot )
+    b.SetForeColors( ghOutput.ForeColor, ghOutput.ForeColor )
+    b.SetBackColors( ghOutput.BackColor, ghOutput.BackColor )
 
     ' Clear the entire back client area
     b.PaintClientRect()
@@ -535,17 +590,6 @@ function frmListView_Show( byval hwndParent as hwnd ) as HWND
 '    HWND_FRMPANEL_VSCROLLBAR = _
 '        pWindowPanel->Create( HWND_FRMPANEL, @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0 )
 '    pWindow->ClassStyle = CS_DBLCLKS
-
-
-
-' Create some FAKE data
-for i as long = 0 to 10
-    dim as CWSTR wszCaption = "" & chr(9) & "line" & i & chr(9) & "file" & i & chr(9) & "description" & i
-    ListBox_AddString( hListBox, wszCaption.vptr ) 
-next
-
-
-    frmListView_PositionWindows( hLV )
 
     function = hLV
     

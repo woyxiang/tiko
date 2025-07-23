@@ -19,10 +19,10 @@
 ' when Projects are loaded and closed.
 ' ========================================================================================
 function frmOutput_ResetAllControls() as long 
-    ListView_DeleteAllItems( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVRESULTS) )
+    frmListView_DeleteAllItems( HWND_FRMOUTPUT_LVRESULTS )
     AfxSetWindowText( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE), "" )
-    ListView_DeleteAllItems( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVSEARCH) )
-    ListView_DeleteAllItems( GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVTODO) )
+    frmListView_DeleteAllItems( HWND_FRMOUTPUT_LVSEARCH )
+    frmListView_DeleteAllItems( HWND_FRMOUTPUT_LVTODO )
     AfxSetWindowText( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES), "" )
     function = 0
 end function
@@ -49,9 +49,10 @@ end function
 ' Update the TODO listview
 ' ========================================================================================
 function frmOutput_UpdateToDoListview() as long 
-    dim as hwnd hLV = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVTODO)
-    ListView_DeleteAllItems( hLV )
-    dim as long n = 0
+    dim as hwnd hLV = HWND_FRMOUTPUT_LVTODO
+    frmListView_DeleteAllItems( hLV )
+    
+    dim as CWSTR wszText
 
     dim pData as DB2_DATA ptr
     
@@ -60,11 +61,12 @@ function frmOutput_UpdateToDoListview() as long
         pData = gdb2.dbGetNext
         if pData = 0 then exit do
         if pData->id <> DB2_TODO then continue do
-        LV_InsertItem( hLV, n, 0, "" ) 
-        LV_InsertItem( hLV, n, 1, ltrim(wstr(pData->nLineStart))) 
-        LV_InsertItem( hLV, n, 2, ltrim(wstr(pData->fileName)))
-        LV_InsertItem( hLV, n, 3, ltrim(wstr(pData->ElementData))) 
-        n = n + 1
+        wszText = _
+            "" & chr(9) & _
+            ltrim(wstr(pData->nLineStart)) & chr(9) & _
+            ltrim(wstr(pData->fileName)) & chr(9) & _
+            ltrim(wstr(pData->ElementData))
+        frmListView_AddString( hLV, wszText )    
     loop until pData = 0
 
     function = 0
@@ -74,14 +76,14 @@ end function
 ' Update the SEARCH listview
 ' ========================================================================================
 function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as long 
-    dim hLV as HWND = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVSEARCH )
+    dim hLV as HWND = HWND_FRMOUTPUT_LVSEARCH
 
-    ListView_DeleteAllItems( hLV )
-    dim as long n = 0
+    frmListView_DeleteAllItems( hLV )
 
     if AfxFileExists(wszResultFile) = 0 then exit function
     
     dim as CWSTR wst
+    dim as CWSTR wszText
 
     dim pStream as CTextStream
     if pStream.OpenUnicode(wszResultFile) <> S_OK then exit function
@@ -103,12 +105,8 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
         if f2 > f1 then wszLinenum = mid(wst, f1 + 1, f2 - f1 - 1)
         if f2 then wszDescription = rtrim(mid(wst, f2 + 1))
 
-        LV_InsertItem( hLV, n, 0, "" ) 
-        LV_InsertItem( hLV, n, 1, wszLineNum ) 
-        LV_InsertItem( hLV, n, 2, wszFilename )
-        LV_InsertItem( hLV, n, 3, wszDescription ) 
-        n = n + 1
-
+        wszText = "" & chr(9) & wszLineNum & chr(9) & wszFilename & chr(9) & wszDescription
+        frmListView_AddString( hLV, wszText )
     loop
     pStream.Close
 
@@ -128,6 +126,7 @@ end function
 ' ========================================================================================
 function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     dim as HWND hCtrl
+    dim as HWND hListBox
     dim as RECT rc
     
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
@@ -146,7 +145,7 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     select case gOutputTabsCurSel
         case 0    ' compiler results
             hCtrl = HWND_FRMOUTPUT_LVRESULTS
-            ListView_SetColumnWidth( hCtrl, 3, LVSCW_AUTOSIZE_USEHEADER ) 
+            hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
 
         case 1    ' compiler log file
             hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE)
@@ -156,12 +155,12 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
 
         case 2    ' search results
             hCtrl = HWND_FRMOUTPUT_LVSEARCH
-            ListView_SetColumnWidth( hCtrl, 3, LVSCW_AUTOSIZE_USEHEADER ) 
+            hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
 
         case 3    ' ToDo list
             ' ensure last column is sized to fit to end of client area.
             hCtrl = HWND_FRMOUTPUT_LVTODO
-            ListView_SetColumnWidth( hCtrl, 3, LVSCW_AUTOSIZE_USEHEADER ) 
+            hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
 
         case 4    ' Notes
             hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES)
@@ -173,6 +172,8 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     
     SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )    
     AfxRedrawWindow( hCtrl )
+
+    if hListBox then AfxRedrawWindow( hListBox )
             
     function = 0
 end function
@@ -337,116 +338,7 @@ function frmOutput_OnCommand( _
     function = 0
 end function
         
-    
-' ========================================================================================
-' Processes messages for the subclassed frmOutput Compile Results and TODO listviews .
-' ========================================================================================
-function frmOutput_Listview_SubclassProc ( _
-                    byval hwnd   as HWND, _                 ' // Control window handle
-                    byval uMsg   as UINT, _                 ' // Type of message
-                    byval wParam as WPARAM, _               ' // First message parameter
-                    byval lParam as LPARAM, _               ' // Second message parameter
-                    byval uIdSubclass as UINT_PTR, _        ' // The subclass ID
-                    byval dwRefData as DWORD_PTR _          ' // pointer to reference data
-                    ) as LRESULT
-
-    ' Convert our ENTER key presses into LBUTTONDBLCLK to process them similarly
-    if (uMsg = WM_KEYUP) andalso (loword(wParam) = VK_RETURN) then uMsg = WM_LBUTTONDBLCLK
-        
-    select case uMsg
-
-        case WM_GETDLGCODE
-            ' All keyboard input
-            function = DLGC_WANTALLKEYS
-            exit function
-            
-        case WM_NOTIFY
-            ' Handle custom draw of the listview header   
-            dim ptnmhdr as NMHDR ptr             
-            dim ptnmcd  as NMCUSTOMDRAW ptr    
-                    
-            ptnmhdr = cast(NMHDR ptr, lParam)
-
-            ' need to prevent re-entry into HDN_ITEMCHANGING because
-            ' calling ListView_SetColumnWidth triggers another HDN_ITEMCHANGING
-            static as boolean inChanging = false
-            
-            if ptnmhdr->code = HDN_ITEMCHANGING then
-                ' notification from the ListView header control that the user is
-                ' resizing a header item via the mouse. Update the last column width
-                ' to ensure it covers the non-client area (because difficult painting
-                ' this area).
-                if inChanging then exit function
-                inChanging = true
-                ListView_SetColumnWidth( hwnd, 3, LVSCW_AUTOSIZE_USEHEADER )
-                inChanging = false
-            end if
-            
-            if ptnmhdr->code = NM_CUSTOMDRAW then      
-                ptnmcd = cast(NMCUSTOMDRAW ptr, lParam)
-                            
-                ' Determine the stage of the paint cycle
-                select case ptnmcd->dwDrawStage
-                        
-                    case CDDS_PREPAINT
-                        ' Control is to notify parent about each item being drawn
-                        return CDRF_NOTIFYITEMDRAW 
-                                
-                    ' Items are being painted
-                    case CDDS_ITEMPREPAINT     
-                        select case ptnmcd->dwItemSpec
-                            case 0, 1, 2, 3   ' columns
-                            ' Paint the whole cell ourselves
-                            dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
-                            if pWindow = 0 then exit function
-                            SaveDC(ptnmcd->hdc)
-                            PaintRect( ptnmcd->hdc, @ptnmcd->rc, ghOutput.BackColor)
-                            SetTextColor( ptnmcd->hdc, ghOutput.ForeColorHot )
-                            SetBkColor( ptnmcd->hdc, ghOutput.BackColor )
-                            dim wszText as wstring * MAX_PATH
-                            'Header_GetItemText is currently bugged. Report submitted to Jose to correct.
-                            'Header_GetItemText( ptnmhdr->hwndFrom, ptnmcd->dwItemSpec, @wszText, MAX_PATH )
-                            ListView_GetHeaderText( hwnd, ptnmcd->dwItemSpec, @wszText, MAX_PATH )
-                            dim as HFONT _hFont = pWindow->CreateFont(GUIFONT, 10, FW_NORMAL)
-                            if _hFont then SelectObject( ptnmcd->hdc, _hFont )
-                            dim as long wsStyle = DT_NOPREFIX or DT_LEFT or DT_VCENTER or DT_SINGLELINE
-                            DrawText( ptnmcd->hdc, wszText, -1, Cast(lpRect, @ptnmcd->rc), wsStyle )
-                            RestoreDC(ptnmcd->hdc, -1)
-                            if _hFont then DeleteFont( _hFont )
-                            return CDRF_SKIPDEFAULT
-                        end select
-                            
-                end select
-                        
-                return true
-            end if
-        
-        case WM_LBUTTONDBLCLK
-            SetDocumentErrorPosition( hwnd, gCompile.CompileID )    
-            exit function
-        
-        case WM_KEYUP
-            select case Loword(wParam)
-                case VK_RETURN  ' already processed in WM_LBUTTONDBLCLK 
-            End select
-            exit function
-
-        case WM_CHAR   ' prevent the annoying beep!
-            if wParam = VK_RETURN then return 0
-            if wParam = VK_ESCAPE then return 0
-
-        case WM_DESTROY
-            ' REQUIRED: Remove control subclassing
-            RemoveWindowSubclass( hwnd, @frmOutput_Listview_SubclassProc, uIdSubclass )
-
-    End select
-
-    ' Default processing of Windows messages
-    function = DefSubclassProc( hwnd, uMsg, wParam, lParam )
-
-end function
-
-
+   
 ' ========================================================================================
 ' Process WM_MOUSEMOVE message for window/dialog: frmOutput
 ' ========================================================================================
@@ -910,7 +802,7 @@ function frmOutput_WndProc( _
     case WM_PAINT            
         dim as clsDoubleBuffer b
         b.BeginDoubleBuffer(hwnd)
-        b.SetBackColors( ghOutput.BackColor, ghOutput.BackColorHot )
+        b.SetBackColors( ghOutput.BackColor, ghOutput.BackColor )
         b.PaintClientRect()
         b.EndDoubleBuffer()
         return 0
