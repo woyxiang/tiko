@@ -906,6 +906,8 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTLOGFILE, null )
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
+        SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_VERT, FALSE)
+        SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_HORZ, FALSE)
 
     hCtl = pWindow->AddControl("RICHEDIT", , IDC_FRMOUTPUT_TXTNOTES, "", _
                     0, 0, 0, 0, _
@@ -914,6 +916,8 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTNOTES, null )
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
+        SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_VERT, FALSE)
+        SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_HORZ, FALSE)
         frmOutput_ShowNotes()   
 
     ' Compiler Results Listview

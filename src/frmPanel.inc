@@ -134,8 +134,6 @@ function frmPanelVScroll_WndProc( _
             return true
             
         case WM_PAINT
-            frmPanelVScroll_calcVThumbRect()
-            
             dim as clsDoubleBuffer b
 
             b.BeginDoubleBuffer(hwnd)
@@ -283,8 +281,10 @@ function frmPanel_PositionWindows() as LRESULT
     end with
         
     AfxRedrawWindow( gPanelVScroll.hListBox )
-    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
     AfxRedrawWindow( HWND_FRMPANEL )
+
+    frmPanelVScroll_calcVThumbRect()
+    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
 
     ' Ensure that the panel menu selected item is in sync with the pane
     AfxRedrawWindow(HWND_FRMPANEL_MENU)

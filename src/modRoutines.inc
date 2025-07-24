@@ -1652,11 +1652,7 @@ end function
 ' Calcluate the client area at bottom of Listbox not covered by a row (needed to manually
 ' paint the unused area in WM_ERASEBKGRD messages to avoid flicker.
 ' ========================================================================================
-function GetListBoxEmptyClientArea( _
-            byval hListBox as HWND, _
-            byval nLineHeight as long _
-            ) as RECT
-    
+function GetListBoxEmptyClientArea( byval hListBox as HWND ) as RECT
     dim as RECT rc: GetClientRect( hListBox, @rc )
     ' if the number of lines in the listbox is less than the number per page then 
     ' calculate from last item to bottom of listbox, otherwise calculate based on

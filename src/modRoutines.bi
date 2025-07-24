@@ -68,7 +68,7 @@ declare function LoadLocalizationFile( byref wszFileName as CWSTR, byval IsEngli
 declare function GetProcessImageName( byval pe32w as PROCESSENTRY32W ptr, byval pwszExeName as wstring ptr ) as long
 declare function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
 declare function GetRunExecutableFilename() as CWSTR
-declare function GetListBoxEmptyClientArea( byval hListBox as HWND, byval nLineHeight as long ) as RECT
+declare function GetListBoxEmptyClientArea( byval hListBox as HWND ) as RECT
 declare function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
 declare function frmListView_GetCount( byval hLV as HWND ) as long
 declare function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long

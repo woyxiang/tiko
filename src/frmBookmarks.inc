@@ -448,31 +448,11 @@ function frmBookmarksListBox_SubclassProc ( _
             ' calculate from last item to bottom of listbox, otherwise calculate based on
             ' the mod of the lineheight to listbox height so we can color the partial line
             ' that won't be displayed at the bottom of the list.
-            dim as RECT rc: GetClientRect( hWin, @rc )
-
-            dim as RECT rcItem  
-            SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
-            dim as long itemHeight = rcItem.bottom - rcItem.top
-            dim as long NumItems = ListBox_GetCount(hWin)
-            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
-            dim as long visible_rows = 0
-            dim as long ItemsPerPage = 0
-            dim as long bottom_index = 0
-                        
-            if NumItems > 0 then
-                ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-                bottom_index = (nTopIndex + ItemsPerPage) 
-                if bottom_index >= NumItems then bottom_index = NumItems - 1
-                visible_rows = (bottom_index - nTopIndex) + 1
-                rc.top = visible_rows * itemHeight 
-            end if
-
+            dim as RECT rc = GetListBoxEmptyClientArea( hWin )
             if rc.top < rc.bottom then
                 dim as HDC _hDC = cast(HDC, _wParam)
                 PaintRect( _hDC, @rc, ghPanel.BackColor )
             end if
-
-            ValidateRect( hWin, @rc )
             return true
 
         Case WM_DESTROY

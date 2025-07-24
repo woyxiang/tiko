@@ -24,29 +24,160 @@
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
 function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
-    
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hLV)
-    if pWindow = 0 then exit function
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then exit function
 
     ' Position the Header and the ListBox
-    dim as HWND hHeader = GetDlgItem( hLV, IDC_FRMLISTVIEW_HEADER )
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    
     dim as RECT rc = AfxGetWindowClientRect( hLV )
     dim as long nClientWidth = rc.right - rc.left
     dim as long nClientHeight = rc.bottom - rc.top
-    dim as long nHeaderHeight = AfxGetWindowHeight(hHeader)
+    dim as long nHeaderHeight = AfxGetWindowHeight(pData->hHeader)
     
-    SetWindowPos( hHeader, 0, _
+    SetWindowPos( pData->hHeader, 0, _
         0, 0, nClientWidth, nHeaderHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
     
-    SetWindowPos( hListBox, 0, _
+    SetWindowPos( pData->hListBox, 0, _
         0, nHeaderHeight, nClientWidth, nClientHeight - nHeaderHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
     
-    AfxRedrawWindow(hHeader)
-    AfxRedrawWindow(hListBox)
+    AfxRedrawWindow(pData->hHeader)
+    AfxRedrawWindow(pData->hListBox)
 
     function = 0
+end function
+
+
+' ========================================================================================
+' Calculate the RECT that holds the client coordinates of the scrollbar's vertical thumb
+' Returns True if RECT is not empty
+' ========================================================================================
+function frmListViewVScroll_calcVThumbRect( byval hLV as HWND ) as boolean
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then exit function
+
+    ' calculate the vertical scrollbar in client coordinates
+    SetRectEmpty( @pData->VScrollData.rc )
+    
+    dim as long nTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
+
+    dim as RECT rc 
+    with pData->VScrollData
+        GetClientRect( pData->hListBox, @rc )
+        .listBoxHeight = rc.bottom - rc.top
+        .itemHeight = SendMessage( pData->hListBox, LB_GETITEMHEIGHT, 0, 0 )
+        .numItems = ListBox_GetCount( pData->hListBox ) 
+        .itemsPerPage = .listBoxHeight / .itemHeight
+        .thumbHeight = (.itemsPerPage / .numItems) * .listBoxHeight
+        GetClientRect( pData->hVScroll, @rc )
+        .rc.Left = rc.Left
+        .rc.top = rc.top + ((nTopIndex / .numItems) * .listBoxHeight)
+        .rc.Right = rc.right
+        .rc.bottom = .rc.top + .thumbHeight
+        if .numItems < .itemsPerPage then 
+            SetRectEmpty( @pData->VScrollData.rc )
+            return true
+        end if
+    end with
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' frmListViewVScroll Window procedure
+' ========================================================================================
+function frmListViewVScroll_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
+
+    static as point prev_pt   ' screen pt.y cursor position
+
+    dim as HWND hLV = GetParent(hwnd)
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then exit function
+
+    select case uMsg
+        case WM_LBUTTONDOWN
+            dim as point pt: GetCursorPos( @pt )
+            frmListViewVScroll_calcVThumbRect(hLV)   ' in client coordinates
+            dim as RECT rc = pData->VScrollData.rc       ' covert copy to screen coordinates
+            MapWindowpoints( pData->hVScroll, HWND_DESKTOP, cast(point ptr, @rc), 2)
+            if PtInRect( @rc, pt ) then
+                prev_pt = pt
+                gApp.bDragActive = true
+                SetCapture( hwnd )
+            else
+                ' we have clicked on a PageUp or PageDn
+                dim as long nTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
+                if pt.y < rc.top then
+                    nTopIndex = max( nTopIndex - pData->VScrollData.itemsPerPage, 0 )
+                    SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmListViewVScroll_calcVThumbRect(hLV)   ' in client coordinates
+                    AfxRedrawWindow( pData->hVScroll )
+                    AfxRedrawWindow( pData->hListBox )
+                elseif pt.y > rc.bottom then
+                    dim as long nMaxTopIndex = pData->VScrollData.numItems - pData->VScrollData.itemsPerPage
+                    nTopIndex = min( nTopIndex + pData->VScrollData.itemsPerPage, nMaxTopIndex )
+                    SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                    frmListViewVScroll_calcVThumbRect(hLV)   ' in client coordinates
+                    AfxRedrawWindow( pData->hVScroll )
+                    AfxRedrawWindow( pData->hListBox )
+                end if
+            end if
+            
+        case WM_MOUSEMOVE
+            if gApp.bDragActive then
+                dim as point pt: GetCursorPos( @pt )
+                if pt.y <> prev_pt.y then 
+                    dim as long delta = pt.y - prev_pt.y 
+                    dim as RECT rc: GetClientRect( pData->hVScroll, @rc )
+
+                    pData->VScrollData.rc.top = max(0, pData->VScrollData.rc.top + delta)
+                    pData->VScrollData.rc.top = min(pData->VScrollData.rc.top, rc.bottom-pData->VScrollData.thumbHeight)
+                    pData->VScrollData.rc.bottom = pData->VScrollData.rc.top + pData->VScrollData.thumbHeight
+
+                    prev_pt = pt
+                    
+                    dim as long nPrevTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
+                    dim as long nLastIndex = (pData->VScrollData.rc.bottom / rc.bottom) * pData->VScrollData.numItems
+                    dim as long nTopIndex = nLastIndex - pData->VScrollData.itemsPerPage
+                    if nTopIndex <> nPrevTopIndex then
+                        SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+                        AfxRedrawWindow( pData->hListBox )
+                    end if   
+                    AfxRedrawWindow( pData->hVScroll )
+                end if
+            end if
+            
+        case WM_LBUTTONUP   
+            gApp.bDragActive = false
+            prev_pt.x = 0
+            prev_pt.y = 0
+            ReleaseCapture
+        
+        case WM_ERASEBKGND
+            return true
+            
+        case WM_PAINT
+            dim as clsDoubleBuffer b
+
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( pData->BackColor, pData->BackColor )
+            b.PaintClientRect()
+            b.SetBackColors( pData->ForeColorHot, pData->ForeColorHot )
+            b.PaintRect( @pData->VScrollData.rc )
+
+            b.EndDoubleBuffer()
+
+            return 0
+
+    end select
+
+    ' for messages that we don't deal with
+    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+
 end function
 
 
@@ -220,21 +351,15 @@ function frmListViewListBox_SubclassProc ( _
             if _wParam = VK_ESCAPE then return 0
                             
         case WM_ERASEBKGND
-            ' Get item height and client size
-            dim as RECT rcClient: GetClientRect(hWin, @rcClient)
-            dim as long itemHeight = SendMessage(hWin, LB_GETITEMHEIGHT, 0, 0)
-            dim as long itemCount  = SendMessage(hWin, LB_GETCOUNT, 0, 0)
-            dim as long paintedHeight = itemCount * itemHeight
-
-            ' Fill remaining area
-            if paintedHeight < rcClient.bottom then
-                dim as RECT rcFill
-                SetRect( @rcFill, 0, paintedHeight, rcClient.right, rcClient.bottom )
-                dim as HBRUSH hbr = CreateSolidBrush( ghOutput.BackColor )
-                dim as HDC hdc = cast(HDC, _wParam)
-                FillRect( hdc, @rcFill, hbr )
+            ' if the number of lines in the listbox maybe less than the number per page then 
+            ' calculate from last item to bottom of listbox, otherwise calculate based on
+            ' the mod of the lineheight to listbox height so we can color the partial line
+            ' that won't be displayed at the bottom of the list.
+            dim as RECT rc = GetListBoxEmptyClientArea( hWin )
+            if rc.top < rc.bottom then
+                dim as HDC _hDC = cast(HDC, _wParam)
+                PaintRect( _hDC, @rc, ghOutput.BackColor )
             end if
-            
             return true
 
         case WM_NCDESTROY
@@ -358,11 +483,11 @@ function frmListView_OnDestroy( byval hwnd as HWND ) as LRESULT
     if pWindow = 0 then exit function
     
     ' Destroy the manually allocated LISTVIEW_DATA_TYPE pointer
-    if pWindow->UserData(0) > 0 then delete( cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0)) )
-
-    ' Delete all the panel CWindow pointers because these child windows
-    ' are about to get destroyed.
-'    pWindow = AfxCWindowPtr( HWND_FRMPANEL_MENU ): if pWindow then delete(pWindow)
+    if pWindow->UserData(0) > 0 then 
+        dim as LISTVIEW_DATA_TYPE ptr pData = cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0))
+        if pData->hVScroll > 0 then delete(pData->hVScroll)
+        delete(pData)
+    end if
 
     function = 0
 end Function
@@ -452,14 +577,14 @@ function frmListView_Show( byval hwndParent as hwnd ) as HWND
     ' Must use GetDlgItem to retrieve the child window handles because there
     ' could be multiple instances of this ListView control.
 
-    dim as HWND hHeader = _
+    pData->hHeader = _
         pWindow->AddControl( "LABEL", , IDC_FRMLISTVIEW_HEADER, "", 0, 0, 0, EXPLORERITEM_HEIGHT_COMPACT, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_NOTIFY or SS_LEFT, _
         WS_EX_LEFT or WS_EX_LTRREADING, , _
         cast(SUBCLASSPROC, @frmListViewHeader_SubclassProc), _
         IDC_FRMLISTVIEW_HEADER, cast(DWORD_PTR, @pWindow))
 
-    dim as HWND hListBox = _
+    pData->hListBox = _
         pWindow->AddControl( "LISTBOX", , IDC_FRMLISTVIEW_LISTBOX, "", 0, 0, 0, 0, _
         WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
         LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, _
@@ -467,10 +592,10 @@ function frmListView_Show( byval hwndParent as hwnd ) as HWND
         cast(SUBCLASSPROC, @frmListViewListBox_SubclassProc), _
         IDC_FRMLISTVIEW_LISTBOX, cast(DWORD_PTR, @pWindow))
 
-'    dim pWindowPanel as CPanelWindow ptr = New CPanelWindow
-'    HWND_FRMPANEL_VSCROLLBAR = _
-'        pWindowPanel->Create( HWND_FRMPANEL, @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0 )
-'    pWindow->ClassStyle = CS_DBLCLKS
+    dim pWindowPanel as CPanelWindow ptr = New CPanelWindow
+    pData->hVScroll = _
+        pWindowPanel->Create( hLV, @frmListViewVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR, 0 )
+    pWindow->ClassStyle = CS_DBLCLKS
 
     frmListView_PositionWindows(hLV)
     

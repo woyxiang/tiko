@@ -13,6 +13,8 @@
     
 #pragma once 
 
+#include once "frmPanel.bi"
+
 #define IDC_FRMLISTVIEW_HEADER               1000
 #define IDC_FRMLISTVIEW_LISTBOX              1001
 #define IDC_FRMLISTVIEW_VSCROLL              1002
@@ -23,11 +25,15 @@ type LISTVIEW_COLUMN_TYPE
 end type
 
 type LISTVIEW_DATA_TYPE
+    hVScroll as HWND            ' manually allocated needs to be delete
+    hHeader as HWND             ' normal child control
+    hListBox as HWND            ' normal child control
     ColData(any) as LISTVIEW_COLUMN_TYPE
     ForeColor as COLORREF
     ForeColorHot as COLORREF
     BackColor as COLORREF
     BackColorHot as COLORREF
+    VScrollData as PANEL_VSCROLL_TYPE
 end type
 
 
