@@ -151,6 +151,7 @@ type clsDocument
     declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long
     declare function InsertFile() as boolean
     declare function SaveFile(byval bSaveAs as boolean = false ) as boolean
+    declare function SaveTempFile( byval wszFilename as CWSTR ) as boolean
     declare function ApplyProperties() as long
     declare function GetTextRange( byval cpMin as long, byval cpMax as long) as string
     declare function ChangeSelectionCase( byval fCase as long) as long 

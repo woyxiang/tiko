@@ -848,7 +848,7 @@ function frmMain_PositionWindows() as LRESULT
 
     ' Ensure that the correct notes are shown
     frmOutput_ShowNotes()
-    
+
     function = 0
 end function
 

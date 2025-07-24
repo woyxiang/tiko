@@ -209,8 +209,10 @@ end function
 
 
 ' ========================================================================================
-' Set the cursor to the error position based on the selected line in frmCompileResults
-' or the TODO listview. 
+' Set the cursor to the error position based on the selected line in:
+' (1) Compiler Results
+' (2) Search Results
+' (3) TODO
 ' ========================================================================================
 function SetDocumentErrorPosition( _
             byval hLV as HWND, _
@@ -484,11 +486,12 @@ function ParseLogForError( _
                         AfxLocalTimeStr( "hh:mm:ss" ) & "]"
         gCompile.wszOutputMsg = L(229,"Failed Compile")  & " (" & wszIconCompileMsg & ")" & vbcrlf
         SetCompileStatusBarMessage( wszIconCompileMsg, ghIconBad )
-        
+       
         ' only beep on errors
         if NumErrors > 0 then MessageBeep(MB_ICONWARNING)
         
         ' Position the Compiler Log to the first error/warning
+        frmListView_DeleteBlankFirstLine( HWND_FRMOUTPUT_LVRESULTS )
         frmListView_SelectItem( hLV, 0 )
         
         ' if fGoodCompile is false then something unusual occurred so better show the log file by default
@@ -541,6 +544,7 @@ function ParseLogForError( _
                                     AfxSystemTimeToTimeStr( gCompile.SystemTime, "hh:mm:ss" ) & ")" & vbcrlf
     end if
 
+
     ' Update the log file text box in the frmOutput window
     SetLogFileTextbox
 
@@ -551,6 +555,7 @@ function ParseLogForError( _
         gCompile.RunAfterCompile = false 
         return true
     end if
+
     
     function = false
 end function

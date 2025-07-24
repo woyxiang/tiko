@@ -17,20 +17,7 @@
 ''   
 
 #include once "frmListView.bi"
-
-
-' ========================================================================================
-' Get the pData pointer stored in UserData(0) of the pWindow
-' ========================================================================================
-function frmListView_GetPointer( byval hLV as HWND ) as LISTVIEW_DATA_TYPE ptr
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hLV)
-    if pWindow = 0 then return 0
-    
-    ' The ListView's data is stored in the pWindow CWindow UserData(0).
-    if pWindow->UserData(0) = 0 then return 0
-    
-    return cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0))
-end function
+#include once "modCompileErrors.bi"
 
 
 ' ========================================================================================
@@ -58,127 +45,8 @@ function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
     
     AfxRedrawWindow(hHeader)
     AfxRedrawWindow(hListBox)
-    
+
     function = 0
-end function
-
-
-' ========================================================================================
-' frmListView_GetSelection
-' ========================================================================================
-function frmListView_GetSelection( byval hLV as HWND ) as long
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    return ListBox_GetCurSel( hListBox )
-end function
-
-
-' ========================================================================================
-' frmListView_GetItemText
-' ========================================================================================
-function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    dim as CWSTR wszCaption = AfxGetListBoxText( hListBox, nLineNum )
-    return AfxStrParse( wszCaption, nColNum + 1, chr(9) )
-end function
-
-
-' ========================================================================================
-' frmListView_DeleteAllItems
-' ========================================================================================
-function frmListView_DeleteAllItems( byval hLV as HWND ) as long
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    ListBox_ResetContent( hListBox )
-    AfxRedrawWindow( hListBox )
-    return 0
-end function
-
-
-' ========================================================================================
-' frmListView_GetCount
-' ========================================================================================
-function frmListView_GetCount( byval hLV as HWND ) as long
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    return ListBox_GetCount( hListBox )
-end function
-
-
-' ========================================================================================
-' frmListView_SelectItem
-' ========================================================================================
-function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    return ListBox_SetCurSel( hListBox, nLineNum )
-end function
-
-
-' ========================================================================================
-' frmListView_AddString
-' ========================================================================================
-function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
-    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
-    ListBox_AddString( hListBox, wszText.vptr )
-    AfxRedrawWindow( hListBox )
-    return 0
-end function
-
-
-
-' ========================================================================================
-' frmListView_AddColumn
-' ========================================================================================
-function frmListView_AddColumn( _
-            byval hLV as HWND, _
-            byval nColNum as long, _
-            byval wszText as CWSTR, _
-            byval nWidth as long _
-            ) as long
-    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
-    if pData = 0 then return 1
-    
-    dim as long ub = ubound(pData->ColData)
-    if nColNum > ub then
-        redim preserve pData->ColData(nColNum)
-    end if
-    pData->ColData(nColNum).wszText = wszText
-    pData->ColData(nColNum).nWidth = nWidth
-    
-    return 0
-end function
-
-
-' ========================================================================================
-' frmListView_SetForeColors
-' ========================================================================================
-function frmListView_SetForeColors( _
-            byval hLV as HWND, _
-            byval ForeColor as COLORREF, _
-            byval ForeColorHot as COLORREF _
-            ) as long
-    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
-    if pData = 0 then return 1
-    
-    pData->ForeColor = ForeColor
-    pData->ForeColorHot = ForeColorHot
-    
-    return 0
-end function
-
-
-' ========================================================================================
-' frmListView_SetBackColors
-' ========================================================================================
-function frmListView_SetBackColors( _
-            byval hLV as HWND, _
-            byval BackColor as COLORREF, _
-            byval BackColorHot as COLORREF _
-            ) as long
-    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
-    if pData = 0 then return 1
-    
-    pData->BackColor = BackColor
-    pData->BackColorHot = BackColorHot
-    
-    return 0
 end function
 
 
@@ -196,7 +64,7 @@ function frmListViewHeader_SubclassProc ( _
 
     select case uMsg
 
-        Case WM_MOUSEMOVE
+        case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
             dim tme as TrackMouseEvent
@@ -220,8 +88,6 @@ function frmListViewHeader_SubclassProc ( _
             if hiword(idx) <> 1 then
             end if
                     
-        case WM_LBUTTONDBLCLK 
-                
         case WM_ERASEBKGND
             return true
         
@@ -256,7 +122,7 @@ function frmListViewHeader_SubclassProc ( _
 
             return 0
 
-        case WM_DESTROY
+        case WM_NCDESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmListViewHeader_SubclassProc, uIdSubclass )
     end select
@@ -281,6 +147,14 @@ function frmListViewListBox_SubclassProc ( _
 
     dim pWindow as CWindow ptr = AfxCWindowPtr(GetParent(hWin))
     static as long accumDelta
+
+    ' Convert our ENTER key presses into LBUTTONDBLCLK to process them similarly
+    dim as boolean bEnterPressed = false
+    if (uMsg = WM_KEYUP) andalso (loword(_wParam) = VK_RETURN) then 
+        uMsg = WM_LBUTTONDBLCLK
+        bEnterPressed = true
+    end if
+    
     
     select case uMsg
         
@@ -303,21 +177,21 @@ function frmListViewListBox_SubclassProc ( _
                 frmListView_PositionWindows(hWin)
             end if
 
-        Case WM_MOUSEMOVE
-            ' Track that we are over the control in order to catch the 
-            ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
-            dim tme as TrackMouseEvent
-            tme.cbSize = sizeof(TrackMouseEvent)
-            tme.dwFlags = TME_HOVER or TME_LEAVE
-            tme.hwndTrack = hWin
-            tme.dwHoverTime = 1    ' HOVER_DEFAULT is 500
-            TrackMouseEvent(@tme) 
+'        Case WM_MOUSEMOVE
+'            ' Track that we are over the control in order to catch the 
+'            ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
+'            dim tme as TrackMouseEvent
+'            tme.cbSize = sizeof(TrackMouseEvent)
+'            tme.dwFlags = TME_HOVER or TME_LEAVE
+'            tme.hwndTrack = hWin
+'            tme.dwHoverTime = 1    ' HOVER_DEFAULT is 500
+'            TrackMouseEvent(@tme) 
             
-        case WM_MOUSEHOVER
+'        case WM_MOUSEHOVER
             
-        case WM_MOUSELEAVE
+'        case WM_MOUSELEAVE
             
-        case WM_RBUTTONDOWN
+'        case WM_RBUTTONDOWN
             
         case WM_LBUTTONUP
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
@@ -329,18 +203,25 @@ function frmListViewListBox_SubclassProc ( _
             end if
                     
         case WM_LBUTTONDBLCLK 
-                
-        case WM_ERASEBKGND
-            return true
+            dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
+            if (hiword(idx) <> 1) orelse (bEnterPressed = true) then
+                SetDocumentErrorPosition( GetParent(hWin), gCompile.CompileID )    
+            end if
+            exit function
+        
+        case WM_KEYUP
+            select case loword(_wParam)
+                case VK_RETURN  ' already processed in WM_LBUTTONDBLCLK 
+            end select
+            exit function
 
-        case WM_PAINT
-            ' First let default painting occur
-            dim ps as PAINTSTRUCT
-            dim hdc as HDC = BeginPaint(hWin, @ps)
-            DefSubclassProc(hWin, uMsg, _wParam, _lParam)
-            
+        case WM_CHAR   ' prevent the annoying beep!
+            if _wParam = VK_RETURN then return 0
+            if _wParam = VK_ESCAPE then return 0
+                            
+        case WM_ERASEBKGND
             ' Get item height and client size
-            dim as RECT rcClient = AfxGetWindowClientRect(hWin)
+            dim as RECT rcClient: GetClientRect(hWin, @rcClient)
             dim as long itemHeight = SendMessage(hWin, LB_GETITEMHEIGHT, 0, 0)
             dim as long itemCount  = SendMessage(hWin, LB_GETCOUNT, 0, 0)
             dim as long paintedHeight = itemCount * itemHeight
@@ -349,13 +230,14 @@ function frmListViewListBox_SubclassProc ( _
             if paintedHeight < rcClient.bottom then
                 dim as RECT rcFill
                 SetRect( @rcFill, 0, paintedHeight, rcClient.right, rcClient.bottom )
-                PaintRect( hdc, @rcFill, ghOutput.BackColor )
-            End If
+                dim as HBRUSH hbr = CreateSolidBrush( ghOutput.BackColor )
+                dim as HDC hdc = cast(HDC, _wParam)
+                FillRect( hdc, @rcFill, hbr )
+            end if
+            
+            return true
 
-            EndPaint(hWin, @ps)
-            Return 0
-
-        case WM_DESTROY
+        case WM_NCDESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmListViewListBox_SubclassProc, uIdSubclass )
     end select
@@ -406,6 +288,7 @@ function frmListView_OnDrawItem( _
         if ListBox_GetCurSel(lpdis->hwndItem) = lpdis->itemID then IsHot = true
 
         dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hwnd)
+
         if pData then 
             dim as COLORREF backclr = iif( IsHot, pData->BackColorHot, pData->BackColor)
             dim as COLORREF foreclr = iif( IsHot, pData->ForeColorHot, pData->ForeColorHot)
@@ -427,7 +310,7 @@ function frmListView_OnDrawItem( _
             dim as long nCount = AfxStrParseCount(wszCaption, chr(9))
             for i as long = 0 to nCount - 1
                 rcText.right = rcText.left + pData->ColData(i).nWidth
-                ' offset the left margin ever so slighly
+                ' offset the left margin ever so slightly
                 rcText.left += pWindow->ScaleX(4)
                 dim as CWSTR wszText = AfxStrParse(wszCaption, i + 1, chr(9)) 
                 b.PaintText( wszText, @rcText, DT_LEFT )
@@ -562,8 +445,6 @@ function frmListView_Show( byval hwndParent as hwnd ) as HWND
     dim pWindow as CPanelWindow ptr = new CPanelWindow
 
     dim as HWND hLV = pWindow->Create( hwndParent, @frmListView_WndProc, 0, 0, 0, 0 )
-    ' Disable background erasing by only assigning the one style
-    pWindow->ClassStyle = CS_DBLCLKS
 
     dim as LISTVIEW_DATA_TYPE ptr pData = new LISTVIEW_DATA_TYPE
     pWindow->UserData(0) = cast(LONG_PTR, pData)
@@ -573,14 +454,14 @@ function frmListView_Show( byval hwndParent as hwnd ) as HWND
 
     dim as HWND hHeader = _
         pWindow->AddControl( "LABEL", , IDC_FRMLISTVIEW_HEADER, "", 0, 0, 0, EXPLORERITEM_HEIGHT_COMPACT, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_NOTIFY or SS_LEFT, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or SS_NOTIFY or SS_LEFT, _
         WS_EX_LEFT or WS_EX_LTRREADING, , _
         cast(SUBCLASSPROC, @frmListViewHeader_SubclassProc), _
         IDC_FRMLISTVIEW_HEADER, cast(DWORD_PTR, @pWindow))
 
     dim as HWND hListBox = _
-        pWindow->AddControl("LISTBOX", , IDC_FRMLISTVIEW_LISTBOX, "", 0, 0, 0, 0, _
-        WS_CHILD or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
+        pWindow->AddControl( "LISTBOX", , IDC_FRMLISTVIEW_LISTBOX, "", 0, 0, 0, 0, _
+        WS_CHILD or WS_VISIBLE or WS_CLIPSIBLINGS or WS_CLIPCHILDREN or WS_TABSTOP or _
         LBS_NOINTEGRALHEIGHT or LBS_OWNERDRAWFIXED or LBS_HASSTRINGS or LBS_NOTIFY, _
         WS_EX_LEFT or WS_EX_RIGHTSCROLLBAR, , _
         cast(SUBCLASSPROC, @frmListViewListBox_SubclassProc), _
@@ -591,6 +472,8 @@ function frmListView_Show( byval hwndParent as hwnd ) as HWND
 '        pWindowPanel->Create( HWND_FRMPANEL, @frmPanelVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_PANEL, 0 )
 '    pWindow->ClassStyle = CS_DBLCLKS
 
+    frmListView_PositionWindows(hLV)
+    
     function = hLV
     
 end function

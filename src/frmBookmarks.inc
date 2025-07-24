@@ -450,21 +450,21 @@ function frmBookmarksListBox_SubclassProc ( _
             ' that won't be displayed at the bottom of the list.
             dim as RECT rc: GetClientRect( hWin, @rc )
 
-            dim as RECT rcItem
+            dim as RECT rcItem  
             SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
             dim as long itemHeight = rcItem.bottom - rcItem.top
             dim as long NumItems = ListBox_GetCount(hWin)
-            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 )
+            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
             dim as long visible_rows = 0
             dim as long ItemsPerPage = 0
             dim as long bottom_index = 0
-
+                        
             if NumItems > 0 then
                 ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-                bottom_index = (nTopIndex + ItemsPerPage)
+                bottom_index = (nTopIndex + ItemsPerPage) 
                 if bottom_index >= NumItems then bottom_index = NumItems - 1
                 visible_rows = (bottom_index - nTopIndex) + 1
-                rc.top = visible_rows * itemHeight
+                rc.top = visible_rows * itemHeight 
             end if
 
             if rc.top < rc.bottom then

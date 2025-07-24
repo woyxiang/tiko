@@ -32,17 +32,5 @@ end type
 
 
 declare function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
-declare function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
-declare function frmListView_GetCount( byval hLV as HWND ) as long
-declare function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
-declare function frmListView_DeleteAllItems( byval hLV as HWND ) as long
-declare function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
-declare function frmListView_GetSelection( byval hLV as HWND ) as long
-declare function frmListView_AddColumn( _
-    byval hLV as HWND, byval nColNum as long, byval wszText as CWSTR, byval nWidth as long ) as long
-declare function frmListView_SetForeColors( _
-    byval hLV as HWND, byval ForeColor as COLORREF, byval ForeColorHot as COLORREF ) as long
-declare function frmListView_SetBackColors( _
-    byval hLV as HWND, byval BackColor as COLORREF, byval BackColorHot as COLORREF ) as long
 declare function frmListView_Show( byval hwndParent as hwnd ) as HWND
 

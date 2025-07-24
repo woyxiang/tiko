@@ -120,6 +120,7 @@ function frmExplorer_SelectItemData( byval pDoc as clsDocument ptr ) as boolean
     if idx <> -1 then
         ListBox_SetSel( HWND_FRMEXPLORER_LISTBOX, true, idx )
         AfxRedrawWindow( HWND_FRMEXPLORER_LISTBOX )
+        AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
     end if
     
     if idx >= 0 then function = true   
@@ -553,6 +554,7 @@ function frmExplorerListBox_SubclassProc ( _
             ' calculate from last item to bottom of listbox, otherwise calculate based on
             ' the mod of the lineheight to listbox height so we can color the partial line
             ' that won't be displayed at the bottom of the list.
+            ' Get item height and client size
             dim as RECT rc: GetClientRect( hWin, @rc )
 
             dim as RECT rcItem  
@@ -579,7 +581,7 @@ function frmExplorerListBox_SubclassProc ( _
 
             ValidateRect( hWin, @rc )
             return true
-        
+            
         Case WM_DESTROY
             ' REQUIRED: Remove control subclassing
             RemoveWindowSubclass( hWin, @frmExplorerListBox_SubclassProc, uIdSubclass )

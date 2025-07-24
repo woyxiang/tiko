@@ -152,14 +152,7 @@ function code_Compile( byval wID as long ) as boolean
         gCompile.MainFilename = gCompile.MainFolder & QUICKRUNBAS
         gCompile.MainName     = AfxStrPathname("NAME", gCompile.MainFilename)
         
-        dim as CWSTR wszText
-        wszText.Utf8 = pDocMain->GetText() 
-
-        dim pStream as CTextStream   '(utf16)
-        if pStream.Create(gCompile.MainFilename, true, true) = S_OK then 
-            pStream.WriteLine wszText            
-        end if
-        pStream.Close 
+        pDocMain->SaveTempFile( gCompile.MainFilename )
 
     else
         gCompile.MainFilename = pDocMain->DiskFilename

@@ -80,7 +80,7 @@ function frmPanelVScroll_WndProc( _
             if PtInRect( @rc, pt ) then
                 prev_pt = pt
                 gApp.bDragActive = true
-                SetCapture( HWnd )
+                SetCapture( hwnd )
             else
                 ' we have clicked on a PageUp or PageDn
                 dim as long nTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
@@ -105,7 +105,6 @@ function frmPanelVScroll_WndProc( _
                 dim as point pt: GetCursorPos( @pt )
                 if pt.y <> prev_pt.y then 
                     dim as long delta = pt.y - prev_pt.y 
-                    ' convert to client coordinates for ease of use
                     dim as RECT rc: GetClientRect( HWND_FRMPANEL_VSCROLLBAR, @rc )
 
                     gPanelVScroll.rc.top = max(0, gPanelVScroll.rc.top + delta)
@@ -135,6 +134,8 @@ function frmPanelVScroll_WndProc( _
             return true
             
         case WM_PAINT
+            frmPanelVScroll_calcVThumbRect()
+            
             dim as clsDoubleBuffer b
 
             b.BeginDoubleBuffer(hwnd)
@@ -281,8 +282,8 @@ function frmPanel_PositionWindows() as LRESULT
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)
     end with
         
-    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
     AfxRedrawWindow( gPanelVScroll.hListBox )
+    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
     AfxRedrawWindow( HWND_FRMPANEL )
 
     ' Ensure that the panel menu selected item is in sync with the pane

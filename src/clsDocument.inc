@@ -66,7 +66,10 @@ function clsDocument.ParseDocument() as boolean
     dim parser as ctxParser
     parser.nFileType = DB2_FILETYPE_USERCODE
     parser.parse(@this)
-    frmOutput_UpdateToDoListview()
+    
+    if gApp.IsProjectLoading = false then
+        frmOutput_UpdateToDoListview()
+    end if
     
     bInParseDocument = false
     return true
@@ -521,6 +524,84 @@ function clsDocument.SaveFile( byval bSaveAs as boolean = false ) as boolean
     ' Set the current state of the document to unmodified
     this.UserModified = false   
     SciMsg( pSci, SCI_SETSAVEPOINT, 0, 0)
+    
+    function = false
+end function
+
+
+''
+''
+function clsDocument.SaveTempFile( byval wszFilename as CWSTR ) as boolean
+    ' Save this document as a temp disk file in order to Quick Run
+    dim as any ptr pSci = this.GetActiveScintillaPtr()
+    
+    ' if pSci does not exist then this file exists in the Explorer but has not yet been
+    ' displayed in order to create a Scintilla window. Simply need to exit.
+    if pSci = 0 then return true
+    
+    ' Save text buffer to disk by directly accessing buffer rather
+    ' saving it to an intermediary string variable first.
+    dim as zstring ptr psz = cast( zstring ptr, SciExec(this.hWindow(0), SCI_GETCHARACTERPOINTER, 0, 0) )
+    dim as long sciCodePage = SciMsg(pSci, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
+
+    dim as CWSTR wszSaveFilename
+    if AfxFileExists(wszFilename) then AfxDeleteFile(wszFilename)
+    wszSaveFilename = wszFilename
+
+    dim pStream as CFileStream
+    if pStream.Open(wszSaveFilename, STGM_CREATE or STGM_WRITE) = S_OK then
+        dim as CWSTR wst          
+        dim as string st
+        select case this.FileEncoding
+            case FILE_ENCODING_ANSI
+                if sciCodePage = 0 then    
+                   pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                   ' need to convert
+                   st = Utf8ToAnsi(*psz)
+                   pStream.Write strptr(st), len(st) 
+                end if    
+                
+            case FILE_ENCODING_UTF8
+                if sciCodePage = SC_CP_UTF8 then    
+                   ' no conversion necessary
+                   pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                   ' need to convert
+                   st = AnsiToUtf8(*psz)
+                   pStream.Write strptr(st), len(st)
+                end if    
+
+            case FILE_ENCODING_UTF8_BOM
+                ' Output the BOM first
+                st = chr(&HEF, &HBB, &HBF)
+                pStream.Write strptr(st), len(st)
+                if sciCodePage = SC_CP_UTF8 then    
+                   ' no conversion necessary
+                   pStream.Write psz, len(*psz)     ' no conversion necessary
+                else
+                   ' need to convert
+                   st = AnsiToUtf8(*psz)
+                   pStream.Write strptr(st), len(st)
+                end if    
+
+            case FILE_ENCODING_UTF16_BOM
+                ' Output the BOM first
+                st = chr(&HFF, &HFE)
+                pStream.Write strptr(st), len(st)
+                if sciCodePage = SC_CP_UTF8 then    
+                   ' convert utf8 to utf16
+                   wst.Utf8 = *psz  ' convert the utf *psz from Utf8
+                   pStream.Write wst.m_pBuffer, wst.m_BufferLen
+                else
+                    ' need to convert ansi to unicode
+                    dim as CWSTR wst = Wstr(*psz)
+                    pStream.Write wst.m_pBuffer, wst.m_BufferLen
+                end if    
+                
+        end select
+    end if
+    pStream.Close
     
     function = false
 end function

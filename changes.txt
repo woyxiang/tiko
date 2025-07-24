@@ -1,6 +1,8 @@
 Version 1.2.1 (July xxx, 2025)
 - Changed: Improved the algorithm for likely determining if (non-BOM) files being loaded are ANSI or UTF-8.
+- Changed: Quick Run now saves the temporary source file with the current editor encoding (rather than always UTF-16).
 - Fixed: Changing file encoding from Unicode to ANSI would not always prompt to save the new encoding to disk.
+- Fixed: Explorer Panel vertical scrollbar positioning not getting immediately updated when document changed.
 
 Version 1.2.0 (July 21, 2025)
 - Added: Build Configuration. Can now assign user defined keyboard shortcut to each configuration.

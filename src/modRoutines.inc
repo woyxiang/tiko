@@ -18,6 +18,164 @@
 #include once "frmProjectOptions.bi"
 #include once "frmUserTools.bi"
 #include once "frmMain.bi"
+#include once "frmListView.bi"
+
+
+' ========================================================================================
+' Get the pData pointer stored in UserData(0) of the pWindow
+' ========================================================================================
+function frmListView_GetPointer( byval hLV as HWND ) as LISTVIEW_DATA_TYPE ptr
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hLV)
+    if pWindow = 0 then return 0
+    
+    ' The ListView's data is stored in the pWindow CWindow UserData(0).
+    if pWindow->UserData(0) = 0 then return 0
+    
+    return cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0))
+end function
+
+
+' ========================================================================================
+' frmListView_GetSelection
+' ========================================================================================
+function frmListView_GetSelection( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_GetCurSel( hListBox )
+end function
+
+
+' ========================================================================================
+' frmListView_GetItemText
+' ========================================================================================
+function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    dim as CWSTR wszCaption = AfxGetListBoxText( hListBox, nLineNum )
+    return AfxStrParse( wszCaption, nColNum + 1, chr(9) )
+end function
+
+
+' ========================================================================================
+' frmListView_DeleteAllItems
+' ========================================================================================
+function frmListView_DeleteAllItems( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    ListBox_ResetContent( hListBox )
+
+    'TODO: Code in ownerdraw listboxes not painting unused client space
+    'TODO: unless at least one item exists. Still investigating this.
+    dim as CWSTR wszText = "" & chr(9) & "" & chr(9) & "" & chr(9) & ""
+    ListBox_AddString( hListBox, wszText.vptr )
+
+    AfxRedrawWindow( hListBox )
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_DeleteBlankFirstLine
+' Necessary because of the ownerdraw listbox repaint problem with empty listboxes
+' ========================================================================================
+function frmListView_DeleteBlankFirstLine( byval hLV as HWND ) as long
+    ' Only process if more than one string exists
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    if ListBox_GetCount( hListBox ) <= 1 then exit function
+
+    dim as CWSTR wszCaption = ltrim(AfxGetListBoxText(hListBox, 0), chr(9))
+    if len(wszCaption) = 0 then
+        ListBox_DeleteString( hListBox, 0 )
+    end if
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_GetCount
+' ========================================================================================
+function frmListView_GetCount( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_GetCount( hListBox )
+end function
+
+
+' ========================================================================================
+' frmListView_SelectItem
+' ========================================================================================
+function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_SetCurSel( hListBox, nLineNum )
+end function
+
+
+' ========================================================================================
+' frmListView_AddString
+' ========================================================================================
+function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    ListBox_AddString( hListBox, wszText.vptr )
+    AfxRedrawWindow( hListBox )
+    return 0
+end function
+
+
+
+' ========================================================================================
+' frmListView_AddColumn
+' ========================================================================================
+function frmListView_AddColumn( _
+            byval hLV as HWND, _
+            byval nColNum as long, _
+            byval wszText as CWSTR, _
+            byval nWidth as long _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    dim as long ub = ubound(pData->ColData)
+    if nColNum > ub then
+        redim preserve pData->ColData(nColNum)
+    end if
+    pData->ColData(nColNum).wszText = wszText
+    pData->ColData(nColNum).nWidth = nWidth
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_SetForeColors
+' ========================================================================================
+function frmListView_SetForeColors( _
+            byval hLV as HWND, _
+            byval ForeColor as COLORREF, _
+            byval ForeColorHot as COLORREF _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    pData->ForeColor = ForeColor
+    pData->ForeColorHot = ForeColorHot
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_SetBackColors
+' ========================================================================================
+function frmListView_SetBackColors( _
+            byval hLV as HWND, _
+            byval BackColor as COLORREF, _
+            byval BackColorHot as COLORREF _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    pData->BackColor = BackColor
+    pData->BackColorHot = BackColorHot
+    
+    return 0
+end function
 
 
 ' ========================================================================================

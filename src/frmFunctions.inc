@@ -26,7 +26,7 @@ function frmFunctions_ReparseFiles() as long
     '  where the file is never physically saved.
     dim pDoc as clsDocument ptr = gApp.pDocList
     do until pDoc = 0
-        If cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) or pDoc->UserModified then
+        If cbool(SciExec( pDoc->hWindow(0), SCI_GETMODIFY, 0, 0 )) orelse pDoc->UserModified then
             pDoc->bNeedsParsing = true
             pDoc->ParseDocument()
         end if

@@ -33,7 +33,7 @@ end function
 ' ========================================================================================
 function frmOutput_ShowNotes() as long 
 
-    dim hCtl as HWND = GETDLGITEM(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES)
+    dim hCtl as HWND = GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES)
 
     if gApp.IsProjectActive then
         AfxSetWindowText(hCtl, gApp.ProjectNotes)
@@ -66,8 +66,10 @@ function frmOutput_UpdateToDoListview() as long
             ltrim(wstr(pData->nLineStart)) & chr(9) & _
             ltrim(wstr(pData->fileName)) & chr(9) & _
             ltrim(wstr(pData->ElementData))
-        frmListView_AddString( hLV, wszText )    
+        frmListView_AddString( hLV, wszText )
     loop until pData = 0
+
+    frmListView_DeleteBlankFirstLine( hLV )
 
     function = 0
 end function
@@ -109,6 +111,8 @@ function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as lon
         frmListView_AddString( hLV, wszText )
     loop
     pStream.Close
+    
+    frmListView_DeleteBlankFirstLine( hLV )
 
     AfxDeleteFile( wszResultFile )
     
@@ -132,10 +136,10 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
     if pWindow = 0 then exit function
 
-    ' By default, hide all controls
     ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS), SW_SHOW
     AfxRedrawWindow( GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS) )
     
+    ' By default, hide all controls
     ShowWindow HWND_FRMOUTPUT_LVRESULTS, SW_HIDE
     ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE), SW_HIDE
     ShowWindow HWND_FRMOUTPUT_LVSEARCH, SW_HIDE
@@ -149,6 +153,10 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
 
         case 1    ' compiler log file
             hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE)
+            dim as CWSTR wszText = ltrim(AfxGetWindowText(hCtrl))
+            if wszText = "" then
+               AfxSetWindowText(hCtrl, "No compiler log file exists.")
+            end if   
             GetClientRect( hCtrl, @rc )
             rc.left = rc.left + pWindow->ScaleX(20)
             SendMessage( hCtrl, EM_SETRECT, 0, cast(LPARAM, @rc) )
@@ -157,8 +165,7 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
             hCtrl = HWND_FRMOUTPUT_LVSEARCH
             hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
 
-        case 3    ' ToDo list
-            ' ensure last column is sized to fit to end of client area.
+        case 3    ' TODO list
             hCtrl = HWND_FRMOUTPUT_LVTODO
             hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
 
@@ -167,6 +174,7 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
             GetClientRect( hCtrl, @rc )
             rc.left = rc.left + pWindow->ScaleX(20)
             SendMessage( hCtrl, EM_SETRECT, 0, cast(LPARAM, @rc) )
+            SetFocus( hCtrl )
     
     end select
     
@@ -835,15 +843,15 @@ function frmOutput_SetControlColors() as long
     
     hCtl = HWND_FRMOUTPUT_LVRESULTS 
     frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
-    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.BackColorHot )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghPopup.BackColor )
 
     hCtl = HWND_FRMOUTPUT_LVSEARCH
     frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
-    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.BackColorHot )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghPopup.BackColor )
 
     hCtl = HWND_FRMOUTPUT_LVTODO 
     frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
-    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.BackColorHot )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghPopup.BackColor )
 
     function = 0
 end function
@@ -908,7 +916,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
         frmOutput_ShowNotes()   
 
-    ' Compiler output Listview
+    ' Compiler Results Listview
     hLV = frmListView_Show( HWND_FRMOUTPUT )
         frmListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
         frmListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
@@ -916,15 +924,13 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         frmListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
         HWND_FRMOUTPUT_LVRESULTS = hLV
 
-    
-    ' Search results Listview
+    ' Search Listview
     hLV = frmListView_Show( HWND_FRMOUTPUT )
         frmListView_AddColumn( hLV, 0, "", pWindow->ScaleX(20) )
         frmListView_AddColumn( hLV, 1, L(253, "Line"), pWindow->ScaleX(75) )
         frmListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
         frmListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
         HWND_FRMOUTPUT_LVSEARCH = hLV
-
 
     ' TODO listview
     hLV = frmListView_Show( HWND_FRMOUTPUT )
