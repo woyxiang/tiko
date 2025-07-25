@@ -32,15 +32,27 @@ function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
     dim as long nClientWidth = rc.right - rc.left
     dim as long nClientHeight = rc.bottom - rc.top
     dim as long nHeaderHeight = AfxGetWindowHeight(pData->hHeader)
+    dim as long nVScrollWidth = AfxGetWindowWidth(pData->hVScroll)
     
     SetWindowPos( pData->hHeader, 0, _
-        0, 0, nClientWidth, nHeaderHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
+        0, 0, nClientWidth - nVScrollWidth, nHeaderHeight, _
+        SWP_NOZORDER or SWP_SHOWWINDOW )
     
+    SetWindowPos( pData->hVScroll, 0, _
+        nClientWidth - nVScrollWidth, nHeaderHeight, _
+        nVScrollWidth, nClientHeight - nHeaderHeight, _
+        SWP_NOZORDER or SWP_SHOWWINDOW )
+
     SetWindowPos( pData->hListBox, 0, _
-        0, nHeaderHeight, nClientWidth, nClientHeight - nHeaderHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
+        0, nHeaderHeight, _
+        nClientWidth - nVScrollWidth, nClientHeight - nHeaderHeight, _
+        SWP_NOZORDER or SWP_SHOWWINDOW )
     
     AfxRedrawWindow(pData->hHeader)
     AfxRedrawWindow(pData->hListBox)
+    
+    frmListViewVScroll_calcVThumbRect( hLV )
+    AfxRedrawWindow(pData->hVScroll)
 
     function = 0
 end function
@@ -150,7 +162,7 @@ function frmListViewVScroll_WndProc( _
                     AfxRedrawWindow( pData->hVScroll )
                 end if
             end if
-            
+
         case WM_LBUTTONUP   
             gApp.bDragActive = false
             prev_pt.x = 0
@@ -166,7 +178,7 @@ function frmListViewVScroll_WndProc( _
             b.BeginDoubleBuffer(hwnd)
             b.SetBackColors( pData->BackColor, pData->BackColor )
             b.PaintClientRect()
-            b.SetBackColors( pData->ForeColorHot, pData->ForeColorHot )
+            b.SetBackColors( pData->BackColorHot, pData->BackColorHot )
             b.PaintRect( @pData->VScrollData.rc )
 
             b.EndDoubleBuffer()

@@ -67,9 +67,7 @@ function clsDocument.ParseDocument() as boolean
     parser.nFileType = DB2_FILETYPE_USERCODE
     parser.parse(@this)
     
-    if gApp.IsProjectLoading = false then
-        frmOutput_UpdateToDoListview()
-    end if
+    frmOutput_UpdateToDoListview()
     
     bInParseDocument = false
     return true

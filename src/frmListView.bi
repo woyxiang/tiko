@@ -37,6 +37,7 @@ type LISTVIEW_DATA_TYPE
 end type
 
 
+declare function frmListViewVScroll_calcVThumbRect( byval hLV as HWND ) as boolean
 declare function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
 declare function frmListView_Show( byval hwndParent as hwnd ) as HWND
 

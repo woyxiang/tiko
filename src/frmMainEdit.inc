@@ -169,7 +169,7 @@ function OnCommand_EditSelectAll( _
             GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE), _ 
             GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTFIND), _
             GetDlgItem(HWND_FRMFINDREPLACE, IDC_FRMFINDREPLACE_TXTREPLACE)
-            Edit_SetSel( GetFocus, 0, -1 )
+            Edit_SetSel( GetFocus(), 0, -1 )
         case else     
             SciExec(hEdit, SCI_SELECTALL, 0, 0)
     end select

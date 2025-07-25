@@ -49,6 +49,8 @@ end function
 ' Update the TODO listview
 ' ========================================================================================
 function frmOutput_UpdateToDoListview() as long 
+    if gApp.IsProjectLoading then exit function
+
     dim as hwnd hLV = HWND_FRMOUTPUT_LVTODO
     frmListView_DeleteAllItems( hLV )
     
@@ -131,6 +133,7 @@ end function
 function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     dim as HWND hCtrl
     dim as HWND hListBox
+    dim as HWND hVScroll
     dim as RECT rc
     
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
@@ -150,6 +153,8 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
         case 0    ' compiler results
             hCtrl = HWND_FRMOUTPUT_LVRESULTS
             hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
+            dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hCtrl)
+            if pData = 0 then hVScroll = pData->hVScroll
 
         case 1    ' compiler log file
             hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE)
@@ -164,10 +169,14 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
         case 2    ' search results
             hCtrl = HWND_FRMOUTPUT_LVSEARCH
             hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
+            dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hCtrl)
+            if pData = 0 then hVScroll = pData->hVScroll
 
         case 3    ' TODO list
             hCtrl = HWND_FRMOUTPUT_LVTODO
             hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
+            dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hCtrl)
+            if pData = 0 then hVScroll = pData->hVScroll
 
         case 4    ' Notes
             hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES)
@@ -182,6 +191,11 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     AfxRedrawWindow( hCtrl )
 
     if hListBox then AfxRedrawWindow( hListBox )
+    
+    if hVScroll then 
+        frmListViewVScroll_calcVThumbRect( hCtrl )
+        AfxRedrawWindow( hVScroll )
+    end if
             
     function = 0
 end function
@@ -755,25 +769,27 @@ function frmOutput_RichEdit_SubclassProc ( _
             dim as CWSTR wszText = RichEdit_GetSelText( hWin )
             dim hPopUpMenu as HMENU = CreatePopupMenu()
             if len(wszText) then 
-                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_CUT, wstr("Cut") )
-                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_COPY, wstr("Copy") )
+                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_CUT, L(17,"Cut") )
+                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_COPY, L(18,"Copy") )
             end if
             if RichEdit_CanPaste( hWin, 0 ) then
-                if len(wszText) then 
-                    AppendMenu( hPopUpMenu, MF_SEPARATOR, 0, "" )
-                end if   
-                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_PASTE, wstr("Paste") )
+                AppendMenu( hPopUpMenu, MF_ENABLED, IDM_PASTE, L(19,"Paste") )
             end if   
+            AppendMenu( hPopUpMenu, MF_ENABLED, IDM_SELECTALL, L(40,"Select All") )
 
             dim as long nResult
             nResult = TrackPopupMenu( hPopUpMenu, TPM_RETURNCMD or TPM_NONOTIFY, _
                             loword(_lParam), hiword(_lParam), 0, HWND_FRMOUTPUT, 0 ) 
+            SetFocus( hWin )
             select case nResult
-                case IDM_CUT:   SendMessage( hWin, WM_CUT, 0, 0 )
-                case IDM_COPY:  SendMessage( hWin, WM_COPY, 0, 0 )
-                case IDM_PASTE: SendMessage( hWin, WM_PASTE, 0, 0 )
+                case IDM_CUT:       SendMessage( hWin, WM_CUT, 0, 0 )
+                case IDM_COPY:      SendMessage( hWin, WM_COPY, 0, 0 )
+                case IDM_PASTE:     SendMessage( hWin, WM_PASTE, 0, 0 )
+                case IDM_SELECTALL
+                    PostMessage( HWND_FRMOUTPUT, MSG_USER_RICHEDIT_SELECTALL, cast(WPARAM, hWin), 0 )
             end select
             DestroyMenu hPopUpMenu
+            
 
         case WM_DESTROY
             ' REQUIRED: Remove control subclassing
@@ -803,6 +819,11 @@ function frmOutput_WndProc( _
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,     frmOutput_OnMouseMove)
         HANDLE_MSG (hwnd, WM_LBUTTONDBLCLK, frmOutput_OnLButtonDblClk)
         HANDLE_MSG (hwnd, WM_DESTROY,       frmOutput_OnDestroy)
+
+    case MSG_USER_RICHEDIT_SELECTALL
+        dim as HWND hCtrl = cast(HWND, wParam) 
+        SetFocus( hCtrl )
+        Edit_SetSel( hCtrl, 0, -1 )
 
     case WM_ERASEBKGND
         return true
