@@ -224,7 +224,7 @@ function frmListViewHeader_SubclassProc ( _
             ) as LRESULT
 
     select case uMsg
-d
+
         case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
