@@ -181,7 +181,7 @@ type OUTPUT_HANDLES_TYPE
     CloseBackColorHot as COLORREF
     BackColorScrollBar as COLORREF
     ForeColorScrollBar as COLORREF
-    Divider as COLORREF
+    ScrollBarDivider as COLORREF
 end type
 dim shared ghOutput as OUTPUT_HANDLES_TYPE
 
@@ -524,8 +524,8 @@ function LoadThemeFile() as boolean
     pTheme = getThemePtr("output.scrollbar")
     ghOutput.ForeColorScrollBar = pTheme->foreground
     ghOutput.BackColorScrollBar = pTheme->background
-    pTheme = getThemePtr("output.divider")
-    ghOutput.Divider = pTheme->foreground
+    pTheme = getThemePtr("output.scrollbardivider")
+    ghOutput.ScrollBarDivider = pTheme->foreground
 
     function = false
 

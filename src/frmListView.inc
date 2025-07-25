@@ -190,9 +190,13 @@ function frmListViewVScroll_WndProc( _
             dim as clsDoubleBuffer b
 
             b.BeginDoubleBuffer(hwnd)
-            b.SetBackColors( pData->BackColor, pData->BackColor )
+            b.SetBackColors( pData->BackColorScrollBar, pData->BackColorScrollBar )
             b.PaintClientRect()
-            b.SetBackColors( pData->BackColorHot, pData->BackColorHot )
+            if IsRectEmpty( @pData->VScrollData.rc ) = 0 then
+                b.SetPenColor( pData->DividerColorScrollBar )
+                b.PaintLine( 1, b.rcClient.left, b.rcClient.top, b.rcClient.left, b.rcClient.bottom )
+            end if    
+            b.SetBackColors( pData->ForeColorScrollBar, pData->ForeColorScrollBar )
             b.PaintRect( @pData->VScrollData.rc )
 
             b.EndDoubleBuffer()
@@ -220,7 +224,7 @@ function frmListViewHeader_SubclassProc ( _
             ) as LRESULT
 
     select case uMsg
-
+d
         case WM_MOUSEMOVE
             ' Track that we are over the control in order to catch the 
             ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events

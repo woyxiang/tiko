@@ -849,18 +849,21 @@ function frmOutput_SetControlColors() as long
     hCtl = GetDlgItem( HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES )
     SendMessage( hCtl, EM_SETCHARFORMAT, SCF_ALL, cast(LPARAM, @cf) ) 
     SendMessage( hCtl, EM_SETBKGNDCOLOR , 0, cast(LPARAM, ghOutput.backcolor) )
-    
+
     hCtl = HWND_FRMOUTPUT_LVRESULTS 
     frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
-    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghPopup.BackColor )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.ForeColorScrollBar )
+    frmListView_SetScrollBarColors( hCtl, ghOutput.BackColorScrollBar, ghOutput.ForeColorScrollBar, ghOutput.ScrollBarDivider )
 
     hCtl = HWND_FRMOUTPUT_LVSEARCH
     frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
-    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghPopup.BackColor )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.ForeColorScrollBar )
+    frmListView_SetScrollBarColors( hCtl, ghOutput.BackColorScrollBar, ghOutput.ForeColorScrollBar, ghOutput.ScrollBarDivider )
 
     hCtl = HWND_FRMOUTPUT_LVTODO 
     frmListView_SetForeColors( hCtl, ghOutput.ForeColor, ghOutput.ForeColorHot )
-    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghPopup.BackColor )
+    frmListView_SetBackColors( hCtl, ghOutput.BackColor, ghOutput.ForeColorScrollBar )
+    frmListView_SetScrollBarColors( hCtl, ghOutput.BackColorScrollBar, ghOutput.ForeColorScrollBar, ghOutput.ScrollBarDivider )
 
     function = 0
 end function

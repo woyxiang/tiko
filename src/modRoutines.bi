@@ -81,6 +81,9 @@ declare function frmListView_SetForeColors( _
     byval hLV as HWND, byval ForeColor as COLORREF, byval ForeColorHot as COLORREF ) as long
 declare function frmListView_SetBackColors( _
     byval hLV as HWND, byval BackColor as COLORREF, byval BackColorHot as COLORREF ) as long
+declare function frmListView_SetScrollBarColors( _
+    byval hLV as HWND, byval ScrollBarBackColor as COLORREF, byval ScrollBarForeColor as COLORREF, _
+    byval ScrollBarDividerColor as COLORREF ) as long
 declare function frmListView_GetPointer( byval hLV as HWND ) as LISTVIEW_DATA_TYPE ptr
 declare function frmListView_DeleteBlankFirstLine( byval hLV as HWND ) as long
                                             

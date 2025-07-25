@@ -20,7 +20,7 @@
 #define IDC_FRMLISTVIEW_VSCROLL              1002
 
 type LISTVIEW_COLUMN_TYPE
-    wszText as CWSTR      ' row 0 is the header data
+    wszText as CWSTR            ' row 0 is the header data
     nWidth as long
 end type
 
@@ -33,6 +33,9 @@ type LISTVIEW_DATA_TYPE
     ForeColorHot as COLORREF
     BackColor as COLORREF
     BackColorHot as COLORREF
+    BackColorScrollBar as COLORREF
+    ForeColorScrollBar as COLORREF
+    DividerColorScrollBar as COLORREF
     VScrollData as PANEL_VSCROLL_TYPE
 end type
 

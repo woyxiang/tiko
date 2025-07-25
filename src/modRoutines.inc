@@ -179,6 +179,26 @@ end function
 
 
 ' ========================================================================================
+' frmListView_SetScrollBarColors
+' ========================================================================================
+function frmListView_SetScrollBarColors( _
+            byval hLV as HWND, _
+            byval ScrollBarBackColor as COLORREF, _
+            byval ScrollBarForeColor as COLORREF, _
+            byval ScrollBarDividerColor as COLORREF _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    pData->BackColorScrollBar = ScrollBarBackColor
+    pData->ForeColorScrollBar = ScrollBarForeColor
+    pData->DividerColorScrollBar = ScrollBarDividerColor
+    
+    return 0
+end function
+
+
+' ========================================================================================
 ' If multiple editor instances is disallowed then bring the current active
 ' instance to the foreground and pass it whatever command line was intended
 ' for this instance.

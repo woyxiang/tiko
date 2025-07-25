@@ -142,5 +142,5 @@ output.divider.foreground: 124,127,133
 output.closehot.background: 225,225,225
 output.scrollbar.foreground: 221,221,221
 output.scrollbar.background: %WHITE
-output.divider.foreground: 221,221,221
+output.scrollbardivider.foreground: 221,221,221
 
