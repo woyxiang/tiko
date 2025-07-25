@@ -21,6 +21,48 @@
 
 
 ' ========================================================================================
+' Calculate the RECT that holds the client coordinates of the scrollbar's vertical thumb
+' Returns True if RECT is not empty
+' ========================================================================================
+function frmListViewVScroll_calcVThumbRect( byval hLV as HWND ) as boolean
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then exit function
+
+    dim as integer minThumb = AfxScaleY(SCROLLBAR_MINTHUMBSIZE)
+
+    ' calculate the vertical scrollbar in client coordinates
+    SetRectEmpty( @pData->VScrollData.rc )
+    
+    dim as long nTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
+
+    dim as RECT rc 
+    with pData->VScrollData
+        GetClientRect( pData->hListBox, @rc )
+        .listBoxHeight = rc.bottom - rc.top
+        .itemHeight = SendMessage( pData->hListBox, LB_GETITEMHEIGHT, 0, 0 )
+        .numItems = ListBox_GetCount( pData->hListBox ) 
+        .itemsPerPage = .listBoxHeight / .itemHeight
+        
+        dim as double ratio = .itemsPerPage / .numItems
+        .thumbHeight = int(ratio * .listBoxHeight)
+        if .thumbHeight < minThumb then .thumbHeight = minThumb
+        
+        GetClientRect( pData->hVScroll, @rc )
+        .rc.Left = rc.Left
+        .rc.top = rc.top + ((nTopIndex / .numItems) * .listBoxHeight)
+        .rc.Right = rc.right
+        .rc.bottom = .rc.top + .thumbHeight
+        if .numItems < .itemsPerPage then 
+            SetRectEmpty( @pData->VScrollData.rc )
+            return true
+        end if
+    end with
+
+    function = 0
+end function
+
+
+' ========================================================================================
 ' Position all child windows. Called manually and/or by WM_SIZE
 ' ========================================================================================
 function frmListView_PositionWindows( byval hLV as HWND ) as LRESULT
@@ -59,37 +101,12 @@ end function
 
 
 ' ========================================================================================
-' Calculate the RECT that holds the client coordinates of the scrollbar's vertical thumb
-' Returns True if RECT is not empty
+' Refresh the position and ownerdraw of header, listbox and vertical scrollbar.
 ' ========================================================================================
-function frmListViewVScroll_calcVThumbRect( byval hLV as HWND ) as boolean
+function frmListView_Refresh( byval hLV as HWND ) as LRESULT
     dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
     if pData = 0 then exit function
-
-    ' calculate the vertical scrollbar in client coordinates
-    SetRectEmpty( @pData->VScrollData.rc )
-    
-    dim as long nTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
-
-    dim as RECT rc 
-    with pData->VScrollData
-        GetClientRect( pData->hListBox, @rc )
-        .listBoxHeight = rc.bottom - rc.top
-        .itemHeight = SendMessage( pData->hListBox, LB_GETITEMHEIGHT, 0, 0 )
-        .numItems = ListBox_GetCount( pData->hListBox ) 
-        .itemsPerPage = .listBoxHeight / .itemHeight
-        .thumbHeight = (.itemsPerPage / .numItems) * .listBoxHeight
-        GetClientRect( pData->hVScroll, @rc )
-        .rc.Left = rc.Left
-        .rc.top = rc.top + ((nTopIndex / .numItems) * .listBoxHeight)
-        .rc.Right = rc.right
-        .rc.bottom = .rc.top + .thumbHeight
-        if .numItems < .itemsPerPage then 
-            SetRectEmpty( @pData->VScrollData.rc )
-            return true
-        end if
-    end with
-
+    frmListView_PositionWindows( hLV )
     function = 0
 end function
 
@@ -126,17 +143,14 @@ function frmListViewVScroll_WndProc( _
                 if pt.y < rc.top then
                     nTopIndex = max( nTopIndex - pData->VScrollData.itemsPerPage, 0 )
                     SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-                    frmListViewVScroll_calcVThumbRect(hLV)   ' in client coordinates
-                    AfxRedrawWindow( pData->hVScroll )
-                    AfxRedrawWindow( pData->hListBox )
                 elseif pt.y > rc.bottom then
                     dim as long nMaxTopIndex = pData->VScrollData.numItems - pData->VScrollData.itemsPerPage
                     nTopIndex = min( nTopIndex + pData->VScrollData.itemsPerPage, nMaxTopIndex )
                     SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-                    frmListViewVScroll_calcVThumbRect(hLV)   ' in client coordinates
-                    AfxRedrawWindow( pData->hVScroll )
-                    AfxRedrawWindow( pData->hListBox )
                 end if
+                frmListViewVScroll_calcVThumbRect(hLV)
+                AfxRedrawWindow( pData->hVScroll )
+                AfxRedrawWindow( pData->hListBox )
             end if
             
         case WM_MOUSEMOVE
@@ -298,6 +312,7 @@ function frmListViewListBox_SubclassProc ( _
         bEnterPressed = true
     end if
     
+    dim as HWND hLV = GetParent(hWin)    
     
     select case uMsg
         
@@ -312,30 +327,14 @@ function frmListViewListBox_SubclassProc ( _
                 nTopIndex = max( 0, nTopIndex )
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-                frmListView_PositionWindows(hWin)
+                frmListView_Refresh(hLV)
             elseif accumDelta <= -120 then  ' scroll down 3 lines
                 nTopIndex = nTopIndex + 3
                 SendMessage( hWin, LB_SETTOPINDEX, nTopIndex, 0 ) 
                 accumDelta = 0
-                frmListView_PositionWindows(hWin)
+                frmListView_Refresh(hLV)
             end if
 
-'        Case WM_MOUSEMOVE
-'            ' Track that we are over the control in order to catch the 
-'            ' eventual WM_MOUSEHOVER and WM_MOUSELEAVE events
-'            dim tme as TrackMouseEvent
-'            tme.cbSize = sizeof(TrackMouseEvent)
-'            tme.dwFlags = TME_HOVER or TME_LEAVE
-'            tme.hwndTrack = hWin
-'            tme.dwHoverTime = 1    ' HOVER_DEFAULT is 500
-'            TrackMouseEvent(@tme) 
-            
-'        case WM_MOUSEHOVER
-            
-'        case WM_MOUSELEAVE
-            
-'        case WM_RBUTTONDOWN
-            
         case WM_LBUTTONUP
             dim as long idx = Listbox_ItemFromPoint( hWin, GET_X_LPARAM(_lParam), GET_Y_LPARAM(_lParam)) 
             ' The return value contains the index of the nearest item in the LOWORD. The HIWORD is zero 

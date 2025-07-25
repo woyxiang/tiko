@@ -131,10 +131,9 @@ end function
 ' Show/Hide correct child controls
 ' ========================================================================================
 function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
+    dim as HWND hTextBox
+    dim as HWND hLV
     dim as HWND hCtrl
-    dim as HWND hListBox
-    dim as HWND hVScroll
-    dim as RECT rc
     
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
     if pWindow = 0 then exit function
@@ -151,51 +150,40 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     
     select case gOutputTabsCurSel
         case 0    ' compiler results
-            hCtrl = HWND_FRMOUTPUT_LVRESULTS
-            hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
-            dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hCtrl)
-            if pData = 0 then hVScroll = pData->hVScroll
+            hLV = HWND_FRMOUTPUT_LVRESULTS
+            hCtrl = hLV
 
         case 1    ' compiler log file
-            hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE)
-            dim as CWSTR wszText = ltrim(AfxGetWindowText(hCtrl))
+            hTextBox = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE)
+            hCtrl = hTextBox
+            dim as CWSTR wszText = ltrim(AfxGetWindowText(hTextBox))
             if wszText = "" then
-               AfxSetWindowText(hCtrl, "No compiler log file exists.")
+               AfxSetWindowText(hTextBox, "No compiler log file exists.")
             end if   
-            GetClientRect( hCtrl, @rc )
+            dim as RECT rc: GetClientRect( hTextBox, @rc )
             rc.left = rc.left + pWindow->ScaleX(20)
-            SendMessage( hCtrl, EM_SETRECT, 0, cast(LPARAM, @rc) )
-
+            SendMessage( hTextBox, EM_SETRECT, 0, cast(LPARAM, @rc) )
+            
         case 2    ' search results
-            hCtrl = HWND_FRMOUTPUT_LVSEARCH
-            hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
-            dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hCtrl)
-            if pData = 0 then hVScroll = pData->hVScroll
+            hLV = HWND_FRMOUTPUT_LVSEARCH
+            hCtrl = hLV
 
         case 3    ' TODO list
-            hCtrl = HWND_FRMOUTPUT_LVTODO
-            hListBox = GetDlgItem( hCtrl, IDC_FRMLISTVIEW_LISTBOX )
-            dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hCtrl)
-            if pData = 0 then hVScroll = pData->hVScroll
+            hLV = HWND_FRMOUTPUT_LVTODO
+            hCtrl = hLV
 
         case 4    ' Notes
-            hCtrl = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES)
-            GetClientRect( hCtrl, @rc )
+            hTextBox = GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES)
+            hCtrl = hTextBox
+            dim as RECT rc: GetClientRect( hTextBox, @rc )
             rc.left = rc.left + pWindow->ScaleX(20)
-            SendMessage( hCtrl, EM_SETRECT, 0, cast(LPARAM, @rc) )
-            SetFocus( hCtrl )
+            SendMessage( hTextBox, EM_SETRECT, 0, cast(LPARAM, @rc) )
+            SetFocus( hTextBox )
     
     end select
     
-    SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )    
-    AfxRedrawWindow( hCtrl )
-
-    if hListBox then AfxRedrawWindow( hListBox )
-    
-    if hVScroll then 
-        frmListViewVScroll_calcVThumbRect( hCtrl )
-        AfxRedrawWindow( hVScroll )
-    end if
+    SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )
+    if hLV then frmListView_Refresh( hLV )
             
     function = 0
 end function

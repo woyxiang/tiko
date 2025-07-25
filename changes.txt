@@ -1,4 +1,5 @@
 Version 1.2.1 (July xxx, 2025)
+- Added: New Theme variables in the *.theme files for Output window scrollbar colors.
 - Changed: Improved the algorithm for likely determining if (non-BOM) files being loaded are ANSI or UTF-8.
 - Changed: Quick Run now saves the temporary source file with the current editor encoding (rather than always UTF-16).
 - Changed: Compiled new libgdiplus.dll.a 32-bit import library to better work with José Roca's new AfxNova framework.

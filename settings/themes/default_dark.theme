@@ -140,4 +140,7 @@ output.texthot.foreground: %LIGHT_WHITE
 output.texthot.background: %LIGHT_BLACK
 output.divider.foreground: 124,127,133
 output.closehot.background: 56,59,65
+output.scrollbar.foreground: 75,83,97
+output.scrollbar.background: %LIGHT_BLACK
+output.divider.foreground: 64,67,73
 
