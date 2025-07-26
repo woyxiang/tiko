@@ -355,8 +355,6 @@ function frmOutputVScroll_calcVThumbRect( byval hTextBox as HWND ) as boolean
             return true
         end if
 
-'print  hTextBox, .numLines, .linesPerPage
-
     end with
 
     function = 0
@@ -395,42 +393,45 @@ function frmOutputVScroll_WndProc( _
                 SetCapture( hwnd )
             else
                 ' we have clicked on a PageUp or PageDn
-'                dim as long nTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
-'                if pt.y < rc.top then
-'                    nTopIndex = max( nTopIndex - pData->VScrollData.itemsPerPage, 0 )
-'                    SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-'                elseif pt.y > rc.bottom then
-'                    dim as long nMaxTopIndex = pData->VScrollData.numItems - pData->VScrollData.itemsPerPage
-'                    nTopIndex = min( nTopIndex + pData->VScrollData.itemsPerPage, nMaxTopIndex )
-'                    SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-'                end if
-'                frmListViewVScroll_calcVThumbRect(hLV)
-'                AfxRedrawWindow( pData->hVScroll )
-'                AfxRedrawWindow( pData->hListBox )
+                dim as long nDiff
+                if pt.y < rc.top then
+                    nDiff = -gOutputVScroll.linesPerPage
+                elseif pt.y > rc.bottom then
+                    nDiff = gOutputVScroll.linesPerPage
+                end if
+                SendMessage( hTextBox, EM_LINESCROLL, 0, cast(LPARAM, nDiff) )
+                frmOutputVScroll_calcVThumbRect(hTextBox)
+                AfxRedrawWindow( hwnd )
             end if
             
         case WM_MOUSEMOVE
             if gApp.bDragActive then
                 dim as point pt: GetCursorPos( @pt )
-'                if pt.y <> prev_pt.y then 
-'                    dim as long delta = pt.y - prev_pt.y 
-'                    dim as RECT rc: GetClientRect( pData->hVScroll, @rc )
+                if pt.y <> prev_pt.y then 
+                    dim as long delta = pt.y - prev_pt.y 
 
-'                    pData->VScrollData.rc.top = max(0, pData->VScrollData.rc.top + delta)
-'                    pData->VScrollData.rc.top = min(pData->VScrollData.rc.top, rc.bottom-pData->VScrollData.thumbHeight)
-'                    pData->VScrollData.rc.bottom = pData->VScrollData.rc.top + pData->VScrollData.thumbHeight
+                    ' convert to client coordinates for ease of use
+                    dim as RECT rc: GetClientRect( hwnd, @rc )
+                    gOutputVScroll.rc.top = max(0, gOutputVScroll.rc.top + delta)
+                    gOutputVScroll.rc.top = min(gOutputVScroll.rc.top, rc.bottom - gOutputVScroll.thumbHeight)
+                    gOutputVScroll.rc.bottom = gOutputVScroll.rc.top + gOutputVScroll.thumbHeight
 
-'                    prev_pt = pt
+                    prev_pt = pt
                     
-'                    dim as long nPrevTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
-'                    dim as long nLastIndex = (pData->VScrollData.rc.bottom / rc.bottom) * pData->VScrollData.numItems
-'                    dim as long nTopIndex = nLastIndex - pData->VScrollData.itemsPerPage
-'                    if nTopIndex <> nPrevTopIndex then
-'                        SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
-'                        AfxRedrawWindow( pData->hListBox )
-'                    end if   
-'                    AfxRedrawWindow( pData->hVScroll )
-'                end if
+                    dim as long nPrevTopLine = SendMessage( hTextBox, EM_GETFIRSTVISIBLELINE, 0, 0 ) 
+                    rc = AfxGetWindowRect(hTextBox)
+                    MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 ) 
+                    dim as long clientHeight = rc.bottom - rc.top
+                    if clientHeight = 0 then exit function
+                    dim as double scrollRatio = gOutputVScroll.rc.top / (clientHeight - gOutputVScroll.thumbHeight)
+                    dim as long nTopLine = int(scrollRatio * (gOutputVScroll.numLines - gOutputVScroll.linesPerPage))
+                    if nTopLine <> nPrevTopLine then
+                        dim as long nDiff = nTopLine - nPrevTopLine
+                        SendMessage( hTextBox, EM_LINESCROLL, 0, cast(LPARAM, nDiff) )
+                    end if   
+                    AfxRedrawWindow( hwnd )
+
+                end if
             end if
 
         case WM_LBUTTONUP   
@@ -513,7 +514,11 @@ function frmOutput_OnCommand( _
             ) as LRESULT
 
     select case codeNotify
-        
+     
+        case EN_UPDATE
+            frmOutputVScroll_calcVThumbRect(hwndCtl)
+            AfxRedrawWindow( HWND_FRMOUTPUT_VSCROLL )
+
         case EN_CHANGE
             ' Notes have been modified. Save them to the correct global variable
             ' to ensure that the changes are not lost when documents or projects
@@ -1101,7 +1106,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
                     ES_MULTILINE or ES_LEFT or ES_AUTOVSCROLL, _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTLOGFILE, null )
-        SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
+        SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE or ENM_UPDATE) )
         SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_VERT, FALSE)
         SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_HORZ, FALSE)
 
@@ -1111,7 +1116,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
                     ES_MULTILINE or ES_LEFT or ES_AUTOVSCROLL or ES_WANTRETURN, _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTNOTES, null )
-        SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE) )
+        SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE or ENM_UPDATE) )
         SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_VERT, FALSE)
         SendMessage( hCtl, EM_SHOWSCROLLBAR, SB_HORZ, FALSE)
         frmOutput_ShowNotes()   
