@@ -355,7 +355,7 @@ function frmOutputVScroll_calcVThumbRect( byval hTextBox as HWND ) as boolean
             return true
         end if
 
-print  hTextBox, .numLines, .linesPerPage
+'print  hTextBox, .numLines, .linesPerPage
 
     end with
 
