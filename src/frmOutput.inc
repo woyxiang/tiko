@@ -302,22 +302,20 @@ end function
 ' ========================================================================================
 function GetVisibleLineCount( byval hRichEdit as HWND ) as long
     dim as RECT formatRect
-    SendMessage(hRichEdit, EM_GETRECT, 0, cast(LPARAM, @formatRect))
+    SendMessage( hRichEdit, EM_GETRECT, 0, cast(LPARAM, @formatRect) )
     
     dim as HDC hdc = GetDC(hRichEdit)
-    dim as HFONT hFont = cast(HFONT, SendMessage(hRichEdit, WM_GETFONT, 0, 0))
-    dim as HFONT hOldFont = SelectObject(hdc, hFont)
-    
-    dim as TEXTMETRIC tm
-    GetTextMetrics(hdc, @tm)
-    
-    SelectObject(hdc, hOldFont)
-    ReleaseDC(hRichEdit, hdc)
+
+    dim as CHARFORMAT cf
+    cf.cbSize = sizeof(CHARFORMAT)
+    SendMessage( hRichEdit, EM_GETCHARFORMAT, 0, cast(LPARAM, @cf) )
+    dim as integer fontHeightPixels = MulDiv(cf.yHeight, GetDeviceCaps(hdc, LOGPIXELSY), 1440)
+
+    ReleaseDC( hRichEdit, hdc )
     
     dim as long formatHeight = formatRect.bottom - formatRect.top
-    dim as long lineHeight = tm.tmHeight + tm.tmExternalLeading
-    
-    return (formatHeight / lineHeight)
+
+    return max(0, (formatHeight / fontHeightPixels) -4 )   'TODO: Hack with "4" 
 end function
 
 
@@ -341,7 +339,6 @@ function frmOutputVScroll_calcVThumbRect( byval hTextBox as HWND ) as boolean
     with gOutputVScroll
         .linesPerPage = GetVisibleLineCount(hTextBox)
         .numLines = SendMessage(hTextBox, EM_GETLINECOUNT, 0, 0) + 1
-
         dim as double ratio = .linesPerPage / .numLines
         .thumbHeight = int(ratio * clientHeight)
         if .thumbHeight < minThumbHeight then .thumbHeight = minThumbHeight
@@ -516,9 +513,11 @@ function frmOutput_OnCommand( _
     select case codeNotify
      
         case EN_UPDATE
-            frmOutputVScroll_calcVThumbRect(hwndCtl)
-            AfxRedrawWindow( HWND_FRMOUTPUT_VSCROLL )
-
+            if gApp.bDragActive = false then
+                frmOutputVScroll_calcVThumbRect(hwndCtl)
+                AfxRedrawWindow( HWND_FRMOUTPUT_VSCROLL )
+            end if
+            
         case EN_CHANGE
             ' Notes have been modified. Save them to the correct global variable
             ' to ensure that the changes are not lost when documents or projects
