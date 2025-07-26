@@ -138,15 +138,16 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMOUTPUT)
     if pWindow = 0 then exit function
 
-    ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS), SW_SHOW
+    ShowWindow( GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS), SW_SHOW )
     AfxRedrawWindow( GetDlgItem(hwnd, IDC_FRMOUTPUT_TABS) )
     
     ' By default, hide all controls
-    ShowWindow HWND_FRMOUTPUT_LVRESULTS, SW_HIDE
-    ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE), SW_HIDE
-    ShowWindow HWND_FRMOUTPUT_LVSEARCH, SW_HIDE
-    ShowWindow HWND_FRMOUTPUT_LVTODO, SW_HIDE
-    ShowWindow GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES), SW_HIDE
+    ShowWindow( HWND_FRMOUTPUT_LVRESULTS, SW_HIDE )
+    ShowWindow( HWND_FRMOUTPUT_LVSEARCH, SW_HIDE )
+    ShowWindow( HWND_FRMOUTPUT_LVTODO, SW_HIDE )
+    ShowWindow( GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTLOGFILE), SW_HIDE )
+    ShowWindow( GetDlgItem(hwnd, IDC_FRMOUTPUT_TXTNOTES), SW_HIDE )
+    ShowWindow( HWND_FRMOUTPUT_VSCROLL, SW_HIDE )
     
     select case gOutputTabsCurSel
         case 0    ' compiler results
@@ -184,6 +185,11 @@ function frmOutput_ShowHideOutputControls( byval hwnd as HWND ) as LRESULT
     
     SetWindowPos( hCtrl, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW )
     if hLV then frmListView_Refresh( hLV )
+
+    if hTextBox then
+        frmOutputVScroll_calcVThumbRect( hTextBox )    
+        ShowWindow( HWND_FRMOUTPUT_VSCROLL, SW_SHOW )
+    end if    
             
     function = 0
 end function
@@ -208,12 +214,19 @@ function frmOutput_PositionWindows() as LRESULT
     SetWindowPos( hTabs, 0, nLeft, nTop, rc.right - rc.left, nTabsHeight, SWP_NOZORDER )
 
     ' Position the child controls
+    dim as long nVScrollWidth = AfxGetWindowWidth(HWND_FRMOUTPUT_VSCROLL)
     nTop = nTop + nTabsHeight + pWindow->ScaleY(8)
-    SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos HWND_FRMOUTPUT_LVRESULTS, 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos HWND_FRMOUTPUT_LVSEARCH, 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos HWND_FRMOUTPUT_LVTODO, 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
-    SetWindowPos GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES), 0, nLeft, nTop, rc.Right, rc.Bottom - nTop, SWP_NOZORDER
+    
+    SetWindowPos( HWND_FRMOUTPUT_LVRESULTS, 0, nLeft, nTop, rc.right, rc.bottom - nTop, SWP_NOZORDER )
+    SetWindowPos( HWND_FRMOUTPUT_LVSEARCH, 0, nLeft, nTop, rc.right, rc.bottom - nTop, SWP_NOZORDER )
+    SetWindowPos( HWND_FRMOUTPUT_LVTODO, 0, nLeft, nTop, rc.right, rc.bottom - nTop, SWP_NOZORDER )
+    
+    SetWindowPos( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE), 0, _
+        nLeft, nTop, rc.right - nVScrollWidth, rc.bottom - nTop, SWP_NOZORDER )
+    SetWindowPos( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES), 0, _
+        nLeft, nTop, rc.right - nVScrollWidth, rc.bottom - nTop, SWP_NOZORDER )
+    SetWindowPos( HWND_FRMOUTPUT_VSCROLL, 0, _
+        rc.right - nVScrollWidth, nTop, nVScrollWidth, rc.bottom - nTop, SWP_NOZORDER )
 
     ' Calculate the tabs rects
     GetClientRect( hTabs, @rc )
@@ -285,6 +298,176 @@ end function
 
 
 ' ========================================================================================
+' GetVisibleLineCount number of lines per page in the RichEdit textbox
+' ========================================================================================
+function GetVisibleLineCount( byval hRichEdit as HWND ) as long
+    dim as RECT formatRect
+    SendMessage(hRichEdit, EM_GETRECT, 0, cast(LPARAM, @formatRect))
+    
+    dim as HDC hdc = GetDC(hRichEdit)
+    dim as HFONT hFont = cast(HFONT, SendMessage(hRichEdit, WM_GETFONT, 0, 0))
+    dim as HFONT hOldFont = SelectObject(hdc, hFont)
+    
+    dim as TEXTMETRIC tm
+    GetTextMetrics(hdc, @tm)
+    
+    SelectObject(hdc, hOldFont)
+    ReleaseDC(hRichEdit, hdc)
+    
+    dim as long formatHeight = formatRect.bottom - formatRect.top
+    dim as long lineHeight = tm.tmHeight + tm.tmExternalLeading
+    
+    return (formatHeight / lineHeight)
+end function
+
+
+' ========================================================================================
+' Calculate the RECT that holds the client coordinates of the scrollbar's vertical thumb
+' Returns True if RECT is not empty
+' ========================================================================================
+function frmOutputVScroll_calcVThumbRect( byval hTextBox as HWND ) as boolean
+    dim pWindow as CWindow ptr = AfxCWindowPtr(HWND_FRMMAIN)
+    if pWindow = 0 Then exit function
+
+    ' calculate the vertical scrollbar in client coordinates
+    dim as RECT rc = AfxGetWindowRect(hTextBox)
+    MapWindowPoints( HWND_DESKTOP, HWND_FRMMAIN, cast(point ptr, @rc), 2 ) 
+    dim as long clientHeight = rc.bottom - rc.top
+    dim as long firstVisibleLine = SendMessage(hTextBox, EM_GETFIRSTVISIBLELINE, 0, 0)
+    dim as long iScrollbarWidth = AfxGetWindowWidth(HWND_FRMOUTPUT_VSCROLL) 
+    dim as long minThumbHeight = pWindow->ScaleY(SCROLLBAR_MINTHUMBSIZE)
+    SetRectEmpty( @gOutputVScroll.rc )
+
+    with gOutputVScroll
+        .linesPerPage = GetVisibleLineCount(hTextBox)
+        .numLines = SendMessage(hTextBox, EM_GETLINECOUNT, 0, 0) + 1
+
+        dim as double ratio = .linesPerPage / .numLines
+        .thumbHeight = int(ratio * clientHeight)
+        if .thumbHeight < minThumbHeight then .thumbHeight = minThumbHeight
+
+        .rc.left = 0
+        .rc.right = .rc.left + iScrollbarWidth
+        .rc.top = ((firstVisibleLine / .numLines) * clientHeight)
+        .rc.bottom = .rc.top + .thumbHeight
+        if .numLines < .linesPerPage then 
+            SetRectEmpty( @gOutputVScroll.rc )
+            return true
+        end if
+
+print  hTextBox, .numLines, .linesPerPage
+
+    end with
+
+    function = 0
+end function
+
+
+' ========================================================================================
+' frmOutputVScroll Window procedure
+' ========================================================================================
+function frmOutputVScroll_WndProc( _
+            byval hwnd   as HWND, _
+            byval uMsg   as UINT, _
+            byval wParam as WPARAM, _
+            byval lParam as LPARAM _
+            ) as LRESULT
+
+    ' screen pt.y cursor position
+    static as point prev_pt   
+
+    dim as HWND hTextBox
+    if IsWindowVisible( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE) ) then
+        hTextBox = GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTLOGFILE)
+    elseif IsWindowVisible( GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES) ) then
+        hTextBox = GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_TXTNOTES)
+    end if
+    
+    select case uMsg
+        case WM_LBUTTONDOWN
+            dim as point pt: GetCursorPos( @pt )
+            frmOutputVScroll_calcVThumbRect(hTextBox)   ' in client coordinates
+            dim as RECT rc = gOutputVScroll.rc       ' covert copy to screen coordinates
+            MapWindowpoints( hwnd, HWND_DESKTOP, cast(point ptr, @rc), 2)
+            if PtInRect( @rc, pt ) then
+                prev_pt = pt
+                gApp.bDragActive = true
+                SetCapture( hwnd )
+            else
+                ' we have clicked on a PageUp or PageDn
+'                dim as long nTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
+'                if pt.y < rc.top then
+'                    nTopIndex = max( nTopIndex - pData->VScrollData.itemsPerPage, 0 )
+'                    SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+'                elseif pt.y > rc.bottom then
+'                    dim as long nMaxTopIndex = pData->VScrollData.numItems - pData->VScrollData.itemsPerPage
+'                    nTopIndex = min( nTopIndex + pData->VScrollData.itemsPerPage, nMaxTopIndex )
+'                    SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+'                end if
+'                frmListViewVScroll_calcVThumbRect(hLV)
+'                AfxRedrawWindow( pData->hVScroll )
+'                AfxRedrawWindow( pData->hListBox )
+            end if
+            
+        case WM_MOUSEMOVE
+            if gApp.bDragActive then
+                dim as point pt: GetCursorPos( @pt )
+'                if pt.y <> prev_pt.y then 
+'                    dim as long delta = pt.y - prev_pt.y 
+'                    dim as RECT rc: GetClientRect( pData->hVScroll, @rc )
+
+'                    pData->VScrollData.rc.top = max(0, pData->VScrollData.rc.top + delta)
+'                    pData->VScrollData.rc.top = min(pData->VScrollData.rc.top, rc.bottom-pData->VScrollData.thumbHeight)
+'                    pData->VScrollData.rc.bottom = pData->VScrollData.rc.top + pData->VScrollData.thumbHeight
+
+'                    prev_pt = pt
+                    
+'                    dim as long nPrevTopIndex = SendMessage( pData->hListBox, LB_GETTOPINDEX, 0, 0 ) 
+'                    dim as long nLastIndex = (pData->VScrollData.rc.bottom / rc.bottom) * pData->VScrollData.numItems
+'                    dim as long nTopIndex = nLastIndex - pData->VScrollData.itemsPerPage
+'                    if nTopIndex <> nPrevTopIndex then
+'                        SendMessage( pData->hListBox, LB_SETTOPINDEX, nTopIndex, 0 ) 
+'                        AfxRedrawWindow( pData->hListBox )
+'                    end if   
+'                    AfxRedrawWindow( pData->hVScroll )
+'                end if
+            end if
+
+        case WM_LBUTTONUP   
+            gApp.bDragActive = false
+            prev_pt.x = 0
+            prev_pt.y = 0
+            ReleaseCapture
+        
+        case WM_ERASEBKGND
+            return true
+            
+        case WM_PAINT
+            dim as clsDoubleBuffer b
+
+            b.BeginDoubleBuffer(hwnd)
+            b.SetBackColors( ghOutput.BackColorScrollBar, ghOutput.BackColorScrollBar )
+            b.PaintClientRect()
+            if IsRectEmpty( @gOutputVScroll.rc ) = 0 then
+                b.SetPenColor( ghOutput.ScrollBarDivider )
+                b.PaintLine( 1, b.rcClient.left, b.rcClient.top, b.rcClient.left, b.rcClient.bottom )
+            end if    
+            b.SetBackColors( ghOutput.ForeColorScrollBar, ghOutput.ForeColorScrollBar )
+            b.PaintRect( @gOutputVScroll.rc )
+
+            b.EndDoubleBuffer()
+
+            return 0
+
+    end select
+
+    ' for messages that we don't deal with
+    function = DefWindowProc( HWnd, uMsg, wParam, lParam )
+
+end function
+
+
+' ========================================================================================
 ' Process WM_SIZE message for window/dialog: frmOutput
 ' ========================================================================================
 function frmOutput_OnSize( _
@@ -313,6 +496,7 @@ function frmOutput_OnDestroy( byval hwnd as HWND ) as LRESULT
     pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVRESULTS ): if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVSEARCH ): if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVTODO ): if pWindow then delete(pWindow)
+    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_VSCROLL ): if pWindow then delete(pWindow)
 
     function = 0
 end Function
@@ -955,6 +1139,11 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         frmListView_AddColumn( hLV, 2, L(254, "File"), pWindow->ScaleX(250) )
         frmListView_AddColumn( hLV, 3, L(255, "Description"), pWindow->ScaleX(480) )
         HWND_FRMOUTPUT_LVTODO = hLV
+
+    dim pWindowPanel as CPanelWindow ptr = New CPanelWindow
+    HWND_FRMOUTPUT_VSCROLL = _
+        pWindowPanel->Create( HWND_FRMOUTPUT, @frmOutputVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR, 0 )
+    pWindow->ClassStyle = CS_DBLCLKS
 
     frmOutput_SetControlColors
     frmOutput_PositionWindows

@@ -22,6 +22,16 @@
 #define IDC_FRMOUTPUT_BTNCLOSE                      1006
 
 
+type OUTPUT_VSCROLL_TYPE
+    numLines     as long 
+    linesPerPage as long
+    thumbHeight  as long
+    rc           as RECT
+end type
+
+dim shared gOutputVScroll as OUTPUT_VSCROLL_TYPE
+
+
 type OUTPUT_TABS
     wszText as CWSTR
     rcTab   as RECT
@@ -33,6 +43,7 @@ dim shared gOutputTabs(4) as OUTPUT_TABS
 dim shared gOutputTabsCurSel as long = 0  ' default to first tab
 dim shared gOutputCloseRect as RECT
 
+declare function frmOutputVScroll_calcVThumbRect( byval hTextBox as HWND ) as boolean
 declare function frmOutput_ShowNotes() as long 
 declare function frmOutput_UpdateToDoListview() as long 
 declare function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as long 
