@@ -452,8 +452,10 @@ function frmListView_OnDrawItem( _
                 rcText.right = rcText.left + pData->ColData(i).nWidth
                 ' offset the left margin ever so slightly
                 rcText.left += pWindow->ScaleX(4)
-                dim as CWSTR wszText = AfxStrParse(wszCaption, i + 1, chr(9)) 
-                b.PaintText( wszText, @rcText, DT_LEFT )
+                dim as CWSTR wszText = AfxStrParse(wszCaption, i + 1, chr(9))
+                dim as long flags = DT_LEFT
+                if i = 2 then flags = flags or DT_PATH_ELLIPSIS  ' for long filenames
+                b.PaintText( wszText, @rcText, flags )
                 rcText.left = rcText.right
             next
 
