@@ -1,3 +1,6 @@
+Version 1.2.2 (July 28, 2025)
+- Fixed: Drawing issue with custom Output Window lists showing non-themed colors.
+
 Version 1.2.1 (July 28, 2025)
 - Added: New Theme variables in the *.theme files for Output window scrollbar colors.
 - Changed: Improved the algorithm for likely determining if (non-BOM) files being loaded are ANSI or UTF-8.

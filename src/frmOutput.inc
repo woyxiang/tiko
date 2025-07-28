@@ -1149,6 +1149,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
         pWindowPanel->Create( HWND_FRMOUTPUT, @frmOutputVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR, 0 )
     pWindow->ClassStyle = CS_DBLCLKS
 
+    frmOutput_ResetAllControls
     frmOutput_SetControlColors
     frmOutput_PositionWindows
     
