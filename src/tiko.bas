@@ -38,7 +38,7 @@ using Afx
 #define APPNAME             wstr("Tiko Editor")
 #define APPNAMESHORT        wstr("Tiko")
 #define APPCLASSNAME        wstr("tiko_editor_class")
-#define APPVERSION          wstr("1.2.0") 
+#define APPVERSION          wstr("1.2.1") 
 #define APPEXTENSION        wstr(".tiko") 
 #define APPBITS             wstr(" (64-bit)")
 #define RUNBATCHFILE        wstr("_tiko_runbatch.bat")
@@ -102,6 +102,7 @@ dim shared gTTabCtl as clsTopTabCtl
 #include once "frmKeyboardEdit.inc" 
 #include once "frmKeyboard.inc" 
 #include once "frmBuildConfig.inc" 
+#include once "frmListView.inc" 
 #include once "frmOutput.inc" 
 #include once "frmOptionsGeneral.inc"
 #include once "frmOptionsEditor.inc"

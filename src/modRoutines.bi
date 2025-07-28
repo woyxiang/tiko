@@ -13,6 +13,9 @@
 
 #pragma once
 
+#include once "frmListView.bi"
+
+
 ' Size = 32 bytes
 TYPE HH_AKLINK 
     cbStruct     as long         ' int       cbStruct;     // sizeof this structure
@@ -65,7 +68,24 @@ declare function LoadLocalizationFile( byref wszFileName as CWSTR, byval IsEngli
 declare function GetProcessImageName( byval pe32w as PROCESSENTRY32W ptr, byval pwszExeName as wstring ptr ) as long
 declare function IsProcessRunning( byval pwszExeFileName as wstring ptr ) as boolean
 declare function GetRunExecutableFilename() as CWSTR
-declare function GetListBoxEmptyClientArea( byval hListBox as HWND, byval nLineHeight as long ) as RECT
+declare function GetListBoxEmptyClientArea( byval hListBox as HWND ) as RECT
+declare function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
+declare function frmListView_GetCount( byval hLV as HWND ) as long
+declare function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
+declare function frmListView_DeleteAllItems( byval hLV as HWND ) as long
+declare function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
+declare function frmListView_GetSelection( byval hLV as HWND ) as long
+declare function frmListView_AddColumn( _
+    byval hLV as HWND, byval nColNum as long, byval wszText as CWSTR, byval nWidth as long ) as long
+declare function frmListView_SetForeColors( _
+    byval hLV as HWND, byval ForeColor as COLORREF, byval ForeColorHot as COLORREF ) as long
+declare function frmListView_SetBackColors( _
+    byval hLV as HWND, byval BackColor as COLORREF, byval BackColorHot as COLORREF ) as long
+declare function frmListView_SetScrollBarColors( _
+    byval hLV as HWND, byval ScrollBarBackColor as COLORREF, byval ScrollBarForeColor as COLORREF, _
+    byval ScrollBarDividerColor as COLORREF ) as long
+declare function frmListView_GetPointer( byval hLV as HWND ) as LISTVIEW_DATA_TYPE ptr
+declare function frmListView_DeleteBlankFirstLine( byval hLV as HWND ) as long
                                             
 
 

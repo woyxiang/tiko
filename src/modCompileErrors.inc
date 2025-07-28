@@ -18,6 +18,8 @@
 
 #include once "modCompile.bi"
 #include once "modCompileErrors.bi"
+#include once "frmListView.bi"
+
 
 ''
 ''  Set the statusbar text and icon for a good/bad compile
@@ -207,8 +209,10 @@ end function
 
 
 ' ========================================================================================
-' Set the cursor to the error position based on the selected line in frmCompileResults
-' or the TODO listview. 
+' Set the cursor to the error position based on the selected line in:
+' (1) Compiler Results
+' (2) Search Results
+' (3) TODO
 ' ========================================================================================
 function SetDocumentErrorPosition( _
             byval hLV as HWND, _
@@ -218,14 +222,14 @@ function SetDocumentErrorPosition( _
     dim wszErrorLine as wstring * MAX_PATH
     dim wszErrorFile as wstring * MAX_PATH
     
-    dim as long nCurSel = ListView_GetSelection(hLV)
+    dim as long nCurSel = frmListView_GetSelection(hLV)
     if nCurSel < 0 then return 0 
     
     dim pDoc as clsDocument ptr 
 
     ' Get the line number and filename of the selected item
-    LV_GetItemText(hLV, nCurSel, 1, @wszErrorLine, MAX_PATH)
-    LV_GetItemText(hLV, nCurSel, 2, @wszErrorFile, MAX_PATH)
+    wszErrorLine = frmListView_GetItemText(hLV, nCurSel, 1)
+    wszErrorFile = frmListView_GetItemText(hLV, nCurSel, 2)
     dim as long nLineNum = val(wszErrorLine) - 1   ' because visually the editor is one based line numbers
 
     ' if we are doing a QuickRun then it must be on the currently loaded
@@ -286,13 +290,13 @@ function ParseLogForError( _
     dim as long NumWarnings, NumErrors, NumDirectives, IsError, IsWarning
     dim as long nFirstErrorLine = -1
     dim as HWND hLV
-    dim as CWSTR wDQ, wst1, wst2, wst3, wst, wst_ucase, wszOutputMsg        
+    dim as CWSTR wDQ, wst1, wst2, wst3, wst, wst_ucase, wszOutputMsg, wszText        
     dim as boolean fGoodCompile
 
     wDQ = wchr(34) ' unicode double quotes
 
-    hLV = GetDlgItem(HWND_FRMOUTPUT, IDC_FRMOUTPUT_LVRESULTS)
-    ListView_DeleteAllItems( hLV )
+    hLV = HWND_FRMOUTPUT_LVRESULTS
+    frmListView_DeleteAllItems( hLV )
     
     ' On some Windows systems with tight security policies, the CreateChildProcess used
     ' by the sub RedirConsoleToFile will fail. This seems to happen mostly when trying
@@ -323,10 +327,8 @@ function ParseLogForError( _
         ' from a 32-bit operating system.
         if left(wst_ucase, 16) = "THIS VERSION OF " then
             fGoodCompile = false
-            LV_InsertItem( hLV, NumWarnings, 0, "" )
-            LV_InsertItem( hLV, NumWarnings, 1, "0" )
-            LV_InsertItem( hLV, NumWarnings, 2, "" ) 
-            LV_InsertItem( hLV, NumWarnings, 3, "compiling FAILED: Windows not 64-bit (refer to log file)" ) 
+            wszText = "" & chr(9) & "0" & chr(9) & "" & chr(9) & "compiling FAILED: Windows not 64-bit (refer to log file)"
+            frmListView_AddString( hLV, wszText )
             wszOutputMsg = wsLogSt: exit For
             exit for
         end if   
@@ -356,30 +358,22 @@ function ParseLogForError( _
         ' Check to see if linking failed
         if (left(wst_ucase, 6) = "ERROR!") or _
             (left(wst_ucase, 34) = "VERY SORRY, BUT GORC HAD A PROBLEM") then
-            LV_InsertItem( hLV, nListViewLine, 0, "" )
-            LV_InsertItem( hLV, nListViewLine, 1, "0" )
-            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
-            LV_InsertItem( hLV, nListViewLine, 3, "compiling resource FAILED: Error Code 1 (refer to log file)" ) 
+            wszText = "" & chr(9) & "0" & chr(9) & "" & chr(9) & "compiling resource FAILED: Error Code 1 (refer to log file)"
+            frmListView_AddString( hLV, wszText )
             NumErrors = NumErrors + 1
         elseif (left(wst_ucase, 5) = "ERROR") then
-            LV_InsertItem( hLV, nListViewLine, 0, "" )
-            LV_InsertItem( hLV, nListViewLine, 1, "0" )
-            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
-            LV_InsertItem( hLV, nListViewLine, 3, "compiling FAILED: Error Code 1 (refer to log file)" ) 
+            wszText = "" & chr(9) & "0" & chr(9) & "" & chr(9) & "compiling FAILED: Error Code 1 (refer to log file)"
+            frmListView_AddString( hLV, wszText )
             NumErrors = NumErrors + 1
         elseif (left(wst_ucase, 19) = "COMPILING C FAILED:") then
-            LV_InsertItem( hLV, nListViewLine, 0, "" )
-            LV_InsertItem( hLV, nListViewLine, 1, "0" )
-            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
-            LV_InsertItem( hLV, nListViewLine, 3, "compiling C FAILED: Error Code 1 (refer to log file)" ) 
+            wszText = "" & chr(9) & "0" & chr(9) & "" & chr(9) & "compiling C FAILED: Error Code 1 (refer to log file)"
+            frmListView_AddString( hLV, wszText )
             NumErrors = NumErrors + 1
         end if
         
         if instr(wst_ucase, "LINKING FAILED:") then 
-            LV_InsertItem( hLV, nListViewLine, 0, "" )
-            LV_InsertItem( hLV, nListViewLine, 1, "0" ) 
-            LV_InsertItem( hLV, nListViewLine, 2, "" ) 
-            LV_InsertItem( hLV, nListViewLine, 3, wst & " (refer to log file)" ) 
+            wszText = "" & chr(9) & "0" & chr(9) & "" & chr(9) & wst & " (refer to log file)"
+            frmListView_AddString( hLV, wszText )
             NumErrors = NumErrors + 1
         end if
     
@@ -441,10 +435,8 @@ function ParseLogForError( _
                     wst2 = mid( wst, Parenthesis_Start + 1, Parenthesis_end - Parenthesis_Start - 1)  ' line# 
                     wst3 = mid( wst, Error_Start + 1)  ' error message
 
-                    LV_InsertItem( hLV, nListViewLine, 0, "" )
-                    LV_InsertItem( hLV, nListViewLine, 1, wst2 )  ' line#
-                    LV_InsertItem( hLV, nListViewLine, 2, wst1 )  ' filename
-                    LV_InsertItem( hLV, nListViewLine, 3, wst3 )  ' error message
+                    wszText = "" & chr(9) & wst2 & chr(9) & wst1 & chr(9) & wst3
+                    frmListView_AddString( hLV, wszText )
                     
                     if IsWarning then 
                         NumWarnings = NumWarnings + 1
@@ -457,11 +449,8 @@ function ParseLogForError( _
                 end if
 
             else
-                        
-                LV_InsertItem( hLV, nListViewLine, 0, "" )
-                LV_InsertItem( hLV, nListViewLine, 1, "" )  ' line#
-                LV_InsertItem( hLV, nListViewLine, 2, "" )  ' filename
-                LV_InsertItem( hLV, nListViewLine, 3, wst )  ' message
+                wszText = "" & chr(9) & "" & chr(9) & "" & chr(9) & wst
+                frmListView_AddString( hLV, wszText )
                 NumDirectives = NumDirectives + 1
             end if
 
@@ -497,12 +486,13 @@ function ParseLogForError( _
                         AfxLocalTimeStr( "hh:mm:ss" ) & "]"
         gCompile.wszOutputMsg = L(229,"Failed Compile")  & " (" & wszIconCompileMsg & ")" & vbcrlf
         SetCompileStatusBarMessage( wszIconCompileMsg, ghIconBad )
-        
+       
         ' only beep on errors
         if NumErrors > 0 then MessageBeep(MB_ICONWARNING)
         
         ' Position the Compiler Log to the first error/warning
-        ListView_SelectItem( hLV, 0 )
+        frmListView_DeleteBlankFirstLine( HWND_FRMOUTPUT_LVRESULTS )
+        frmListView_SelectItem( hLV, 0 )
         
         ' if fGoodCompile is false then something unusual occurred so better show the log file by default
         if fGoodCompile = false then
@@ -554,6 +544,7 @@ function ParseLogForError( _
                                     AfxSystemTimeToTimeStr( gCompile.SystemTime, "hh:mm:ss" ) & ")" & vbcrlf
     end if
 
+
     ' Update the log file text box in the frmOutput window
     SetLogFileTextbox
 
@@ -564,6 +555,7 @@ function ParseLogForError( _
         gCompile.RunAfterCompile = false 
         return true
     end if
+
     
     function = false
 end function

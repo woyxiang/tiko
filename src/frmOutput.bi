@@ -13,13 +13,23 @@
 
 #pragma once 
 
-#Define IDC_FRMOUTPUT_TABS                          1000
-#Define IDC_FRMOUTPUT_LVRESULTS                     1001
-#Define IDC_FRMOUTPUT_TXTLOGFILE                    1002
-#Define IDC_FRMOUTPUT_LVSEARCH                      1003
-#Define IDC_FRMOUTPUT_LVTODO                        1004
-#Define IDC_FRMOUTPUT_TXTNOTES                      1005
-#Define IDC_FRMOUTPUT_BTNCLOSE                      1006
+#define IDC_FRMOUTPUT_TABS                          1000
+#define IDC_FRMOUTPUT_LVRESULTS                     1001
+#define IDC_FRMOUTPUT_TXTLOGFILE                    1002
+#define IDC_FRMOUTPUT_LVSEARCH                      1003
+#define IDC_FRMOUTPUT_LVTODO                        1004
+#define IDC_FRMOUTPUT_TXTNOTES                      1005
+#define IDC_FRMOUTPUT_BTNCLOSE                      1006
+
+
+type OUTPUT_VSCROLL_TYPE
+    numLines     as long 
+    linesPerPage as long
+    thumbHeight  as long
+    rc           as RECT
+end type
+
+dim shared gOutputVScroll as OUTPUT_VSCROLL_TYPE
 
 
 type OUTPUT_TABS
@@ -33,6 +43,7 @@ dim shared gOutputTabs(4) as OUTPUT_TABS
 dim shared gOutputTabsCurSel as long = 0  ' default to first tab
 dim shared gOutputCloseRect as RECT
 
+declare function frmOutputVScroll_calcVThumbRect( byval hTextBox as HWND ) as boolean
 declare function frmOutput_ShowNotes() as long 
 declare function frmOutput_UpdateToDoListview() as long 
 declare function frmOutput_UpdateSearchListview( byref wszResultFile as wstring ) as long 

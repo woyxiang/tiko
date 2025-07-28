@@ -179,6 +179,9 @@ type OUTPUT_HANDLES_TYPE
     ForeColorHot as COLORREF
     Divider as COLORREF
     CloseBackColorHot as COLORREF
+    BackColorScrollBar as COLORREF
+    ForeColorScrollBar as COLORREF
+    ScrollBarDivider as COLORREF
 end type
 dim shared ghOutput as OUTPUT_HANDLES_TYPE
 
@@ -417,15 +420,15 @@ function LoadThemeFile() as boolean
     pTheme = getThemePtr("editor.foldsymbol")
     ghEditor.BackColorFoldsymbol = pTheme->background
     ghEditor.ForeColorFoldsymbol = pTheme->foreground
-    pTheme = getThemePtr("editor.scrollbar")
-    ghEditor.ForeColorScrollBar = pTheme->foreground
-    ghEditor.BackColorScrollBar = pTheme->background
     pTheme = getThemePtr("editor.bracegood")
     ghEditor.ForeColorBracegood = pTheme->foreground
     pTheme = getThemePtr("editor.bracebad")
     ghEditor.ForeColorBracebad = pTheme->foreground
     pTheme = getThemePtr("editor.occurrence")
     ghEditor.ForeColorOccurrence = pTheme->foreground
+    pTheme = getThemePtr("editor.scrollbar")
+    ghEditor.ForeColorScrollBar = pTheme->foreground
+    ghEditor.BackColorScrollBar = pTheme->background
     pTheme = getThemePtr("editor.divider")
     ghEditor.Divider = pTheme->foreground
 
@@ -518,6 +521,11 @@ function LoadThemeFile() as boolean
     ghOutput.Divider = pTheme->foreground
     pTheme = getThemePtr("output.closehot")
     ghOutput.CloseBackColorHot = pTheme->background
+    pTheme = getThemePtr("output.scrollbar")
+    ghOutput.ForeColorScrollBar = pTheme->foreground
+    ghOutput.BackColorScrollBar = pTheme->background
+    pTheme = getThemePtr("output.scrollbardivider")
+    ghOutput.ScrollBarDivider = pTheme->foreground
 
     function = false
 

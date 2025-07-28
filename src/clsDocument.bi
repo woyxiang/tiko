@@ -53,7 +53,7 @@ end enum
 ' type that holds data for all project files as it they are loaded from
 ' the project file.
 type PROJECT_FILELOAD_DATA
-    bIsValidData   as boolean       ' True set on projectload. Checked in AssignTextBuffer.
+    bIsValidData    as boolean      ' True set on projectload. Checked in AssignTextBuffer.
     bLoadInTab      as boolean
     wszFilename     as CWSTR        ' full path and filename
     wszFiletype     as CWSTR        ' pDoc->ProjectFileType
@@ -104,7 +104,7 @@ type clsDocument
     bBookmarkExpanded     as boolean = true     ' Bookmarks list expand/collapse state
     bFunctionsExpanded    as boolean = true     ' Functions list expand/collapse state
     bHasFunctions         as boolean = false    ' FunctionList to determine if click will display the File
-    FileEncoding          as long = FILE_ENCODING_UTF8       
+    FileEncoding          as long = FILE_ENCODING_UTF8   ' new files always UTF8 encoded by default (no BOM)       
     bNeedsParsing         as boolean            ' Document requires to be parsed due to changes.
     DocumentBuild         as string             ' specific build configuration to use for this document
     sMatchWord            as string             ' for the incremental autocomplete search
@@ -151,6 +151,7 @@ type clsDocument
     declare function FindReplace( byval strFindText as string, byval strReplaceText as string ) as long
     declare function InsertFile() as boolean
     declare function SaveFile(byval bSaveAs as boolean = false ) as boolean
+    declare function SaveTempFile( byval wszFilename as CWSTR ) as boolean
     declare function ApplyProperties() as long
     declare function GetTextRange( byval cpMin as long, byval cpMax as long) as string
     declare function ChangeSelectionCase( byval fCase as long) as long 

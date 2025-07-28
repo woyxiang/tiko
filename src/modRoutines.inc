@@ -18,6 +18,184 @@
 #include once "frmProjectOptions.bi"
 #include once "frmUserTools.bi"
 #include once "frmMain.bi"
+#include once "frmListView.bi"
+
+
+' ========================================================================================
+' Get the pData pointer stored in UserData(0) of the pWindow
+' ========================================================================================
+function frmListView_GetPointer( byval hLV as HWND ) as LISTVIEW_DATA_TYPE ptr
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hLV)
+    if pWindow = 0 then return 0
+    
+    ' The ListView's data is stored in the pWindow CWindow UserData(0).
+    if pWindow->UserData(0) = 0 then return 0
+    
+    return cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0))
+end function
+
+
+' ========================================================================================
+' frmListView_GetSelection
+' ========================================================================================
+function frmListView_GetSelection( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_GetCurSel( hListBox )
+end function
+
+
+' ========================================================================================
+' frmListView_GetItemText
+' ========================================================================================
+function frmListView_GetItemText( byval hLV as HWND, byval nLineNum as long, byval nColNum as long ) as CWSTR
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    dim as CWSTR wszCaption = AfxGetListBoxText( hListBox, nLineNum )
+    return AfxStrParse( wszCaption, nColNum + 1, chr(9) )
+end function
+
+
+' ========================================================================================
+' frmListView_DeleteAllItems
+' ========================================================================================
+function frmListView_DeleteAllItems( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    ListBox_ResetContent( hListBox )
+
+    'TODO: Code in ownerdraw listboxes not painting unused client space
+    'TODO: unless at least one item exists. Still investigating this.
+    dim as CWSTR wszText = "" & chr(9) & "" & chr(9) & "" & chr(9) & ""
+    ListBox_AddString( hListBox, wszText.vptr )
+
+    AfxRedrawWindow( hListBox )
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_DeleteBlankFirstLine
+' Necessary because of the ownerdraw listbox repaint problem with empty listboxes
+' ========================================================================================
+function frmListView_DeleteBlankFirstLine( byval hLV as HWND ) as long
+    ' Only process if more than one string exists
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    if ListBox_GetCount( hListBox ) <= 1 then exit function
+
+    dim as CWSTR wszCaption = ltrim(AfxGetListBoxText(hListBox, 0), chr(9))
+    if len(wszCaption) = 0 then
+        ListBox_DeleteString( hListBox, 0 )
+    end if
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_GetCount
+' ========================================================================================
+function frmListView_GetCount( byval hLV as HWND ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_GetCount( hListBox )
+end function
+
+
+' ========================================================================================
+' frmListView_SelectItem
+' ========================================================================================
+function frmListView_SelectItem( byval hLV as HWND, byval nLineNum as long ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    return ListBox_SetCurSel( hListBox, nLineNum )
+end function
+
+
+' ========================================================================================
+' frmListView_AddString
+' ========================================================================================
+function frmListView_AddString( byval hLV as HWND, byval wszText as CWSTR ) as long
+    dim as HWND hListBox = GetDlgItem( hLV, IDC_FRMLISTVIEW_LISTBOX )
+    ListBox_AddString( hListBox, wszText.vptr )
+    AfxRedrawWindow( hListBox )
+    return 0
+end function
+
+
+
+' ========================================================================================
+' frmListView_AddColumn
+' ========================================================================================
+function frmListView_AddColumn( _
+            byval hLV as HWND, _
+            byval nColNum as long, _
+            byval wszText as CWSTR, _
+            byval nWidth as long _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    dim as long ub = ubound(pData->ColData)
+    if nColNum > ub then
+        redim preserve pData->ColData(nColNum)
+    end if
+    pData->ColData(nColNum).wszText = wszText
+    pData->ColData(nColNum).nWidth = nWidth
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_SetForeColors
+' ========================================================================================
+function frmListView_SetForeColors( _
+            byval hLV as HWND, _
+            byval ForeColor as COLORREF, _
+            byval ForeColorHot as COLORREF _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    pData->ForeColor = ForeColor
+    pData->ForeColorHot = ForeColorHot
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_SetBackColors
+' ========================================================================================
+function frmListView_SetBackColors( _
+            byval hLV as HWND, _
+            byval BackColor as COLORREF, _
+            byval BackColorHot as COLORREF _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    pData->BackColor = BackColor
+    pData->BackColorHot = BackColorHot
+    
+    return 0
+end function
+
+
+' ========================================================================================
+' frmListView_SetScrollBarColors
+' ========================================================================================
+function frmListView_SetScrollBarColors( _
+            byval hLV as HWND, _
+            byval ScrollBarBackColor as COLORREF, _
+            byval ScrollBarForeColor as COLORREF, _
+            byval ScrollBarDividerColor as COLORREF _
+            ) as long
+    dim as LISTVIEW_DATA_TYPE ptr pData = frmListView_GetPointer(hLV)
+    if pData = 0 then return 1
+    
+    pData->BackColorScrollBar = ScrollBarBackColor
+    pData->ForeColorScrollBar = ScrollBarForeColor
+    pData->DividerColorScrollBar = ScrollBarDividerColor
+    
+    return 0
+end function
 
 
 ' ========================================================================================
@@ -307,50 +485,50 @@ end function
 function ConvertTextBuffer( _
             byval pDoc as clsDocument ptr, _
             byval FileEncoding as long _
-            ) as Long
+            ) as long
                             
-   if pDoc = 0 then exit function
+    if pDoc = 0 then exit function
 
-   dim as hwnd hEdit = pDoc->hWndActiveScintilla
-   ' Save the current file position and first visible line
-   dim nFirstLine as long = SciExec( hEdit, SCI_GETFIRSTVISIBLELINE, 0, 0) 
-   Dim nPos As Long = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0)
-
-   pDoc->FileEncoding = FileEncoding
-   Dim As ZString Ptr psz = Cast( ZString Ptr, SciExec(hEdit, SCI_GETCHARACTERPOINTER, 0, 0) )
-   dim as long sciCodePage = SciExec(hEdit, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
-   dim as string txtBuffer 
+    dim as hwnd hEdit = pDoc->hWndActiveScintilla
    
-   ' Convert buffer to specified file encoding
-   select CASE FileEncoding
-      case FILE_ENCODING_ANSI
-         if sciCodePage = 0 THEN  ' already in ANSI format  
-            exit function
-         else   
-            ' need to convert from UTF8 to ANSI
-            txtBuffer = Utf8ToAnsi(*psz)
-            SciExec(hEdit, SCI_SETCODEPAGE, 0, 0 )
-         end if    
+    ' Save the current file position and first visible line
+    dim nFirstLine as long = SciExec( hEdit, SCI_GETFIRSTVISIBLELINE, 0, 0) 
+    dim nPos as long = SciExec(hEdit, SCI_GETCURRENTPOS, 0, 0)
 
-      case FILE_ENCODING_UTF8_BOM, FILE_ENCODING_UTF16_BOM
-         if sciCodePage = SC_CP_UTF8 THEN  ' already in unicode format
-            exit function
-         else
-            ' need to convert from ANSI to UTF8
-            txtBuffer = AnsiToUtf8(*psz)
-            SciExec(hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
-         end if    
-
-   END SELECT
+    pDoc->FileEncoding = FileEncoding
+    dim as zstring ptr psz = cast( zstring ptr, SciExec(hEdit, SCI_GETCHARACTERPOINTER, 0, 0) )
+    dim as long sciCodePage = SciExec(hEdit, SCI_GETCODEPAGE, 0, 0)   ' 0 or SC_CP_UTF8 
+    dim as string txtBuffer 
    
-   ' Set the new buffer
-   pDoc->SetText(txtBuffer)
-   pDoc->UserModified = false
+    ' Convert buffer to specified file encoding
+    select case FileEncoding
+        case FILE_ENCODING_ANSI
+            if sciCodePage = 0 then  ' already in ANSI format  
+                exit function
+            else   
+                ' need to convert from UTF8 to ANSI
+                txtBuffer = Utf8ToAnsi(*psz)
+                SciExec(hEdit, SCI_SETCODEPAGE, 0, 0 )
+            end if    
 
-   SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
-   SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
+        case FILE_ENCODING_UTF8_BOM, FILE_ENCODING_UTF16_BOM
+            if sciCodePage = SC_CP_UTF8 then  ' already in unicode format
+                exit function
+            else
+                ' need to convert from ANSI to UTF8
+                txtBuffer = AnsiToUtf8(*psz)
+                SciExec(hEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0 )
+            end if    
+
+    end select
    
-   function = 0
+    ' Set the new buffer
+    pDoc->SetText(txtBuffer)
+    
+    SciExec(hEdit, SCI_SETFIRSTVISIBLELINE, nFirstLine, 0) 
+    SciExec(hEdit, SCI_GOTOPOS, nPos, 0)
+   
+    function = 0
 end function   
 
 
@@ -472,39 +650,53 @@ end function
 
 
 ' ========================================================================================
-' Determine if a string is UTF-8 encoded
+' Determine if a string is likely UTF-8 encoded
 ' ========================================================================================
-function isUTF8encoded(byref s as string) as boolean
-    dim as integer i = 0, n = len(s)
-    dim as ubyte ch
+function isUTF8encoded(byref text as string) as boolean
+    dim as ubyte ptr p = strptr(text)
+    dim as integer nlen = len(text)
+    dim as integer i = 0
+    dim as boolean hasUTF8Sequences = false
 
-    while i < n
-        ch = s[i]
-        
-        if ch <= &h7F then
-            ' ascii character (1 byte)
+    while i < nlen
+        dim as ubyte c = p[i]
+
+        if c < &h80 then
+            ' ASCII character
             i += 1
-        elseif ch >= &hC2 andalso ch <= &hDF then
-            ' 2-byte sequence
-            if i + 1 >= n then return false
-            if (s[i + 1] and &hC0) <> &h80 then return false
+
+        elseif (c and &hE0) = &hC0 then
+            ' 2-byte UTF-8 sequence
+            if i + 1 >= nlen then return false
+            if (p[i + 1] and &hC0) <> &h80 then return false
+            if c < &hC2 then return false
+            hasUTF8Sequences = true
             i += 2
-        elseif ch >= &hE0 andalso ch <= &hEF then
-            ' 3-byte sequence
-            if i + 2 >= n then return false
-            if (s[i + 1] and &hC0) <> &h80 orelse (s[i + 2] and &hC0) <> &h80 then return false
+
+        elseif (c and &hF0) = &hE0 then
+            ' 3-byte UTF-8 sequence
+            if i + 2 >= nlen then return false
+            if (p[i + 1] and &hC0) <> &h80 then return false
+            if (p[i + 2] and &hC0) <> &h80 then return false
+            hasUTF8Sequences = true
             i += 3
-        elseif ch >= &hF0 andalso ch <= &hF4 then
-            ' 4-byte sequence
-            if i + 3 >= n then return false
-            if (s[i + 1] and &hC0) <> &h80 orelse (s[i + 2] and &hC0) <> &h80 orelse (s[i + 3] and &hC0) <> &h80 then return false
+
+        elseif (c and &hF8) = &hF0 then
+            ' 4-byte UTF-8 sequence
+            if i + 3 >= nlen then return false
+            if (p[i + 1] and &hC0) <> &h80 then return false
+            if (p[i + 2] and &hC0) <> &h80 then return false
+            if (p[i + 3] and &hC0) <> &h80 then return false
+            hasUTF8Sequences = true
             i += 4
+
         else
+            ' Invalid byte for UTF-8
             return false
         end if
     wend
 
-    return true
+    return hasUTF8Sequences
 end function
 
 
@@ -565,7 +757,7 @@ function GetFileToString( _
          ' Convert to UTF8 so it can display in the editor
          txtBuffer = UnicodeToUtf8(wszText)
 
-   end select
+    end select
         
     function = false
 end function
@@ -1480,11 +1672,7 @@ end function
 ' Calcluate the client area at bottom of Listbox not covered by a row (needed to manually
 ' paint the unused area in WM_ERASEBKGRD messages to avoid flicker.
 ' ========================================================================================
-function GetListBoxEmptyClientArea( _
-            byval hListBox as HWND, _
-            byval nLineHeight as long _
-            ) as RECT
-    
+function GetListBoxEmptyClientArea( byval hListBox as HWND ) as RECT
     dim as RECT rc: GetClientRect( hListBox, @rc )
     ' if the number of lines in the listbox is less than the number per page then 
     ' calculate from last item to bottom of listbox, otherwise calculate based on

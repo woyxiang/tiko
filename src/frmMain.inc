@@ -172,7 +172,7 @@ function frmMain_SetStatusbar() as long
                 wszText = "ANSI"  
                 SciExec( hEdit, SCI_SETCODEPAGE, 0, 0 )
         end select 
-         gSBPanels(UTF_PANEL).wszText = wszText
+        gSBPanels(UTF_PANEL).wszText = wszText
 
         ' PANEL Line Endings
         select case SciExec( hEdit, SCI_GETEOLMODE, 0, 0 )
@@ -848,7 +848,7 @@ function frmMain_PositionWindows() as LRESULT
 
     ' Ensure that the correct notes are shown
     frmOutput_ShowNotes()
-    
+
     function = 0
 end function
 

@@ -80,7 +80,7 @@ function frmPanelVScroll_WndProc( _
             if PtInRect( @rc, pt ) then
                 prev_pt = pt
                 gApp.bDragActive = true
-                SetCapture( HWnd )
+                SetCapture( hwnd )
             else
                 ' we have clicked on a PageUp or PageDn
                 dim as long nTopIndex = SendMessage( gPanelVScroll.hListBox, LB_GETTOPINDEX, 0, 0 ) 
@@ -105,7 +105,6 @@ function frmPanelVScroll_WndProc( _
                 dim as point pt: GetCursorPos( @pt )
                 if pt.y <> prev_pt.y then 
                     dim as long delta = pt.y - prev_pt.y 
-                    ' convert to client coordinates for ease of use
                     dim as RECT rc: GetClientRect( HWND_FRMPANEL_VSCROLLBAR, @rc )
 
                     gPanelVScroll.rc.top = max(0, gPanelVScroll.rc.top + delta)
@@ -194,7 +193,7 @@ function frmPanel_PositionWindows() as LRESULT
     if gConfig.ExplorerPositionRight then nLeft = pWindow->ScaleX(3)  ' allow for grab
     
     dim as long nTop = 0
-    dim as long nWidth = rc.right  - rc.Left
+    dim as long nWidth = rc.right - rc.Left
     dim as long nHeight = nPanelMenuHeight
 
     nTop = rc.top + nPanelMenuHeight + nPanelHeaderHeight
@@ -259,6 +258,7 @@ function frmPanel_PositionWindows() as LRESULT
         nVScrollWidth, nHeight, SWP_NOZORDER or SWP_SHOWWINDOW )
 
     ' Calculate the divider line
+    nWidth = rc.right - rc.Left
     gPanel.rcDividerLine = type( 0, nPanelMenuHeight, nWidth, nPanelMenuHeight )
     
     ' calculate the rect for the panel label (EXPLORER, FUNCTION LIST, BOOKMARKS)
@@ -280,9 +280,11 @@ function frmPanel_PositionWindows() as LRESULT
         .bottom = .top + pWindow->ScaleY(ActionButtonHeight)
     end with
         
-    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
     AfxRedrawWindow( gPanelVScroll.hListBox )
     AfxRedrawWindow( HWND_FRMPANEL )
+
+    frmPanelVScroll_calcVThumbRect()
+    AfxRedrawWindow( HWND_FRMPANEL_VSCROLLBAR )
 
     ' Ensure that the panel menu selected item is in sync with the pane
     AfxRedrawWindow(HWND_FRMPANEL_MENU)
