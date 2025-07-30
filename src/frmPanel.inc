@@ -297,13 +297,7 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmPanel
 ' ========================================================================================
 function frmPanel_OnDestroy( byval hwnd as HWND ) as LRESULT
-    ' Delete all the panel CWindow pointers because these child windows
-    ' are about to get destroyed.
     dim pWindow as CWindow ptr 
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL_MENU ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMEXPLORER ):   if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMFUNCTIONS ):  if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMBOOKMARKS ):  if pWindow then delete(pWindow)
     pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ):  if pWindow then delete(pWindow)
 
     function = 0
