@@ -96,7 +96,7 @@ end function
 
 
 ' ========================================================================================
-' Process WM_SIZE message for window/dialog: frmPanel
+' Process WM_SIZE message for window/dialog: frmPanelMenu
 ' ========================================================================================
 function frmPanelMenu_OnSize( _
             byval hwnd as HWND, _
@@ -167,6 +167,16 @@ function frmPanelMenu_OnPaint( byval hwnd as HWND ) as LRESULT
 end function
 
 
+' ========================================================================================
+' Process WM_DESTROY message for window/dialog: frmPanelMenu
+' ========================================================================================
+function frmPanelMenu_OnDestroy( byval hwnd as HWND ) as LRESULT 
+    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
+    if pWindow then delete(pWindow)
+    HWND_FRMPANEL_MENU = 0
+    function = 0
+end function
+
 
 ' ========================================================================================
 ' frmPanelMenu Window procedure
@@ -185,6 +195,7 @@ function frmPanelMenu_WndProc( _
     select case uMsg
         HANDLE_MSG (hwnd, WM_SIZE,  frmPanelMenu_OnSize)
         HANDLE_MSG (hwnd, WM_PAINT, frmPanelMenu_OnPaint)
+        HANDLE_MSG (hwnd, WM_DESTROY, frmPanelMenu_OnDestroy)
     
     case WM_ERASEBKGND
         return true
