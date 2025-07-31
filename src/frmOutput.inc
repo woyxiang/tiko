@@ -1102,7 +1102,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     hCtl = pWindow->AddControl("RICHEDIT", , IDC_FRMOUTPUT_TXTLOGFILE, "", _
                     0, 0, 0, 0, _
                     WS_CHILD or WS_TABSTOP or WS_VSCROLL or _
-                    ES_MULTILINE or ES_LEFT or ES_AUTOVSCROLL, _
+                    ES_READONLY or ES_MULTILINE or ES_LEFT or ES_AUTOVSCROLL, _
                     WS_EX_LEFT or WS_EX_LTRREADING or WS_EX_RIGHTSCROLLBAR, _
                     0, @frmOutput_RichEdit_SubclassProc, IDC_FRMOUTPUT_TXTLOGFILE, null )
         SendMessage( hCtl, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE or ENM_CHANGE or ENM_UPDATE) )
