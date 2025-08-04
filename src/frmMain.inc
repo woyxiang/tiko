@@ -1374,7 +1374,7 @@ function frmMain_WndProc( _
 '            ' Set text color and draw text
 '            SetBkMode(pdis->hDC, TRANSPARENT)
 '            SetTextColor(pdis->hDC, textColor)
-'            dim as CWSTR wszMenuText = "Paul Squires Menu"
+'            dim as CWSTR wszMenuText = "Menu Text"
 '            DrawText(pdis->hDC, wszMenuText, -1, @pdis->rcItem, DT_SINGLELINE or DT_VCENTER or DT_LEFT or DT_NOPREFIX)
 '            return true
 
@@ -1629,7 +1629,7 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
                 if (uMsg.wParam < 32) andalso (uMsg.wParam <> 8) then continue do
                 ' Save the pdoc->LastCharTyped to use in our autocomplete popups
                 dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()
-                If pDoc = 0 then pdoc->LastCharTyped = uMsg.wParam
+                If pDoc then pDoc->LastCharTyped = uMsg.wParam
             end if
 
             ' Save the pdoc->LastCharTyped to use in our autocomplete popups

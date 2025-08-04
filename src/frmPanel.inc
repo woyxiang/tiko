@@ -434,15 +434,15 @@ function frmPanel_WndProc( _
         GetWindowRect HWND_FRMPANEL, @rc
 
         if gConfig.ExplorerPositionRight then
-            rc.left = rc.left - pWindow->ScaleX(3)
+            rc.right = rc.left + pWindow->ScaleX(3)
         else
-            rc.Left = rc.Right - pWindow->ScaleX(3)
+            rc.left = rc.right - pWindow->ScaleX(3)
         end if
 
         GetCursorPos(@pt)
         if PtInRect( @rc, pt ) then
             if WindowFrompoint(pt) = HWND_FRMPANEL then
-            SetCursor( ghCursorSizeWE )
+                SetCursor( ghCursorSizeWE )
             end if
         end if
 
@@ -480,10 +480,10 @@ function frmPanel_WndProc( _
         GetCursorPos(@pt)
         if PtInRect( @rc, pt ) then
             if WindowFrompoint(pt) = HWND_FRMPANEL then
-            SetCursor( ghCursorSizeWE )
-            gApp.bDragActive = true 
-            gApp.hwndPanel   = HWND_FRMPANEL
-            SetCapture( HWND_FRMPANEL )
+                SetCursor( ghCursorSizeWE )
+                gApp.bDragActive = true 
+                gApp.hwndPanel   = HWND_FRMPANEL
+                SetCapture( HWND_FRMPANEL )
             end if
         end if
 
