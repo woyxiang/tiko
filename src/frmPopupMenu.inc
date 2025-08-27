@@ -316,9 +316,12 @@ function frmPopupMenuShadow_WndProc( _
             ) as LRESULT
 
     select case uMsg
-        case WM_DESTROY
+        case WM_NCDESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
             if pWindow then delete(pWindow)
+            if hwnd = HWND_SHADOW(0) then HWND_SHADOW(0) = 0
+            if hwnd = HWND_SHADOW(1) then HWND_SHADOW(1) = 0
+
     end select
     
     ' for messages that we don't deal with
@@ -341,14 +344,14 @@ function frmPopupMenu_WndProc( _
         HANDLE_MSG (hwnd, WM_MEASUREITEM, frmPopupMenu_OnMeasureItem)
         HANDLE_MSG (hwnd, WM_DRAWITEM,    frmPopupMenu_OnDrawItem)
 
-        case WM_DESTROY
+        case WM_NCDESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
             if hwnd = HWND_MENU(0) then 
-                DestroyWindow(HWND_SHADOW(0)): HWND_SHADOW(0) = 0
+                DestroyWindow(HWND_SHADOW(0))
                 HWND_MENU(0) = 0
             end if
             if hwnd = HWND_MENU(1) then 
-                DestroyWindow(HWND_SHADOW(1)): HWND_SHADOW(1) = 0
+                DestroyWindow(HWND_SHADOW(1))
                 HWND_MENU(1) = 0
             end if
             if pWindow then delete(pWindow)

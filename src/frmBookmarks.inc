@@ -250,10 +250,6 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmBookmarks
 ' ========================================================================================
 function frmBookmarks_OnDestroy( byval hwnd as HWND ) as LRESULT 
-    ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow then delete(pWindow)
-    HWND_FRMBOOKMARKS = 0
     function = 0
 end function
 
@@ -278,6 +274,13 @@ function frmBookmarks_WndProc( _
         HANDLE_MSG (hwnd, WM_COMMAND,     frmBookmarks_OnCommand)
         HANDLE_MSG (hwnd, WM_MEASUREITEM, frmBookmarks_OnMeasureItem)
         HANDLE_MSG (hwnd, WM_DRAWITEM,    frmBookmarks_OnDrawItem)
+
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMBOOKMARKS = 0
+        return 0
 
     case WM_ERASEBKGND
         return true

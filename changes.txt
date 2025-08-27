@@ -1,3 +1,6 @@
+Version 1.2.5 ()
+- Fixed: Crash on exit due to incorrectly using delete on a Window handle (only on Windows 10).
+
 Version 1.2.4 (August 4, 2025)
 - Fixed: Wrong mouse cursor showing when Explorer docked to the right and no documents open.
 - Fixed: Typing into Compiler Log or Notes with no documents open causes a GPF.

@@ -74,10 +74,13 @@ function frmEditorVScroll_WndProc( _
     dim as long idxWindow = iif( hwnd = HWND_FRMEDITOR_VSCROLLBAR(0), 0, 1 )
 
     select case uMsg
-        case WM_DESTROY
-            'pWindow pointer destroyed after frmMain.
+        case WM_NCDESTROY
+            ' delete the allocated memory for window
+            dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+            if pWindow then delete(pWindow)
             if hwnd = HWND_FRMEDITOR_VSCROLLBAR(0) then HWND_FRMEDITOR_VSCROLLBAR(0) = 0
             if hwnd = HWND_FRMEDITOR_VSCROLLBAR(1) then HWND_FRMEDITOR_VSCROLLBAR(1) = 0
+            return 0
                 
         case WM_LBUTTONDOWN
             dim pDoc as clsDocument ptr = gTTabCtl.GetActiveDocumentPtr()

@@ -149,9 +149,6 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmExplorer
 ' ========================================================================================
 function frmExplorer_OnDestroy( byval hwnd as HWND ) as LRESULT 
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow then delete(pWindow)
-    HWND_FRMEXPLORER = 0
     function = 0
 end function
 
@@ -324,6 +321,13 @@ function frmExplorer_WndProc( _
         HANDLE_MSG (hwnd, WM_MEASUREITEM, frmExplorer_OnMeasureItem)
         HANDLE_MSG (hwnd, WM_DRAWITEM,    frmExplorer_OnDrawItem)
     
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMEXPLORER = 0
+        return 0
+
     case WM_ERASEBKGND
         return true
 

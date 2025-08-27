@@ -72,6 +72,13 @@ function frmPanelVScroll_WndProc( _
     static as point prev_pt   ' screen pt.y cursor position
 
     select case uMsg
+        case WM_NCDESTROY
+            ' delete the allocated memory for window
+            dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+            if pWindow then delete(pWindow)
+            HWND_FRMPANEL_VSCROLLBAR = 0
+            return 0
+
         case WM_LBUTTONDOWN
             dim as point pt: GetCursorPos( @pt )
             frmPanelVScroll_calcVThumbRect()   ' in client coordinates
@@ -297,9 +304,6 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmPanel
 ' ========================================================================================
 function frmPanel_OnDestroy( byval hwnd as HWND ) as LRESULT
-    dim pWindow as CWindow ptr 
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL_VSCROLLBAR ):  if pWindow then delete(pWindow)
-
     function = 0
 end Function
 
@@ -390,6 +394,13 @@ function frmPanel_WndProc( _
         HANDLE_MSG (hwnd, WM_SIZE,    frmPanel_OnSize)
         HANDLE_MSG (hwnd, WM_PAINT,   frmPanel_OnPaint)
         HANDLE_MSG (hwnd, WM_DESTROY, frmPanel_OnDestroy)
+
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMPANEL = 0
+        return 0
 
     case WM_ERASEBKGND
         return true

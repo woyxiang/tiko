@@ -1119,18 +1119,22 @@ end Function
 ' ========================================================================================
 function frmMain_OnDestroy( byval hwnd as HWND ) as LRESULT
 
-    ' Output the config settings to disk file
+    ' no more config changed checks while shutting down
+    gApp.PreventConfigLoad = true   
+
+    ' output the config settings to disk file
     gConfig.SaveConfigFile
 
     ' delete any temporary quick run files should they exist
     ' filename set in compile process and could be different location than the
     ' default filename as tested for in wm_create.
-    AfxDeleteFile( gApp.wszQuickRunFilename )
+    if AfxFileExists(gApp.wszQuickRunFilename) then AfxDeleteFile( gApp.wszQuickRunFilename )
     
     ' Disable drag and drop files
     DragAcceptFiles hwnd, false
     
     PostQuitMessage(0)
+    
     function = 0
 end Function
 
@@ -1347,6 +1351,13 @@ function frmMain_WndProc( _
         HANDLE_MSG (hwnd, WM_LBUTTONUP,     frmMain_OnLButtonUp)
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,     frmMain_OnMouseMove)
         HANDLE_MSG (hwnd, WM_LBUTTONDBLCLK, frmMain_OnLButtonDblClk)
+
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMMAIN = 0
+        return 0
 
 '        case WM_MEASUREITEM
 '            dim mi as LPMEASUREITEMSTRUCT = cast(LPMEASUREITEMSTRUCT, lParam)
@@ -1613,6 +1624,7 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
 
     ' Message loop
     do while GetMessage(@uMsg, null, 0, 0)
+        if uMsg.message = WM_QUIT then exit do
 
         if handleMouseShowScrollBar(uMsg) then continue do
         if handleMouseTopMenu(uMsg) then continue do
@@ -1674,14 +1686,5 @@ function frmMain_Show( byval hWndParent as HWND ) as LRESULT
     if ghAccelUserTools then DestroyAcceleratorTable( ghAccelUserTools )
     if ghAccelBuildConfigurations then DestroyAcceleratorTable( ghAccelBuildConfigurations )
     
-    ' delete the allocated memory for the various child windows
-    pWindow = AfxCWindowPtr( HWND_FRMPANEL ):                if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(0) ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_HSCROLLBAR(1) ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(0) ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMEDITOR_VSCROLLBAR(1) ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT ):               if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMMAIN ):                 if pWindow then delete(pWindow)
-
 end function
 
