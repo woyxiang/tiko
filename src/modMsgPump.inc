@@ -277,12 +277,12 @@ end function
 function handleEscKeyModeless( byval uMsg as MSG ) as boolean
     ' Close any open Find/Replace window with ESC key
     ' Close any open FindInFiles window with ESC key
-    if (uMsg.message = WM_KEYDOWN) andAlso (uMsg.wParam = VK_ESCAPE) THEN
+    if (uMsg.message = WM_KEYDOWN) andAlso (uMsg.wParam = VK_ESCAPE) then
         if IsWindowVisible( HWND_FRMFINDREPLACE ) THEN 
             SendMessage( HWND_FRMFINDREPLACE, WM_CLOSE, 0, 0 )
             return true
         end if
-        if IsWindowVisible( HWND_FRMFINDINFILES ) THEN 
+        if IsWindowVisible( HWND_FRMFINDINFILES ) then 
             SendMessage( HWND_FRMFINDINFILES, WM_CLOSE, 0, 0 )
             return true
         end if
@@ -306,7 +306,7 @@ function handleKeysFindReplace( byval uMsg as MSG ) as boolean
                 SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_REPLACEALL, 0), 0 )
                 return true
             end if
-            if (GetAsyncKeyState(VK_SHIFT) and &H8000) THEN
+            if (GetAsyncKeyState(VK_SHIFT) and &H8000) then
                 if GetFocus = hFind then
                     SendMessage( HWND_FRMMAIN, WM_COMMAND, MAKEWPARAM(IDM_FINDPREV, 0), 0 )
                 elseif GetFocus = hReplace then
