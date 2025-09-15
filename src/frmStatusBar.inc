@@ -167,7 +167,7 @@ function frmStatusBar_WndProc( _
     Select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmStatusBar_OnSize)
     
-    case WM_DESTROY
+    case WM_NCDESTROY
         dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
         if pWindow = 0 then delete(pWindow)
         HWND_FRMMAIN_STATUSBAR = 0

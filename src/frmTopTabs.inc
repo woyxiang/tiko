@@ -314,7 +314,7 @@ function frmTopTabsShadow_WndProc( _
             ) as LRESULT
 
     select Case uMsg
-        case WM_DESTROY
+        case WM_NCDESTROY
             dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
             if pWindow = 0 then delete(pWindow)
             HWND_FRMMAIN_TOPTABS_SHADOW = 0
@@ -344,7 +344,7 @@ function frmTopTabs_WndProc( _
     select Case uMsg
         HANDLE_MSG (hwnd, WM_SIZE, frmTopTabs_OnSize)
     
-    case WM_DESTROY
+    case WM_NCDESTROY
         dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
         if pWindow = 0 then delete(pWindow)
         HWND_FRMMAIN_TOPTABS = 0

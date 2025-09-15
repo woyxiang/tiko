@@ -63,6 +63,13 @@ function frmHelpViewerVScroll_WndProc( _
     static as point prev_pt   ' screen pt.y cursor position
 
     select case uMsg
+        case WM_NCDESTROY
+            ' delete the allocated memory for window
+            dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+            if pWindow then delete(pWindow)
+            HWND_FRMHELPVIEWER_VSCROLLBAR = 0
+            return 0
+
         case WM_LBUTTONDOWN
             dim as point pt: GetCursorPos( @pt )
             frmHelpViewerVScroll_calcVThumbRect()   ' in client coordinates
@@ -413,17 +420,8 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmHelpViewer
 ' ========================================================================================
 function frmHelpViewer_OnDestroy( byval hwnd as HWND ) as LRESULT
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow then delete(pWindow)
-    
-    pWindow = AfxCWindowPtr(HWND_FRMHELPVIEWER_VSCROLLBAR)
-    if pWindow then delete(pWindow)
-
     ' Save the current screen coordinates of the Help Viewer
     gConfig.SaveConfigFile    
-    
-    HWND_FRMHELPVIEWER = 0
-    HWND_FRMHELPVIEWER_VSCROLLBAR = 0
 
     function = 0
 end function
@@ -541,6 +539,14 @@ function frmHelpViewer_WndProc( _
         HANDLE_MSG (hwnd, WM_MOUSEMOVE,      frmHelpViewer_OnMouseMove)
         HANDLE_MSG (hwnd, WM_MEASUREITEM,    frmHelpViewer_OnMeasureItem)
         HANDLE_MSG (hwnd, WM_DRAWITEM,       frmHelpViewer_OnDrawItem)
+
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMHELPVIEWER = 0
+        return 0
+
     end select
 
     function = DefWindowProc(hwnd, uMsg, wParam, lParam)

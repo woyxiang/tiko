@@ -171,9 +171,6 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmPanelMenu
 ' ========================================================================================
 function frmPanelMenu_OnDestroy( byval hwnd as HWND ) as LRESULT 
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow then delete(pWindow)
-    HWND_FRMPANEL_MENU = 0
     function = 0
 end function
 
@@ -197,6 +194,13 @@ function frmPanelMenu_WndProc( _
         HANDLE_MSG (hwnd, WM_PAINT, frmPanelMenu_OnPaint)
         HANDLE_MSG (hwnd, WM_DESTROY, frmPanelMenu_OnDestroy)
     
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMPANEL_MENU = 0
+        return 0
+
     case WM_ERASEBKGND
         return true
 

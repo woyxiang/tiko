@@ -496,16 +496,6 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmListView
 ' ========================================================================================
 function frmListView_OnDestroy( byval hwnd as HWND ) as LRESULT
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow = 0 then exit function
-    
-    ' Destroy the manually allocated LISTVIEW_DATA_TYPE pointer
-    if pWindow->UserData(0) > 0 then 
-        dim as LISTVIEW_DATA_TYPE ptr pData = cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0))
-        if pData->hVScroll > 0 then delete(pData->hVScroll)
-        delete(pData)
-    end if
-
     function = 0
 end Function
 
@@ -566,6 +556,20 @@ function frmListView_WndProc( _
         HANDLE_MSG (hwnd, WM_COMMAND,     frmListView_OnCommand)
         HANDLE_MSG (hwnd, WM_MEASUREITEM, frmListView_OnMeasureItem)
         HANDLE_MSG (hwnd, WM_DRAWITEM,    frmListView_OnDrawItem)
+
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow = 0 then exit function
+    
+        ' Destroy the manually allocated LISTVIEW_DATA_TYPE pointer
+        if pWindow->UserData(0) > 0 then 
+            dim as LISTVIEW_DATA_TYPE ptr pData = cast(LISTVIEW_DATA_TYPE ptr, pWindow->UserData(0))
+            if pData then delete(pData)
+        end if
+        if pWindow then delete(pWindow)
+
+        return 0
 
     case WM_ERASEBKGND
         return true

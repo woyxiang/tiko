@@ -661,12 +661,6 @@ function frmFindReplace_OnDestroy( byval hwnd as HWND ) as LRESULT
         gFind.hCueBannerFont = 0
     end if
 
-    ' delete the pWindow because it gets recreated everytime frmFindReplace is invoked
-    dim pWindow as CWindow ptr = AfxCWindowPtr(hwnd)
-    if pWindow then delete(pWindow)
-    
-    HWND_FRMFINDREPLACE = 0
-
     ' ensure that the tabcontrol shadow is painted once the find dialog disappears
     frmMain_PositionWindows()
     
@@ -715,6 +709,13 @@ function frmFindReplace_WndProc( _
         HANDLE_MSG (hwnd, WM_DESTROY,  frmFindReplace_OnDestroy)
         HANDLE_MSG (hwnd, WM_COMMAND,  frmFindReplace_OnCommand)
         HANDLE_MSG (hwnd, WM_PAINT,    frmFindReplace_OnPaint)
+
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMFINDREPLACE = 0
+        return 0
 
     case WM_ACTIVATE
         AfxRedrawWindow( hwnd )

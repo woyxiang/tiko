@@ -379,6 +379,13 @@ function frmOutputVScroll_WndProc( _
     end if
     
     select case uMsg
+        case WM_NCDESTROY
+            ' delete the allocated memory for window
+            dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+            if pWindow then delete(pWindow)
+            HWND_FRMOUTPUT_VSCROLL   = 0
+            return 0
+
         case WM_LBUTTONDOWN
             dim as point pt: GetCursorPos( @pt )
             frmOutputVScroll_calcVThumbRect(hTextBox)   ' in client coordinates
@@ -488,14 +495,6 @@ end function
 ' Process WM_DESTROY message for window/dialog: frmOutput
 ' ========================================================================================
 function frmOutput_OnDestroy( byval hwnd as HWND ) as LRESULT
-    ' Delete all the panel CWindow pointers because these child windows
-    ' are about to get destroyed.
-    dim pWindow as CWindow ptr 
-    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVRESULTS ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVSEARCH ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_LVTODO ): if pWindow then delete(pWindow)
-    pWindow = AfxCWindowPtr( HWND_FRMOUTPUT_VSCROLL ): if pWindow then delete(pWindow)
-
     function = 0
 end Function
 
@@ -996,6 +995,18 @@ function frmOutput_WndProc( _
         HANDLE_MSG (hwnd, WM_LBUTTONDBLCLK, frmOutput_OnLButtonDblClk)
         HANDLE_MSG (hwnd, WM_DESTROY,       frmOutput_OnDestroy)
 
+    case WM_NCDESTROY
+        ' delete the allocated memory for window
+        dim as CWindow ptr pWindow = AfxCWindowPtr(hwnd)
+        if pWindow then delete(pWindow)
+        HWND_FRMOUTPUT = 0
+        ' The child listviews have also been destroyed in their respective WM_NCDESTROY
+        ' so reset all of the listview window handles.
+        HWND_FRMOUTPUT_LVRESULTS = 0
+        HWND_FRMOUTPUT_LVSEARCH  = 0
+        HWND_FRMOUTPUT_LVTODO    = 0
+        return 0
+
     case MSG_USER_RICHEDIT_SELECTALL
         dim as HWND hCtrl = cast(HWND, wParam) 
         SetFocus( hCtrl )
@@ -1147,7 +1158,7 @@ function frmOutput_Show( byval hwndParent as HWND ) as LRESULT
     dim pWindowPanel as CPanelWindow ptr = New CPanelWindow
     HWND_FRMOUTPUT_VSCROLL = _
         pWindowPanel->Create( HWND_FRMOUTPUT, @frmOutputVScroll_WndProc, 0, 0, SCROLLBAR_WIDTH_EDITOR, 0 )
-    pWindow->ClassStyle = CS_DBLCLKS
+    pWindowPanel->ClassStyle = CS_DBLCLKS
 
     frmOutput_ResetAllControls
     frmOutput_SetControlColors
