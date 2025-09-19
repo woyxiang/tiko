@@ -1,3 +1,9 @@
+Version 1.2.6 ()
+- Fixed: Visual artifact from top menubar (light colored box/rectangle displaying when mouse click on menubar).
+- Fixed: StatusBar panels would show information, popups, tooltips, when no active file was open in the editor.
+- Fixed: Wrong mouse cursor showing when Explorer docked to the right, no documents open, and mouse down button pressed.
+- Fixed: Changing theme with no documents open would not immediately recolor the area occupied by the code document.
+
 Version 1.2.5 (September 15, 2025)
 - Fixed: Crash on exit due to incorrectly using delete on a Window handle (only on Windows 10).
 

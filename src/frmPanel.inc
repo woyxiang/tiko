@@ -483,9 +483,9 @@ function frmPanel_WndProc( _
         GetWindowRect HWND_FRMPANEL, @rc
 
         if gConfig.ExplorerPositionRight then
-            rc.left = rc.left - pWindow->ScaleX(3)
+            rc.right = rc.left + pWindow->ScaleX(3)
         else
-            rc.Left = rc.Right - pWindow->ScaleX(3)
+            rc.left = rc.right - pWindow->ScaleX(3)
         end if
 
         GetCursorPos(@pt)
