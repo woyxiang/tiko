@@ -1,4 +1,5 @@
-Version 1.2.6 ()
+Version 1.2.6 (September 20, 2025)
+- Added: AfxNova. José Roca's latest and greatest Windows programming framework and library.
 - Fixed: Visual artifact from top menubar (light colored box/rectangle displaying when mouse click on menubar).
 - Fixed: StatusBar panels would show information, popups, tooltips, when no active file was open in the editor.
 - Fixed: Wrong mouse cursor showing when Explorer docked to the right, no documents open, and mouse down button pressed.
