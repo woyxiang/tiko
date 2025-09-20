@@ -188,6 +188,8 @@ function frmOptions_OnCommand( _
                 frmOptions_SaveEditorOptions()
                 ' Reload the theme file in case it has changed
                 LoadThemeFile()
+                ' Refresh main background in case theme changed and no file open
+                AfxRedrawWindow( HWND_FRMMAIN )
                 ' Refresh the frmOutput controls (listviews and RichEdits)
                 AfxRedrawWindow( HWND_FRMOUTPUT )
                 frmOutput_SetControlColors()

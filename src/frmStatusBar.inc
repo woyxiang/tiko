@@ -33,7 +33,14 @@ function frmStatusBar_PositionWindows() as LRESULT
     
     ' the text for each panel is set in frmMain_SetStatusbar which then calls this
     ' function to determine proper sizing and placement.
-    
+    for i as long = lbound(gSBPanels) to ubound(gSBPanels)
+        SetRectEmpty( @gSBPanels(i).rc )
+    next
+    if gTTabCtl.GetActiveDocumentPtr() = 0 then
+        AfxRedrawWindow( HWND_FRMMAIN_STATUSBAR )
+        exit function
+    end if
+
     '''' LEFT ALIGNED STATUSBAR PANELS ''''
     i = GOTO_PANEL  ' Ln 23, Col 20
     gSBPanels(i).rc.Left   = nLeft

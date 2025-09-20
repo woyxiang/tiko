@@ -172,7 +172,7 @@ function frmMenuBar_WndProc( _
     case WM_LBUTTONDOWN
         ' Get the button index of the current hot state button or the wParam
         ' if this button press was sent by an ENTER keypress originating from
-        ' handleKeysTopMenu() in modMsgPunp.
+        ' handleKeysTopMenu() in modMsgPump.
         if (cint(wParam) <> -1) then   ' ENTER will send wParam = -1
             gActiveMenuBarIndex = frmMenuBar_GetHotIndex(hwnd)
         end if    
@@ -180,8 +180,10 @@ function frmMenuBar_WndProc( _
         ' activate the popup menu or toggle an existing one off 
         if isPopupMenuOpen() then
             killAllPopupMenus()
-        else   
-            frmPopupMenu_Show( ID_POPUP, 0, hwnd, gMenuBar(gActiveMenuBarIndex).rcItem )
+        else
+            if gActiveMenuBarIndex <> -1 then
+                frmPopupMenu_Show( ID_POPUP, 0, hwnd, gMenuBar(gActiveMenuBarIndex).rcItem )
+            end if    
         end if
         AfxRedrawWindow(hwnd)
         
